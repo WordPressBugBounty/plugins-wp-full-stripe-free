@@ -1,0 +1,4631 @@
+# Copyright (C) 2024 Themeisle
+# This file is distributed under the yes.
+msgid ""
+msgstr ""
+"Project-Id-Version: WP Full Pay 8.0.1\n"
+"Report-Msgid-Bugs-To: https://paymentsplugin.com/support/\n"
+"POT-Creation-Date: 2024-12-03 08:15:24+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2024-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-Country: United States\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: "
+"__;_e;_x:1,2c;_ex:1,2c;_n:1,2;_nx:1,2,4c;_n_noop:1,2;_nx_noop:1,2,3c;esc_"
+"attr__;esc_html__;esc_attr_e;esc_html_e;esc_attr_x:1,2c;esc_html_x:1,2c;\n"
+"X-Poedit-Basepath: ../\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-Bookmarks: \n"
+"X-Textdomain-Support: yes\n"
+"X-Generator: grunt-wp-i18n 1.0.3\n"
+
+#: includes/wpfs-admin-menu.php:203
+#. translators: Browser page title of the "Transactions" page in WordPress
+#. admin
+msgid "Full Pay - Transactions"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:206
+#. translators: Menu title of the plugin in WordPress admin
+msgid "Full Pay"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:216 includes/wpfs-admin-menu.php:1400
+#. translators: Submenu title of the "Transactions" page in WordPress admin
+#. translators: Page title of the "Transactions" page
+msgid "Transactions"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:225
+#. translators: Browser page title of the "Manage forms" page in WordPress
+#. admin
+msgid "Full Pay - Manage forms"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:228 includes/wpfs-admin-menu.php:273
+#: includes/wpfs-admin-menu.php:1621 templates/admin/wpfs-settings.php:37
+#. translators: Submenu title of the "Manage forms" page in WordPress admin
+#. translators: Submenu title of the "Customize forms" page in WordPress admin
+#. translators: Page title of the "Form settings" page
+msgid "Forms"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:237
+#. translators: Browser page title of the "Create form" page in WordPress admin
+msgid "Full Pay - Create form"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:240
+#. translators: Submenu title of the "Create form" page in WordPress admin
+msgid "Create form"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:248
+#. translators: Browser page title of "Settings" page in WordPress admin
+msgid "Full Pay - Settings"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:251 includes/wpfs-admin-menu.php:974
+#: includes/wpfs-main.php:576
+#. translators: Submenu title of the "Settings" page in WordPress admin
+#. translators: Page title of the "Settings" page in WordPress admin
+#. translators: Link label displayed on the Plugins page in WP admin
+msgid "Settings"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:259
+#. translators: Browser page title of the "Configure Stripe account" page in
+#. WordPress admin
+msgid "Full Pay - Configure Stripe account"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:262 templates/admin/wpfs-settings.php:30
+#. translators: Submenu title of the "Configure Stripe account" page in
+#. WordPress admin
+msgid "Stripe account"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:270
+#. translators: Browser page title of the "Customize forms" page in WordPress
+#. admin
+msgid "Full Pay - Customize forms"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:281
+#. translators: Browser page title of the "Email notifications" page in
+#. WordPress admin
+msgid "Full Pay - Email notifications"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:284 includes/wpfs-admin-menu.php:1532
+#: includes/wpfs-admin-menu.php:2216 templates/admin/wpfs-settings.php:44
+#. translators: Submenu title of the "Email notifications" page in WordPress
+#. admin
+#. translators: Page title of the "Email notifications" page
+#. translators: Label of the "Email notifications" tab on "Edit form" pages
+msgid "Email notifications"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:292
+#. translators: Browser page title of the "Security settings" page in WordPress
+#. admin
+msgid "Full Pay - Security settings"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:295 templates/admin/wpfs-settings.php:51
+#. translators: Submenu title of the "Security settings" page in WordPress
+#. admin
+msgid "Security"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:303
+#. translators: Browser page title of the "Customer portal" page in WordPress
+#. admin
+msgid "Full Pay - Customer portal"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:306 includes/wpfs-admin-views.php:843
+#: templates/admin/wpfs-settings.php:58
+#. translators: Submenu title of the "Customer portal" page in WordPress admin
+#. translators: Form field label for the 'Secure Customer portal' checkbox of
+#. the form
+msgid "Customer portal"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:314
+#. translators: Browser page title of the "WordPress dashboard settings" page
+#. in WordPress admin
+msgid "Full Pay - WordPress dashboard settings"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:317 templates/admin/wpfs-settings.php:65
+#. translators: Submenu title of the "WordPress dashboard settings" page in
+#. WordPress admin
+msgid "WordPress dashboard"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:325
+#. translators: Browser page title of the "Add-ons" settings page in WordPress
+#. admin
+msgid "Full Pay - Add-ons"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:328 includes/wpfs-admin-menu.php:883
+#: includes/wpfs-admin-menu.php:1962 templates/admin/wpfs-settings.php:72
+#. translators: Submenu title of the "Add-ons" settings page in WordPress admin
+#. translators: Page title of the "Add-ons" settings page in WordPress admin
+#. translators: Page title of the "Add-ons" page
+msgid "Add-ons"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:336
+#. translators: Browser page title of the "Error logging" settings page in
+#. WordPress admin
+msgid "Full Pay - Error logging"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:339 includes/wpfs-admin-menu.php:921
+#: templates/admin/wpfs-settings.php:79
+#. translators: Submenu title of the "Error logging" settings page in WordPress
+#. admin
+#. translators: Page title of the Error logging" settings page in WordPress
+#. admin
+msgid "Error logging"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:347
+#. translators: Browser page title of the "Edit form" page in WordPress admin
+msgid "Full Pay - Edit form"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:350
+#. translators: Submenu title of the "Edit form" page in WordPress admin
+msgid "Edit form"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:359
+#. translators: Browser page title of "Addons" page in WordPress admin
+msgid "Full Pay - Addons"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:362
+#. translators: Submenu title of the "Addons" page in WordPress admin
+msgid "Add-Ons"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:497
+#. translators: Singular and plural message for time number of seconds passed
+#. since the last webhook event 																						   p1: number of seconds
+msgid "Last event one second ago"
+msgid_plural "Last event %d seconds ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/wpfs-admin-menu.php:506
+#. translators: Singular and plural message for time number of minutes passed
+#. since the last webhook event 																						   p1: number of minutes
+msgid "Last event one minute ago"
+msgid_plural "Last event %d minutes ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/wpfs-admin-menu.php:515
+#. translators: Singular and plural message for time number of hours passed
+#. since the last webhook event 																						   p1: number of hours
+msgid "Last event one hour ago"
+msgid_plural "Last event %d hours ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/wpfs-admin-menu.php:524
+#. translators: Singular and plural message for time number of days passed
+#. since the last webhook event 																						   p1: number of days
+msgid "Last event one day ago"
+msgid_plural "Last event %d days ago"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/wpfs-admin-menu.php:548
+#. translators: Message stating that this webhook URL haven't received any
+#. event yet
+msgid "Never received event"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:552
+#. translators: Message stating that live webhooks notifications is not set up
+#. in Stripe
+msgid "Live webhook is not set up"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:556
+#. translators: Message stating that test webhooks notifications is not set up
+#. in Stripe
+msgid "Test webhook is not set up"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:564
+#. translators: Message stating that the live webhooks URL works properly, it's
+#. receiving events from Stripe
+msgid "Live webhook works properly"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:568
+#. translators: Message stating that the test webhooks URL works properly, it's
+#. receiving events from Stripe
+msgid "Test webhook works properly"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:575
+#. translators: Message stating that the live webhooks URL may not work
+#. properly
+msgid "Live webhook may not work properly"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:578
+#. translators: Message stating that the test webhooks URL may not work
+#. properly
+msgid "Test webhook may not work properly"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:592
+#. translators: Placeholder text for an API test secret key which is not
+#. entered yet
+msgid "Test secret key here"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:595
+#. translators: Placeholder text for an API test publishable key which is not
+#. entered yet
+msgid "Test publishable key here"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:598
+#. translators: Placeholder text for an API live secret key which is not
+#. entered yet
+msgid "Live secret key here"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:601
+#. translators: Placeholder text for an API live publishable key which is not
+#. entered yet
+msgid "Live publishable key here"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:729
+#. translators: Page title of the "Configure Stripe account" page in WordPress
+#. admin
+msgid "Configure Stripe account"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:734 includes/wpfs-admin-menu.php:781
+#: includes/wpfs-admin-menu.php:826 includes/wpfs-admin-menu.php:867
+#: includes/wpfs-admin-menu.php:890 includes/wpfs-admin-menu.php:929
+#: includes/wpfs-admin-menu.php:1537 includes/wpfs-admin-menu.php:1626
+#. translators: Link label which takes back to the "Settings" page
+msgid "Back to Settings"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:776
+#. translators: Page title of the "Security settings" page in WordPress admin
+msgid "Security settings"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:821
+#. translators: Page title of the "Customer portal settings" page in WordPress
+#. admin
+msgid "Customer portal settings"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:862
+#. translators: Page title of the "WordPress dashboard settings" page in
+#. WordPress admin
+msgid "WordPress dashboard settings"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:998
+#. translators: When was the last time this form was used? This is the label
+#. for 'never'
+msgid "Never"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1301
+#. translators: "One-time payments" tab of the "Transactions" page
+msgid "One-time payments"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1307 includes/wpfs-admin-views.php:671
+#: includes/wpfs-tables.php:369
+#. translators: "Subscriptions" tab of the "Transactions" page
+#. translators: Plural version of the word 'subscription', used on the
+#. subscription list page
+msgid "Subscriptions"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1313 includes/wpfs-tables.php:749
+#. translators: "Donations" tab of the "Transactions" page
+#. translators: Plural version of the word 'Donation', used on the donation
+#. list page
+msgid "Donations"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1319 includes/wpfs-tables.php:1158
+#. translators: "Saved cards" tab of the "Transactions" page
+#. translators: Plural version of the expression 'Saved card', used on the save
+#. card list page
+msgid "Saved cards"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1405 includes/wpfs-admin-menu.php:1652
+#. translators: Button label of the "Add form" button
+msgid "Add form"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1427 includes/wpfs-admin-menu.php:1556
+#. translators: The "Options" tab of the "Email settings" page
+#. translators: "Options" tab of the "Form settings" page
+msgid "Options"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1433
+#. translators: The "Templates" tab of the "Email settings" page
+msgid "Templates"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1460 includes/wpfs-mailer.php:144
+#. translators: Name of the one-time payment receipt email
+#. translators: Name of the email template that is used to send an email when a
+#. payment is made
+msgid "Payment receipt"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1467 includes/wpfs-mailer.php:168
+#. translators: Name of the subscription receipt email
+#. translators: Name of the email template that is used to send an email when a
+#. subscription is started
+msgid "Subscription receipt"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1474 includes/wpfs-mailer.php:178
+#. translators: Name of the email notification sent when a
+#. payment-in-installments subscription is ended
+#. translators: Name of the email template that is used to send an email when
+#. the plugin ends a subscription automatically
+msgid "Subscription ended"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1481 includes/wpfs-mailer.php:120
+#. translators: Name of the donation receipt email
+#. translators: Name of the email template that is used to send an email when a
+#. donation is made
+msgid "Donation receipt"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1488 includes/wpfs-mailer.php:106
+#. translators: Name of the email which is sent when customer information
+#. together with payment details are saved in Stripe
+#. translators: Name of the email template that is used to send an email when a
+#. card is saved
+msgid "Card saved"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1495
+#. translators: Name of the email which is sent when customer initiates a login
+#. process to the Customer portal
+msgid "Customer portal login code"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1562 includes/wpfs-admin-menu.php:2196
+#. translators: "Appearance" tab of the "Form settings" page
+#. translators: Label of the "Appearance" tab on "Edit form" pages
+msgid "Appearance"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1647
+#. translators: Page title of the "Manage forms" page
+msgid "Manage forms"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1674
+#. translators: Page title of the "Add new form" page
+msgid "Add new form"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1679 includes/wpfs-admin-menu.php:1993
+#. translators: Link label which takes back to the "Manage forms" page
+msgid "Back to Manage forms"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1698
+#. translators: Page title of the "Edit inline save card form" page
+msgid "Inline save card form"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1702
+#. translators: Page title of the "Edit checkout save card form" page
+msgid "Checkout save card form"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1706
+#. translators: Page title of the "Edit inline donation form" page
+msgid "Inline donation form"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1710
+#. translators: Page title of the "Edit checkout donation form" page
+msgid "Checkout donation form"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1714
+#. translators: Page title of the "Edit inline one-time payment form" page
+msgid "Inline one-time payment form"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1718
+#. translators: Page title of the "Edit checkout one-time payment form" page
+msgid "Checkout one-time payment form"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1722
+#. translators: Page title of the "Edit inline subscription form" page
+msgid "Inline subscription form"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1726
+#. translators: Page title of the "Edit checkout subscription form" page
+msgid "Checkout subscription form"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:1969
+#. translators: Link label which takes back to the "Settings" page
+msgid "Back to Add-ons"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2006 includes/wpfs-admin-menu.php:2013
+#. translators: Helper label describing how the {{amount}} placeholder token
+#. can be used for donation button labels
+msgid "Insert {{amount}} to display the donation amount on the button"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2020 includes/wpfs-admin-menu.php:2027
+#. translators: Helper label describing how the {{amount}} placeholder token
+#. can be used for payment button labels
+#. translators: Helper label describing how the {{amount}} placeholder token
+#. can be used for donation button labels
+msgid "Insert {{amount}} to display the payment amount on the button"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2176
+#. translators: Label of the "General" tab on "Edit form" pages
+msgid "General"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2186 includes/wpfs-tables.php:1411
+#: templates/admin/partials/wpfs-transactions-payments.php:81
+#. translators: Label of the "Payment" tab on "Edit form" pages
+#. translators: Singular version of the word 'Payment', used on the payment
+#. list page
+msgid "Payment"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2206
+#. translators: Label of the "Form fields" tab on "Edit form" pages
+msgid "Form fields"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2284 includes/wpfs-main.php:967
+#. translators: Label of the "Tax" tab on "Edit form" pages
+#. translators: Default tax label
+msgid "Tax"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2449
+#. translators: Banner message displayed when a webhook URL is copied to the
+#. clipboard
+msgid "Webhook URL copied to clipboard."
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2549
+#. translators: Title of the 'Reset email template' dialog
+msgid "Reset email template"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2552
+#. translators: Confirmation message displayed in the 'Reset email template'
+#. dialog
+msgid "Are you sure you'd like to reset the email template?"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2555
+#. translators: Title of the 'Send test email' dialog
+msgid "Send test email"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2558
+#. translators: Error message displayed when no email is entered in the 'Send
+#. test email' dialog
+msgid "Please enter at least one email address"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2561
+#. translators: Error message displayed when an invalid email address is
+#. entered in the 'Send test email' dialog
+msgid "Email address %s is invalid"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2595 templates/admin/wpfs-settings-logs.php:28
+#: templates/admin/wpfs-settings-logs.php:113
+#: templates/admin/wpfs-settings-logs.php:122
+#. translators: Dialog title of the 'Empty log' dialog
+msgid "Empty log"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2598
+#. translators: Confirmation message of the 'Empty log' dialog
+msgid "Are you use you'd like to delete all log entries?"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2634
+#. translators: Banner message displayed when a CSS selector is copied to the
+#. clipboard
+msgid "Form CSS selector ID copied to clipboard"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2637
+#: templates/admin/partials/wpfs-form-component-custom-fields.php:14
+#. translators: File type label of the text custom field type
+msgid "Text field"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2640
+#. translators: Validation message displayed when the name of the custom field
+#. is not filled in
+msgid "Please enter field name"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2643
+#. translators: Validation message displayed when the length of the custom
+#. field name is more than 40 characters
+msgid "Maximum custom field length is 40 characters"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2646
+#. translators: Title of the 'Delete custom field' dialog
+msgid "Delete custom field"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2651
+#. translators: Confirmation message displayed in the  'Delete custom field'
+#. dialog p1: Name of the custom field
+msgid "Are you sure you'd like to delete custom field '%s' ?"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2654
+#: templates/admin/partials/wpfs-form-component-custom-fields.php:58
+#. translators: Title of the 'Add custom field' dialog
+msgid "Add custom field"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2659 includes/wpfs-main.php:943
+#. translators: Daily recurring price label p1: Price
+msgid "%1$s / day"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2665 includes/wpfs-main.php:947
+#. translators: Recurring price label for prices charged every x days p1: Price
+#. p2: Frequency in days
+msgid "%1$s / %2$d days"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2670 includes/wpfs-main.php:944
+#. translators: Weekly recurring price label p1: Price
+msgid "%1$s / week"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2676 includes/wpfs-main.php:948
+#. translators: Recurring price label for prices charged every x weeks p1:
+#. Price p2: Frequency in weeks
+msgid "%1$s / %2$d weeks"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2681 includes/wpfs-main.php:945
+#. translators: Monthly recurring price label p1: Price
+msgid "%1$s / month"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2687 includes/wpfs-main.php:949
+#. translators: Recurring price label for prices charged every x months p1:
+#. Price p2: Frequency in months
+msgid "%1$s / %2$d months"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2692 includes/wpfs-main.php:946
+#. translators: Annual recurring price label p1: Price
+msgid "%1$s / year"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2698 includes/wpfs-main.php:950
+#. translators: Recurring price label for prices charged every x years p1:
+#. Price p2: Frequency in years
+msgid "%1$s / %2$d years"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2701
+#. translators: Label for the pricing type 'Standard pricing'
+msgid "Standard pricing"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2704
+#. translators: Label for the pricing type 'Volume pricing'
+msgid "Volume pricing"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2707
+#. translators: Label for the pricing type 'Graduated pricing'
+msgid "Graduated pricing"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2710
+#. translators: Label for the pricing mode 'Metered billing'
+msgid "Metered billing"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2715
+#. translators: Title of the 'Add subscription plan properties' dialog box p1:
+#. Name of the subscription plan
+msgid "Set additional properties for <b>%s</b>"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2718
+#. translators: Validation error message for required fields which are not
+#. filled in
+msgid "This is a required field"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2721 includes/wpfs-admin-menu.php:2791
+#: includes/wpfs-admin-menu.php:2817
+#. translators: Validation error message for invalid payment amounts entered
+#. translators: Validation error message for an invalid donation amount entered
+#. translators: Validation error message for an invalid donation amount entered
+msgid "Please enter a valid amount"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2724
+#. translators: Validation error message displayed when the entered number is
+#. not a whole number
+msgid "Please enter a whole number"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2727
+#. translators: Validation error message displayed when the entered number is
+#. not a positive number
+msgid "Please enter a positive number"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2730
+#. translators: Validation error message displayed when the entered number is
+#. not between 1 and 28
+msgid "Please enter number between 1 and 28"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2736
+#. translators: Pricing label of a subscription plan p1: Recurring amount p2:
+#. One-time setup fee
+msgid "%1$s + %2$s setup fee"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2741
+#. translators: Trial days label of a subscription plan p1: Number of trial
+#. days
+msgid "%s-day trial"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2744
+#. translators: Label describing subscriptions which are running till canceled
+msgid "Running until canceled"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2749
+#. translators: Label describing subscriptions which are canceled after x
+#. charges p1: Number of recurring charges after which the subscription is
+#. canceled
+msgid "Canceled after %s occurences"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2752
+#. translators: Error banner title for internal, unexpected errors/problems
+msgid "Internal error"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2758
+#. translators: Description of an inclusive tax rate p1: Tax percentage p2: Tax
+#. label (VAT, GST, Sales tax, etc)
+msgid "%1$s%% %2$s (inclusive)"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2764
+#. translators: Description of an exclusive tax rate p1: Tax percentage p2: Tax
+#. label (VAT, GST, Sales tax, etc)
+msgid "%1$s%% %2$s (exclusive)"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2785 includes/wpfs-admin-menu.php:2811
+#: includes/wpfs-admin-views.php:3025
+#. translators: Title of the 'Add suggested donation amount' dialog
+#. translators: Label for the button which opens the "Add amount" dialog
+msgid "Add suggested donation amount"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2788 includes/wpfs-admin-menu.php:2814
+#. translators: Validation error message for an empty donation amount
+msgid "Please enter a donation amount"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2794 includes/wpfs-admin-menu.php:2820
+#. translators: Validation error message for a donation amount which is not a
+#. whole number
+msgid "Please enter a number without decimal separator"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2797 includes/wpfs-admin-menu.php:2823
+#. translators: Title of the 'Delete suggested donation amount' dialog
+msgid "Delete suggested donation amount"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2802 includes/wpfs-admin-menu.php:2828
+#. translators: Confirmation message displayed before deleting a suggested
+#. donation amount p1: The donation amount to be deleted
+msgid "Are you sure you'd like to delete donation amount '%s' ?"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2885
+#. translators: Success banner message when a form shortcode is copied to the
+#. clipboard
+msgid "Shortcode copied to clipboard."
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2890
+#. translators: Confirmation message displayed before deleting a form p1: Name
+#. of the form
+msgid "Are you sure you'd like to delete form '%s' ?"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2893
+#. translators: Title of the 'Clone form' dialog
+msgid "Clone form"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2896 templates/admin/wpfs-forms.php:149
+#: templates/admin/wpfs-forms.php:158
+#. translators: Title of the 'Delete form' dialog
+msgid "Delete form"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2899
+#. translators: This is the postfix add to name of a cloned form. TestForm ->
+#. TestFormCopy
+msgid "Copy"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2910
+#: templates/admin/partials/wpfs-transactions-payment-templates.php:6
+#: templates/admin/partials/wpfs-transactions-payment-templates.php:15
+#. translators: Title of the 'Refund payment' dialog
+msgid "Refund payment"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2915
+#. translators: Confirmation message displayed in the 'Refund payment' dialog
+#. p1: Identifier of the payment to be refunded
+msgid "Are you sure you'd like to refund payment '%s' ?"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2918 includes/wpfs-tables.php:1718
+#: templates/admin/partials/wpfs-transactions-payment-templates.php:40
+#: templates/admin/partials/wpfs-transactions-payment-templates.php:49
+#: templates/admin/partials/wpfs-transactions-payments.php:76
+#. translators: Title of the 'Delete payment' dialog
+#. translators: 'Delete' action label for payments
+msgid "Delete payment"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2923
+#. translators: Confirmation message displayed in the 'Delete payment' dialog
+#. p1: Identifier of the payment to be deleted
+msgid "Are you sure you'd like to delete payment '%s' from the WordPress database?"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2926
+#: templates/admin/partials/wpfs-transactions-payment-templates.php:23
+#: templates/admin/partials/wpfs-transactions-payment-templates.php:32
+#. translators: Title of the 'Capture payment' dialog
+msgid "Capture payment"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2931
+#. translators: Confirmation message displayed in the 'Capture payment' dialog
+#. p1: Identifier of the payment to be captured
+msgid "Are you sure you'd like to capture payment '%s' ?"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2934
+#: templates/admin/partials/wpfs-transactions-subscription-templates.php:6
+#: templates/admin/partials/wpfs-transactions-subscription-templates.php:15
+#. translators: Title of the 'Cancel subscription' dialog
+msgid "Cancel subscription"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2939
+#. translators: Confirmation message displayed in the 'Cancel subscription'
+#. dialog p1: Identifier of the subscription to be canceled
+msgid "Are you sure you'd like to cancel subscription '%s' ?"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2942 includes/wpfs-tables.php:648
+#: templates/admin/partials/wpfs-transactions-subscription-templates.php:23
+#: templates/admin/partials/wpfs-transactions-subscription-templates.php:32
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:67
+#. translators: Title of the 'Delete subscription' dialog
+#. translators: 'Delete' action label for subscriptions
+msgid "Delete subscription"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2947
+#. translators: Confirmation message displayed in the 'Delete subscription'
+#. dialog p1: Identifier of the subscription to be deleted
+msgid ""
+"Are you sure you'd like to delete subscription '%s' from the WordPress "
+"database?"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2950
+#: templates/admin/partials/wpfs-transactions-donation-templates.php:6
+#: templates/admin/partials/wpfs-transactions-donation-templates.php:15
+#. translators: Title of the 'Refund donation' dialog
+msgid "Refund donation"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2955
+#. translators: Confirmation message displayed in the 'Refund donation' dialog
+#. p1: Identifier of the donation to be refunded
+msgid "Are you sure you'd like to refund donation '%s' ?"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2958
+#: templates/admin/partials/wpfs-transactions-donation-templates.php:23
+#: templates/admin/partials/wpfs-transactions-donation-templates.php:32
+#. translators: Title of the 'Cancel donation' dialog
+msgid "Cancel donation"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2963
+#. translators: Confirmation message displayed in the 'Cancel donation' dialog
+#. p1: Identifier of the donation to be canceled
+msgid "Are you sure you'd like to cancel donation '%s' ?"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2966 includes/wpfs-tables.php:1085
+#: templates/admin/partials/wpfs-transactions-donation-templates.php:40
+#: templates/admin/partials/wpfs-transactions-donation-templates.php:49
+#: templates/admin/partials/wpfs-transactions-donations.php:65
+#. translators: Title of the 'Delete donation' dialog
+#. translators: 'Delete' action label for donations
+msgid "Delete donation"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2971
+#. translators: Confirmation message displayed in the 'Delete donation' dialog
+#. p1: Identifier of the donation to be deleted
+msgid "Are you sure you'd like to delete donation '%s' from the WordPress database?"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2974 includes/wpfs-tables.php:1346
+#: templates/admin/partials/wpfs-transactions-saved-card-templates.php:6
+#: templates/admin/partials/wpfs-transactions-saved-card-templates.php:15
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:46
+#. translators: Title of the 'Delete saved card' dialog
+#. translators: 'Delete' action label for saved cards
+msgid "Delete saved card"
+msgstr ""
+
+#: includes/wpfs-admin-menu.php:2979
+#. translators: Confirmation message displayed in the 'Delete saved card'
+#. dialog p1: Identifier of the saved card to be deleted
+msgid ""
+"Are you sure you'd like to delete saved card '%s' from the WordPress "
+"database?"
+msgstr ""
+
+#: includes/wpfs-admin-models.php:842 includes/wpfs-admin-models.php:1126
+#. translators: Default payment button text on one-time payment forms
+msgid "Pay"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:27 includes/wpfs-admin-validators.php:514
+#. translators: Create form validation error when no display name specified
+#. translators: Validation error message when the display name of the form is
+#. empty
+msgid "Please enter a display name"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:31 includes/wpfs-admin-validators.php:519
+#. translators: Create form validation error when the display name contains
+#. invalid characters
+#. translators: Validation error message when the display name starts with a
+#. space
+msgid ""
+"The display name may contain any characters but it shouldn't start with a "
+"space."
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:40
+#. translators: Create form validation error when no identifier is specified
+msgid "Please enter an identifier"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:44 includes/wpfs-admin-validators.php:531
+#. translators: Create form validation error when the identifier contains
+#. invalid characters
+#. translators: Validation error message when the identifier of the form
+#. contains invalid characters
+msgid ""
+"The identifier may contain only alphanumeric characters, dashes, and "
+"underscores."
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:48
+#. translators: Create form validation error when a form with the specified
+#. identifier already exists
+msgid "This identifier is already in use, choose a different one."
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:59
+#. translators: Create form validation error message when no form type is
+#. selected
+msgid "Please select a form type"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:71
+#. translators: Create form validation error message when no form layout is
+#. selected
+msgid "Please select a form layout"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:105
+#. translators: Save Stripe settings validation error when no API mode is
+#. selected
+msgid "Please select an API mode"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:131
+#. translators: Validation error message displayed if it's not selected whether
+#. subscriptions should be shown to customers
+msgid "Please select if customers can see their subscriptions"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:138
+#. translators: Validation error message displayed if it's not selected whether
+#. customers can cancel subscriptions
+msgid "Please select if customers can cancel subscriptions"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:145
+#. translators: Validation error message displayed if it's not selected when
+#. subscriptions are canceled (immediately, or at the end of the term)
+msgid "Please select when to cancel subscriptions"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:152
+#. translators: Validation error message displayed if it's not selected whether
+#. customers can upgrade/downgrade subscriptions
+msgid "Please select if customers can upgrade/downgrade subscriptions"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:159
+#. translators: Validation error message displayed if it's not selected whether
+#. customers can view invoices
+msgid "Please select if customers can view invoices"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:166
+#. translators: Validation error message displayed if it's not selected whether
+#. scrolling pane into view is enabled or disabled
+msgid "Please select if pane should scroll into view"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:187
+#. translators: Validation error message displayed if it's not selected whether
+#. inline forms are secured with Google reCaptcha
+msgid "Please select whether inline forms should be secured with Google reCAPTCHA"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:194
+#. translators: Validation error message displayed if it's not selected whether
+#. checkout forms are secured with Google reCaptcha
+msgid "Please select whether checkout forms should be secured with Google reCAPTCHA"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:201
+#. translators: Validation error message displayed if it's not selected whether
+#. the Customer Portal is secured with Google reCaptcha
+msgid ""
+"Please select whether the Customer Portal should be secured with Google "
+"reCAPTCHA"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:247
+#. translators: Validation error message displayed if it's not selected whether
+#. the "From" address of emails sent by the plugin should be the site admin or
+#. somebody else
+msgid ""
+"Please select whether the From address should be the site admin or somebody "
+"else."
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:258
+#. translators: Email options error when no custom email sender address is
+#. provided
+msgid "Please enter a sender address"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:262
+#. translators: Email options error when no custom email sender address is
+#. provided
+msgid "Please enter a valid sender address"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:275
+#: includes/wpfs-admin-validators.php:286
+#. translators: Email options error when no custom email sender address is
+#. provided p1: The invalid email address
+#. translators: Email options error when an invalid email sender address is
+#. provided
+msgid "The email address '%s' is invalid"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:309
+#. translators: Validation error message when it's not specified whether the
+#. email address field on forms should be filled in for logged in users
+msgid ""
+"Please select whether the email address should be filled in for logged in "
+"user"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:316
+#. translators: Validation error message when it's not specified whether fields
+#. forms can be set via URL parameters
+msgid "Please select whether form fields can be set via URL parameters"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:354
+#. translators: Validation error message when the decimal separator character
+#. of numbers is not selected
+msgid "Please select the decimal separator"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:361
+#. translators: Validation error message when it is not selected whether
+#. currency symbols or currecny codes should be displayed
+msgid "Please select whether currency symbols or codes should be displayed"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:368
+#. translators: Validation error message when it is not selected whether
+#. currency symbols should be displayed on the left or right
+msgid ""
+"Please select whether the currency symbol should be displayed on the left "
+"or right "
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:374
+msgid ""
+"Please select whether space should be inserted between the currency symbol "
+"and amount"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:401
+#. translators: Validation error message when the log level is not selected
+msgid "Please select the logging level"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:408
+#. translators: Validation error message when it is not selected whether the
+#. plugin should log to the webserver error log
+msgid "Please select whether the plugin should log to the webserver error log"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:415
+#. translators: Validation error message when it is not selected whether the
+#. plugin should catch all uncaught errors
+msgid "Please select whether the plugin should catch all uncaught errors"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:437
+msgid "Please enter a label for the terms of service input field"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:444
+msgid ""
+"Please enter an error message that's displayed when the terms of service "
+"field is empty"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:463
+msgid "Please select the decimal separator (General tab)"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:469
+msgid ""
+"Please select whether currency symbols or codes should be displayed "
+"(General tab)"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:475
+msgid ""
+"Please select whether the currency symbol should be displayed on the left "
+"or right (General tab)"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:481
+msgid ""
+"Please select whether space should be inserted between the currency symbol "
+"and amount (General tab)"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:496
+#: includes/wpfs-admin-validators.php:617
+#. translators: Validation error message when no form submit button label is
+#. entered
+#. translators: Validation error message when the form open button label is
+#. empty
+msgid "Please enter a button label"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:501
+#: includes/wpfs-admin-validators.php:622
+#. translators: Validation error message when the submit button label doesn't
+#. contain at least one non-whitespace character
+#. translators: Validation error message when the form open button label
+#. doesn't contain at least one character other than whitespace
+msgid "The button label should contain at least one character other than whitespace"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:526
+#. translators: Validation error message when the identifier of the form is
+#. empty
+msgid "Please enter the form identifier"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:547
+msgid "Please decide what should happen after a successful payment (General tab)"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:556
+msgid "Please enter an URL"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:560
+msgid "Please enter a valid URL"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:588
+msgid "Please select the card input field language (Appearance tab)"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:635
+msgid "Please select the checkout form language (Appearance tab)"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:704
+#. translators: Donations forms can have a custom amount field and/or suggested
+#. amount buttons. Having none of them is an issue
+msgid ""
+"Please add suggested donation amounts or allow entering a custom donation "
+"amount"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:737
+#. translators: This error message is displayed when the donation form's
+#. minimum donation amount is larger than the lowest suggested donation amount
+msgid ""
+"The suggested donation amount of %1$s is lower than the minimum donation "
+"amount of %2$s."
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:764
+#. translators: Validation error message when no donation frequency selected
+#. such as one-time, daily, weekly, etc
+msgid "Please select at least one donation frequency"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:779
+#: includes/wpfs-admin-validators.php:949
+msgid "Please select the payment currency (Payment tab)"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:810
+#: includes/wpfs-admin-validators.php:869
+#. translators: Validation error message when no default donation product name
+#. is entered.
+#. translators: Validation error message when no donation product name is
+#. entered. The product name is displayed as line item of the donation form.
+msgid "Please enter a donation product name"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:838
+#. translators: Validation error message displayed if it's not selected whether
+#. the customer's phone number should be collected
+msgid "Please select if the customer's phone number should be collected"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:895
+msgid "Please select a tax type (Tax tab)"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:903
+msgid "Please select at most two tax rates for the fixed rate calculation"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:924
+msgid "Please don't mix inclusive and exclusive tax rates"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:966
+#: includes/wpfs-admin-validators.php:1035
+msgid "Please select a payment type (Payment tab)"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:1017
+#. translators: This error message is displayed when the payment form's minimum
+#. payment amount is larger than the lowest product price
+msgid "The product price of %1$s is lower than the minimum payment amount of %2$s."
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:1049
+msgid "Please select at least one product"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:1070
+#. translators: Validation error message when no product selector style
+#. selected, such as radio button list, or dropdown
+msgid "Please select a product selector style (Appearance tab)"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:1084
+#: includes/wpfs-admin-validators.php:1276
+msgid "Please select whether the coupon field should be displayed (Layout tab)"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:1098
+msgid "Please select whether invoice should be generated (Payment tab)"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:1163
+#. translators: Validation error message when no name specified for the custom
+#. product. When a custom amount is entered on the form, the custom product
+#. name will be the name of the line item
+msgid "Please enter a custom product name"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:1199
+#. translators: Validation error message when no subscription plan is selected
+#. on a subscription form
+msgid "Please select at least one plan"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:1220
+#. translators: Validation error message when subscriptions can be purchased in
+#. bulk but no minimum quantity is entered
+msgid "Please enter the minimum subscription quantity or zero"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:1232
+#. translators: Validation error message when subscriptions can be purchased in
+#. bulk but no maximum quantity is entered
+msgid "Please enter the maximum subscription quantity or zero"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:1241
+#. translators: Validation error message when subscriptions can be purchased in
+#. bulk but maximum quantity is less than maximum quantity
+msgid "Please enter a lower value for minimum subscription quantity"
+msgstr ""
+
+#: includes/wpfs-admin-validators.php:1262
+#. translators: Validation error message when no plan selector style selected,
+#. such as radio button list, dropdown, etc
+msgid "Please select a plan selector style (Appearance tab)"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:47
+msgid "Create and Edit form"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:149 includes/wpfs-admin-views.php:2312
+#. translators: Form field label for the display name of the form
+msgid "Display name"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:152 includes/wpfs-admin-views.php:2315
+#. translators: Form field label for the identifier of the form
+msgid "Identifier"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:157
+#. translators: Form field label for the type of the form
+msgid "Form type"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:164 templates/admin/wpfs-forms.php:73
+#. translators: One-time payment form type
+msgid "One-time payment"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:177
+#. translators: Description of the one-time payment form type
+msgid "Software, ticket, physical goods, and settle invoices"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:185 includes/wpfs-tables.php:366
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:72
+#: templates/admin/wpfs-forms.php:75
+#. translators: Subscription form type
+#. translators: Singular version of the word 'subscription', used on the
+#. subscription list page
+msgid "Subscription"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:198
+#. translators: Description of the subscription form type
+msgid "Online services, consulting, and professional services"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:206 includes/wpfs-tables.php:746
+#: templates/admin/partials/wpfs-transactions-donations.php:70
+#: templates/admin/wpfs-forms.php:77
+#. translators: Donation form type
+#. translators: Singular version of the word 'Donation', used on the donation
+#. list page
+msgid "Donation"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:219
+#. translators: Description of the donation form type
+msgid "Donor platform for your fundraising efforts"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:227 templates/admin/wpfs-forms.php:79
+#. translators: Save card form type
+msgid "Save card"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:240
+#. translators: Description of the save card form type
+msgid "Customer's payment information"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:250
+#. translators: Form field label for the layout of the form
+msgid "Form layout"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:257 templates/admin/wpfs-forms.php:83
+#. translators: Inline layout type on the Create form page
+msgid "Inline"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:267
+#. translators: Description of the inline form layout
+msgid "Enough screen estate to display the entire form"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:275 templates/admin/wpfs-forms.php:85
+#. translators: Checkout layout type on the Create form page
+msgid "Checkout"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:284
+#. translators: Description of the checkout form layout
+msgid "When screen estate is constrained, or using pricing tables"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:417 includes/wpfs-admin-views.php:424
+#. translators: Form field label for API test secret key
+#. translators: Form field label for API live secret key
+msgid "Secret key"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:420 includes/wpfs-admin-views.php:427
+#. translators: Form field label for API test publishable key
+#. translators: Form field label for API live publishable key
+msgid "Publishable key"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:431
+#. translators: Label for a toggle which controls the Stripe API mode (test or
+#. live)
+msgid "Stripe API mode"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:434 includes/wpfs-admin-views.php:437
+#. translators: Form field label for API test account ID
+#. translators: Form field label for API live account ID
+msgid "Account ID"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:440
+msgid "Connect Account Onboarding"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:581
+msgid "Display settings"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:587
+msgid "Scroll pane into view"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:601
+msgid "Subscription settings"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:607
+msgid "Customers can upgrade/downgrade subscriptions"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:618
+msgid "Customers can cancel subscriptions"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:632
+#. translators: Form field label for the 'When to cancel subscriptions' option
+#. of the form
+msgid "When to cancel subscriptions"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:639
+#. translators: Subscription cancellation type when the subscription is
+#. canceled immediately
+msgid "Immediately"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:651
+#. translators: Subscription cancellation type when the subscription is
+#. canceled at the end of the current recurring period
+msgid "At period end"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:665
+msgid "Customers can manage"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:682
+msgid "Invoices"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:825
+#. translators: Form field label for the 'Secure inline forms' checkbox of the
+#. form
+msgid "Inline forms"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:834
+#. translators: Form field label for the 'Secure checkout forms' checkbox of
+#. the form
+msgid "Checkout forms"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:852
+#. translators: Form field label for the 'Google reCaptcha secret key' field of
+#. the form
+msgid "Google reCAPTCHA secret key"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:860
+#. translators: Form field label for the 'Google reCaptcha site key' field of
+#. the form
+msgid "Google reCAPTCHA site key"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:964
+msgid "Website Admin"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:979
+#. translators: Form field label for the 'Email From address' option of the
+#. form
+msgid "Email 'From' address"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:997
+#. translators: Option chosen when the administrator enters a custom email
+#. 'From' address
+msgid "Custom email address"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1009
+msgid "Enter email address"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1026
+msgid "Add more email addresses here"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1186
+#. translators: Form field label for the 'Fill in email for logged in users?'
+#. option of the form
+msgid "Fill in email field for logged in users"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1195
+#. translators: Form field label for the 'Enable setting form fields via URL
+#. parameters' option of the form
+msgid "Allow setting form fields via URL parameters"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1348 includes/wpfs-admin-views.php:2321
+#. translators: Form field label for the 'Format decimals with' option of the
+#. form
+msgid "Format decimals with"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1355 includes/wpfs-admin-views.php:2328
+#. translators: It's a example showing that the decimal separator is a dot
+#. translators: Example of using dot for the decimal point
+msgid "$10.99 (dot)"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1367 includes/wpfs-admin-views.php:2340
+#. translators: It's a example showing that the decimal separator is a comma
+#. translators: Example of using comma for the decimal point
+msgid "$10,99 (comma)"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1381 includes/wpfs-admin-views.php:2354
+#. translators: Form field label for the 'Use currency symbol or code?' option
+#. of the form
+msgid "Use currency symbol or code?"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1388 includes/wpfs-admin-views.php:2361
+#. translators: It's a example showing that the currency symbol ($) is used
+#. translators: Example of displaying the currency symbol ($)
+msgid "$10.99 (symbol)"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1400 includes/wpfs-admin-views.php:2373
+#. translators: It's a example showing that the currency code (USD) is used
+#. translators: Example of displaying the currency code (USD)
+msgid "USD 10.99 (code)"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1414 includes/wpfs-admin-views.php:2387
+#. translators: Form field label for the 'Put currency identifier on' option of
+#. the form
+msgid "Put currency identifier on"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1421 includes/wpfs-admin-views.php:2394
+#. translators: It's a example showing that the currency symbol is on the left
+#. translators: Example of displaying the currency symbol on the left
+msgid "€10.99 (left)"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1433 includes/wpfs-admin-views.php:2406
+#. translators: It's a example showing that the currency symbol is on the right
+#. translators: Example of displaying the currency symbol on the right
+msgid "10.99€ (right)"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1447 includes/wpfs-admin-views.php:2420
+#. translators: Form field label for the 'Insert space between amount and
+#. currency?' option of the form
+msgid "Insert space between amount and currency?"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1454 includes/wpfs-admin-views.php:2427
+#. translators: It's a example showing that there is no space between the
+#. number and the currency code
+#. translators: Example of not having a space between the amount and the
+#. currency symbol
+msgid "10.99EUR (no)"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1466 includes/wpfs-admin-views.php:2439
+#. translators: It's a example showing that there is space between the number
+#. and the currency code
+#. translators: Example of inserting a space between the amount and the
+#. currency symbol
+msgid "10.99 EUR (yes)"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1571
+#: templates/admin/partials/wpfs-edit-form-checkout-donation.php:19
+#: templates/admin/partials/wpfs-edit-form-checkout-payment.php:17
+#: templates/admin/partials/wpfs-edit-form-checkout-save-card.php:16
+#: templates/admin/partials/wpfs-edit-form-checkout-subscription.php:16
+#: templates/admin/partials/wpfs-edit-form-inline-donation.php:18
+#: templates/admin/partials/wpfs-edit-form-inline-payment.php:43
+#: templates/admin/partials/wpfs-edit-form-inline-save-card.php:16
+#: templates/admin/partials/wpfs-edit-form-inline-subscription.php:16
+msgid "Behavior"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1577
+msgid "Catch all errors not caught by plugins"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1591
+msgid "Logging channels"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1597
+msgid "WordPress database"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1609
+msgid "Webserver error log"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1623
+msgid "Logging level"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1797 includes/wpfs-main.php:969
+#. translators: Default label of coupon line items
+msgid "Coupon"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1842
+msgid "Tax rates"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1851
+msgid "Payment Methods"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1881
+msgid "Tax calculation method"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1888
+#. translators: It means no tax is applied to the purchased goods
+msgid "No tax"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1900
+#. translators: It means that the tax rates are automatically calculated by
+#. Stripe Tax
+msgid "Stripe auto tax"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1912
+#. translators: It means that the applied tax rates are based on tax rates
+#. added manually by the user
+msgid "Stripe tax rates"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1926
+msgid "Tax rate type"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1933
+#. translators: It means that the applied tax rates are preselected, and they
+#. don't vary by country and state
+msgid "Fixed rate"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1945
+#. translators: It means that the applied tax rates are selected dynamically
+#. depending on the country and state
+msgid "Dynamic rate"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1960
+#. translators: Is there a dedicated field on the form to edit the tax id or
+#. not?
+msgid "Collect customer's tax id?"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1966 includes/wpfs-admin-views.php:2173
+#: includes/wpfs-admin-views.php:3340 includes/wpfs-admin-views.php:3830
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:139
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:215
+msgid "No"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:1977 includes/wpfs-admin-views.php:2184
+#: includes/wpfs-admin-views.php:3351 includes/wpfs-admin-views.php:3841
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:143
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:219
+msgid "Yes"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2096
+msgid "Stripe Elements Appearance Theme"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2103
+#. translators: This selector style is a list of radio buttons
+msgid "Stripe"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2117
+#. translators: This selector style is a list of radio buttons
+msgid "Night"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2131
+#. translators: This selector style is a list of radio buttons
+msgid "Flat"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2148
+#. translators: Form field label for the display name of the form
+msgid "Stripe Elements Appearance Font"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2153
+msgid "Email templates"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2161
+#: templates/admin/partials/wpfs-edit-form-checkout-donation.php:71
+#: templates/admin/partials/wpfs-edit-form-checkout-payment.php:105
+#: templates/admin/partials/wpfs-edit-form-checkout-save-card.php:57
+#: templates/admin/partials/wpfs-edit-form-checkout-subscription.php:87
+#: templates/admin/partials/wpfs-edit-form-inline-donation.php:70
+#: templates/admin/partials/wpfs-edit-form-inline-payment.php:187
+#: templates/admin/partials/wpfs-edit-form-inline-save-card.php:58
+#: templates/admin/partials/wpfs-edit-form-inline-subscription.php:87
+#: templates/admin/partials/wpfs-transactions-donations.php:118
+#: templates/admin/partials/wpfs-transactions-payments.php:129
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:86
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:123
+msgid "Custom fields"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2167
+msgid "Make custom fields required?"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2198
+#: templates/admin/partials/wpfs-transactions-donations.php:129
+#: templates/admin/partials/wpfs-transactions-payments.php:140
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:97
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:134
+msgid "Billing address"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2207
+msgid "Nonprofit's seat country"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2208
+msgid "Seller's seat country"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2217
+#: templates/admin/partials/wpfs-transactions-donations.php:153
+#: templates/admin/partials/wpfs-transactions-payments.php:164
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:121
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:158
+msgid "Shipping address"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2226
+msgid "Terms of Service checkbox"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2235
+#. translators: Label of the Terms of Service checkbox displayed to the
+#. customer
+msgid "Terms of service label"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2238
+#. translators: Validation error message displayed when the custom doesn't
+#. accept the Terms of Service
+msgid "Terms of service error message"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2243
+msgid "Form submit button label"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2253
+#. translators: Title of the section where the administrator can decide what
+#. should happen after payment, eg. display success banner, redirect to Thank
+#. you page, etc
+msgid "After successful payment"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2259
+msgid "Show confirmation message"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2270 includes/wpfs-admin-views.php:2294
+msgid "Redirect to a Thank you page"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2281
+msgid "Redirect to a custom URL"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2300
+msgid "Enter an URL starting with http:// or https://"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2301
+msgid "Redirect to custom URL"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2642
+msgid "Card input field language"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2676
+msgid "Open form button label"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2683
+msgid "Checkout form language"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2726
+msgid "Phone number"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2760
+msgid "Product image"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2801 includes/wpfs-admin-views.php:3005
+#: includes/wpfs-admin-views.php:3545
+msgid "Transaction description"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2941
+msgid "Donation frequencies"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2947
+#. translators: The 'one-time' donation frequency label
+msgid "One-time"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2958
+#. translators: The 'daily' donation frequency label
+msgid "Daily"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2969
+#. translators: The 'weekly' donation frequency label
+msgid "Weekly"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2981
+#. translators: The 'monthly' donation frequency label
+msgid "Monthly"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:2993
+#. translators: The 'annual' donation frequency label
+msgid "Annual"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3012 includes/wpfs-admin-views.php:3552
+msgid "Currency"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3018
+msgid "Suggested donation amounts"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3029 includes/wpfs-admin-views.php:3558
+msgid "Allow custom amount to be entered"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3040
+#. translators: Form field label for the minimum donation amount
+msgid "Minimum donation amount"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3043 includes/wpfs-admin-views.php:3567
+msgid "One-time products"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3189 includes/wpfs-admin-views.php:3258
+#. translators: Name of the donation product displayed as a line item
+msgid "Donation product name"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3266
+#. translators: Description of the donation product displayed as descripition
+#. of the line item
+msgid "Donation product description"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3334
+msgid "Generate invoice"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3410
+msgid "Payment type"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3417 includes/wpfs-admin-views.php:3483
+#: includes/wpfs-admin-views.php:3862
+#. translators: Payment type where customers can pick a product offered by the
+#. payment form
+#. translators: This selector style is a list of radio buttons
+#. translators: This style is a list of radio buttons
+msgid "List of products"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3429
+#. translators: Payment type where customers can enter the amount to be paid,
+#. eg. paying invoices
+msgid "User defined amount"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3443
+msgid "Charge type"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3450
+#. translators: Immediate charge type, the card is charged when the form is
+#. submitted
+msgid "Immediate"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3462
+#. translators: Authorize and capture charge type, the payment is in a pending
+#. state when the form is submitted, it can be captured later
+msgid "Authorize and capture"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3476
+msgid "Product selector style"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3491 includes/wpfs-admin-views.php:3870
+msgid "Recommended if there are less than 5 options"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3499 includes/wpfs-admin-views.php:3878
+#. translators: This selector style is a dropdown
+#. translators: This style is a dropdown
+msgid "Product selector dropdown"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3507 includes/wpfs-admin-views.php:3886
+msgid "Recommended if there are 5 or more options"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3515
+#. translators: This selector style is a group of buttons showing only payment
+#. amounts, not product names
+msgid "Product buttons with amount (deprecated)"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3523
+msgid "Use donation forms instead"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3534
+#. translators: Form field label for the minimum payment amount
+msgid "Minimum payment amount"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3537
+msgid "Minimum payment amount hidden"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3737
+#. translators: When a custom amount is entered on the form, this is the name
+#. which is used for the line item
+msgid "Custom product name"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3745
+#. translators: When a custom amount is entered on the form, this is the
+#. description which is used for the line item
+msgid "Custom product description"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3824
+msgid "Allow subscribing to plans in bulk"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3855
+msgid "Plan selector style"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3896
+msgid "Recurring products"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3902
+msgid "MIN"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:3909
+msgid "MAX"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:4034
+#. translators: When turned on, only the button to open the form is displayed,
+#. all other fields are hidden
+msgid "Simple button layout"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:4040
+msgid "Disable"
+msgstr ""
+
+#: includes/wpfs-admin-views.php:4051
+msgid "Enable"
+msgstr ""
+
+#: includes/wpfs-admin.php:179
+#. translators: The 'Authorized' payment status
+msgid "Authorized"
+msgstr ""
+
+#: includes/wpfs-admin.php:183 includes/wpfs-admin.php:266
+#. translators: The 'Paid' payment status
+#. translators: The 'Paid' donation status
+msgid "Paid"
+msgstr ""
+
+#: includes/wpfs-admin.php:187
+#: templates/admin/partials/wpfs-header-block-license-status.php:4
+#. translators: The 'Expired' payment status
+msgid "Expired"
+msgstr ""
+
+#: includes/wpfs-admin.php:191
+#. translators: The 'Released' payment status
+msgid "Released"
+msgstr ""
+
+#: includes/wpfs-admin.php:195 includes/wpfs-admin.php:270
+#. translators: The 'Refunded' payment status
+#. translators: The 'Refunded' donation status
+msgid "Refunded"
+msgstr ""
+
+#: includes/wpfs-admin.php:199
+#. translators: The 'Failed' payment status
+msgid "Failed"
+msgstr ""
+
+#: includes/wpfs-admin.php:203
+#. translators: The 'Pending' payment status
+msgid "Pending"
+msgstr ""
+
+#: includes/wpfs-admin.php:207 includes/wpfs-admin.php:238
+#: includes/wpfs-admin.php:274
+#. translators: The 'Unknown' payment status
+#. translators: The 'Unknown' subscription status
+#. translators: The 'Unknown' donation status
+msgid "Unknown"
+msgstr ""
+
+#: includes/wpfs-admin.php:222 includes/wpfs-admin.php:262
+#. translators: The 'Running' subscription status
+#. translators: The 'Running' donation status
+msgid "Running"
+msgstr ""
+
+#: includes/wpfs-admin.php:226
+#. translators: The 'Incomplete' subscription status
+msgid "Incomplete"
+msgstr ""
+
+#: includes/wpfs-admin.php:230
+#. translators: The 'Canceled' subscription status
+msgid "Canceled"
+msgstr ""
+
+#: includes/wpfs-admin.php:234
+#. translators: The 'Ended' subscription status
+msgid "Ended"
+msgstr ""
+
+#: includes/wpfs-admin.php:288 includes/wpfs-admin.php:301
+#: includes/wpfs-admin.php:1167
+#: templates/admin/partials/wpfs-transactions-donations.php:17
+#: templates/admin/partials/wpfs-transactions-payments.php:28
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:17
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:28
+#: templates/admin/wpfs-forms.php:23 templates/admin/wpfs-forms.php:102
+#: templates/admin/wpfs-settings-stripe.php:66
+#. translators: The 'Live' API mode status
+msgid "Live"
+msgstr ""
+
+#: includes/wpfs-admin.php:290 includes/wpfs-admin.php:303
+#: includes/wpfs-admin.php:1169
+#: templates/admin/partials/wpfs-transactions-donations.php:18
+#: templates/admin/partials/wpfs-transactions-payments.php:29
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:18
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:29
+#: templates/admin/wpfs-forms.php:24 templates/admin/wpfs-forms.php:100
+#: templates/admin/wpfs-settings-stripe.php:57
+#. translators: The 'Test' API mode status
+msgid "Test"
+msgstr ""
+
+#: includes/wpfs-admin.php:322
+msgid "No interval"
+msgstr ""
+
+#: includes/wpfs-admin.php:329
+#. translators: Singular and plural annual interval label p1: interval count
+msgid "year"
+msgid_plural "%d years"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/wpfs-admin.php:337
+#. translators: Singular and plural monthly interval label p1: interval count
+msgid "month"
+msgid_plural "%d months"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/wpfs-admin.php:345
+#. translators: Singular and plural weekly interval label p1: interval count
+msgid "week"
+msgid_plural "%d weeks"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/wpfs-admin.php:353
+#. translators: Singular and plural daily interval label p1: interval count
+msgid "day"
+msgid_plural "%d days"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/wpfs-admin.php:425 includes/wpfs-admin.php:775
+#. translators: Success banner label after a save card form is saved
+msgid "Save card form saved"
+msgstr ""
+
+#: includes/wpfs-admin.php:434 includes/wpfs-admin.php:784
+#. translators: Error banner label after a save card form is saved
+msgid "There was an error saving the save card form: "
+msgstr ""
+
+#: includes/wpfs-admin.php:477 includes/wpfs-admin.php:529
+#. translators: Success banner label after a payment form is saved
+msgid "Payment form saved"
+msgstr ""
+
+#: includes/wpfs-admin.php:486 includes/wpfs-admin.php:538
+#. translators: Error banner label after a payment form is saved
+msgid "There was an error saving the payment form: "
+msgstr ""
+
+#: includes/wpfs-admin.php:579 includes/wpfs-admin.php:631
+#. translators: Success banner label after a subscription form is saved
+msgid "Subscription form saved"
+msgstr ""
+
+#: includes/wpfs-admin.php:588 includes/wpfs-admin.php:640
+#. translators: Error banner label after a subscription form is saved
+msgid "There was an error saving the subscription form: "
+msgstr ""
+
+#: includes/wpfs-admin.php:682 includes/wpfs-admin.php:733
+#. translators: Success banner label after a donation form is saved
+msgid "Donation form saved"
+msgstr ""
+
+#: includes/wpfs-admin.php:691 includes/wpfs-admin.php:742
+#. translators: Error banner label after a donation form is saved
+msgid "There was an error saving the donation form: "
+msgstr ""
+
+#: includes/wpfs-admin.php:837
+#. translators: This label is displayed when a product has no name
+msgid "(Not available)"
+msgstr ""
+
+#: includes/wpfs-admin.php:930
+#. translators: Success banner label after a subscription is canceled
+msgid "Subscription canceled."
+msgstr ""
+
+#: includes/wpfs-admin.php:954
+#. translators: Error banner label after a subscription is canceled
+msgid "There was an error canceling the subscription: "
+msgstr ""
+
+#: includes/wpfs-admin.php:986
+#. translators: Success banner label after a recurring donation is canceled
+msgid "Donation canceled."
+msgstr ""
+
+#: includes/wpfs-admin.php:1007
+#. translators: Error banner label after a recurring donation is canceled
+msgid "There was an error canceling the donation: "
+msgstr ""
+
+#: includes/wpfs-admin.php:1034
+#. translators: Success banner label after a subscription is deleted
+msgid "Subscription deleted."
+msgstr ""
+
+#: includes/wpfs-admin.php:1055
+#. translators: Error banner label after a subscription is deleted
+msgid "There was an error deleting the subscription: "
+msgstr ""
+
+#: includes/wpfs-admin.php:1082
+#. translators: Success banner label after a one-time payment is deleted
+msgid "Payment deleted."
+msgstr ""
+
+#: includes/wpfs-admin.php:1103
+#. translators: Error banner label after a one-time payment is deleted
+msgid "There was an error deleting the payment: "
+msgstr ""
+
+#: includes/wpfs-admin.php:1129
+#. translators: Success banner label after a donaton is deleted
+msgid "Donation deleted."
+msgstr ""
+
+#: includes/wpfs-admin.php:1150
+#. translators: Error banner label after a donaton is deleted
+msgid "There was an error deleting the donation: "
+msgstr ""
+
+#: includes/wpfs-admin.php:1250
+#. translators: Label for the credit or debit card payment method
+msgid "Credit or debit card"
+msgstr ""
+
+#: includes/wpfs-admin.php:1258
+#. translators: Label for the alipay payment method
+msgid "AliPay"
+msgstr ""
+
+#: includes/wpfs-admin.php:1265 includes/wpfs-admin.php:1272
+#. translators: Label for the amazonpay payment method
+#. translators: Label for the bancontact payment method
+msgid "Bancontact"
+msgstr ""
+
+#: includes/wpfs-admin.php:1279
+#. translators: Label for the blik payment method
+msgid "BLIK"
+msgstr ""
+
+#: includes/wpfs-admin.php:1286
+#. translators: Label for the cashapp payment method
+msgid "Cash App Pay"
+msgstr ""
+
+#: includes/wpfs-admin.php:1293
+#. translators: Label for the eps payment method
+msgid "EPS"
+msgstr ""
+
+#: includes/wpfs-admin.php:1300
+#. translators: Label for the GrabPay payment method
+msgid "GrabPay"
+msgstr ""
+
+#: includes/wpfs-admin.php:1307
+#. translators: Label for the iDEAL payment method
+msgid "iDEAL"
+msgstr ""
+
+#: includes/wpfs-admin.php:1314
+#. translators: Label for the klarna payment method
+msgid "Klarna"
+msgstr ""
+
+#: includes/wpfs-admin.php:1321
+#. translators: Label for the eps payment method
+msgid "Link"
+msgstr ""
+
+#: includes/wpfs-admin.php:1328
+#. translators: Label for the mobilepay payment method
+msgid "MobilePay"
+msgstr ""
+
+#: includes/wpfs-admin.php:1335
+#. translators: Label for the przelewy24 payment method
+msgid "Przelewy24"
+msgstr ""
+
+#: includes/wpfs-admin.php:1342
+#. translators: Label for the revolut payment method
+msgid "Revolut Pay"
+msgstr ""
+
+#: includes/wpfs-admin.php:1349
+#. translators: Label for the twint payment method
+msgid "TWINT"
+msgstr ""
+
+#: includes/wpfs-admin.php:1356
+#. translators: Label for the wechat payment method
+msgid "WeChat Pay"
+msgstr ""
+
+#: includes/wpfs-admin.php:1601
+#. translators: Success banner label for a successfully refunded payment
+msgid "Payment refunded."
+msgstr ""
+
+#: includes/wpfs-admin.php:1622
+#. translators: Error banner label for a payment that cannot be refunded
+msgid "There was an error refunding the payment: "
+msgstr ""
+
+#: includes/wpfs-admin.php:1649
+#. translators: Success banner label for a successfully refunded donation
+msgid "Donation refunded."
+msgstr ""
+
+#: includes/wpfs-admin.php:1670
+#. translators: Error banner label for a donation that cannot be refunded
+msgid "There was an error refunding the donation: "
+msgstr ""
+
+#: includes/wpfs-admin.php:1804
+#. translators: Success banner label for an authorize & capture payment which
+#. has been captured successfully
+msgid "Payment captured."
+msgstr ""
+
+#: includes/wpfs-admin.php:1825
+#. translators: Error banner label for an authorize & capture payment which
+#. cannot be captured
+msgid "There was an error capturing the payment: "
+msgstr ""
+
+#: includes/wpfs-admin.php:2016
+#. translators: Success banner label for successfully deleted save card record
+msgid "Saved card deleted."
+msgstr ""
+
+#: includes/wpfs-admin.php:2037
+#. translators: Error banner label for save card record that cannot deleted
+msgid "There was an error deleting the saved card: "
+msgstr ""
+
+#: includes/wpfs-admin.php:2072
+#. translators: Success banner label for cloned form
+msgid "Form cloned."
+msgstr ""
+
+#: includes/wpfs-admin.php:2085
+#. translators: Error banner label for a form that cannot be cloned
+msgid "There was an error cloning the form: "
+msgstr ""
+
+#: includes/wpfs-admin.php:2114
+#. translators: Success banner label for a deleted form
+msgid "Form deleted."
+msgstr ""
+
+#: includes/wpfs-admin.php:2122
+#. translators: Error banner label for a form that cannot be deleted
+msgid "There was an error deleting the form: "
+msgstr ""
+
+#: includes/wpfs-admin.php:2166
+#. translators: Success banner label for saving the Stripe settings
+msgid "Stripe settings saved."
+msgstr ""
+
+#: includes/wpfs-admin.php:2175
+#. translators: Error banner label for not being able to save the Stripe
+#. settings
+msgid "There was an error saving Stripe settings: "
+msgstr ""
+
+#: includes/wpfs-admin.php:2311
+#. translators: Success banner label for clearing the Stripe settings
+msgid "Stripe settings cleared."
+msgstr ""
+
+#: includes/wpfs-admin.php:2359
+#. translators: Success banner label for saving the Customer portal settings
+msgid "Customer portal settings saved"
+msgstr ""
+
+#: includes/wpfs-admin.php:2368
+#. translators: Error banner label for not being able to save the Customer
+#. portal settings
+msgid "There was an error saving Customer portal settings: "
+msgstr ""
+
+#: includes/wpfs-admin.php:2413
+#. translators: Success banner label for saving the WordPress dashboard
+#. settings
+msgid "WordPress dashboard settings saved"
+msgstr ""
+
+#: includes/wpfs-admin.php:2422
+#. translators: Success banner label for not being able to save the WordPress
+#. dashboard settings
+msgid "There was an error saving WordPress dashboard settings: "
+msgstr ""
+
+#: includes/wpfs-admin.php:2464
+#. translators: Success banner label for saving the Log settings
+msgid "Log settings saved"
+msgstr ""
+
+#: includes/wpfs-admin.php:2473
+#. translators: Error banner label for not being able to save the Log settings
+msgid "There was an error saving log settings: "
+msgstr ""
+
+#: includes/wpfs-admin.php:2498
+#. translators: Success banner label for deleting the log entries
+msgid "Log entries deleted"
+msgstr ""
+
+#: includes/wpfs-admin.php:2506
+#. translators: Error banner label for not being able to delete logs
+msgid "There was an error emptying the log: "
+msgstr ""
+
+#: includes/wpfs-admin.php:2553
+#. translators: Success banner label for saving the security settings
+msgid "Security settings saved"
+msgstr ""
+
+#: includes/wpfs-admin.php:2562
+#. translators: Error banner label for not being able to save the security
+#. settings
+msgid "There was an error saving Security settings: "
+msgstr ""
+
+#: includes/wpfs-admin.php:2623
+#. translators: Success banner label for saving the email notification settings
+msgid "Email notification options saved"
+msgstr ""
+
+#: includes/wpfs-admin.php:2632
+#. translators: Error banner label for not being able to save the email
+#. notification settings
+msgid "There was an error saving Email notification options: "
+msgstr ""
+
+#: includes/wpfs-admin.php:2679
+#. translators: Success banner label for saving the email templates
+msgid "Email templates saved"
+msgstr ""
+
+#: includes/wpfs-admin.php:2688
+#. translators: Error banner label for not being able to save the email
+#. templates
+msgid "There was an error saving the email templates: "
+msgstr ""
+
+#: includes/wpfs-admin.php:2737
+#. translators: Success banner label for saving the form options
+msgid "Form options saved"
+msgstr ""
+
+#: includes/wpfs-admin.php:2746
+#. translators: Error banner label for not being able to save the form options
+msgid "There was an error saving Forms settings: "
+msgstr ""
+
+#: includes/wpfs-admin.php:2791
+#. translators: Success banner label for saving the form appearance settings
+msgid "Form appearance settings saved"
+msgstr ""
+
+#: includes/wpfs-admin.php:2800
+#. translators: Error banner label for not being able to save the form
+#. appearance settings
+msgid "There was an error saving Form appearance settings: "
+msgstr ""
+
+#: includes/wpfs-admin.php:2830
+#. translators: Success banner label for creating a new form
+msgid "Form created. Redirecting to edit form."
+msgstr ""
+
+#: includes/wpfs-admin.php:2839
+#. translators: Error banner label for not being able to create a new form
+msgid "There was an error creating the form: "
+msgstr ""
+
+#: includes/wpfs-admin.php:2879
+#. translators: Error message for not being able to fetch one-time products
+#. from Stripe
+msgid "There was an error getting one-time products from Stripe: "
+msgstr ""
+
+#: includes/wpfs-admin.php:2925
+#. translators: Error message for not being able to fetch tax rates from Stripe
+msgid "There was an error getting tax rates from Stripe: "
+msgstr ""
+
+#: includes/wpfs-admin.php:2950
+#. translators: Error message for not being able to fetch tax rates from Stripe
+msgid "Test email sent successfully."
+msgstr ""
+
+#: includes/wpfs-admin.php:2957
+#. translators: Error message for not being able to send the test email
+msgid "There was an error sending the test email: "
+msgstr ""
+
+#: includes/wpfs-admin.php:3021
+#. translators: Error message for not being able to fetch recurring products
+#. from Stripe
+msgid "There was an error getting recurring products from Stripe: "
+msgstr ""
+
+#: includes/wpfs-admin.php:3052 includes/wpfs-tables.php:954
+#. translators: Recurring pricing descriptor. p1: interval count
+#. translators: Donation frequency 'daily' displayed in the donation list
+msgid "daily"
+msgid_plural "every %d days"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/wpfs-admin.php:3064 includes/wpfs-tables.php:960
+#. translators: Recurring pricing descriptor. p1: interval count
+#. translators: Donation frequency 'weekly' displayed in the donation list
+msgid "weekly"
+msgid_plural "every %d weeks"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/wpfs-admin.php:3076 includes/wpfs-tables.php:966
+#. translators: Recurring pricing descriptor. p1: interval count
+#. translators: Donation frequency 'monthly' displayed in the donation list
+msgid "monthly"
+msgid_plural "every %d months"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/wpfs-admin.php:3088
+#. translators: Recurring pricing descriptor. p1: interval count
+msgid "annually"
+msgid_plural "every %d year"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/wpfs-admin.php:3902
+msgid "Customer's cardholder name"
+msgstr ""
+
+#: includes/wpfs-admin.php:3903
+msgid "Customer's email address"
+msgstr ""
+
+#: includes/wpfs-admin.php:3904
+msgid "Customer's phone number"
+msgstr ""
+
+#: includes/wpfs-admin.php:3905
+msgid "Customer's tax id"
+msgstr ""
+
+#: includes/wpfs-admin.php:3906
+msgid "Identifier of the Stripe customer"
+msgstr ""
+
+#: includes/wpfs-admin.php:3907
+msgid "Name of your WordPress site"
+msgstr ""
+
+#: includes/wpfs-admin.php:3908
+msgid "Name of the form used to make the transaction"
+msgstr ""
+
+#: includes/wpfs-admin.php:3909
+msgid "Current date"
+msgstr ""
+
+#: includes/wpfs-admin.php:3910
+msgid "Identifier of the Stripe object created in the transaction"
+msgstr ""
+
+#: includes/wpfs-admin.php:3911
+msgid "Gross payment amount"
+msgstr ""
+
+#: includes/wpfs-admin.php:3912
+msgid "Name of product purchased"
+msgstr ""
+
+#: includes/wpfs-admin.php:3913
+msgid "Gross amount of product purchased"
+msgstr ""
+
+#: includes/wpfs-admin.php:3914
+msgid "Tax of product purchased"
+msgstr ""
+
+#: includes/wpfs-admin.php:3915
+msgid "Net amount of product purchased"
+msgstr ""
+
+#: includes/wpfs-admin.php:3916
+msgid "Name of the subscription plan"
+msgstr ""
+
+#: includes/wpfs-admin.php:3917
+msgid "The number of subscription plans purchased"
+msgstr ""
+
+#: includes/wpfs-admin.php:3918 includes/wpfs-admin.php:3920
+msgid "Gross amount of the subscription plan"
+msgstr ""
+
+#: includes/wpfs-admin.php:3919
+msgid "Gross subscription amount (= PLAN_AMOUNT × PLAN_QUANTITY)"
+msgstr ""
+
+#: includes/wpfs-admin.php:3921
+msgid "Gross subscription amount (= PLAN_AMOUNT_GROSS × PLAN_QUANTITY)"
+msgstr ""
+
+#: includes/wpfs-admin.php:3922
+msgid "Net amount of the subscription plan"
+msgstr ""
+
+#: includes/wpfs-admin.php:3923
+msgid "Net subscription amount (= PLAN_AMOUNT_NET × PLAN_QUANTITY)"
+msgstr ""
+
+#: includes/wpfs-admin.php:3924
+msgid "VAT amount of the subscription plan"
+msgstr ""
+
+#: includes/wpfs-admin.php:3925
+msgid "VAT amount of the subscription (= PLAN_AMOUNT_VAT × PLAN_QUANTITY)"
+msgstr ""
+
+#: includes/wpfs-admin.php:3926
+msgid "Net amount of the subscription plan after trial"
+msgstr ""
+
+#: includes/wpfs-admin.php:3927
+msgid "VAT amount of the subscription plan after trial"
+msgstr ""
+
+#: includes/wpfs-admin.php:3928
+msgid "Gross amount of the subscription plan after trial"
+msgstr ""
+
+#: includes/wpfs-admin.php:3929 includes/wpfs-admin.php:3931
+msgid "Gross setup fee of the subscription plan"
+msgstr ""
+
+#: includes/wpfs-admin.php:3930 includes/wpfs-admin.php:3932
+msgid "Gross setup fee (= SETUP_FEE × PLAN_QUANTITY)"
+msgstr ""
+
+#: includes/wpfs-admin.php:3933
+msgid "Net setup fee of the subscription plan"
+msgstr ""
+
+#: includes/wpfs-admin.php:3934
+msgid "Net setup fee (= SETUP_FEE_NET × PLAN_QUANTITY)"
+msgstr ""
+
+#: includes/wpfs-admin.php:3935
+msgid "VAT amount of the subscription plan’s setup fee"
+msgstr ""
+
+#: includes/wpfs-admin.php:3936
+msgid "VAT amount of the subscription’s setup fee (= SETUP_FEE_VAT × PLAN_QUANTITY)"
+msgstr ""
+
+#: includes/wpfs-admin.php:3937
+msgid "Link to the downloadable PDF invoice of the payment"
+msgstr ""
+
+#: includes/wpfs-admin.php:3938
+msgid "Invoice number of the payment"
+msgstr ""
+
+#: includes/wpfs-admin.php:3939
+msgid "Link to the downloadable PDF receipt of the payment"
+msgstr ""
+
+#: includes/wpfs-admin.php:3940
+msgid "Billing name"
+msgstr ""
+
+#: includes/wpfs-admin.php:3941
+msgid "Billing address line 1"
+msgstr ""
+
+#: includes/wpfs-admin.php:3942
+msgid "Billing address line 2"
+msgstr ""
+
+#: includes/wpfs-admin.php:3943
+msgid "Billing address city"
+msgstr ""
+
+#: includes/wpfs-admin.php:3944
+msgid "Billing address state"
+msgstr ""
+
+#: includes/wpfs-admin.php:3945
+msgid "Billing address zip (or postal) code"
+msgstr ""
+
+#: includes/wpfs-admin.php:3946
+msgid "Billing address country"
+msgstr ""
+
+#: includes/wpfs-admin.php:3947
+msgid "ISO code of the billing address country"
+msgstr ""
+
+#: includes/wpfs-admin.php:3948
+msgid "Shipping name"
+msgstr ""
+
+#: includes/wpfs-admin.php:3949
+msgid "Shipping address line 1"
+msgstr ""
+
+#: includes/wpfs-admin.php:3950
+msgid "Shipping address line 2"
+msgstr ""
+
+#: includes/wpfs-admin.php:3951
+msgid "Shipping address city"
+msgstr ""
+
+#: includes/wpfs-admin.php:3952
+msgid "Shipping address state"
+msgstr ""
+
+#: includes/wpfs-admin.php:3953
+msgid "Shipping address zip (or postal) code"
+msgstr ""
+
+#: includes/wpfs-admin.php:3954
+msgid "Shipping address country"
+msgstr ""
+
+#: includes/wpfs-admin.php:3955
+msgid "ISO code of the shipping address country"
+msgstr ""
+
+#: includes/wpfs-admin.php:3956
+msgid "Coupon code redeemed on the form"
+msgstr ""
+
+#: includes/wpfs-admin.php:3957
+msgid "Donation frequency (one-time, daily, weekly, monthly, or annual)"
+msgstr ""
+
+#: includes/wpfs-admin.php:3958
+msgid "Custom field 1 value"
+msgstr ""
+
+#: includes/wpfs-admin.php:3959
+msgid "Login code generated by the Customer Portal page"
+msgstr ""
+
+#: includes/wpfs-admin.php:3960
+msgid "Customer's IP address"
+msgstr ""
+
+#: includes/wpfs-help.php:383 includes/wpfs-help.php:778
+msgid "Set up Stripe account"
+msgstr ""
+
+#: includes/wpfs-help.php:389 includes/wpfs-help.php:784
+msgid "Set up Stripe webhook"
+msgstr ""
+
+#: includes/wpfs-help.php:439
+msgid "Getting started guide"
+msgstr ""
+
+#: includes/wpfs-help.php:445
+msgid "Search the documentation"
+msgstr ""
+
+#: includes/wpfs-help.php:451
+msgid "Leave feedback"
+msgstr ""
+
+#: includes/wpfs-help.php:470
+msgid "How to use shortcodes"
+msgstr ""
+
+#: includes/wpfs-help.php:476 includes/wpfs-help.php:501
+msgid "Introducing form types"
+msgstr ""
+
+#: includes/wpfs-help.php:790
+msgid "Why plans disappear when changing API mode?"
+msgstr ""
+
+#: includes/wpfs-help.php:815
+msgid "Customizing form styles"
+msgstr ""
+
+#: includes/wpfs-help.php:821
+msgid "How to translate labels"
+msgstr ""
+
+#: includes/wpfs-help.php:846 includes/wpfs-help.php:877
+msgid "Configuring email notifications"
+msgstr ""
+
+#: includes/wpfs-help.php:871
+msgid "Using placeholder tokens"
+msgstr ""
+
+#: includes/wpfs-help.php:902
+msgid "Using Google reCaptcha"
+msgstr ""
+
+#: includes/wpfs-help.php:927
+msgid "Setting up Customer Portal"
+msgstr ""
+
+#: includes/wpfs-languages.php:13 includes/wpfs-languages.php:198
+msgid "Bulgarian"
+msgstr ""
+
+#: includes/wpfs-languages.php:17 includes/wpfs-languages.php:202
+msgid "Czech"
+msgstr ""
+
+#: includes/wpfs-languages.php:21 includes/wpfs-languages.php:206
+msgid "Danish"
+msgstr ""
+
+#: includes/wpfs-languages.php:25 includes/wpfs-languages.php:210
+msgid "German"
+msgstr ""
+
+#: includes/wpfs-languages.php:29 includes/wpfs-languages.php:214
+msgid "Greek"
+msgstr ""
+
+#: includes/wpfs-languages.php:33 includes/wpfs-languages.php:218
+msgid "English"
+msgstr ""
+
+#: includes/wpfs-languages.php:37 includes/wpfs-languages.php:222
+msgid "English (United Kingdom)"
+msgstr ""
+
+#: includes/wpfs-languages.php:41 includes/wpfs-languages.php:226
+msgid "Spanish (Spain)"
+msgstr ""
+
+#: includes/wpfs-languages.php:45 includes/wpfs-languages.php:230
+msgid "Spanish (Latin America)"
+msgstr ""
+
+#: includes/wpfs-languages.php:49 includes/wpfs-languages.php:234
+msgid "Estonian"
+msgstr ""
+
+#: includes/wpfs-languages.php:53 includes/wpfs-languages.php:238
+msgid "Finnish"
+msgstr ""
+
+#: includes/wpfs-languages.php:57 includes/wpfs-languages.php:242
+msgid "Filipino"
+msgstr ""
+
+#: includes/wpfs-languages.php:61 includes/wpfs-languages.php:246
+msgid "French (France)"
+msgstr ""
+
+#: includes/wpfs-languages.php:65 includes/wpfs-languages.php:250
+msgid "French (Canada)"
+msgstr ""
+
+#: includes/wpfs-languages.php:69 includes/wpfs-languages.php:258
+msgid "Croatian"
+msgstr ""
+
+#: includes/wpfs-languages.php:73 includes/wpfs-languages.php:262
+msgid "Hungarian"
+msgstr ""
+
+#: includes/wpfs-languages.php:77 includes/wpfs-languages.php:266
+msgid "Indonesian"
+msgstr ""
+
+#: includes/wpfs-languages.php:81 includes/wpfs-languages.php:270
+msgid "Italian"
+msgstr ""
+
+#: includes/wpfs-languages.php:85 includes/wpfs-languages.php:274
+msgid "Japanese"
+msgstr ""
+
+#: includes/wpfs-languages.php:89 includes/wpfs-languages.php:278
+msgid "Korean"
+msgstr ""
+
+#: includes/wpfs-languages.php:93 includes/wpfs-languages.php:282
+msgid "Lithuanian"
+msgstr ""
+
+#: includes/wpfs-languages.php:97 includes/wpfs-languages.php:286
+msgid "Latvian"
+msgstr ""
+
+#: includes/wpfs-languages.php:101 includes/wpfs-languages.php:290
+msgid "Malay"
+msgstr ""
+
+#: includes/wpfs-languages.php:105 includes/wpfs-languages.php:294
+msgid "Maltese"
+msgstr ""
+
+#: includes/wpfs-languages.php:109 includes/wpfs-languages.php:298
+msgid "Norwegian Bokmål"
+msgstr ""
+
+#: includes/wpfs-languages.php:113 includes/wpfs-languages.php:302
+msgid "Dutch"
+msgstr ""
+
+#: includes/wpfs-languages.php:117 includes/wpfs-languages.php:306
+msgid "Polish"
+msgstr ""
+
+#: includes/wpfs-languages.php:121 includes/wpfs-languages.php:310
+msgid "Portuguese"
+msgstr ""
+
+#: includes/wpfs-languages.php:125 includes/wpfs-languages.php:314
+msgid "Portuguese (Brazil)"
+msgstr ""
+
+#: includes/wpfs-languages.php:129 includes/wpfs-languages.php:318
+msgid "Romanian"
+msgstr ""
+
+#: includes/wpfs-languages.php:133 includes/wpfs-languages.php:322
+msgid "Russian"
+msgstr ""
+
+#: includes/wpfs-languages.php:137 includes/wpfs-languages.php:326
+msgid "Slovak"
+msgstr ""
+
+#: includes/wpfs-languages.php:141 includes/wpfs-languages.php:330
+msgid "Slovenian"
+msgstr ""
+
+#: includes/wpfs-languages.php:145 includes/wpfs-languages.php:334
+msgid "Swedish"
+msgstr ""
+
+#: includes/wpfs-languages.php:149 includes/wpfs-languages.php:338
+msgid "Thai"
+msgstr ""
+
+#: includes/wpfs-languages.php:153 includes/wpfs-languages.php:342
+msgid "Turkish"
+msgstr ""
+
+#: includes/wpfs-languages.php:157 includes/wpfs-languages.php:346
+msgid "Vietnamese"
+msgstr ""
+
+#: includes/wpfs-languages.php:161 includes/wpfs-languages.php:350
+msgid "Simplified Chinese"
+msgstr ""
+
+#: includes/wpfs-languages.php:165 includes/wpfs-languages.php:354
+msgid "Chinese Traditional (Hong Kong)"
+msgstr ""
+
+#: includes/wpfs-languages.php:169 includes/wpfs-languages.php:358
+msgid "Chinese Traditional (Taiwan)"
+msgstr ""
+
+#: includes/wpfs-languages.php:194
+msgid "Arabic"
+msgstr ""
+
+#: includes/wpfs-languages.php:254
+msgid "Hebrew"
+msgstr ""
+
+#: includes/wpfs-logger-service.php:219
+msgid "Error"
+msgstr ""
+
+#: includes/wpfs-logger-service.php:223
+msgid "Warning"
+msgstr ""
+
+#: includes/wpfs-logger-service.php:227
+msgid "Info"
+msgstr ""
+
+#: includes/wpfs-logger-service.php:231
+msgid "Debug"
+msgstr ""
+
+#: includes/wpfs-mailer.php:109
+#. translators: Description of the 'Card saved' email template
+msgid "The plugin sends this email when a customer submits a save card form."
+msgstr ""
+
+#: includes/wpfs-mailer.php:123
+#. translators: Description of the 'Donation receipt' email template
+msgid "The plugin sends this email when a donor makes a donation."
+msgstr ""
+
+#: includes/wpfs-mailer.php:130
+#. translators: Name of the email template that Stripe sends when a donation is
+#. made
+msgid "Donation receipt (Stripe)"
+msgstr ""
+
+#: includes/wpfs-mailer.php:133
+#. translators: Description of the 'Donation receipt (Stripe)' email template
+msgid "Stripe sends a payment receipt when a donor makes a donation."
+msgstr ""
+
+#: includes/wpfs-mailer.php:147
+#. translators: Description of the 'Payment receipt' email template
+msgid "The plugin sends this email when a customer makes a one-time payment."
+msgstr ""
+
+#: includes/wpfs-mailer.php:154
+#. translators: Name of the email template that Stripe sends when a payment is
+#. made
+msgid "Payment receipt (Stripe)"
+msgstr ""
+
+#: includes/wpfs-mailer.php:157
+#. translators: Description of the 'Payment receipt (Stripe)' email template
+msgid "Stripe sends this payment receipt when a customer makes a payment."
+msgstr ""
+
+#: includes/wpfs-mailer.php:171
+#. translators: Description of the 'Subscription receipt' email template
+msgid "The plugin sends this email when a customer subscribes to a plan."
+msgstr ""
+
+#: includes/wpfs-mailer.php:181
+#. translators: Description of the 'Subscription ended' email template
+msgid ""
+"The plugin sends this email when payment-in-installments plan is cancelled "
+"automatically."
+msgstr ""
+
+#: includes/wpfs-mailer.php:188
+#. translators: Name of the email template that Stripe sends when a
+#. subscription is started
+msgid "Subscription receipt (Stripe)"
+msgstr ""
+
+#: includes/wpfs-mailer.php:191
+#. translators: Description of the 'Subscription receipt (Stripe)' email
+#. template
+msgid "Stripe sends a payment receipt when a customer subscribes to a plan."
+msgstr ""
+
+#: includes/wpfs-main.php:888
+#. translators: Banner message of internal error when no error message is
+#. returned by the application
+msgid "An internal error occurred."
+msgstr ""
+
+#: includes/wpfs-main.php:891
+#. translators: Banner title of internal error
+msgid "Internal Error"
+msgstr ""
+
+#: includes/wpfs-main.php:896
+#. translators: Error message for required fields when empty. p1: custom input
+#. field label
+msgid "Please enter a value for '%s'"
+msgstr ""
+
+#: includes/wpfs-main.php:899
+#. translators: Field validation error message when payment amount is empty or
+#. invalid
+msgid "Payment amount is invalid"
+msgstr ""
+
+#: includes/wpfs-main.php:902
+#. translators: Banner message when the payment amount cannot be determined
+#. (the form has been tampered with)
+msgid "Cannot determine payment amount"
+msgstr ""
+
+#: includes/wpfs-main.php:905
+#. translators: Banner title when the payment amount cannot be determined (the
+#. form has been tampered with)
+msgid "Invalid payment amount"
+msgstr ""
+
+#: includes/wpfs-main.php:925
+msgid "Subscription will be charged every day."
+msgstr ""
+
+#: includes/wpfs-main.php:926
+msgid "Subscription will be charged every week."
+msgstr ""
+
+#: includes/wpfs-main.php:927
+msgid "Subscription will be charged every month."
+msgstr ""
+
+#: includes/wpfs-main.php:928
+msgid "Subscription will be charged every year."
+msgstr ""
+
+#: includes/wpfs-main.php:929
+msgid "Subscription will be charged every %d days."
+msgstr ""
+
+#: includes/wpfs-main.php:930
+msgid "Subscription will be charged every %d weeks."
+msgstr ""
+
+#: includes/wpfs-main.php:931
+msgid "Subscription will be charged every %d months."
+msgstr ""
+
+#: includes/wpfs-main.php:932
+msgid "Subscription will be charged every %d years."
+msgstr ""
+
+#: includes/wpfs-main.php:933
+msgid "Subscription will be charged every day, for %d occasions."
+msgstr ""
+
+#: includes/wpfs-main.php:934
+msgid "Subscription will be charged every week, for %d occasions."
+msgstr ""
+
+#: includes/wpfs-main.php:935
+msgid "Subscription will be charged every month, for %d occasions."
+msgstr ""
+
+#: includes/wpfs-main.php:936
+msgid "Subscription will be charged every year, for %d occasions."
+msgstr ""
+
+#: includes/wpfs-main.php:937
+msgid "Subscription will be charged every %1$d days, for %2$d occasions."
+msgstr ""
+
+#: includes/wpfs-main.php:938
+msgid "Subscription will be charged every %1$d weeks, for %2$d occasions."
+msgstr ""
+
+#: includes/wpfs-main.php:939
+msgid "Subscription will be charged every %1$d months, for %2$d occasions."
+msgstr ""
+
+#: includes/wpfs-main.php:940
+msgid "Subscription will be charged every %1$d years, for %2$d occasions."
+msgstr ""
+
+#: includes/wpfs-main.php:953
+msgid "My product"
+msgstr ""
+
+#: includes/wpfs-main.php:954
+msgid "Other amount"
+msgstr ""
+
+#: includes/wpfs-main.php:955
+msgid "The selected product"
+msgstr ""
+
+#: includes/wpfs-main.php:959
+#. translators: Banner title of application error when instantiating the Stripe
+#. object
+msgid "Stripe error"
+msgstr ""
+
+#: includes/wpfs-main.php:963
+#. translators: Error message when instantiating the Stripe object p1: the
+#. message of the exception thrown
+msgid "Cannot initialize Stripe: %s"
+msgstr ""
+
+#: includes/wpfs-main.php:971
+#. translators: Tax line item label with percentage, inclusive
+msgid "%s (%s%%, inclusive)"
+msgstr ""
+
+#: includes/wpfs-main.php:973
+#. translators: Tax line item label with percentage
+msgid "%s (%s%%)"
+msgstr ""
+
+#: includes/wpfs-main.php:975
+#. translators: Tax line item label, inclusive
+msgid "%s (inclusive)"
+msgstr ""
+
+#: includes/wpfs-main.php:977
+#. translators: Tax line item label, no decoration (no percentage, not
+#. inclusive)
+msgid "%s"
+msgstr ""
+
+#: includes/wpfs-tables.php:184
+#. translators: Paging label indicating which items are displayed p1: First
+#. item displayed p2: Last item displayed p3: Total number of items
+msgid "Showing %3$d item"
+msgid_plural "Showing %1$d-%2$d of %3$d items"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/wpfs-tables.php:206
+#. translators: Label of the button showing the first page of the list
+msgid "First page"
+msgstr ""
+
+#: includes/wpfs-tables.php:218
+#. translators: Label of the button showing the previous page of the list
+msgid "Previous page"
+msgstr ""
+
+#: includes/wpfs-tables.php:225
+#. translators: Label of the button showing the current page of the list
+msgid "Current Page"
+msgstr ""
+
+#: includes/wpfs-tables.php:237
+#. translators: Label of the button showing the next page of the list
+msgid "Next page"
+msgstr ""
+
+#: includes/wpfs-tables.php:249
+#. translators: Label of the button showing the last page of the list
+msgid "Last page"
+msgstr ""
+
+#: includes/wpfs-tables.php:457 includes/wpfs-tables.php:835
+#: includes/wpfs-tables.php:1235 includes/wpfs-tables.php:1524
+#. translators: Name of the 'ID' column
+msgid "ID"
+msgstr ""
+
+#: includes/wpfs-tables.php:459 includes/wpfs-tables.php:837
+#: includes/wpfs-tables.php:1237 includes/wpfs-tables.php:1526
+#. translators: Name of the 'Date' column
+msgid "Date"
+msgstr ""
+
+#: includes/wpfs-tables.php:463
+#. translators: Name of the 'Subscriber' column
+msgid "Subscriber"
+msgstr ""
+
+#: includes/wpfs-tables.php:465 includes/wpfs-tables.php:843
+#: includes/wpfs-tables.php:1243 includes/wpfs-tables.php:1532
+#. translators: Name of the 'Form' column
+msgid "Form"
+msgstr ""
+
+#: includes/wpfs-tables.php:469 includes/wpfs-tables.php:847
+#: includes/wpfs-tables.php:1536
+#. translators: Name of the 'Amount' column
+msgid "Amount"
+msgstr ""
+
+#: includes/wpfs-tables.php:471 includes/wpfs-tables.php:849
+#. translators: Name of the 'Frequency' column
+msgid "Frequency"
+msgstr ""
+
+#: includes/wpfs-tables.php:475 includes/wpfs-tables.php:853
+#: includes/wpfs-tables.php:1539
+#. translators: Name of the 'Status' column
+msgid "Status"
+msgstr ""
+
+#: includes/wpfs-tables.php:477 includes/wpfs-tables.php:855
+#: includes/wpfs-tables.php:1247 includes/wpfs-tables.php:1541
+#: templates/admin/wpfs-forms.php:36
+#. translators: Name of the 'Mode' column
+msgid "Mode"
+msgstr ""
+
+#: includes/wpfs-tables.php:494
+msgid "No subscriptions found."
+msgstr ""
+
+#: includes/wpfs-tables.php:636 includes/wpfs-tables.php:1073
+#: templates/admin/partials/wpfs-form-component-action-buttons.php:6
+#: templates/admin/partials/wpfs-transactions-donation-templates.php:7
+#: templates/admin/partials/wpfs-transactions-donations.php:57
+#: templates/admin/partials/wpfs-transactions-payment-templates.php:7
+#: templates/admin/partials/wpfs-transactions-payment-templates.php:24
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:59
+#: templates/admin/wpfs-forms.php:139
+#: templates/admin/wpfs-settings-my-account.php:86
+#: templates/admin/wpfs-settings-security.php:52
+#: templates/admin/wpfs-settings-stripe.php:77
+#: templates/admin/wpfs-settings-wp-dashboard.php:75
+#. translators: 'Cancel' action label for subscriptions
+#. translators: 'Cancel' action label for donations
+msgid "Cancel"
+msgstr ""
+
+#: includes/wpfs-tables.php:841
+#: templates/admin/partials/wpfs-transactions-donations.php:94
+#. translators: Name of the 'Donor' column
+msgid "Donor"
+msgstr ""
+
+#: includes/wpfs-tables.php:872
+msgid "No donation found."
+msgstr ""
+
+#: includes/wpfs-tables.php:948
+#. translators: Donation frequency 'one-time' displayed in the donation list
+msgid "one-time"
+msgstr ""
+
+#: includes/wpfs-tables.php:972
+#. translators: Donation frequency 'annual' displayed in the donation list
+msgid "annual"
+msgstr ""
+
+#: includes/wpfs-tables.php:1059 includes/wpfs-tables.php:1706
+#: templates/admin/partials/wpfs-transactions-donations.php:48
+#: templates/admin/partials/wpfs-transactions-payments.php:68
+#. translators: 'Refund' action label for donations
+#. translators: 'Refund' action label for payments
+msgid "Refund"
+msgstr ""
+
+#: includes/wpfs-tables.php:1155
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:51
+#. translators: Singular version of the expression 'Saved card', used on the
+#. save card list page
+msgid "Saved card"
+msgstr ""
+
+#: includes/wpfs-tables.php:1241 includes/wpfs-tables.php:1530
+#: templates/admin/partials/wpfs-transactions-payments.php:105
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:67
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:99
+#. translators: Name of the 'Customer' column
+msgid "Customer"
+msgstr ""
+
+#: includes/wpfs-tables.php:1263
+msgid "No saved card found."
+msgstr ""
+
+#: includes/wpfs-tables.php:1414
+#. translators: Plural version of the word 'Payment', used on the payment list
+#. page
+msgid "Payments"
+msgstr ""
+
+#: includes/wpfs-tables.php:1558
+msgid "No payment found."
+msgstr ""
+
+#: includes/wpfs-tables.php:1692
+#: templates/admin/partials/wpfs-transactions-payments.php:59
+#. translators: 'Capture' action label for payments
+msgid "Capture"
+msgstr ""
+
+#: includes/wpfs-tables.php:1806
+#. translators: Label for the 'Select all' option of status filter on list
+#. pages
+msgid "Select All"
+msgstr ""
+
+#: includes/wpfs-tables.php:1963
+msgid "Log entry"
+msgstr ""
+
+#: includes/wpfs-tables.php:1964 templates/admin/wpfs-settings-logs.php:18
+msgid "Log entries"
+msgstr ""
+
+#: includes/wpfs-tables.php:2101
+msgid "No log entries found."
+msgstr ""
+
+#: templates/admin/partials/wpfs-demo-mode.php:14
+msgid "WP Full Pay is running in Demo Mode."
+msgstr ""
+
+#: templates/admin/partials/wpfs-demo-mode.php:15
+#: templates/admin/partials/wpfs-form-component-redirect-after-payment.php:29
+msgid "Learn more"
+msgstr ""
+
+#: templates/admin/partials/wpfs-demo-mode.php:18
+msgid "WP Full Pay Demo Mode"
+msgstr ""
+
+#: templates/admin/partials/wpfs-demo-mode.php:20
+msgid "The plugin is running in Demo Mode which means the following restrictions:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-demo-mode.php:22
+msgid "Plugin displays placeholders in place of sensitive credentials (API keys)"
+msgstr ""
+
+#: templates/admin/partials/wpfs-demo-mode.php:23
+msgid "Plugin pretends to save modifications but it scraps them"
+msgstr ""
+
+#: templates/admin/partials/wpfs-demo-mode.php:24
+msgid "Plugin pretends to delete entities but it does nothing"
+msgstr ""
+
+#: templates/admin/partials/wpfs-demo-mode.php:29
+msgid "Give the plugin a try"
+msgstr ""
+
+#: templates/admin/partials/wpfs-demo-mode.php:30
+msgid ""
+"Try the full-featured plugin with our <strong>14 day money back "
+"guarantee</strong>."
+msgstr ""
+
+#: templates/admin/partials/wpfs-demo-mode.php:32
+msgid "Purchase plugin"
+msgstr ""
+
+#: templates/admin/partials/wpfs-edit-form-checkout-donation.php:15
+#: templates/admin/partials/wpfs-edit-form-checkout-payment.php:13
+#: templates/admin/partials/wpfs-edit-form-checkout-save-card.php:12
+#: templates/admin/partials/wpfs-edit-form-checkout-subscription.php:12
+#: templates/admin/partials/wpfs-edit-form-inline-donation.php:14
+#: templates/admin/partials/wpfs-edit-form-inline-payment.php:38
+#: templates/admin/partials/wpfs-edit-form-inline-save-card.php:12
+#: templates/admin/partials/wpfs-edit-form-inline-subscription.php:12
+msgid "Properties"
+msgstr ""
+
+#: templates/admin/partials/wpfs-edit-form-checkout-donation.php:52
+#: templates/admin/partials/wpfs-edit-form-checkout-payment.php:85
+#: templates/admin/partials/wpfs-edit-form-checkout-subscription.php:67
+#: templates/admin/partials/wpfs-edit-form-inline-donation.php:50
+#: templates/admin/partials/wpfs-edit-form-inline-payment.php:160
+#: templates/admin/partials/wpfs-edit-form-inline-subscription.php:66
+msgid "Locale"
+msgstr ""
+
+#: templates/admin/partials/wpfs-edit-form-checkout-donation.php:66
+#: templates/admin/partials/wpfs-edit-form-checkout-payment.php:99
+#: templates/admin/partials/wpfs-edit-form-checkout-save-card.php:52
+#: templates/admin/partials/wpfs-edit-form-checkout-subscription.php:81
+#: templates/admin/partials/wpfs-edit-form-inline-donation.php:65
+#: templates/admin/partials/wpfs-edit-form-inline-payment.php:179
+#: templates/admin/partials/wpfs-edit-form-inline-save-card.php:53
+#: templates/admin/partials/wpfs-edit-form-inline-subscription.php:81
+msgid "Optional form fields"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-action-buttons.php:5
+msgid "Save changes"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-card-field-language.php:10
+#: templates/admin/partials/wpfs-form-component-checkout-form-language.php:10
+msgid "Auto"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-checkout-product-image.php:6
+msgid "Donation product image"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-checkout-product-image.php:10
+msgid "Select or upload image"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-checkout-product-image.php:11
+#: templates/admin/partials/wpfs-form-component-custom-fields.php:59
+#: templates/admin/partials/wpfs-form-component-payment-products.php:70
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:69
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:76
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:231
+#: templates/admin/partials/wpfs-form-component-suggested-donation-amounts.php:46
+#: templates/admin/partials/wpfs-form-component-tax-rates.php:65
+#: templates/admin/partials/wpfs-settings-email-templates.php:92
+#: templates/admin/wpfs-create-form.php:84 templates/admin/wpfs-forms.php:188
+msgid "Discard"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-coupon.php:7
+msgid "Other"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-css-selector.php:6
+msgid "Add custom CSS styles"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-css-selector.php:8
+msgid "Use this form ID to add custom styles to this form:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-css-selector.php:9
+#: templates/admin/wpfs-settings-stripe.php:36
+msgid "Copy to clipboard"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-css-selector.php:12
+#: templates/admin/partials/wpfs-settings-forms-appearance.php:28
+msgid "Learn more about custom CSS styles"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-currency.php:10
+msgid "Select currency"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-custom-fields.php:27
+msgid "Add field"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-custom-fields.php:49
+msgid "Field type"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-custom-fields.php:53
+msgid "Field label"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-custom-fields.php:68
+msgid "Delete field"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-custom-fields.php:69
+msgid "Keep field"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-customer-data-checkout-no-phone-number.php:7
+#: templates/admin/partials/wpfs-form-component-customer-data-checkout-with-phone-number.php:7
+#: templates/admin/partials/wpfs-form-component-customer-data-inline.php:7
+msgid "Customer data"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-email-templates.php:9
+msgid "Available email types:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-email-templates.php:25
+#: templates/admin/partials/wpfs-form-component-email-templates.php:39
+msgid "Enabled"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-email-templates.php:25
+#: templates/admin/partials/wpfs-form-component-email-templates.php:36
+msgid "Disabled"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-payment-products.php:7
+msgid "Available products"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-payment-products.php:12
+#: templates/admin/partials/wpfs-form-component-payment-products.php:46
+msgid "Add products from Stripe"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-payment-products.php:30
+msgid "Remove product"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-payment-products.php:31
+msgid "Keep product"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-payment-products.php:50
+#: templates/admin/partials/wpfs-form-component-tax-rates.php:45
+msgid ""
+"Keep tight, we are retrieving the products from Stripe. It might take a few "
+"seconds."
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-payment-products.php:56
+msgid "Search one-time products..."
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-payment-products.php:69
+msgid "Add products"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-plan-hint.php:6
+msgid "Create subscription plans"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-plan-hint.php:8
+msgid ""
+"You can create recurring products on the <a href=\"%s\" "
+"target=\"_blank\">Stripe dashboard</a>."
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-product-hint.php:6
+msgid "Create one-time products"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-product-hint.php:8
+msgid ""
+"You can create one-time products on the <a href=\"%s\" "
+"target=\"_blank\">Stripe dashboard</a>."
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-redirect-after-payment.php:28
+msgid "Customize the Thank you page with placeholder tokens."
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:7
+msgid "Available plans"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:12
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:45
+msgid "Add plan from Stripe"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:26
+msgid "Remove plan"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:27
+msgid "Keep plan"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:49
+msgid ""
+"Keep tight, we are retrieving the subscription plans from Stripe. It might "
+"take a few seconds."
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:55
+msgid "Search plans..."
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:68
+msgid "Select plan"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:75
+msgid "Add plan"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:84
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:160
+msgid "Setup fee"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:100
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:176
+msgid "Trial period"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:101
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:177
+msgid "No trial"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:101
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:177
+msgid "days"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:104
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:180
+msgid "End subscription"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:108
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:184
+msgid "When customer cancels it"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:113
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:189
+msgid "After certain # of occurrences:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:120
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:196
+msgid "Billing cycle starts"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:124
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:200
+msgid "On the day when customer subscribed"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:129
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:205
+msgid "On this day of the month:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:135
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:211
+msgid "Prorate until the billing anchor day?"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-plans.php:230
+msgid "Save plan"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-quantity.php:21
+msgid "Limit plan quantity"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-subscription-quantity.php:37
+msgid "Enter 0 (zero) if there is no limit"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-suggested-donation-amounts.php:29
+msgid "Donation amount"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-suggested-donation-amounts.php:45
+msgid "Add amount"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-suggested-donation-amounts.php:55
+msgid "Delete amount"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-suggested-donation-amounts.php:56
+msgid "Keep amount"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-tax-rates.php:7
+msgid "Available tax rates"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-tax-rates.php:12
+#: templates/admin/partials/wpfs-form-component-tax-rates.php:41
+msgid "Add tax rates from Stripe"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-tax-rates.php:25
+msgid "Remove tax rate"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-tax-rates.php:26
+msgid "Keep tax rate"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-tax-rates.php:51
+msgid "Search tax rates..."
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-tax-rates.php:64
+msgid "Add tax rates"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-terms-of-service.php:7
+msgid "Consent"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-transaction-description.php:10
+#: templates/admin/partials/wpfs-form-component-transaction-description.php:16
+#: templates/admin/partials/wpfs-settings-email-templates.php:38
+#: templates/admin/partials/wpfs-settings-email-templates.php:43
+#: templates/admin/partials/wpfs-settings-email-templates.php:56
+msgid "Insert token"
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-transaction-description.php:14
+msgid "This description appears on the Stripe dashboard."
+msgstr ""
+
+#: templates/admin/partials/wpfs-form-component-transaction-description.php:19
+#: templates/admin/partials/wpfs-settings-email-templates.php:46
+msgid "Search token"
+msgstr ""
+
+#: templates/admin/partials/wpfs-header-block-help.php:13
+msgid "Find help"
+msgstr ""
+
+#: templates/admin/partials/wpfs-header-block-license-status.php:4
+msgid "Active"
+msgstr ""
+
+#: templates/admin/partials/wpfs-header-block-license-status.php:4
+msgid "Inactive"
+msgstr ""
+
+#: templates/admin/partials/wpfs-header-block-license-status.php:13
+msgid "Manage License"
+msgstr ""
+
+#: templates/admin/partials/wpfs-header-block-stripe-accounts.php:8
+msgid "Manage Stripe account"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-addons-empty.php:8
+msgid "No add-ons added yet."
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-addons-empty.php:9
+msgid "Grow your business with your favorite tools."
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-addons-empty.php:10
+#: templates/admin/partials/wpfs-settings-addons-list.php:37
+msgid "Explore add-ons"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-addons-list.php:9
+msgid "Select an add-on to configure"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-addons-list.php:25
+msgid ""
+"Activate, deactivate, and delete your add-ons like any other WordPress "
+"plugin on your site."
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-addons-list.php:25
+msgid "Manage WordPress plugins"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-addons-list.php:34
+msgid "Grow your business with your favorite tools"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-addons-list.php:35
+msgid ""
+"Use add-ons to natively connect to tools such as email automation systems, "
+"affiliate- and membership applications. "
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-email-options.php:30
+msgid "Send copy of email notifications to"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-email-options.php:57
+#: templates/admin/partials/wpfs-settings-email-templates.php:25
+#: templates/admin/partials/wpfs-settings-forms-appearance.php:19
+#: templates/admin/partials/wpfs-settings-forms-options.php:40
+#: templates/admin/wpfs-settings-logs.php:76
+#: templates/admin/wpfs-settings-my-account.php:85
+#: templates/admin/wpfs-settings-security.php:51
+#: templates/admin/wpfs-settings-stripe.php:74
+#: templates/admin/wpfs-settings-wp-dashboard.php:74
+msgid "Save settings"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-email-options.php:63
+msgid "Configure plugin email notifications"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-email-options.php:64
+msgid "These settings apply to plugin email notifications only."
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-email-options.php:66
+msgid "Learn more about Email notifications"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-email-templates.php:10
+msgid "Available templates:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-email-templates.php:36
+msgid "Subject"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-email-templates.php:52
+msgid "Body"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-email-templates.php:54
+msgid "Send a test"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-email-templates.php:55
+#: templates/admin/partials/wpfs-settings-email-templates.php:70
+#: templates/admin/partials/wpfs-settings-email-templates.php:79
+msgid "Reset template"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-email-templates.php:71
+msgid "Keep template"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-email-templates.php:76
+msgid "Restoring the default template bundled with the plugin"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-email-templates.php:86
+msgid "Add email addresses"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-email-templates.php:88
+msgid "Use space to separate email addresses"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-email-templates.php:91
+#: templates/admin/partials/wpfs-settings-email-templates.php:101
+msgid "Send test"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-email-templates.php:98
+msgid "Sending email to the specified addresses"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-email-templates.php:113
+#: templates/admin/wpfs-forms.php:170
+#: templates/admin/wpfs-settings-logs.php:105
+#: templates/admin/wpfs-transactions.php:81
+msgid "Close"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-forms-appearance.php:12
+msgid "Custom CSS styles"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-forms-appearance.php:25
+msgid "About custom CSS styles"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-forms-appearance.php:26
+msgid "Add styling to your forms. Proceed only if you know what you're doing!"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-forms-options.php:13
+msgid "Prefill form fields"
+msgstr ""
+
+#: templates/admin/partials/wpfs-settings-forms-options.php:32
+msgid ""
+"For prefilling form fields in a more granular manner, please <a href=\"%s\" "
+"target=\"_blank\">refer to our knowledge base article</a>."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donation-templates.php:12
+#: templates/admin/partials/wpfs-transactions-payment-templates.php:12
+msgid "It takes 7 days for the refund to appear on the customer's card."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donation-templates.php:24
+#: templates/admin/partials/wpfs-transactions-donation-templates.php:41
+msgid "Keep donation"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donation-templates.php:29
+msgid "The recurring donation will be cancelled immediately."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donation-templates.php:46
+msgid ""
+"After deleting this donatioin from the WordPress database, you will still "
+"be able to find it in Stripe."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donations.php:9
+#: templates/admin/partials/wpfs-transactions-payments.php:10
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:9
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:10
+#: templates/admin/wpfs-forms.php:15
+msgid "Search..."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donations.php:15
+#: templates/admin/partials/wpfs-transactions-payments.php:26
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:15
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:26
+#: templates/admin/wpfs-forms.php:21
+msgid "Mode: "
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donations.php:16
+#: templates/admin/partials/wpfs-transactions-payments.php:17
+#: templates/admin/partials/wpfs-transactions-payments.php:27
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:16
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:17
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:27
+#: templates/admin/wpfs-forms.php:22
+msgid "All"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donations.php:31
+msgid "Donation details"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donations.php:73
+msgid "Donation id:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donations.php:77
+msgid "Recurring id:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donations.php:81
+#: templates/admin/partials/wpfs-transactions-payments.php:87
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:57
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:81
+msgid "Date:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donations.php:84
+#: templates/admin/partials/wpfs-transactions-payments.php:90
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:60
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:84
+msgid "Form:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donations.php:87
+#: templates/admin/partials/wpfs-transactions-payments.php:93
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:87
+msgid "Status:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donations.php:90
+#: templates/admin/partials/wpfs-transactions-payments.php:96
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:63
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:90
+msgid "Mode:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donations.php:97
+#: templates/admin/partials/wpfs-transactions-payments.php:84
+#: templates/admin/partials/wpfs-transactions-payments.php:108
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:54
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:70
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:75
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:102
+msgid "Id:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donations.php:100
+#: templates/admin/partials/wpfs-transactions-payments.php:111
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:73
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:105
+msgid "Name:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donations.php:103
+#: templates/admin/partials/wpfs-transactions-payments.php:114
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:76
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:108
+msgid "E-mail address:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donations.php:107
+#: templates/admin/partials/wpfs-transactions-payments.php:118
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:112
+msgid "Phone number:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-donations.php:112
+#: templates/admin/partials/wpfs-transactions-payments.php:123
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:80
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:117
+msgid "IP address:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-empty.php:15
+msgid "No payments yet."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-empty.php:17
+msgid "You will find one-time payments here."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-empty.php:18
+msgid "Create your first one-time payment form to receive payments."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-empty.php:22
+msgid "No subscriptions yet."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-empty.php:24
+msgid "You will find your subscribers here."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-empty.php:25
+msgid "Create your first subscription form to collect subscriptions."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-empty.php:29
+msgid "No donations yet."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-empty.php:31
+msgid "You will find donations here."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-empty.php:32
+msgid "Create your first donation form to accept donations."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-empty.php:36
+msgid "No saved cards yet."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-empty.php:38
+msgid "You will find saved cards here."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-empty.php:39
+msgid "Create your first save card form to collect card details from customers."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-payment-templates.php:29
+msgid "A captured payment is charged immediately."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-payment-templates.php:41
+msgid "Keep payment"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-payment-templates.php:46
+msgid ""
+"After deleting this payment from the WordPress database, you will still be "
+"able to find it in Stripe."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-payments.php:16
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:16
+msgid "Status: "
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-payments.php:42
+msgid "Payment details"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-payments.php:100
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:94
+msgid "Coupon:"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-saved-card-templates.php:7
+msgid "Keep saved card"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-saved-card-templates.php:12
+msgid ""
+"After deleting this saved card from the WordPress database, you will still "
+"be able to find it in Stripe."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-saved-cards.php:31
+msgid "Transaction details"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-subscription-templates.php:7
+#: templates/admin/partials/wpfs-transactions-subscription-templates.php:24
+msgid "Keep subscription"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-subscription-templates.php:12
+msgid "The subscription will be cancelled immediately."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-subscription-templates.php:29
+msgid ""
+"After deleting this subscription from the WordPress database, you will "
+"still be able to find it in Stripe."
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:42
+msgid "Subscription details"
+msgstr ""
+
+#: templates/admin/partials/wpfs-transactions-subscriptions.php:78
+msgid "Product:"
+msgstr ""
+
+#: templates/admin/wpfs-addons.php:17
+msgid "WP Full Stripe Members"
+msgstr ""
+
+#: templates/admin/wpfs-addons.php:19
+msgid "Installed"
+msgstr ""
+
+#: templates/admin/wpfs-addons.php:21
+msgid "More Details"
+msgstr ""
+
+#: templates/admin/wpfs-addons.php:24
+msgid "Make money from your WordPress website by creating subscriber only content!"
+msgstr ""
+
+#: templates/admin/wpfs-create-form.php:15
+#. translators: Section title on the Create form page
+msgid "Basic info"
+msgstr ""
+
+#: templates/admin/wpfs-create-form.php:38
+#. translators: Description of what the form display name is
+msgid ""
+"<strong>Display name</strong> shows up in the form list, and helps you "
+"identify the form."
+msgstr ""
+
+#: templates/admin/wpfs-create-form.php:41
+#. translators: Description of what the form identifier is
+msgid ""
+"<strong>Identifier</strong> is used to insert the form into pages via a "
+"shortcode. Use alphanumerical characters, underscores and dashes, without "
+"spaces."
+msgstr ""
+
+#: templates/admin/wpfs-create-form.php:43
+msgid "Learn more about form shortcodes"
+msgstr ""
+
+#: templates/admin/wpfs-create-form.php:83
+msgid "Create & edit form"
+msgstr ""
+
+#: templates/admin/wpfs-forms-empty.php:10
+msgid "No payment forms yet."
+msgstr ""
+
+#: templates/admin/wpfs-forms-empty.php:11
+msgid "Create your first form, and start accepting payments."
+msgstr ""
+
+#: templates/admin/wpfs-forms.php:33
+msgid "Name / ID"
+msgstr ""
+
+#: templates/admin/wpfs-forms.php:34
+msgid "Type / Layout"
+msgstr ""
+
+#: templates/admin/wpfs-forms.php:35
+msgid "Last used"
+msgstr ""
+
+#: templates/admin/wpfs-forms.php:113
+msgid "Get shortcode"
+msgstr ""
+
+#: templates/admin/wpfs-forms.php:119 templates/admin/wpfs-forms.php:186
+#: templates/admin/wpfs-forms.php:207
+msgid "Clone"
+msgstr ""
+
+#: templates/admin/wpfs-forms.php:125
+msgid "Delete"
+msgstr ""
+
+#: templates/admin/wpfs-forms.php:136
+msgid "Insert the shortcode to a page or post"
+msgstr ""
+
+#: templates/admin/wpfs-forms.php:138
+msgid "Copy shortcode"
+msgstr ""
+
+#: templates/admin/wpfs-forms.php:150
+msgid "Keep form"
+msgstr ""
+
+#: templates/admin/wpfs-forms.php:155
+msgid ""
+"After deleting this form, you will be able to find related payments, "
+"subscriptions, or customers in Stripe."
+msgstr ""
+
+#: templates/admin/wpfs-forms.php:175 templates/admin/wpfs-forms.php:193
+msgid "Clone a form and all its settings."
+msgstr ""
+
+#: templates/admin/wpfs-forms.php:177 templates/admin/wpfs-forms.php:195
+msgid "New form name"
+msgstr ""
+
+#: templates/admin/wpfs-forms.php:181 templates/admin/wpfs-forms.php:199
+msgid "New form id"
+msgstr ""
+
+#: templates/admin/wpfs-forms.php:187 templates/admin/wpfs-forms.php:205
+msgid "Clone & Edit"
+msgstr ""
+
+#: templates/admin/wpfs-settings-logs.php:21
+msgid "There are %d entries in the log"
+msgstr ""
+
+#: templates/admin/wpfs-settings-logs.php:22
+msgid "The log is empty"
+msgstr ""
+
+#: templates/admin/wpfs-settings-logs.php:27
+msgid "Download log"
+msgstr ""
+
+#: templates/admin/wpfs-settings-logs.php:35
+msgid "Log settings"
+msgstr ""
+
+#: templates/admin/wpfs-settings-logs.php:114
+msgid "Keep log entries"
+msgstr ""
+
+#: templates/admin/wpfs-settings-logs.php:119
+msgid "Deleting entries from the log..."
+msgstr ""
+
+#: templates/admin/wpfs-settings-my-account.php:92
+msgid "What is the Customer portal?"
+msgstr ""
+
+#: templates/admin/wpfs-settings-my-account.php:93
+msgid ""
+"Customer portal is a page on your website where customers can update their "
+"card, upgrade/downgrade subscriptions, cancel subscriptions, and download "
+"invoices. "
+msgstr ""
+
+#: templates/admin/wpfs-settings-my-account.php:95
+msgid "Learn more about Customer portal"
+msgstr ""
+
+#: templates/admin/wpfs-settings-security.php:16
+msgid "Google reCAPTCHA"
+msgstr ""
+
+#: templates/admin/wpfs-settings-security.php:18
+msgid "Secure with reCAPTCHA"
+msgstr ""
+
+#: templates/admin/wpfs-settings-security.php:58
+msgid "How to protect forms with Google reCaptcha?"
+msgstr ""
+
+#: templates/admin/wpfs-settings-security.php:59
+msgid ""
+"You can find more info about which version you should choose and how to "
+"obtain the API keys in our Knowledge base."
+msgstr ""
+
+#: templates/admin/wpfs-settings-security.php:61
+msgid "Learn more about Google reCAPTCHA"
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:17
+msgid ""
+"WP Full Pay v7 and above requires Stripe Connect. Stripe Connect provides a "
+"greater degree of security than using regular Stripe private keys. For more "
+"information, see our "
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:24
+msgid "To complete the setup:"
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:28
+msgid ""
+"This is so that Stripe is able to send notifications to WP Full Pay when "
+"events occur. This is required for the Connect flow to fully work. For more "
+"information on setting up webhooks, see our "
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:31
+msgid "Webhook URL:"
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:42
+msgid ""
+"This will allow WP Full Pay to access your Stripe account in a secure way "
+"that no longer requires access to your Secret key."
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:43
+msgid ""
+"Make sure the final status is \"connected\". If you see any other status, "
+"click the \"Update Account Information\" button and provide the missing "
+"information."
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:47
+msgid ""
+"You can setup and test your forms in the \"Test\" mode, but make sure to "
+"switch to Live mode and create duplicate forms that use Live products and "
+"pricing, before adding the form(s) to your website."
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:52
+msgid "Account mode"
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:84
+msgid "Live account"
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:91
+#: templates/admin/wpfs-settings-stripe.php:142
+msgid ""
+"Connect your Stripe account to WP Full Pay in live mode to complete the "
+"upgrade to v7.0"
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:94
+#: templates/admin/wpfs-settings-stripe.php:145
+msgid "Connect Live Account"
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:122
+#: templates/admin/wpfs-settings-stripe.php:183
+#: templates/admin/wpfs-settings-stripe.php:270
+#: templates/admin/wpfs-settings-stripe.php:331
+msgid "Webhooks"
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:152
+msgid "Live account connected"
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:168
+#: templates/admin/wpfs-settings-stripe.php:316
+msgid "Note: your account is not yet ready"
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:169
+#: templates/admin/wpfs-settings-stripe.php:317
+msgid "Click the Update Account Information below to complete your setup."
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:212
+#: templates/admin/wpfs-settings-stripe.php:357
+msgid "Add-on and custom hook configuration"
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:213
+msgid ""
+"Supply your Stripe Live secret key below to be able to use Members Add-on "
+"or access Stripe from custom code using hooks."
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:232
+msgid "Test account"
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:238
+#: templates/admin/wpfs-settings-stripe.php:290
+msgid ""
+"Connect your Stripe account to WP Full Pay in test mode to complete the "
+"upgrade to v7.0"
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:241
+#: templates/admin/wpfs-settings-stripe.php:293
+msgid "Connect Test Account"
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:300
+msgid "Test account connected"
+msgstr ""
+
+#: templates/admin/wpfs-settings-stripe.php:358
+msgid ""
+"Supply your Stripe Test secret key below to be able to use Members Add-on "
+"or access Stripe from custom code using hooks."
+msgstr ""
+
+#: templates/admin/wpfs-settings-wp-dashboard.php:81
+msgid "What are these settings for?"
+msgstr ""
+
+#: templates/admin/wpfs-settings-wp-dashboard.php:82
+msgid ""
+"Options on this page control how payment amounts, dates, etc. are localized "
+"on the WordPress dashboard pages of WP Full Pay."
+msgstr ""
+
+#: templates/admin/wpfs-settings.php:31
+msgid "Configure your Stripe API keys, and set up webhooks"
+msgstr ""
+
+#: templates/admin/wpfs-settings.php:38
+msgid "Set global settings & styles for your payment forms"
+msgstr ""
+
+#: templates/admin/wpfs-settings.php:45
+msgid "Customize and align your e-mails to your brand"
+msgstr ""
+
+#: templates/admin/wpfs-settings.php:52
+msgid "Keep your payment forms secure"
+msgstr ""
+
+#: templates/admin/wpfs-settings.php:59
+msgid ""
+"Configure how your customers can manage their cards, subscriptions, and "
+"invoices"
+msgstr ""
+
+#: templates/admin/wpfs-settings.php:66
+msgid "Set your currency format preferences"
+msgstr ""
+
+#: templates/admin/wpfs-settings.php:73
+msgid "Manage your activated add-ons"
+msgstr ""
+
+#: templates/admin/wpfs-settings.php:80
+msgid "Help the developers debug plugin issues"
+msgstr ""
+
+#: templates/admin/wpfs-settings.php:87
+msgid "Settings are disabled until you have connected your Stripe account."
+msgstr ""
+
+#: wp-full-stripe.php:49
+#. translators: Textual description of how often a periodic task of the plugin
+#. runs
+msgid "Every 15 minutes"
+msgstr ""
+
+#: wp-full-stripe.php:78
+msgid "PHP version required is %1$s but %2$s found."
+msgstr ""
+
+#: wp-full-stripe.php:81
+msgid "WordPress version required is %1$s but %2$s found."
+msgstr ""
+
+#: wp-full-stripe.php:84 wp-full-stripe.php:87
+msgid "Required PHP extension called \"%1$s\" is missing."
+msgstr ""
+
+#: wp-full-stripe.php:125
+msgid "Get Pro Version"
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "WP Full Pay"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "https://paymentsplugin.com"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid ""
+"Use WP Full Pay to accept Stripe payments on your WordPress. Prebuilt forms "
+"to accept payments, donations and subscriptions."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Themeisle"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "https://themeisle.com"
+msgstr ""
