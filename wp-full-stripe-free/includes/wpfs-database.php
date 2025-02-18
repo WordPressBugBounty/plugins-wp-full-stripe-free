@@ -2,6 +2,7 @@
 
 class MM_WPFS_Database {
 	const DATE_FORMAT_DATABASE = 'Y-m-d H:i:s';
+	const TRANSIENT_KEY_PREFIX = 'fullstripe_';
 
 	/**
 	 *
@@ -117,6 +118,7 @@ class MM_WPFS_Database {
         showCurrencySignAtFirstPosition TINYINT(1) DEFAULT '1',
         putWhitespaceBetweenCurrencyAndAmount TINYINT(1) DEFAULT '0',
         emailTemplates TEXT,
+		webhook TEXT,
         stripeElementsTheme VARCHAR(32) NOT NULL DEFAULT 'stripe',
         stripeElementsFont VARCHAR(32),
         PRIMARY KEY (paymentFormID)
@@ -181,6 +183,7 @@ class MM_WPFS_Database {
         showCurrencySignAtFirstPosition TINYINT(1) DEFAULT '1',
         putWhitespaceBetweenCurrencyAndAmount TINYINT(1) DEFAULT '0',
         emailTemplates TEXT,
+		webhook TEXT,
         stripeElementsTheme VARCHAR(32) NOT NULL DEFAULT 'stripe',
         stripeElementsFont VARCHAR(32),
         PRIMARY KEY (subscriptionFormID)
@@ -294,6 +297,7 @@ class MM_WPFS_Database {
         showCurrencySignAtFirstPosition TINYINT(1) DEFAULT '1',
         putWhitespaceBetweenCurrencyAndAmount TINYINT(1) DEFAULT '0',
         emailTemplates TEXT,
+		webhook TEXT,
         collectPhoneNumber TINYINT(1) DEFAULT '0',
         PRIMARY KEY (checkoutFormID)
         ) $charset_collate;";
@@ -360,6 +364,7 @@ class MM_WPFS_Database {
         showCurrencySymbolInsteadOfCode TINYINT(1) DEFAULT '1',
         showCurrencySignAtFirstPosition TINYINT(1) DEFAULT '1',
         putWhitespaceBetweenCurrencyAndAmount TINYINT(1) DEFAULT '0',
+		webhook TEXT,
         emailTemplates TEXT,
         collectPhoneNumber TINYINT(1) DEFAULT '0',
         PRIMARY KEY (checkoutSubscriptionFormID)
@@ -567,6 +572,8 @@ class MM_WPFS_Database {
         allowAnnualRecurring TINYINT(1) DEFAULT '0',
         stripeDescription VARCHAR(1024) DEFAULT NULL,
         productDesc VARCHAR(100),
+        showDonationGoal TINYINT(1) DEFAULT '0',
+        donationGoal INT default 0,
         generateInvoice TINYINT(1) DEFAULT '0',
         buttonTitle VARCHAR(100) DEFAULT 'Donate',
         showAddress TINYINT(1) DEFAULT '0',
@@ -591,6 +598,7 @@ class MM_WPFS_Database {
         redirectToPageOrPost TINYINT(1) DEFAULT '1',
         showDetailedSuccessPage TINYINT(1) DEFAULT '0',
         emailTemplates TEXT,
+		webhook TEXT,
         stripeElementsTheme VARCHAR(32) NOT NULL DEFAULT 'stripe',
         stripeElementsFont VARCHAR(32),
         PRIMARY KEY (donationFormID)
@@ -619,6 +627,8 @@ class MM_WPFS_Database {
         companyName VARCHAR(100),
         productDesc VARCHAR(100),
         image VARCHAR(500),
+        showDonationGoal TINYINT(1) DEFAULT '0',
+        donationGoal INT default 0,
         openButtonTitle VARCHAR(100) DEFAULT 'Donate',
         buttonTitle VARCHAR(100) DEFAULT 'Donate',
         showBillingAddress TINYINT(1) DEFAULT '0',
@@ -643,6 +653,7 @@ class MM_WPFS_Database {
         redirectToPageOrPost TINYINT(1) DEFAULT '1',
         showDetailedSuccessPage TINYINT(1) DEFAULT '0',
         emailTemplates TEXT,
+		webhook TEXT,
         collectPhoneNumber TINYINT(1) DEFAULT '0',
         PRIMARY KEY (checkoutDonationFormID)
         ) $charset_collate;";
@@ -2836,6 +2847,19 @@ class MM_WPFS_Database {
 	}
 
 	/**
+	 * @return int
+	 * @throws Exception
+	 */
+	public function getTotalDonationsByFormId( $formId, $formType ) {
+		global $wpdb;
+
+		$result = $wpdb->get_var( $wpdb->prepare( "SELECT sum(amount) FROM {$wpdb->prefix}fullstripe_donations WHERE formId=%d AND formType=%s AND lastChargeStatus='succeeded' AND refunded=0;", $formId, $formType ) );
+		self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during select!' );
+
+		return $result ? (int) $result : 0;
+	}
+
+	/**
 	 * @return array|object|null
 	 * @throws Exception
 	 */
@@ -2882,6 +2906,45 @@ class MM_WPFS_Database {
             ) as x;
         ", OBJECT );
 		self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during select!' );
+
+		return $result;
+	}
+
+	/**
+	 * Get the number of payments by method.
+	 * 
+	 * @param $method
+	 *
+	 * @return array|object|null
+	 * @throws Exception
+	 */
+	public function getNumberOfPaymentsByMethod( $method ) {
+		$cacheKey = self::TRANSIENT_KEY_PREFIX . 'getNumberOfPaymentsByMethod_' . $method;
+		$cache    = get_transient( $cacheKey );
+
+		if ( $cache !== false ) {
+			return $cache;
+		}
+
+		switch ( $method ) {
+			case MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS:
+				$result = ( $this->getNumberOfOneTimePayments() )->paymentCount;
+				break;
+			case MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS:
+				$result = ( $this->getNumberOfSubscriptions() )->subscriptionCount;
+				break;
+			case MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS:
+				$result = ( $this->getNumberOfDonations() )->donationCount;
+				break;
+			case MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS:
+				$result = ( $this->getNumberOfSavedCards() )->savedCardCount;
+				break;
+			default:
+				$result = null;
+		}
+
+		$cacheTime = $result > 100 ? WEEK_IN_SECONDS : MINUTE_IN_SECONDS;
+		set_transient( $cacheKey, $result, $cacheTime );
 
 		return $result;
 	}

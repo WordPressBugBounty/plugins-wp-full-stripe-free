@@ -303,7 +303,7 @@ class MM_WPFS_HelpRepository {
 
 class MM_WPFS_HelpRepositoryFactory {
 
-	const HELP_ARTICLE_BASE_URL = 'https://support.paymentsplugin.com';
+	const HELP_ARTICLE_BASE_URL = 'https://docs.themeisle.com';
 
 	/**
 	 * @return MM_WPFS_HelpRepository
@@ -380,14 +380,14 @@ class MM_WPFS_HelpRepositoryFactory {
 	protected static function getDefaultRelatedArticlesArray( $page ) {
 		return array(
 			self::createArticle(
-				__( 'Set up Stripe account', 'wp-full-stripe-admin' ),
+				__( 'Set up Stripe account', 'wp-full-stripe-free' ),
 				'/article/16-configuring-the-stripe-api-keys',
 				MM_WPFS_HelpArticleVisualType::bookmark(),
 				$page
 			),
 			self::createArticle(
-				__( 'Set up Stripe webhook', 'wp-full-stripe-admin' ),
-				'/article/17-setting-up-webhooks',
+				__( 'Set up Stripe webhook', 'wp-full-stripe-free' ),
+				'article/2096-setting-up-webhooks',
 				MM_WPFS_HelpArticleVisualType::bookmark(),
 				$page
 			)
@@ -436,19 +436,19 @@ class MM_WPFS_HelpRepositoryFactory {
 	protected static function getDefaultGlobalArticlesArray( $page ) {
 		return array(
 			self::createArticle(
-				__( 'Getting started guide', 'wp-full-stripe-admin' ),
-				'/article/69-getting-started-with-wp-full-pay',
+				__( 'Getting started guide', 'wp-full-stripe-free' ),
+				'/article/2115-installing-wp-full-pay',
 				MM_WPFS_HelpArticleVisualType::gettingStarted(),
 				$page
 			),
 			self::createArticle(
-				__( 'Search the documentation', 'wp-full-stripe-admin' ),
+				__( 'Search the documentation', 'wp-full-stripe-free' ),
 				'/',
 				MM_WPFS_HelpArticleVisualType::knowledgeBase(),
 				$page
 			),
 			self::createArticle(
-				__( 'Leave feedback', 'wp-full-stripe-admin' ),
+				__( 'Leave feedback', 'wp-full-stripe-free' ),
 				'/#contact',
 				MM_WPFS_HelpArticleVisualType::feedback(),
 				$page
@@ -467,13 +467,13 @@ class MM_WPFS_HelpRepositoryFactory {
 
 		$relatedArticles = array(
             self::createArticle(
-                __( 'How to use shortcodes', 'wp-full-stripe-admin' ),
+                __( 'How to use shortcodes', 'wp-full-stripe-free' ),
                 '/article/27-how-to-use-form-shortcodes',
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
             ),
             self::createArticle(
-                __( 'Introducing form types', 'wp-full-stripe-admin' ),
+                __( 'Introducing form types', 'wp-full-stripe-free' ),
                 '/article/21-introducing-form-types',
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
@@ -498,7 +498,7 @@ class MM_WPFS_HelpRepositoryFactory {
 
         $relatedArticles = array(
             self::createArticle(
-                __( 'Introducing form types', 'wp-full-stripe-admin' ),
+                __( 'Introducing form types', 'wp-full-stripe-free' ),
                 '/article/21-introducing-form-types',
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
@@ -775,19 +775,19 @@ class MM_WPFS_HelpRepositoryFactory {
 
 		$relatedArticles = array(
             self::createArticle(
-                __( 'Set up Stripe account', 'wp-full-stripe-admin' ),
+                __( 'Set up Stripe account', 'wp-full-stripe-free' ),
                 '/article/16-configuring-the-stripe-api-keys',
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
             ),
             self::createArticle(
-                __( 'Set up Stripe webhook', 'wp-full-stripe-admin' ),
-                '/article/17-setting-up-webhooks',
+                __( 'Set up Stripe webhook', 'wp-full-stripe-free' ),
+                '/article/2096-setting-up-webhooks',
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
             ),
             self::createArticle(
-                __( 'Why plans disappear when changing API mode?', 'wp-full-stripe-admin' ),
+                __( 'Why plans disappear when changing API mode?', 'wp-full-stripe-free' ),
                 '/article/52-all-subscription-plans-disappear-when-going-live',
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
@@ -812,13 +812,13 @@ class MM_WPFS_HelpRepositoryFactory {
 
 		$relatedArticles = array(
             self::createArticle(
-                __( 'Customizing form styles', 'wp-full-stripe-admin' ),
-                '/article/45-customizing-forms-with-css',
+                __( 'Customizing form styles', 'wp-full-stripe-free' ),
+                '/article/2114-customizing-forms-with-css',
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
             ),
             self::createArticle(
-                __( 'How to translate labels', 'wp-full-stripe-admin' ),
+                __( 'How to translate labels', 'wp-full-stripe-free' ),
                 '/article/44-translating-the-plugin-to-other-languages',
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
@@ -843,8 +843,8 @@ class MM_WPFS_HelpRepositoryFactory {
 
 		$relatedArticles = array(
             self::createArticle(
-                __( 'Configuring email notifications', 'wp-full-stripe-admin' ),
-                '/article/28-configuring-email-notifications',
+                __( 'Configuring email notifications', 'wp-full-stripe-free' ),
+                '/article/2101-configuring-email-notifications',
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
             ),
@@ -868,14 +868,14 @@ class MM_WPFS_HelpRepositoryFactory {
 
         $relatedArticles = array(
             self::createArticle(
-                __( 'Using placeholder tokens', 'wp-full-stripe-admin' ),
+                __( 'Using placeholder tokens', 'wp-full-stripe-free' ),
                 '/article/29-using-placeholder-tokens',
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
             ),
             self::createArticle(
-                __( 'Configuring email notifications', 'wp-full-stripe-admin' ),
-                '/article/28-configuring-email-notifications',
+                __( 'Configuring email notifications', 'wp-full-stripe-free' ),
+                '/article/2101-configuring-email-notifications',
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
             ),
@@ -899,8 +899,8 @@ class MM_WPFS_HelpRepositoryFactory {
 
 		$relatedArticles = array(
             self::createArticle(
-                __( 'Using Google reCaptcha', 'wp-full-stripe-admin' ),
-                '/article/18-registering-your-website-for-google-recaptcha',
+                __( 'Using Google reCaptcha', 'wp-full-stripe-free' ),
+                '/article/2099-registering-your-website-for-google-recaptcha',
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
             ),
@@ -924,8 +924,8 @@ class MM_WPFS_HelpRepositoryFactory {
 
 		$relatedArticles = array(
             self::createArticle(
-                __( 'Setting up Customer Portal', 'wp-full-stripe-admin' ),
-                '/article/75-customer-portal',
+                __( 'Setting up Customer Portal', 'wp-full-stripe-free' ),
+                '/article/2124-customer-portal',
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
             ),

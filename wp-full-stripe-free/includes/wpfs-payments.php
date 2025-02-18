@@ -103,6 +103,9 @@ class MM_WPFS_Stripe {
 	/* @var string */
 	private $connectUrl;
 
+	/* @var  string */
+	private $userVersion;
+
 	/**
 	 * MM_WPFS_Stripe constructor.
 	 *
@@ -121,6 +124,7 @@ class MM_WPFS_Stripe {
 		$this->liveStripeAcountId = $this->options->get( MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID );
 		$this->testStripeAcountId = $this->options->get( MM_WPFS_Options::OPTION_TEST_ACCOUNT_ID );
 		$this->connectUrl = $this->options->getFunctionsUrl();
+		$this->userVersion = MM_WPFS::get_user_version();
 
 		if ( ! is_null( $token ) && ! empty( $token ) ) {
 			try {
@@ -285,14 +289,14 @@ class MM_WPFS_Stripe {
 			$subscriptionData = array_merge( $subscriptionData, array( 'validLicense' => $this->validLicense ) );
 			$stripeSubscription = $this->remoteRequest(
 				'post',
-				'/subscription?mode=test&accountId=' . $this->testStripeAcountId,
+				'/subscription?mode=test&accountId=' . $this->testStripeAcountId . '&api_version=' . $this->userVersion,
 				$subscriptionData
 			);
 		} elseif ( $this->apiMode === 'live' && $this->usingWpLivePlatform ) {
 			$subscriptionData = array_merge( $subscriptionData, array( 'validLicense' => $this->validLicense ) );
 			$stripeSubscription = $this->remoteRequest(
 				'post',
-				'/subscription?mode=live&accountId=' . $this->liveStripeAcountId,
+				'/subscription?mode=live&accountId=' . $this->liveStripeAcountId . '&api_version=' . $this->userVersion,
 				$subscriptionData
 			);
 		} else {
@@ -374,7 +378,7 @@ class MM_WPFS_Stripe {
 		if ( $paymentMethod->type === 'card' && is_null( $paymentMethod->card->checks->cvc_check ) && is_null( $paymentMethod->card->wallet ) ) {
 			throw new Exception(
 				/* translators: Validation error message for a card number without a CVC code */
-				__( 'Please enter a CVC code', 'wp-full-stripe' )
+				__( 'Please enter a CVC code', 'wp-full-stripe-free' )
 			);
 		}
 
@@ -431,7 +435,7 @@ class MM_WPFS_Stripe {
 				'currency' => $recurringPrice->currency,
 				'description' => sprintf(
 					/* translators: It's a line item for the initial payment of a subscription */
-					__( 'One-time setup fee (plan: %s)', 'wp-full-stripe' ),
+					__( 'One-time setup fee (plan: %s)', 'wp-full-stripe-free' ),
 					MM_WPFS_Localization::translateLabel( $ctx->productName )
 				),
 				'quantity' => $ctx->stripePlanQuantity,
@@ -528,14 +532,14 @@ class MM_WPFS_Stripe {
 			$subscriptionData = array_merge( $subscriptionData, array( 'validLicense' => $this->validLicense ) );
 			$stripeSubscription = $this->remoteRequest(
 				'post',
-				'/subscription?mode=test&accountId=' . $this->testStripeAcountId,
+				'/subscription?mode=test&accountId=' . $this->testStripeAcountId . '&api_version=' . $this->userVersion,
 				$subscriptionData
 			);
 		} elseif ( $useLiveFunctions ) {
 			$subscriptionData = array_merge( $subscriptionData, array( 'validLicense' => $this->validLicense ) );
 			$stripeSubscription = $this->remoteRequest(
 				'post',
-				'/subscription?mode=live&accountId=' . $this->liveStripeAcountId,
+				'/subscription?mode=live&accountId=' . $this->liveStripeAcountId . '&api_version=' . $this->userVersion,
 				$subscriptionData
 			);
 
@@ -655,43 +659,43 @@ class MM_WPFS_Stripe {
 	function resolveErrorMessageByCode( $code ) {
 		if ( $code === self::INVALID_NUMBER_ERROR ) {
 			$resolved_message =  /* translators: message for Stripe error code 'invalid_number' */
-				__( 'Your card number is invalid.', 'wp-full-stripe' );
+				__( 'Your card number is invalid.', 'wp-full-stripe-free' );
 		} elseif ( $code === self::INVALID_EXPIRY_MONTH_ERROR || $code === self::INVALID_NUMBER_ERROR_EXP_MONTH ) {
 			$resolved_message = /* translators: message for Stripe error code 'invalid_expiry_month' */
-				__( 'Your card\'s expiration month is invalid.', 'wp-full-stripe' );
+				__( 'Your card\'s expiration month is invalid.', 'wp-full-stripe-free' );
 		} elseif ( $code === self::INVALID_EXPIRY_YEAR_ERROR || $code === self::INVALID_NUMBER_ERROR_EXP_YEAR ) {
 			$resolved_message = /* translators: message for Stripe error code 'invalid_expiry_year' */
-				__( 'Your card\'s expiration year is invalid.', 'wp-full-stripe' );
+				__( 'Your card\'s expiration year is invalid.', 'wp-full-stripe-free' );
 		} elseif ( $code === self::INVALID_CVC_ERROR ) {
 			$resolved_message = /* translators: message for Stripe error code 'invalid_cvc' */
-				__( 'Your card\'s security code is invalid.', 'wp-full-stripe' );
+				__( 'Your card\'s security code is invalid.', 'wp-full-stripe-free' );
 		} elseif ( $code === self::INCORRECT_NUMBER_ERROR ) {
 			$resolved_message = /* translators: message for Stripe error code 'incorrect_number' */
-				__( 'Your card number is incorrect.', 'wp-full-stripe' );
+				__( 'Your card number is incorrect.', 'wp-full-stripe-free' );
 		} elseif ( $code === self::EXPIRED_CARD_ERROR ) {
 			$resolved_message = /* translators: message for Stripe error code 'expired_card' */
-				__( 'Your card has expired.', 'wp-full-stripe' );
+				__( 'Your card has expired.', 'wp-full-stripe-free' );
 		} elseif ( $code === self::INCORRECT_CVC_ERROR ) {
 			$resolved_message = /* translators: message for Stripe error code 'incorrect_cvc' */
-				__( 'Your card\'s security code is incorrect.', 'wp-full-stripe' );
+				__( 'Your card\'s security code is incorrect.', 'wp-full-stripe-free' );
 		} elseif ( $code === self::INCORRECT_ZIP_ERROR ) {
 			$resolved_message = /* translators: message for Stripe error code 'incorrect_zip' */
-				__( 'Your card\'s zip code failed validation.', 'wp-full-stripe' );
+				__( 'Your card\'s zip code failed validation.', 'wp-full-stripe-free' );
 		} elseif ( $code === self::CARD_DECLINED_ERROR ) {
 			$resolved_message = /* translators: message for Stripe error code 'card_declined' */
-				__( 'Your card was declined.', 'wp-full-stripe' );
+				__( 'Your card was declined.', 'wp-full-stripe-free' );
 		} elseif ( $code === self::MISSING_ERROR ) {
 			$resolved_message = /* translators: message for Stripe error code 'missing' */
-				__( 'There is no card on a customer that is being charged.', 'wp-full-stripe' );
+				__( 'There is no card on a customer that is being charged.', 'wp-full-stripe-free' );
 		} elseif ( $code === self::PROCESSING_ERROR ) {
 			$resolved_message = /* translators: message for Stripe error code 'processing_error' */
-				__( 'An error occurred while processing your card.', 'wp-full-stripe' );
+				__( 'An error occurred while processing your card.', 'wp-full-stripe-free' );
 		} elseif ( $code === self::MISSING_PAYMENT_INFORMATION ) {
 			$resolved_message = /* translators: Stripe error message 'Missing payment information' */
-				__( 'Missing payment information', 'wp-full-stripe' );
+				__( 'Missing payment information', 'wp-full-stripe-free' );
 		} elseif ( $code === self::COULD_NOT_FIND_PAYMENT_INFORMATION ) {
 			$resolved_message = /* translators: Stripe error message 'Could not find payment information' */
-				__( 'Could not find payment information', 'wp-full-stripe' );
+				__( 'Could not find payment information', 'wp-full-stripe-free' );
 		} else {
 			$resolved_message = null;
 		}
@@ -874,6 +878,42 @@ class MM_WPFS_Stripe {
 			$customers = json_decode( $this->stripe->customers->all( $params )->toJSON() );
 		}
 		return $customers;
+	}
+
+	/**
+	 * @param $customerId
+	 * @param $params
+	 * @return array
+	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 * @throws WPFS_UserFriendlyException
+	 */
+	public function createCustomerPortalSession( $customerId, $returnUrl ) {
+		$session = null;
+		if ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) {
+			$session = $this->remoteRequest(
+				'post',
+				'/portal?mode=test',
+				array(
+					'customerId' => $customerId,
+					'accountId' => $this->testStripeAcountId,
+					'returnUrl' => $returnUrl
+				)
+			);
+		} elseif ( $this->apiMode === 'live' && $this->usingWpLivePlatform ) {
+			$session = $this->remoteRequest(
+				'post',
+				'/portal?mode=live',
+				array(
+					'customerId' => $customerId,
+					'accountId' => $this->liveStripeAcountId,
+					'returnUrl' => $returnUrl
+				)
+			);
+		} else {
+			$session = json_decode( $this->stripe->billingPortal->sessions->create( array( 'customer' => $customerId ) )->toJSON() );
+		}
+
+		return $session;
 	}
 
 	/**
@@ -1325,7 +1365,7 @@ class MM_WPFS_Stripe {
 			);
 			$intent = $this->remoteRequest(
 				'post',
-				'/payment_intent?mode=test&accountId=' . $this->testStripeAcountId,
+				'/payment_intent?mode=test&accountId=' . $this->testStripeAcountId . '&api_version=' . $this->userVersion,
 				apply_filters( 'fullstripe_payment_intent_parameters', $paymentIntentParameters )
 			);
 		} elseif ( $this->apiMode === 'live' && $this->usingWpLivePlatform ) {
@@ -1337,7 +1377,7 @@ class MM_WPFS_Stripe {
 			);
 			$intent = $this->remoteRequest(
 				'post',
-				'/payment_intent?mode=live&accountId=' . $this->liveStripeAcountId,
+				'/payment_intent?mode=live&accountId=' . $this->liveStripeAcountId . '&api_version=' . $this->userVersion,
 				apply_filters( 'fullstripe_payment_intent_parameters', $paymentIntentParameters )
 			);
 		} else {
@@ -1423,7 +1463,7 @@ class MM_WPFS_Stripe {
 		} else {
 			$invoiceItemParams['amount'] = $ctx->amount;
 			$invoiceItemParams['currency'] = $ctx->currency;
-			$invoiceItemParams['description'] = __( $ctx->productName, 'wp-full-stripe' );
+			$invoiceItemParams['description'] = $ctx->productName;
 		}
 
 		if ( isset( $ctx->stripeCouponId ) ) {
@@ -1451,7 +1491,7 @@ class MM_WPFS_Stripe {
 			// create invoice
 			$createdInvoice = $this->remoteRequest(
 				'post',
-				'/invoice?mode=test&accountId=' . $this->testStripeAcountId,
+				'/invoice?mode=test&accountId=' . $this->testStripeAcountId . '&api_version=' . $this->userVersion,
 				$invoiceParams
 			);
 			$invoiceItemParams['invoice'] = $createdInvoice->id;
@@ -1468,7 +1508,7 @@ class MM_WPFS_Stripe {
 			// create invoice
 			$createdInvoice = $this->remoteRequest(
 				'post',
-				'/invoice?mode=live&accountId=' . $this->liveStripeAcountId,
+				'/invoice?mode=live&accountId=' . $this->liveStripeAcountId . '&api_version=' . $this->userVersion,
 				$invoiceParams
 			);
 			$invoiceItemParams['invoice'] = $createdInvoice->id;
@@ -1531,7 +1571,7 @@ class MM_WPFS_Stripe {
 		} else {
 			$itemParams['amount'] = round( $ctx->amount );
 			$itemParams['currency'] = $ctx->currency;
-			$itemParams['description'] = __( $ctx->productName, 'wp-full-stripe' );
+			$itemParams['description'] = $ctx->productName;
 		}
 
 		if ( isset( $ctx->stripeCouponId ) ) {
@@ -1591,7 +1631,7 @@ class MM_WPFS_Stripe {
 
 			$updatedPaymentIntent = $this->remoteRequest(
 				'post',
-				'/payment_intent/update?mode=test&accountId=' . $this->testStripeAcountId . '&paymentIntentId=' . $generatedPaymentIntent->id,
+				'/payment_intent/update?mode=test&accountId=' . $this->testStripeAcountId . '&paymentIntentId=' . $generatedPaymentIntent->id . '&api_version=' . $this->userVersion,
 				apply_filters( 'fullstripe_payment_intent_parameters', $paymentIntentParameters )
 			);
 
@@ -1614,7 +1654,7 @@ class MM_WPFS_Stripe {
 
 			$updatedPaymentIntent = $this->remoteRequest(
 				'post',
-				'/payment_intent/update?mode=live&accountId=' . $this->liveStripeAcountId . '&paymentIntentId=' . $generatedPaymentIntent->id,
+				'/payment_intent/update?mode=live&accountId=' . $this->liveStripeAcountId . '&paymentIntentId=' . $generatedPaymentIntent->id . '&api_version=' . $this->userVersion,
 				apply_filters( 'fullstripe_payment_intent_parameters', $paymentIntentParameters )
 			);
 
@@ -2350,7 +2390,7 @@ class MM_WPFS_Stripe {
 								/* translators: Error message displayed when subscriber tries to set a quantity for a subscription which is beyond allowed value */
 								__(
 									"Subscription quantity '%d' is not allowed for this subscription!",
-									'wp-full-stripe'
+									'wp-full-stripe-free'
 								),
 								$newPlanQuantity
 							)
@@ -2362,7 +2402,7 @@ class MM_WPFS_Stripe {
 								/* translators: Error message displayed when subscriber tries to set a quantity for a subscription which is over allowed value */
 								__(
 									"Subscription quantity '%d' is not allowed for this subscription!",
-									'wp-full-stripe'
+									'wp-full-stripe-free'
 								),
 								$newPlanQuantity
 							)
@@ -2377,7 +2417,7 @@ class MM_WPFS_Stripe {
 						/* translators: Error message displayed when subscriber tries to set a quantity for a
 						 * subscription where quantity other than one is not allowed.
 						 */
-						__( 'Quantity update is not allowed for this subscription!', 'wp-full-stripe' )
+						__( 'Quantity update is not allowed for this subscription!', 'wp-full-stripe-free' )
 					);
 				}
 			} else {
@@ -2386,7 +2426,7 @@ class MM_WPFS_Stripe {
 						/* translators: Error message displayed when a subscription is not found.
 						 * p1: Subscription identifier
 						 */
-						__( "Subscription '%s' not found!", 'wp-full-stripe' ),
+						__( "Subscription '%s' not found!", 'wp-full-stripe-free' ),
 						$stripeSubscriptionId
 					)
 				);
@@ -2643,14 +2683,21 @@ class MM_WPFS_Stripe {
 	 *
 	 * @param $paymentIntent
 	 * @param bool $includeAmount
+	 * @param $stripeReceiptEmailAddress
 	 * @throws \StripeWPFS\Exception\ApiErrorException
 	 * @throws WPFS_UserFriendlyException
 	 */
-	public function updatePaymentIntent( $paymentIntent, $includeAmount = false ) {
+	public function updatePaymentIntent( $paymentIntent, $includeAmount = false, $stripeReceiptEmailAddress = null ) {
 		$updateIntentBody = array(
 			"metadata" => $paymentIntent->metadata,
 			"description" => $paymentIntent->description,
+			"validLicense" => $this->validLicense,
 		);
+
+		if ( isset( $stripeReceiptEmailAddress ) ) {
+			$updateIntentBody['receipt_email'] = $stripeReceiptEmailAddress;
+		}
+
 		if ( $includeAmount && isset( $paymentIntent->amount ) ) {
 			$updateIntentBody["amount"] = $paymentIntent->amount;
 		}
@@ -2658,13 +2705,13 @@ class MM_WPFS_Stripe {
 		if ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) {
 			$this->remoteRequest(
 				'post',
-				'/payment_intent/update?mode=test&accountId=' . $this->testStripeAcountId . '&paymentIntentId=' . $paymentIntent->id,
+				'/payment_intent/update?mode=test&accountId=' . $this->testStripeAcountId . '&paymentIntentId=' . $paymentIntent->id . '&api_version=' . $this->userVersion,
 				$updateIntentBody
 			);
 		} elseif ( $this->apiMode === 'live' && $this->usingWpLivePlatform ) {
 			$this->remoteRequest(
 				'post',
-				'/payment_intent/update?mode=live&accountId=' . $this->liveStripeAcountId . '&paymentIntentId=' . $paymentIntent->id,
+				'/payment_intent/update?mode=live&accountId=' . $this->liveStripeAcountId . '&paymentIntentId=' . $paymentIntent->id . '&api_version=' . $this->userVersion,
 				$updateIntentBody
 			);
 		} else {
@@ -2917,14 +2964,14 @@ class MM_WPFS_Stripe {
 			$parameters = array_merge( $parameters, array( 'validLicense' => $this->validLicense ) );
 			$session = $this->remoteRequest(
 				'post',
-				'/checkout?mode=test&accountId=' . $this->testStripeAcountId,
+				'/checkout?mode=test&accountId=' . $this->testStripeAcountId . '&api_version=' . $this->userVersion,
 				apply_filters( 'fullstripe_checkout_session_parameters', $parameters )
 			);
 		} elseif ( $this->apiMode === 'live' && $this->usingWpLivePlatform ) {
 			$parameters = array_merge( $parameters, array( 'validLicense' => $this->validLicense ) );
 			$session = $this->remoteRequest(
 				'post',
-				'/checkout?mode=live&accountId=' . $this->liveStripeAcountId,
+				'/checkout?mode=live&accountId=' . $this->liveStripeAcountId . '&api_version=' . $this->userVersion,
 				apply_filters( 'fullstripe_checkout_session_parameters', $parameters )
 			);
 		} else {

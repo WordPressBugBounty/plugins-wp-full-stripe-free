@@ -11,38 +11,38 @@ trait MM_WPFS_InlineFormValidator {
 			if ( empty( $formModelObject->getCardHolderName() ) ) {
 				$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_CARD_HOLDER_NAME;
 				$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-				$error = __( 'Please enter the cardholder\'s name', 'wp-full-stripe' );
+				$error = __( 'Please enter the cardholder\'s name', 'wp-full-stripe-free' );
 				$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 			}
 			if ( ! filter_var( $formModelObject->getCardHolderEmail(), FILTER_VALIDATE_EMAIL ) ) {
 				$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_CARD_HOLDER_EMAIL;
 				$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-				$error = __( 'Please enter a valid email address', 'wp-full-stripe' );
+				$error = __( 'Please enter a valid email address', 'wp-full-stripe-free' );
 				$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 			}
 			if ( $this->showBillingAddress( $formModelObject ) ) {
 				if ( empty( $formModelObject->getBillingName() ) ) {
 					$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_BILLING_NAME;
 					$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-					$error = __( 'Please enter a billing name', 'wp-full-stripe' );
+					$error = __( 'Please enter a billing name', 'wp-full-stripe-free' );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				}
 				if ( empty( $formModelObject->getBillingAddressLine1() ) ) {
 					$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_BILLING_ADDRESS_LINE_1;
 					$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-					$error = __( 'Please enter a billing address', 'wp-full-stripe' );
+					$error = __( 'Please enter a billing address', 'wp-full-stripe-free' );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				}
 				if ( empty( $formModelObject->getBillingAddressCity() ) ) {
 					$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_BILLING_ADDRESS_CITY;
 					$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-					$error = __( 'Please enter a city', 'wp-full-stripe' );
+					$error = __( 'Please enter a city', 'wp-full-stripe-free' );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				}
 				if ( empty( $formModelObject->getBillingAddressCountry() ) ) {
 					$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_BILLING_ADDRESS_COUNTRY;
 					$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-					$error = __( 'Please select a country', 'wp-full-stripe' );
+					$error = __( 'Please select a country', 'wp-full-stripe-free' );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				}
 				if ( $formModelObject->getBillingAddressCountry() === MM_WPFS::COUNTRY_CODE_UNITED_STATES ) {
@@ -51,7 +51,7 @@ trait MM_WPFS_InlineFormValidator {
 					if ( ! array_key_exists( $formModelObject->getBillingAddressState(), $states ) ) {
 						$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_BILLING_ADDRESS_STATE_SELECT;
 						$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-						$error = __( 'Please select a state', 'wp-full-stripe' );
+						$error = __( 'Please select a state', 'wp-full-stripe-free' );
 						$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 					}
 				}
@@ -62,7 +62,7 @@ trait MM_WPFS_InlineFormValidator {
 					if ( ! $bindingResult->hasFieldErrors( $formModelObject::PARAM_WPFS_BILLING_ADDRESS_COUNTRY ) ) {
 						$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_BILLING_ADDRESS_COUNTRY;
 						$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-						$error = __( 'Please select a country', 'wp-full-stripe' );
+						$error = __( 'Please select a country', 'wp-full-stripe-free' );
 						$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 					}
 				} else {
@@ -77,7 +77,7 @@ trait MM_WPFS_InlineFormValidator {
 					if ( empty( $formModelObject->getBillingAddressZip() ) ) {
 						$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_BILLING_ADDRESS_ZIP;
 						$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-						$error = __( 'Please enter a zip/postal code', 'wp-full-stripe' );
+						$error = __( 'Please enter a zip/postal code', 'wp-full-stripe-free' );
 						$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 					}
 				}
@@ -87,25 +87,25 @@ trait MM_WPFS_InlineFormValidator {
 					if ( empty( $formModelObject->getShippingName() ) ) {
 						$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_SHIPPING_NAME;
 						$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-						$error = __( 'Please enter a shipping name', 'wp-full-stripe' );
+						$error = __( 'Please enter a shipping name', 'wp-full-stripe-free' );
 						$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 					}
 					if ( empty( $formModelObject->getShippingAddressLine1() ) ) {
 						$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_SHIPPING_ADDRESS_LINE_1;
 						$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-						$error = __( 'Please enter a shipping address', 'wp-full-stripe' );
+						$error = __( 'Please enter a shipping address', 'wp-full-stripe-free' );
 						$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 					}
 					if ( empty( $formModelObject->getShippingAddressCity() ) ) {
 						$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_SHIPPING_ADDRESS_CITY;
 						$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-						$error = __( 'Please enter a city', 'wp-full-stripe' );
+						$error = __( 'Please enter a city', 'wp-full-stripe-free' );
 						$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 					}
 					if ( empty( $formModelObject->getShippingAddressCountry() ) ) {
 						$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_SHIPPING_ADDRESS_COUNTRY;
 						$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-						$error = __( 'Please select a country', 'wp-full-stripe' );
+						$error = __( 'Please select a country', 'wp-full-stripe-free' );
 						$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 					}
 					if ( $formModelObject->getShippingAddressCountry() === MM_WPFS::COUNTRY_CODE_UNITED_STATES ) {
@@ -114,7 +114,7 @@ trait MM_WPFS_InlineFormValidator {
 						if ( ! array_key_exists( $formModelObject->getShippingAddressState(), $states ) ) {
 							$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_SHIPPING_ADDRESS_STATE_SELECT;
 							$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-							$error = __( 'Please select a state', 'wp-full-stripe' );
+							$error = __( 'Please select a state', 'wp-full-stripe-free' );
 							$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 						}
 					}
@@ -125,7 +125,7 @@ trait MM_WPFS_InlineFormValidator {
 						if ( ! $bindingResult->hasFieldErrors( $formModelObject::PARAM_WPFS_SHIPPING_ADDRESS_COUNTRY ) ) {
 							$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_SHIPPING_ADDRESS_COUNTRY;
 							$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-							$error = __( 'Please select a country', 'wp-full-stripe' );
+							$error = __( 'Please select a country', 'wp-full-stripe-free' );
 							$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 						}
 					} else {
@@ -140,7 +140,7 @@ trait MM_WPFS_InlineFormValidator {
 						if ( empty( $formModelObject->getShippingAddressZip() ) ) {
 							$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_SHIPPING_ADDRESS_ZIP;
 							$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-							$error = __( 'Please enter a zip/postal code', 'wp-full-stripe' );
+							$error = __( 'Please enter a zip/postal code', 'wp-full-stripe-free' );
 							$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 						}
 					}
@@ -360,7 +360,7 @@ class MM_WPFS_FormValidator extends MM_WPFS_Validator {
 									/* translators: Error message for required fields when empty.
 									 * p1: custom input field label
 									 */
-									__( "Please enter a value for '%s'", 'wp-full-stripe' ), MM_WPFS_Localization::translateLabel( $formModelObject->getForm()->customInputTitle ) );
+									__( "Please enter a value for '%s'", 'wp-full-stripe-free' ), MM_WPFS_Localization::translateLabel( $formModelObject->getForm()->customInputTitle ) );
 								$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 							}
 						} else {
@@ -379,7 +379,7 @@ class MM_WPFS_FormValidator extends MM_WPFS_Validator {
 									/* translators: Error message for required fields when empty.
 									 * p1: custom input field label
 									 */
-									$error = sprintf( __( "Please enter a value for '%s'", 'wp-full-stripe' ), MM_WPFS_Localization::translateLabel( $label ) );
+									$error = sprintf( __( "Please enter a value for '%s'", 'wp-full-stripe-free' ), MM_WPFS_Localization::translateLabel( $label ) );
 									$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 								}
 							}
@@ -391,7 +391,7 @@ class MM_WPFS_FormValidator extends MM_WPFS_Validator {
 							$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
 							$error = sprintf(
 								/* translators: Form field validation error for custom fields */
-								__( "The value for '%s' is too long", 'wp-full-stripe' ), MM_WPFS_Localization::translateLabel( $formModelObject->getForm()->customInputTitle ) );
+								__( "The value for '%s' is too long", 'wp-full-stripe-free' ), MM_WPFS_Localization::translateLabel( $formModelObject->getForm()->customInputTitle ) );
 							$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 						}
 					} else {
@@ -403,7 +403,7 @@ class MM_WPFS_FormValidator extends MM_WPFS_Validator {
 								$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash(), $index );
 								$error = sprintf(
 									/* translators: Form field validation error for custom fields */
-									__( "The value for '%s' is too long", 'wp-full-stripe' ), MM_WPFS_Localization::translateLabel( $label ) );
+									__( "The value for '%s' is too long", 'wp-full-stripe-free' ), MM_WPFS_Localization::translateLabel( $label ) );
 								$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 							}
 						}
@@ -449,7 +449,7 @@ class MM_WPFS_FormValidator extends MM_WPFS_Validator {
 			$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
 			$error =
 				/* translators: Captcha validation error message displayed when the form is submitted without completing the captcha challenge */
-				__( "Please prove that you are not a robot. ", 'wp-full-stripe' );
+				__( "Please prove that you are not a robot. ", 'wp-full-stripe-free' );
 			if ( is_null( $formModelObject->getGoogleReCaptchaResponse() ) ) {
 				$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 			} else {
@@ -525,17 +525,17 @@ class MM_WPFS_PaymentFormValidator extends MM_WPFS_FormValidator {
 				if ( empty( $formModelObject->getAmount() ) ) {
 					$error =
 						/* translators: Form field validation error message when custom amount is empty */
-						__( 'Please enter an amount', 'wp-full-stripe' );
+						__( 'Please enter an amount', 'wp-full-stripe-free' );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				} elseif ( ! is_numeric( trim( $formModelObject->getAmount() ) ) || $formModelObject->getAmount() <= 0 ) {
 					$error =
 						/* translators: Form field validation error message when custom amount is not a number */
-						__( 'Please enter a valid amount, use only digits and a decimal separator', 'wp-full-stripe' );
+						__( 'Please enter a valid amount, use only digits and a decimal separator', 'wp-full-stripe-free' );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				} elseif ( $formModelObject->getAmount() < $formModelObject->getForm()->minimumPaymentAmount ) {
 					$error =
 						/* translators: Form field validation error message when custom amount is less than the minimum payment amount */
-						sprintf( __( 'The minimum payment amount is %s', 'wp-full-stripe' ), MM_WPFS_Currencies::formatByForm( $formModelObject->getForm(), $formModelObject->getForm()->currency, $formModelObject->getForm()->minimumPaymentAmount, false, true ) );
+						sprintf( __( 'The minimum payment amount is %s', 'wp-full-stripe-free' ), MM_WPFS_Currencies::formatByForm( $formModelObject->getForm(), $formModelObject->getForm()->currency, $formModelObject->getForm()->minimumPaymentAmount, false, true ) );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				}
 			}
@@ -573,7 +573,7 @@ trait MMP_WPFS_FormValidator_TaxAddOn {
 					$fieldName = MM_WPFS_FormView_InlineTaxAddOnConstants::FIELD_TAX_ID;
 					$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
 					$error =
-						__( 'Please enter your business\'s tax id', 'wp-full-stripe' );
+						__( 'Please enter your business\'s tax id', 'wp-full-stripe-free' );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				}
 
@@ -582,7 +582,7 @@ trait MMP_WPFS_FormValidator_TaxAddOn {
 					$fieldName = MM_WPFS_FormView_InlineTaxAddOnConstants::FIELD_BUSINESS_NAME;
 					$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
 					$error =
-						__( 'Please enter your business\'s name', 'wp-full-stripe' );
+						__( 'Please enter your business\'s name', 'wp-full-stripe-free' );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				}
 			}
@@ -597,7 +597,7 @@ trait MMP_WPFS_FormValidator_TaxAddOn {
 						$fieldName = MM_WPFS_FormView_InlineTaxAddOnConstants::FIELD_TAX_COUNTRY;
 						$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
 						$error =
-							__( 'Please select the country your business\'s seat is in', 'wp-full-stripe' );
+							__( 'Please select the country your business\'s seat is in', 'wp-full-stripe-free' );
 						$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 					}
 
@@ -609,7 +609,7 @@ trait MMP_WPFS_FormValidator_TaxAddOn {
 							$fieldName = MM_WPFS_FormView_InlineTaxAddOnConstants::FIELD_TAX_ZIP;
 							$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
 							$error =
-								__( 'Please enter your postal code', 'wp-full-stripe' );
+								__( 'Please enter your postal code', 'wp-full-stripe-free' );
 							$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 						}
 					} else {
@@ -620,7 +620,7 @@ trait MMP_WPFS_FormValidator_TaxAddOn {
 								$fieldName = MM_WPFS_FormView_InlineTaxAddOnConstants::FIELD_TAX_STATE;
 								$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
 								$error =
-									__( 'Please select the state your business\'s seat is in', 'wp-full-stripe' );
+									__( 'Please select the state your business\'s seat is in', 'wp-full-stripe-free' );
 								$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 							}
 						}
@@ -684,18 +684,18 @@ class MM_WPFS_DonationFormValidator extends MM_WPFS_FormValidator {
 				if ( empty( $formModelObject->getAmount() ) ) {
 					$error =
 						/* translators: Form field validation error message when custom amount is empty */
-						__( 'Please enter an amount', 'wp-full-stripe' );
+						__( 'Please enter an amount', 'wp-full-stripe-free' );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				} elseif ( ! is_numeric( trim( $formModelObject->getAmount() ) ) || $formModelObject->getAmount() <= 0 ) {
 					$error =
 						/* translators: Form field validation error message when custom amount is not a number */
-						__( 'Please enter a valid amount, use only digits and a decimal separator', 'wp-full-stripe' );
+						__( 'Please enter a valid amount, use only digits and a decimal separator', 'wp-full-stripe-free' );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				} elseif ( $formModelObject->getAmount() < $formModelObject->getForm()->minimumDonationAmount ) {
 					$minimumAmount = MM_WPFS_Currencies::formatAndEscapeByForm( $formModelObject->getForm(), $formModelObject->getForm()->currency, $formModelObject->getForm()->minimumDonationAmount, false, true );
 					$error = sprintf(
 						/* translators: Form field validation error message when custom amount is lower than the minimum donation amount */
-						__( 'The minimum donation amount is %s.', 'wp-full-stripe' ), $minimumAmount );
+						__( 'The minimum donation amount is %s.', 'wp-full-stripe-free' ), $minimumAmount );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				}
 			}
@@ -712,7 +712,7 @@ class MM_WPFS_DonationFormValidator extends MM_WPFS_FormValidator {
 				$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
 				$error =
 					/* translators: Form field validation error message when no donation frequency is selected */
-					__( 'Please select a donation frequency', 'wp-full-stripe' );
+					__( 'Please select a donation frequency', 'wp-full-stripe-free' );
 
 				$bindingResult->addGlobalError( $error );
 			}
@@ -784,7 +784,7 @@ class MM_WPFS_SubscriptionFormValidator extends MM_WPFS_FormValidator {
 			if ( is_null( $formModelObject->getStripePlan() ) ) {
 				$fieldName = $formModelObject::PARAM_WPFS_STRIPE_PLAN;
 				$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-				$error = __( 'Invalid plan selected, check your plans and Stripe API mode.', 'wp-full-stripe' );
+				$error = __( 'Invalid plan selected, check your plans and Stripe API mode.', 'wp-full-stripe-free' );
 				$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 			}
 
@@ -795,7 +795,7 @@ class MM_WPFS_SubscriptionFormValidator extends MM_WPFS_FormValidator {
 				) {
 					$fieldName = $formModelObject::PARAM_WPFS_STRIPE_PLAN_QUANTITY;
 					$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-					$error = sprintf( __( 'Subscription quantity is less than the minimum quantity of %d.', 'wp-full-stripe' ), $formModelObject->getForm()->minimumQuantityOfSubscriptions );
+					$error = sprintf( __( 'Subscription quantity is less than the minimum quantity of %d.', 'wp-full-stripe-free' ), $formModelObject->getForm()->minimumQuantityOfSubscriptions );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				}
 				if ( isset( $formModelObject->getForm()->maximumQuantityOfSubscriptions )
@@ -804,7 +804,7 @@ class MM_WPFS_SubscriptionFormValidator extends MM_WPFS_FormValidator {
 				) {
 					$fieldName = $formModelObject::PARAM_WPFS_STRIPE_PLAN_QUANTITY;
 					$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-					$error = sprintf( __( 'Subscription quantity is greater than the maximum quantity of %d.', 'wp-full-stripe' ), $formModelObject->getForm()->maximumQuantityOfSubscriptions );
+					$error = sprintf( __( 'Subscription quantity is greater than the maximum quantity of %d.', 'wp-full-stripe-free' ), $formModelObject->getForm()->maximumQuantityOfSubscriptions );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				}
 			}

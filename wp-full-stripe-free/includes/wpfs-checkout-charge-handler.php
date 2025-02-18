@@ -254,6 +254,7 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
         );
 
         do_action(MM_WPFS::ACTION_NAME_AFTER_CHECKOUT_SAVE_CARD, $params);
+		do_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, $saveCardFormModel->getForm(), $params );
     }
 
     /**
@@ -280,6 +281,7 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
         );
 
         do_action(MM_WPFS::ACTION_NAME_AFTER_CHECKOUT_PAYMENT_CHARGE, $params);
+		do_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, $paymentFormModel->getForm(), $params );
     }
 
     /**
@@ -413,17 +415,17 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
                 $chargeResult->setSuccess(true);
                 $chargeResult->setMessageTitle(
                     /* translators: Banner title of successful transaction */
-                    __('Success', 'wp-full-stripe')
+                    __('Success', 'wp-full-stripe-free')
                 );
                 $chargeResult->setMessage(
                     /* translators: Banner message of saving card successfully */
-                    __('Card saved successfully!', 'wp-full-stripe')
+                    __('Card saved successfully!', 'wp-full-stripe-free')
                 );
             } else {
                 $chargeResult->setSuccess(false);
                 $chargeResult->setMessageTitle(
                     /* translators: Banner title of failed transaction */
-                    __('Failed', 'wp-full-stripe')
+                    __('Failed', 'wp-full-stripe-free')
                 );
                 $chargeResult->setMessage(
                     /* It's an internal error, no need to localize it */
@@ -481,11 +483,11 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
             $chargeResult->setSuccess(true);
             $chargeResult->setMessageTitle(
                 /* translators: Banner title of successful transaction */
-                __('Success', 'wp-full-stripe')
+                __('Success', 'wp-full-stripe-free')
             );
             $chargeResult->setMessage(
                 /* translators: Banner message of successful payment */
-                __('Payment Successful!', 'wp-full-stripe')
+                __('Payment Successful!', 'wp-full-stripe-free')
             );
         }
 
@@ -553,6 +555,7 @@ class MM_WPFS_CheckoutDonationChargeHandler extends MM_WPFS_CheckoutChargeHandle
         );
 
         do_action(MM_WPFS::ACTION_NAME_AFTER_CHECKOUT_DONATION_CHARGE, $params);
+		do_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, $donationFormModel->getForm(), $params );
     }
 
     /**
@@ -643,9 +646,9 @@ class MM_WPFS_CheckoutDonationChargeHandler extends MM_WPFS_CheckoutChargeHandle
         $this->createDonationResultSuccess(
             $chargeResult,
             /* translators: Banner title of successful transaction */
-            __('Success', 'wp-full-stripe'),
+            __('Success', 'wp-full-stripe-free'),
             /* translators: Banner message of successful payment */
-            __('Donation Successful!', 'wp-full-stripe')
+            __('Donation Successful!', 'wp-full-stripe-free')
         );
 
         $this->handleRedirect($formModel, $transactionData, $chargeResult);
@@ -818,6 +821,7 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
         );
 
         do_action(MM_WPFS::ACTION_NAME_AFTER_CHECKOUT_SUBSCRIPTION_CHARGE, $params);
+		do_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, $subscriptionFormModel->getForm(), $params );
     }
 
     /**
@@ -1057,11 +1061,11 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
         $chargeResult->setSuccess(true);
         $chargeResult->setMessageTitle(
             /* translators: Banner title of successful transaction */
-            __('Success', 'wp-full-stripe')
+            __('Success', 'wp-full-stripe-free')
         );
         $chargeResult->setMessage(
             /* translators: Banner message of successful payment */
-            __('Payment Successful!', 'wp-full-stripe')
+            __('Payment Successful!', 'wp-full-stripe-free')
         );
 
         $this->handleRedirect($formModel, $transactionData, $chargeResult);

@@ -12,31 +12,31 @@
     $formType = '';
 
     if ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS ) {
-        $title = __( 'No payments yet.', 'wp-full-stripe-admin' );
+        $title = __( 'No payments yet.', 'wp-full-stripe-free' );
         $description = $formCount > 0 ?
-                       __( 'You will find one-time payments here.', 'wp-full-stripe-admin' ) :
-                       __( 'Create your first one-time payment form to receive payments.', 'wp-full-stripe-admin' );
+                       __( 'You will find one-time payments here.', 'wp-full-stripe-free' ) :
+                       __( 'Create your first one-time payment form to receive payments.', 'wp-full-stripe-free' );
         $icon = 'wpfs-icon-card';
         $formType = MM_WPFS::FORM_TYPE_PAYMENT;
     } elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS ) {
-        $title = __( 'No subscriptions yet.', 'wp-full-stripe-admin' );
+        $title = __( 'No subscriptions yet.', 'wp-full-stripe-free' );
         $description = $formCount > 0 ?
-            __( 'You will find your subscribers here.', 'wp-full-stripe-admin' ) :
-            __( 'Create your first subscription form to collect subscriptions.', 'wp-full-stripe-admin' );
+            __( 'You will find your subscribers here.', 'wp-full-stripe-free' ) :
+            __( 'Create your first subscription form to collect subscriptions.', 'wp-full-stripe-free' );
         $icon = 'wpfs-icon-subscription';
         $formType = MM_WPFS::FORM_TYPE_SUBSCRIPTION;
     } elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS ) {
-        $title = __( 'No donations yet.', 'wp-full-stripe-admin' );
+        $title = __( 'No donations yet.', 'wp-full-stripe-free' );
         $description = $formCount > 0 ?
-            __( 'You will find donations here.', 'wp-full-stripe-admin' ) :
-            __( 'Create your first donation form to accept donations.', 'wp-full-stripe-admin' );
+            __( 'You will find donations here.', 'wp-full-stripe-free' ) :
+            __( 'Create your first donation form to accept donations.', 'wp-full-stripe-free' );
         $icon = 'wpfs-icon-donation';
         $formType = MM_WPFS::FORM_TYPE_DONATION;
     } elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS ) {
-        $title = __( 'No saved cards yet.', 'wp-full-stripe-admin' );
+        $title = __( 'No saved cards yet.', 'wp-full-stripe-free' );
         $description = $formCount > 0 ?
-            __( 'You will find saved cards here.', 'wp-full-stripe-admin' ) :
-            __( 'Create your first save card form to collect card details from customers.', 'wp-full-stripe-admin' );
+            __( 'You will find saved cards here.', 'wp-full-stripe-free' ) :
+            __( 'Create your first save card form to collect card details from customers.', 'wp-full-stripe-free' );
         $icon = 'wpfs-icon-card';
         $formType = MM_WPFS::FORM_TYPE_SAVE_CARD;
     }

@@ -29,8 +29,8 @@ class MM_WPFS_Admin_Menu {
 	const SLUG_SETTINGS_SECURITY = 'wpfs-settings-security';
 	const SLUG_SETTINGS_EMAIL_NOTIFICATIONS = 'wpfs-settings-email';
 	const SLUG_SETTINGS_WORDPRESS_DASHBOARD = 'wpfs-settings-wp-dashboard';
-	const SLUG_SETTINGS_ADDONS = 'wpfs-settings-addons';
 	const SLUG_SETTINGS_LOGS = 'wpfs-settings-logs';
+	const SLUG_SETTINGS_LICENSE = 'wpfs-settings-license';
 	const SLUG_ADDONS = 'wpfs-transactions-addons';
 
 	const PARAM_NAME_FORM_TEXT_FILTER = 'wpfs-form-text-filter';
@@ -56,6 +56,8 @@ class MM_WPFS_Admin_Menu {
 	const PARAM_VALUE_API_MODE_LIVE = 'live';
 	const PARAM_VALUE_PAYMENT_STATUS_ALL = 'all';
 	const PARAM_VALUE_SUBSCRIPTION_STATUS_ALL = 'all';
+	const PARAM_VALUE_TAB_CONNECTION = 'connection';
+	const PARAM_VALUE_TAB_WEBHOOK = 'webhook';
 	const PARAM_VALUE_TAB_PAYMENTS = 'payments';
 	const PARAM_VALUE_TAB_SUBSCRIPTIONS = 'subscriptions';
 	const PARAM_VALUE_TAB_DONATIONS = 'donations';
@@ -89,6 +91,7 @@ class MM_WPFS_Admin_Menu {
 	private function initActionHooks() {
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'admin_menu', array( $this, 'menu_pages' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_global_css' ) );
 	}
 
 	private function initDemoMode() {
@@ -200,10 +203,10 @@ class MM_WPFS_Admin_Menu {
 
 		$page_title =
 			/* translators: Browser page title of the "Transactions" page in WordPress admin */
-			__( 'Full Pay - Transactions', 'wp-full-stripe-admin' );
+			__( 'Full Pay - Transactions', 'wp-full-stripe-free' );
 		$menu_title =
 			/* translators: Menu title of the plugin in WordPress admin */
-			__( 'Full Pay', 'wp-full-stripe-admin' );
+			__( 'Full Pay', 'wp-full-stripe-free' );
 		$menu_slug = self::SLUG_TRANSACTIONS;
 		$capability = $this->capability;
 		$function = array( $this, 'fullstripe_transactions' );
@@ -213,7 +216,7 @@ class MM_WPFS_Admin_Menu {
 		// Add submenu page with same slug as parent to ensure no duplicates
 		$sub_menu_title =
 			/* translators: Submenu title of the "Transactions" page in WordPress admin */
-			__( 'Transactions', 'wp-full-stripe-admin' );
+			__( 'Transactions', 'wp-full-stripe-free' );
 		$menu_hook = add_submenu_page( $menu_slug, $page_title, $sub_menu_title, $capability, $menu_slug, $function );
 		add_action( 'admin_print_scripts-' . $menu_hook, array(
 			$this,
@@ -222,10 +225,10 @@ class MM_WPFS_Admin_Menu {
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "Manage forms" page in WordPress admin */
-			__( 'Full Pay - Manage forms', 'wp-full-stripe-admin' );
+			__( 'Full Pay - Manage forms', 'wp-full-stripe-free' );
 		$submenu_title =
 			/* translators: Submenu title of the "Manage forms" page in WordPress admin */
-			__( 'Forms', 'wp-full-stripe-admin' );
+			__( 'Payment Forms', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_FORMS;
 
 		$submenu_function = array( $this, 'fullstripe_forms' );
@@ -234,10 +237,10 @@ class MM_WPFS_Admin_Menu {
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "Create form" page in WordPress admin */
-			__( 'Full Pay - Create form', 'wp-full-stripe-admin' );
+			__( 'Full Pay - Create form', 'wp-full-stripe-free' );
 		$submenu_title =
 			/* translators: Submenu title of the "Create form" page in WordPress admin */
-			__( 'Create form', 'wp-full-stripe-admin' );
+			__( 'Create form', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_CREATE_FORM;
 		$submenu_function = array( $this, 'fullstripe_create_form' );
 		$menu_hook = add_submenu_page( self::SLUG_FORMS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
@@ -245,10 +248,10 @@ class MM_WPFS_Admin_Menu {
 
 		$submenu_page_title =
 			/* translators: Browser page title of "Settings" page in WordPress admin */
-			__( 'Full Pay - Settings', 'wp-full-stripe-admin' );
+			__( 'Full Pay - Settings', 'wp-full-stripe-free' );
 		$submenu_title =
 			/* translators: Submenu title of the "Settings" page in WordPress admin */
-			__( 'Settings', 'wp-full-stripe-admin' );
+			__( 'Settings', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_SETTINGS;
 		$submenu_function = array( $this, 'fullstripe_settings' );
 		$menu_hook = add_submenu_page( $menu_slug, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
@@ -256,10 +259,10 @@ class MM_WPFS_Admin_Menu {
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "Configure Stripe account" page in WordPress admin */
-			__( 'Full Pay - Configure Stripe account', 'wp-full-stripe-admin' );
+			__( 'Full Pay - Configure Stripe account', 'wp-full-stripe-free' );
 		$submenu_title =
 			/* translators: Submenu title of the "Configure Stripe account" page in WordPress admin */
-			__( 'Stripe account', 'wp-full-stripe-admin' );
+			__( 'Stripe account', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_SETTINGS_STRIPE;
 		$submenu_function = array( $this, 'fullstripe_settings_stripe' );
 		$menu_hook = add_submenu_page( self::SLUG_SETTINGS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
@@ -267,10 +270,10 @@ class MM_WPFS_Admin_Menu {
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "Customize forms" page in WordPress admin */
-			__( 'Full Pay - Customize forms', 'wp-full-stripe-admin' );
+			__( 'Full Pay - Customize forms', 'wp-full-stripe-free' );
 		$submenu_title =
 			/* translators: Submenu title of the "Customize forms" page in WordPress admin */
-			__( 'Forms', 'wp-full-stripe-admin' );
+			__( 'Forms', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_SETTINGS_FORMS;
 		$submenu_function = array( $this, 'fullstripe_settings_forms' );
 		$menu_hook = add_submenu_page( self::SLUG_SETTINGS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
@@ -278,10 +281,10 @@ class MM_WPFS_Admin_Menu {
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "Email notifications" page in WordPress admin */
-			__( 'Full Pay - Email notifications', 'wp-full-stripe-admin' );
+			__( 'Full Pay - Email notifications', 'wp-full-stripe-free' );
 		$submenu_title =
 			/* translators: Submenu title of the "Email notifications" page in WordPress admin */
-			__( 'Email notifications', 'wp-full-stripe-admin' );
+			__( 'Email notifications', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_SETTINGS_EMAIL_NOTIFICATIONS;
 		$submenu_function = array( $this, 'fullstripe_settings_email' );
 		$menu_hook = add_submenu_page( self::SLUG_SETTINGS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
@@ -289,10 +292,10 @@ class MM_WPFS_Admin_Menu {
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "Security settings" page in WordPress admin */
-			__( 'Full Pay - Security settings', 'wp-full-stripe-admin' );
+			__( 'Full Pay - Security settings', 'wp-full-stripe-free' );
 		$submenu_title =
 			/* translators: Submenu title of the "Security settings" page in WordPress admin */
-			__( 'Security', 'wp-full-stripe-admin' );
+			__( 'Security', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_SETTINGS_SECURITY;
 		$submenu_function = array( $this, 'fullstripe_settings_security' );
 		$menu_hook = add_submenu_page( self::SLUG_SETTINGS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
@@ -300,10 +303,10 @@ class MM_WPFS_Admin_Menu {
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "Customer portal" page in WordPress admin */
-			__( 'Full Pay - Customer portal', 'wp-full-stripe-admin' );
+			__( 'Full Pay - Customer portal', 'wp-full-stripe-free' );
 		$submenu_title =
 			/* translators: Submenu title of the "Customer portal" page in WordPress admin */
-			__( 'Customer portal', 'wp-full-stripe-admin' );
+			__( 'Customer portal', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_SETTINGS_CUSTOMER_PORTAL;
 		$submenu_function = array( $this, 'fullstripe_settings_my_account' );
 		$menu_hook = add_submenu_page( self::SLUG_SETTINGS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
@@ -311,58 +314,46 @@ class MM_WPFS_Admin_Menu {
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "WordPress dashboard settings" page in WordPress admin */
-			__( 'Full Pay - WordPress dashboard settings', 'wp-full-stripe-admin' );
+			__( 'Full Pay - WordPress dashboard settings', 'wp-full-stripe-free' );
 		$submenu_title =
 			/* translators: Submenu title of the "WordPress dashboard settings" page in WordPress admin */
-			__( 'WordPress dashboard', 'wp-full-stripe-admin' );
+			__( 'WordPress dashboard', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_SETTINGS_WORDPRESS_DASHBOARD;
 		$submenu_function = array( $this, 'fullstripe_settings_wp_dashboard' );
 		$menu_hook = add_submenu_page( self::SLUG_SETTINGS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
 		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
 
 		$submenu_page_title =
-			/* translators: Browser page title of the "Add-ons" settings page in WordPress admin */
-			__( 'Full Pay - Add-ons', 'wp-full-stripe-admin' );
-		$submenu_title =
-			/* translators: Submenu title of the "Add-ons" settings page in WordPress admin */
-			__( 'Add-ons', 'wp-full-stripe-admin' );
-		$submenu_slug = self::SLUG_SETTINGS_ADDONS;
-		$submenu_function = array( $this, 'fullstripe_settings_addons' );
-		$menu_hook = add_submenu_page( self::SLUG_SETTINGS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
-		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
-
-		$submenu_page_title =
 			/* translators: Browser page title of the "Error logging" settings page in WordPress admin */
-			__( 'Full Pay - Error logging', 'wp-full-stripe-admin' );
+			__( 'Full Pay - Error logging', 'wp-full-stripe-free' );
 		$submenu_title =
 			/* translators: Submenu title of the "Error logging" settings page in WordPress admin */
-			__( 'Error logging', 'wp-full-stripe-admin' );
+			__( 'Error logging', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_SETTINGS_LOGS;
 		$submenu_function = array( $this, 'fullstripe_settings_logs' );
 		$menu_hook = add_submenu_page( self::SLUG_SETTINGS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
 		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
 
 		$submenu_page_title =
+			/* translators: Browser page title of the "License" settings page in WordPress admin */
+			__( 'Full Pay - License', 'wp-full-stripe-free' );
+		$submenu_title =
+			/* translators: Submenu title of the "License" settings page in WordPress admin */
+			__( 'License', 'wp-full-stripe-free' );
+		$submenu_slug = self::SLUG_SETTINGS_LICENSE;
+		$submenu_function = array( $this, 'fullstripe_settings_license' );
+		$menu_hook = add_submenu_page( self::SLUG_SETTINGS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
+		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
+
+		$submenu_page_title =
 			/* translators: Browser page title of the "Edit form" page in WordPress admin */
-			__( 'Full Pay - Edit form', 'wp-full-stripe-admin' );
+			__( 'Full Pay - Edit form', 'wp-full-stripe-free' );
 		$submenu_title =
 			/* translators: Submenu title of the "Edit form" page in WordPress admin */
-			__( 'Edit form', 'wp-full-stripe-admin' );
+			__( 'Edit form', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_EDIT_FORM;
 		$submenu_function = array( $this, 'fullstripe_edit_form' );
 		$menu_hook = add_submenu_page( self::SLUG_FORMS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
-		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
-
-
-		$submenu_page_title =
-			/* translators: Browser page title of "Addons" page in WordPress admin */
-			__( 'Full Pay - Addons', 'wp-full-stripe-admin' );
-		$submenu_title =
-			/* translators: Submenu title of the "Addons" page in WordPress admin */
-			__( 'Add-Ons', 'wp-full-stripe-admin' );
-		$submenu_slug = self::SLUG_ADDONS;
-		$submenu_function = array( $this, 'fullstripe_addons' );
-		$menu_hook = add_submenu_page( $menu_slug, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
 		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
 
 		do_action( 'fullstripe_admin_menus', $menu_slug );
@@ -424,10 +415,67 @@ class MM_WPFS_Admin_Menu {
 		wp_enqueue_script( 'wp-full-stripe-utils-js', MM_WPFS_Assets::scripts( 'wpfs-utils.js' ), [], MM_WPFS::VERSION );
 	}
 
-	function enqueueGlobalCss() {
+	function enqueue_global_css( $hook ) {
+		if ( strpos( $hook, 'wpfs-' ) === false ) {
+			return;
+		}
+
 		wp_enqueue_style( 'fullstripe-admin-revamped-css' );
 		wp_enqueue_style( 'fullstripe-admin-revamped-css-extra' );
 		wp_enqueue_style( 'fullstripe-slick-css' );
+	}
+
+	/**
+	 * Load the survey script.
+	 *
+	 * @return void
+	 */
+	function loadSurvey() {
+		$survey_handler = apply_filters( 'themeisle_sdk_dependency_script_handler', 'survey' );
+
+		if ( empty( $survey_handler ) ) {
+			return;
+		}
+
+		do_action( 'themeisle_sdk_dependency_enqueue_script', 'survey' );
+	}
+
+	/**
+	 * Generate a unique site ID based on the site URL.
+	 *
+	 * @param string $url The site URL.
+	 *
+	 * @return string The generated site ID.
+	 */
+	function generateSiteID( $url ) {
+		// Convert international domain names to ASCII
+		$url = idn_to_ascii( $url, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46 ) ?: $url;
+
+		// Remove protocol (http, https)
+		$url = preg_replace( '/https?:\/\//', '', $url );
+
+		// Extract host and path while preserving non-www subdomains
+		$parts = parse_url( $url );
+
+		$host = $parts['host'] ?? '';
+		$path = $parts['path'] ?? '';
+
+		// Remove 'www.' only if present at the beginning of the domain
+		$host = preg_replace( '/^www\./', '', $host );
+
+		// Concatenate host and path
+		$cleanedUrl = $host . $path;
+
+		// Remove non-alphanumeric characters, but keep forward slashes for paths
+		$cleanedUrl = preg_replace( '/[^a-z0-9\/]/i', '', $cleanedUrl );
+
+		// Convert to lowercase
+		$cleanedUrl = strtolower( $cleanedUrl );
+
+		// Shorten using CRC32 and encode to base36 for a shorter alphanumeric ID
+		$hash = base_convert( crc32( $cleanedUrl ), 10, 36 );
+
+		return $hash;
 	}
 
 	function fullstripe_admin_scripts() {
@@ -435,6 +483,7 @@ class MM_WPFS_Admin_Menu {
 		$tab = array_key_exists( 'tab', $_GET ) ? $_GET['tab'] : null;
 
 		wp_enqueue_media();
+		$this->loadSurvey();
 		$this->enqueueGlobalScripts();
 
 		$localizer = MM_WPFS_AdminScriptLocalizerFactory::createLocalizer( $this->options, $page, $tab );
@@ -456,6 +505,9 @@ class MM_WPFS_Admin_Menu {
 			'jquery-ui-tooltip',
 			'jquery-ui-sortable'
 		);
+
+		array_push( $dependencies, apply_filters( 'themeisle_sdk_dependency_script_handler', 'survey' ) );
+
 		wp_enqueue_script( 'wp-full-stripe-admin-library-js', MM_WPFS_Assets::scripts( 'wpfs-admin-library.js' ), $dependencies, MM_WPFS::VERSION );
 
 		$dependencies = array(
@@ -465,18 +517,59 @@ class MM_WPFS_Admin_Menu {
 		wp_enqueue_script( 'wp-full-stripe-admin-js', MM_WPFS_Assets::scripts( 'wpfs-admin.js' ), $dependencies, MM_WPFS::VERSION );
 
 		$localizer->localizeScripts();
+		
+		$site_id      = $this->generateSiteID( get_site_url() );
+		$stripe_mode  = $this->options->get( MM_WPFS_Options::OPTION_API_MODE );
 
 		$wpfsAdminSettings = array(
-			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-			'nonce' => wp_create_nonce( 'wp-full-stripe-admin-nonce' ),
-			'preferences' => $this->compileFrontendAdminOptions()
+			'rootUrl'            => get_site_url(),
+			'ajaxUrl'            => admin_url( 'admin-ajax.php' ),
+			'nonce'              => wp_create_nonce( 'wp-full-stripe-admin-nonce' ),
+			'preferences'        => $this->compileFrontendAdminOptions(),
+			'site_id'            => $site_id,
+			'has_pro'            => WPFS_License::is_active() ? 'yes' : 'no',
+			'plan'               => WPFS_License::get_type(),
+			'mode'               => $stripe_mode,
+			'connected'          => ($stripe_mode === MM_WPFS::STRIPE_API_MODE_TEST) ? $this->options->get( MM_WPFS_Options::OPTION_TEST_ACCOUNT_ID ) !== null : $this->options->get( MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID ) !== null,
+			'transactions'       => $this->getTransactionCount(),
+			'connectionPage'     => MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS_STRIPE )
 		);
+
 		$wpfsAdminSettings = array_merge( $wpfsAdminSettings, $localizer->getSettingsOptions() );
 		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminSettings', $wpfsAdminSettings );
 
-		$this->enqueueGlobalCss();
+		add_filter( 'themeisle-sdk/survey/' . WP_FULL_STRIPE_PRODUCT_SLUG, function( $data, $page_slug ) use( $wpfsAdminSettings ) {
+			return $this->get_survey_metadata( $wpfsAdminSettings );
+		}, 10, 2);
 
+		$screen = get_current_screen();
+		
+		$page_slug = 'transactions';
+		if ( 'full-pay_page_wpfs-forms' === $screen->base ) {
+			$page_slug = 'forms';
+		} elseif ( 'full-pay_page_wpfs-settings' === $screen->base ) {
+			$page_slug = 'settings';
+		}
+		
+		do_action( 'themeisle_internal_page', WP_FULL_STRIPE_PRODUCT_SLUG, $page_slug );
 		do_action( 'fullstripe_admin_scripts' );
+	}
+
+	/**
+	 * Get the number of transactions.
+	 * 
+	 * @return int The number of transactions.
+	 */
+	private function getTransactionCount() {
+		$cache_key = 'wpfs_transaction_count';
+		$transaction_count = get_transient( $cache_key );
+
+		if ( false === $transaction_count ) {
+			$transaction_count = ( $this->db->getNumberOfOneTimePayments() )->paymentCount + ( $this->db->getNumberOfSubscriptions() )->subscriptionCount + ( $this->db->getNumberOfDonations() )->donationCount;
+			set_transient( $cache_key, $transaction_count, DAY_IN_SECONDS );
+		}
+
+		return $transaction_count;
 	}
 
 	/**
@@ -490,40 +583,56 @@ class MM_WPFS_Admin_Menu {
 
 		if ( $currentTime - $time < MINUTE_IN_SECONDS ) {
 			$seconds = $currentTime - $time;
-			$timeDescription = sprintf(
+			if ( $seconds === 1 ) {
+				return __( 'Last event one second ago', 'wp-full-stripe-free' );
+			} else {
+				$timeDescription = sprintf(
 				/* translators: Singular and plural message for time number of seconds passed since the last webhook event
 																						   p1: number of seconds
 																						*/
-				_n( 'Last event one second ago', 'Last event %d seconds ago', $seconds, 'wp-full-stripe-admin' ),
-				$seconds
-			);
+					_n( 'Last event %d second ago', 'Last event %d seconds ago', $seconds, 'wp-full-stripe-free' ),
+					$seconds
+				);
+			}
 		} elseif ( $currentTime - $time < HOUR_IN_SECONDS ) {
 			$minutes = (int) ( ( $currentTime - $time ) / MINUTE_IN_SECONDS );
-			$timeDescription = sprintf(
+			if ( $minutes === 1 ) {
+				return __( 'Last event one minute ago', 'wp-full-stripe-free' );
+			} else {
+				$timeDescription = sprintf(
 				/* translators: Singular and plural message for time number of minutes passed since the last webhook event
 																						   p1: number of minutes
 																						*/
-				_n( 'Last event one minute ago', 'Last event %d minutes ago', $minutes, 'wp-full-stripe-admin' ),
-				$minutes
-			);
+					_n( 'Last event %d minute ago', 'Last event %d minutes ago', $minutes, 'wp-full-stripe-free' ),
+					$minutes
+				);
+			}
 		} elseif ( $currentTime - $time < DAY_IN_SECONDS ) {
 			$hours = (int) ( ( $currentTime - $time ) / HOUR_IN_SECONDS );
-			$timeDescription = sprintf(
+			if ( $hours === 1 ) {
+				return __( 'Last event one hour ago', 'wp-full-stripe-free' );
+			} else {
+				$timeDescription = sprintf(
 				/* translators: Singular and plural message for time number of hours passed since the last webhook event
 																						   p1: number of hours
 																						*/
-				_n( 'Last event one hour ago', 'Last event %d hours ago', $hours, 'wp-full-stripe-admin' ),
-				$hours
-			);
+					_n( 'Last event %d hour ago', 'Last event %d hours ago', $hours, 'wp-full-stripe-free' ),
+					$hours
+				);
+			}
 		} elseif ( $currentTime - $time >= DAY_IN_SECONDS ) {
 			$days = (int) ( ( $currentTime - $time ) / DAY_IN_SECONDS );
-			$timeDescription = sprintf(
+			if ( $days === 1 ) {
+				return __( 'Last event one day ago', 'wp-full-stripe-free' );
+			} else {
+				$timeDescription = sprintf(
 				/* translators: Singular and plural message for time number of days passed since the last webhook event
 																						   p1: number of days
 																						*/
-				_n( 'Last event one day ago', 'Last event %d days ago', $days, 'wp-full-stripe-admin' ),
-				$days
-			);
+					_n( 'Last event %d day ago', 'Last event %d days ago', $days, 'wp-full-stripe-free' ),
+					$days
+				);
+			}
 		}
 
 		return $timeDescription;
@@ -545,15 +654,15 @@ class MM_WPFS_Admin_Menu {
 			$cssStyle = 'wpfs-status-bullet--grey';
 			$description =
 				/* translators: Message stating that this webhook URL haven't received any event yet */
-				__( 'Never received event', 'wp-full-stripe-admin' );
+				__( 'Never received event', 'wp-full-stripe-free' );
 			if ( $isLiveMode ) {
 				$title =
 					/* translators: Message stating that live webhooks notifications is not set up in Stripe */
-					__( 'Live webhook is not set up', 'wp-full-stripe-admin' );
+					__( 'Live webhook is not set up', 'wp-full-stripe-free' );
 			} else {
 				$title =
 					/* translators: Message stating that test webhooks notifications is not set up in Stripe */
-					__( 'Test webhook is not set up', 'wp-full-stripe-admin' );
+					__( 'Test webhook is not set up', 'wp-full-stripe-free' );
 			}
 		} elseif ( $currentTime - $time < WEEK_IN_SECONDS ) {
 			$cssStyle = 'wpfs-status-bullet--green';
@@ -561,21 +670,21 @@ class MM_WPFS_Admin_Menu {
 			if ( $isLiveMode ) {
 				$title =
 					/* translators: Message stating that the live webhooks URL works properly, it's receiving events from Stripe */
-					__( 'Live webhook works properly', 'wp-full-stripe-admin' );
+					__( 'Live webhook works properly', 'wp-full-stripe-free' );
 			} else {
 				$title =
 					/* translators: Message stating that the test webhooks URL works properly, it's receiving events from Stripe */
-					__( 'Test webhook works properly', 'wp-full-stripe-admin' );
+					__( 'Test webhook works properly', 'wp-full-stripe-free' );
 			}
 		} elseif ( $currentTime - $time >= WEEK_IN_SECONDS ) {
 			$cssStyle = 'wpfs-status-bullet--red';
 			$description = $this->getFormattedTimeDescription( $currentTime, $time );
 			if ( $isLiveMode ) {
 				/* translators: Message stating that the live webhooks URL may not work properly */
-				$title = __( 'Live webhook may not work properly', 'wp-full-stripe-admin' );
+				$title = __( 'Live webhook may not work properly', 'wp-full-stripe-free' );
 			} else {
 				/* translators: Message stating that the test webhooks URL may not work properly */
-				$title = __( 'Test webhook may not work properly', 'wp-full-stripe-admin' );
+				$title = __( 'Test webhook may not work properly', 'wp-full-stripe-free' );
 			}
 		}
 
@@ -589,16 +698,16 @@ class MM_WPFS_Admin_Menu {
 		if ( MM_WPFS_Utils::isDemoMode() ) {
 			$stripeData->testSecretKey =
 				/* translators: Placeholder text for an API test secret key which is not entered yet */
-				__( 'Test secret key here', 'wp-full-stripe-admin' );
+				__( 'Test secret key here', 'wp-full-stripe-free' );
 			$stripeData->testPublishableKey =
 				/* translators: Placeholder text for an API test publishable key which is not entered yet */
-				__( 'Test publishable key here', 'wp-full-stripe-admin' );
+				__( 'Test publishable key here', 'wp-full-stripe-free' );
 			$stripeData->liveSecretKey =
 				/* translators: Placeholder text for an API live secret key which is not entered yet */
-				__( 'Live secret key here', 'wp-full-stripe-admin' );
+				__( 'Live secret key here', 'wp-full-stripe-free' );
 			$stripeData->livePublishableKey =
 				/* translators: Placeholder text for an API live publishable key which is not entered yet */
-				__( 'Live publishable key here', 'wp-full-stripe-admin' );
+				__( 'Live publishable key here', 'wp-full-stripe-free' );
 			$stripeData->apiMode = MM_WPFS::STRIPE_API_MODE_TEST;
 			$stripeData->testAccountId = MM_WPFS::TEST_ACCOUNT_ID;
 			$stripeData->liveAccountId = MM_WPFS::LIVE_ACCOUNT_ID;
@@ -719,22 +828,83 @@ class MM_WPFS_Admin_Menu {
 		return $stripeStatus;
 	}
 
+
+	/**
+	 * @return array[]
+	 */
+	private function prepareStripeSettingsLookupTabIds() {
+		$lookupTabs = array(
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_CONNECTION => array(
+				'title' =>
+					/* translators: "Connection" tab of the "Stripe settings" page  */
+					__( 'Connection', 'wp-full-stripe-free' ),
+				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_CONNECTION
+			),
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_WEBHOOK => array(
+				'title' =>
+					/* translators: "Webhooks" tab of the "Form settings" page  */
+					__( 'Webhooks', 'wp-full-stripe-free' ),
+				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_WEBHOOK
+			)
+		);
+
+		return $lookupTabs;
+	}
+
+	/**
+	 * @param $lookupTabs array
+	 * @return string
+	 */
+	private function getStripeSettingsTabIdFromRequest( &$lookupTabs ): string {
+		$tabId = array_key_exists( MM_WPFS_Admin_Menu::PARAM_NAME_TAB, $_REQUEST ) ? $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_TAB ] : null;
+		$tabId = $this->validateTabId( $lookupTabs, $tabId, MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_CONNECTION );
+
+		return $tabId;
+	}
+
 	function fullstripe_settings_stripe() {
 		if ( ! current_user_can( $this->capability ) ) {
 			wp_die( 'You do not have sufficient permissions to access this page.' );
 		}
 
+		// Move to new connection flow after the merge.
+		$testStatus = $this->getTestAccountStatus();
+		$liveStatus = $this->getLiveAccountStatus();
+
+		// Check if the URL includes onboarding=true flag.
+		$onboarding = isset( $_GET['onboarding'] ) && $_GET['onboarding'] === 'true';
+
+		if ( $onboarding ) {
+			/** @noinspection PhpIncludeInspection */
+			include MM_WPFS_Assets::templates( 'admin/wpfs-wizard.php' );
+			return;
+		}
+
+	    $lookupTabs = $this->prepareStripeSettingsLookupTabIds();
+		$tabId = $this->getStripeSettingsTabIdFromRequest( $lookupTabs );
+
 		$pageTitle =
 			/* translators: Page title of the "Configure Stripe account" page in WordPress admin  */
-			__( 'Configure Stripe account', 'wp-full-stripe-admin' );
+			__( 'Configure Stripe account', 'wp-full-stripe-free' );
 		$stripeStatus = $this->getStripeStatus();
+		$pageSlug = MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE;
 		$backLinkUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS );
 		$backLinkLabel =
 			/* translators: Link label which takes back to the "Settings" page  */
-			__( 'Back to Settings', 'wp-full-stripe-admin' );
-		$view = new MM_WPFS_Admin_ConfigureStripeAccountView();
-		$stripeData = $this->getStripeAccountData();
+			__( 'Back to Settings', 'wp-full-stripe-free' );
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
+
+		$wpfp_options = $this->options->getSeveral( [ 
+			MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID,
+			MM_WPFS_Options::OPTION_TEST_ACCOUNT_ID
+		] );
+
+		$tabs = array();
+		array_push( $tabs, $lookupTabs[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_CONNECTION ] );
+
+		if ( ! empty( array_filter( $wpfp_options ) ) ) {
+			array_push( $tabs, $lookupTabs[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_WEBHOOK ] );
+		}
 
 		/** @noinspection PhpIncludeInspection */
 		include MM_WPFS_Assets::templates( 'admin/wpfs-settings-stripe.php' );
@@ -773,12 +943,12 @@ class MM_WPFS_Admin_Menu {
 
 		$pageTitle =
 			/* translators: Page title of the "Security settings" page in WordPress admin  */
-			__( 'Security settings', 'wp-full-stripe-admin' );
+			__( 'Security settings', 'wp-full-stripe-free' );
 		$stripeStatus = $this->getStripeStatus();
 		$backLinkUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS );
 		$backLinkLabel =
 			/* translators: Link label which takes back to the "Settings" page  */
-			__( 'Back to Settings', 'wp-full-stripe-admin' );
+			__( 'Back to Settings', 'wp-full-stripe-free' );
 		$view = new MM_WPFS_Admin_SecurityView();
 		$securityData = $this->getSecurityData();
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
@@ -798,7 +968,8 @@ class MM_WPFS_Admin_Menu {
 			MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_WHEN_CANCEL_SUBSCRIPTIONS,
 			MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_LET_SUBSCRIBERS_UPDOWNGRADE_SUBSCRIPTIONS,
 			MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_SHOW_INVOICES_SECTION,
-			MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_SCROLLING_PANE_INTO_VIEW
+			MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_SCROLLING_PANE_INTO_VIEW,
+			MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_USE_STRIPE_CUSTOMER_PORTAL
 		] );
 
 		$result->showSubscriptions = $options[ MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_SHOW_SUBSCRIPTIONS_TO_CUSTOMERS ];
@@ -807,6 +978,7 @@ class MM_WPFS_Admin_Menu {
 		$result->updowngradeSubscriptions = $options[ MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_LET_SUBSCRIBERS_UPDOWNGRADE_SUBSCRIPTIONS ];
 		$result->showInvoices = $options[ MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_SHOW_INVOICES_SECTION ];
 		$result->scrollingPaneIntoView = $options[ MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_SCROLLING_PANE_INTO_VIEW ];
+		$result->useStripeCustomerPortal = $options[ MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_USE_STRIPE_CUSTOMER_PORTAL ];
 
 		return $result;
 	}
@@ -818,12 +990,12 @@ class MM_WPFS_Admin_Menu {
 
 		$pageTitle =
 			/* translators: Page title of the "Customer portal settings" page in WordPress admin  */
-			__( 'Customer portal settings', 'wp-full-stripe-admin' );
+			__( 'Customer portal settings', 'wp-full-stripe-free' );
 		$stripeStatus = $this->getStripeStatus();
 		$backLinkUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS );
 		$backLinkLabel =
 			/* translators: Link label which takes back to the "Settings" page  */
-			__( 'Back to Settings', 'wp-full-stripe-admin' );
+			__( 'Back to Settings', 'wp-full-stripe-free' );
 		$view = new MM_WPFS_Admin_CustomerPortalView();
 		$myAccountData = $this->getCustomerPortalData();
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
@@ -859,40 +1031,18 @@ class MM_WPFS_Admin_Menu {
 
 		$pageTitle =
 			/* translators: Page title of the "WordPress dashboard settings" page in WordPress admin  */
-			__( 'WordPress dashboard settings', 'wp-full-stripe-admin' );
+			__( 'WordPress dashboard settings', 'wp-full-stripe-free' );
 		$stripeStatus = $this->getStripeStatus();
 		$backLinkUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS );
 		$backLinkLabel =
 			/* translators: Link label which takes back to the "Settings" page  */
-			__( 'Back to Settings', 'wp-full-stripe-admin' );
+			__( 'Back to Settings', 'wp-full-stripe-free' );
 		$view = new MM_WPFS_Admin_WordpressDashboardView();
 		$wpDashboardData = $this->getWordpressDasboardData();
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
 
 		/** @noinspection PhpIncludeInspection */
 		include MM_WPFS_Assets::templates( 'admin/wpfs-settings-wp-dashboard.php' );
-	}
-
-	function fullstripe_settings_addons() {
-		if ( ! current_user_can( $this->capability ) ) {
-			wp_die( 'You do not have sufficient permissions to access this page.' );
-		}
-
-		$pageTitle =
-			/* translators: Page title of the "Add-ons" settings page in WordPress admin  */
-			__( 'Add-ons', 'wp-full-stripe-admin' );
-		$stripeStatus = $this->getStripeStatus();
-		$backLinkUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS );
-		$pluginsUrl = MM_WPFS_Admin_Menu::getPluginsUrl();
-		$addOnsExploreUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_ADDONS );
-		$backLinkLabel =
-			/* translators: Link label which takes back to the "Settings" page  */
-			__( 'Back to Settings', 'wp-full-stripe-admin' );
-		$addOnData = $this->getActivatedAddOns();
-		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
-
-		/** @noinspection PhpIncludeInspection */
-		include MM_WPFS_Assets::templates( 'admin/wpfs-settings-addons.php' );
 	}
 
 	protected function getLogsData() {
@@ -918,7 +1068,7 @@ class MM_WPFS_Admin_Menu {
 
 		$pageTitle =
 			/* translators: Page title of the Error logging" settings page in WordPress admin  */
-			__( 'Error logging', 'wp-full-stripe-admin' );
+			__( 'Error logging', 'wp-full-stripe-free' );
 		$stripeStatus = $this->getStripeStatus();
 		$backLinkUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS );
 		$pluginsUrl = MM_WPFS_Admin_Menu::getPluginsUrl();
@@ -926,7 +1076,7 @@ class MM_WPFS_Admin_Menu {
 
 		$backLinkLabel =
 			/* translators: Link label which takes back to the "Settings" page  */
-			__( 'Back to Settings', 'wp-full-stripe-admin' );
+			__( 'Back to Settings', 'wp-full-stripe-free' );
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
 
 		$levelView = new MM_WPFS_Admin_LogLevel_View();
@@ -938,19 +1088,25 @@ class MM_WPFS_Admin_Menu {
 		include MM_WPFS_Assets::templates( 'admin/wpfs-settings-logs.php' );
 	}
 
-	/**
-	 * @return array
-	 */
-	protected function getActivatedAddOns() {
-		$result = [];
-
-		try {
-			$result = apply_filters( MM_WPFS::FILTER_NAME_GET_ADDONS, $result );
-		} catch (Exception $ex) {
-			$this->logger->error( __FUNCTION__, 'Error while getting activated add-ons', $ex );
+	function fullstripe_settings_license() {
+		if ( ! current_user_can( $this->capability ) ) {
+			wp_die( 'You do not have sufficient permissions to access this page.' );
 		}
 
-		return $result;
+		$pageTitle =
+			/* translators: Page title of the "License" settings page in WordPress admin  */
+			__( 'License', 'wp-full-stripe-free' );
+		$stripeStatus = $this->getStripeStatus();
+		$backLinkUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS );
+		$pluginsUrl = MM_WPFS_Admin_Menu::getPluginsUrl();
+
+		$backLinkLabel =
+			/* translators: Link label which takes back to the "Settings" page  */
+			__( 'Back to Settings', 'wp-full-stripe-free' );
+		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
+
+		/** @noinspection PhpIncludeInspection */
+		include MM_WPFS_Assets::templates( 'admin/wpfs-settings-license.php' );
 	}
 
 	/**
@@ -958,9 +1114,6 @@ class MM_WPFS_Admin_Menu {
 	 */
 	protected function prepareSettingsData() {
 		$result = new \StdClass;
-
-		$result->isAddOnsAvailable = count( $this->getActivatedAddOns() ) > 0;
-
 		return $result;
 	}
 
@@ -971,7 +1124,7 @@ class MM_WPFS_Admin_Menu {
 
 		$pageTitle =
 			/* translators: Page title of the "Settings" page in WordPress admin  */
-			__( 'Settings', 'wp-full-stripe-admin' );
+			__( 'Settings', 'wp-full-stripe-free' );
 		$stripeStatus = $this->getStripeStatus();
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
 		$data = $this->prepareSettingsData();
@@ -995,7 +1148,7 @@ class MM_WPFS_Admin_Menu {
 	private function formatTimestamp( $timestamp ) {
 		return is_null( $timestamp ) ?
 			/* translators: When was the last time this form was used? This is the label for 'never'  */
-			__( 'Never', 'wp-full-stripe-admin' ) :
+			__( 'Never', 'wp-full-stripe-free' ) :
 			MM_WPFS_Utils::formatTimestampWithWordpressDateTimeFormat( strtotime( $timestamp ) );
 	}
 
@@ -1277,6 +1430,22 @@ class MM_WPFS_Admin_Menu {
 	}
 
 	/**
+	 * Get the number of payments, subscriptions, donations and saved cards.
+	 * 
+	 * @return array
+	 */
+	protected function getTransactionCounts() {
+		$transactions = array(
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS => $this->db->getNumberOfPaymentsByMethod( MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS ),
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS => $this->db->getNumberOfPaymentsByMethod( MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS ),
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS => $this->db->getNumberOfPaymentsByMethod( MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS ),
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS => $this->db->getNumberOfPaymentsByMethod( MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS )
+		);
+
+		return $transactions;
+	}
+
+	/**
 	 * @param $lookupTabs array
 	 * @return string
 	 */
@@ -1285,7 +1454,18 @@ class MM_WPFS_Admin_Menu {
 		if ( is_null( $tabId ) ) {
 			$tabId = $this->getTabIdFromCookie();
 		}
-		$tabId = $this->validateTabId( $lookupTabs, $tabId, MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS );
+
+		$transactions = $this->getTransactionCounts();
+
+		$default = MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS;
+		foreach ( $transactions as $key => $value ) {
+			if ( $value > 0 ) {
+				$default = $key;
+				break;
+			}
+		}
+
+		$tabId = $this->validateTabId( $lookupTabs, $tabId, $default );
 
 		return $tabId;
 	}
@@ -1294,29 +1474,39 @@ class MM_WPFS_Admin_Menu {
 	 * @return array[]
 	 */
 	private function prepareTransactionLookupTabIds() {
+		$transactions = $this->getTransactionCounts();
+
 		$lookupTabs = array(
 			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS => array(
-				'title' =>
-					/* translators: "One-time payments" tab of the "Transactions" page  */
-					__( 'One-time payments', 'wp-full-stripe-admin' ),
+				'title' => sprintf(
+					/* translators: %s is the number of payments */
+					__( 'One-time payments %s', 'wp-full-stripe-free' ),
+					$transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS ] > 0 ? '<span class="wpfs-tag wpfs-tag--outline">' . ( $transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS ] > 100 ? '100+' : $transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS ] ) . '</span>' : '',
+				),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS
 			),
 			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS => array(
-				'title' =>
-					/* translators: "Subscriptions" tab of the "Transactions" page  */
-					__( 'Subscriptions', 'wp-full-stripe-admin' ),
+				'title' => sprintf(
+					/* translators: %s is the number of payments */
+					__( 'Subscriptions %s', 'wp-full-stripe-free' ),
+					$transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS ] > 0 ? '<span class="wpfs-tag wpfs-tag--outline">' . ( $transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS ] > 100 ? '100+' : $transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS ] ) . '</span>' : '',
+				),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS
 			),
 			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS => array(
-				'title' =>
-					/* translators: "Donations" tab of the "Transactions" page  */
-					__( 'Donations', 'wp-full-stripe-admin' ),
+				'title' => sprintf(
+					/* translators: %s is the number of payments */
+					__( 'Donations %s', 'wp-full-stripe-free' ),
+					$transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS ] > 0 ? '<span class="wpfs-tag wpfs-tag--outline">' . ( $transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS ] > 100 ? '100+' : $transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS ] ) . '</span>' : '',
+				),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS
 			),
 			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS => array(
-				'title' =>
-					/* translators: "Saved cards" tab of the "Transactions" page  */
-					__( 'Saved cards', 'wp-full-stripe-admin' ),
+				'title' => sprintf(
+					/* translators: %s is the number of payments */
+					__( 'Saved cards %s', 'wp-full-stripe-free' ),
+					$transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS ] > 0 ? '<span class="wpfs-tag wpfs-tag--outline">' . ( $transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS ] > 100 ? '100+' : $transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS ] ) . '</span>' : '',
+				),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS
 			)
 		);
@@ -1397,12 +1587,12 @@ class MM_WPFS_Admin_Menu {
 
 		$pageTitle =
 			/* translators: Page title of the "Transactions" page  */
-			__( 'Transactions', 'wp-full-stripe-admin' );
+			__( 'Transactions', 'wp-full-stripe-free' );
 		$stripeStatus = $this->getStripeStatus();
 		$pageSlug = MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS;
 		$createButtonLabel =
 			/* translators: Button label of the "Add form" button  */
-			__( 'Add form', 'wp-full-stripe-admin' );
+			__( 'Add form', 'wp-full-stripe-free' );
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
 
 		$tabs = array();
@@ -1424,13 +1614,13 @@ class MM_WPFS_Admin_Menu {
 			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS => array(
 				'title' =>
 					/* translators: The "Options" tab of the "Email settings" page  */
-					__( 'Options', 'wp-full-stripe-admin' ),
+					__( 'Options', 'wp-full-stripe-free' ),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS
 			),
 			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_TEMPLATES => array(
 				'title' =>
 					/* translators: The "Templates" tab of the "Email settings" page  */
-					__( 'Templates', 'wp-full-stripe-admin' ),
+					__( 'Templates', 'wp-full-stripe-free' ),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_TEMPLATES
 			)
 		);
@@ -1457,42 +1647,42 @@ class MM_WPFS_Admin_Menu {
 		$template->id = MM_WPFS::EMAIL_TEMPLATE_ID_PAYMENT_RECEIPT;
 		$template->caption =
 			/* translators: Name of the one-time payment receipt email  */
-			__( 'Payment receipt', 'wp-full-stripe-admin' );
+			__( 'Payment receipt', 'wp-full-stripe-free' );
 		array_push( $emailTemplates, $template );
 
 		$template = new \stdClass;
 		$template->id = MM_WPFS::EMAIL_TEMPLATE_ID_SUBSCRIPTION_RECEIPT;
 		$template->caption =
 			/* translators: Name of the subscription receipt email */
-			__( 'Subscription receipt', 'wp-full-stripe-admin' );
+			__( 'Subscription receipt', 'wp-full-stripe-free' );
 		array_push( $emailTemplates, $template );
 
 		$template = new \stdClass;
 		$template->id = MM_WPFS::EMAIL_TEMPLATE_ID_SUBSCRIPTION_ENDED;
 		$template->caption =
 			/* translators: Name of the email notification sent when a payment-in-installments subscription is ended  */
-			__( 'Subscription ended', 'wp-full-stripe-admin' );
+			__( 'Subscription ended', 'wp-full-stripe-free' );
 		array_push( $emailTemplates, $template );
 
 		$template = new \stdClass;
 		$template->id = MM_WPFS::EMAIL_TEMPLATE_ID_DONATION_RECEIPT;
 		$template->caption =
 			/* translators: Name of the donation receipt email */
-			__( 'Donation receipt', 'wp-full-stripe-admin' );
+			__( 'Donation receipt', 'wp-full-stripe-free' );
 		array_push( $emailTemplates, $template );
 
 		$template = new \stdClass;
 		$template->id = MM_WPFS::EMAIL_TEMPLATE_ID_CARD_SAVED;
 		$template->caption =
 			/* translators: Name of the email which is sent when customer information together with payment details are saved in Stripe */
-			__( 'Card saved', 'wp-full-stripe-admin' );
+			__( 'Card saved', 'wp-full-stripe-free' );
 		array_push( $emailTemplates, $template );
 
 		$template = new \stdClass;
 		$template->id = MM_WPFS::EMAIL_TEMPLATE_ID_CUSTOMER_PORTAL_SECURITY_CODE;
 		$template->caption =
 			/* translators: Name of the email which is sent when customer initiates a login process to the Customer portal */
-			__( 'Customer portal login code', 'wp-full-stripe-admin' );
+			__( 'Customer portal login code', 'wp-full-stripe-free' );
 		array_push( $emailTemplates, $template );
 
 		$emailTemplatesData->templates = apply_filters( 'fullstripe_email_template_descriptions', $emailTemplates );
@@ -1529,12 +1719,12 @@ class MM_WPFS_Admin_Menu {
 
 		$pageTitle =
 			/* translators: Page title of the "Email notifications" page  */
-			__( 'Email notifications', 'wp-full-stripe-admin' );
+			__( 'Email notifications', 'wp-full-stripe-free' );
 		$pageSlug = MM_WPFS_Admin_Menu::SLUG_SETTINGS_EMAIL_NOTIFICATIONS;
 		$backLinkUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS );
 		$backLinkLabel =
 			/* translators: Link label which takes back to the "Settings" page  */
-			__( 'Back to Settings', 'wp-full-stripe-admin' );
+			__( 'Back to Settings', 'wp-full-stripe-free' );
 		$stripeStatus = $this->getStripeStatus();
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
 
@@ -1553,13 +1743,13 @@ class MM_WPFS_Admin_Menu {
 			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS => array(
 				'title' =>
 					/* translators: "Options" tab of the "Form settings" page  */
-					__( 'Options', 'wp-full-stripe-admin' ),
+					__( 'Options', 'wp-full-stripe-free' ),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS
 			),
 			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE => array(
 				'title' =>
 					/* translators: "Appearance" tab of the "Form settings" page  */
-					__( 'Appearance', 'wp-full-stripe-admin' ),
+					__( 'Appearance', 'wp-full-stripe-free' ),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE
 			)
 		);
@@ -1618,12 +1808,12 @@ class MM_WPFS_Admin_Menu {
 
 		$pageTitle =
 			/* translators: Page title of the "Form settings" page */
-			__( 'Forms', 'wp-full-stripe-admin' );
+			__( 'Forms', 'wp-full-stripe-free' );
 		$pageSlug = MM_WPFS_Admin_Menu::SLUG_SETTINGS_FORMS;
 		$backLinkUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS );
 		$backLinkLabel =
 			/* translators: Link label which takes back to the "Settings" page  */
-			__( 'Back to Settings', 'wp-full-stripe-admin' );
+			__( 'Back to Settings', 'wp-full-stripe-free' );
 		$stripeStatus = $this->getStripeStatus();
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
 
@@ -1642,18 +1832,32 @@ class MM_WPFS_Admin_Menu {
 		$textFilter = array_key_exists( self::PARAM_NAME_FORM_TEXT_FILTER, $_POST ) ? $_POST[ self::PARAM_NAME_FORM_TEXT_FILTER ] : null;
 		$modeFilter = array_key_exists( self::PARAM_NAME_FORM_MODE_FILTER, $_POST ) ? $_POST[ self::PARAM_NAME_FORM_MODE_FILTER ] : self::PARAM_VALUE_API_MODE_ALL;
 
+		$connected = $this->options->getSeveral( [ 
+			MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID,
+			MM_WPFS_Options::OPTION_TEST_ACCOUNT_ID,
+			MM_WPFS_Options::OPTION_API_TEST_SECRET_KEY,
+			MM_WPFS_Options::OPTION_API_TEST_PUBLISHABLE_KEY
+		] );
+
 		$pageTitle =
 			/* translators: Page title of the "Manage forms" page  */
-			__( 'Manage forms', 'wp-full-stripe-admin' );
+			__( 'Manage forms', 'wp-full-stripe-free' );
 
 		$stripeStatus = $this->getStripeStatus();
 		$createButtonLabel =
 			/* translators: Button label of the "Add form" button  */
-			__( 'Add form', 'wp-full-stripe-admin' );
+			__( 'Add form', 'wp-full-stripe-free' );
 		$createButtonUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_CREATE_FORM );
 		$pageUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_FORMS );
 		$allForms = $this->getForms();
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
+
+		if ( empty( array_filter( $connected ) ) ) {
+			/** @noinspection PhpIncludeInspection */
+			include MM_WPFS_Assets::templates( 'admin/wpfs-forms-connect.php' );
+			return;
+		}
+
 		if ( count( $allForms ) > 0 ) {
 			$forms = $this->filterFormList( $allForms, $textFilter, $modeFilter );
 			/** @noinspection PhpIncludeInspection */
@@ -1671,12 +1875,12 @@ class MM_WPFS_Admin_Menu {
 
 		$pageTitle =
 			/* translators: Page title of the "Add new form" page  */
-			__( 'Add new form', 'wp-full-stripe-admin' );
+			__( 'Add new form', 'wp-full-stripe-free' );
 		$stripeStatus = $this->getStripeStatus();
 		$backLinkUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_FORMS );
 		$backLinkLabel =
 			/* translators: Link label which takes back to the "Manage forms" page  */
-			__( 'Back to Manage forms', 'wp-full-stripe-admin' );
+			__( 'Back to Manage forms', 'wp-full-stripe-free' );
 		$view = new MM_WPFS_Admin_CreateFormView( $_GET );
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
 
@@ -1695,35 +1899,35 @@ class MM_WPFS_Admin_Menu {
 		if ( $formType === MM_WPFS::FORM_TYPE_INLINE_SAVE_CARD ) {
 			$title =
 				/* translators: Page title of the "Edit inline save card form" page  */
-				__( 'Inline save card form', 'wp-full-stripe-admin' );
+				__( 'Inline save card form', 'wp-full-stripe-free' );
 		} elseif ( $formType === MM_WPFS::FORM_TYPE_CHECKOUT_SAVE_CARD ) {
 			$title =
 				/* translators: Page title of the "Edit checkout save card form" page  */
-				__( 'Checkout save card form', 'wp-full-stripe-admin' );
+				__( 'Checkout save card form', 'wp-full-stripe-free' );
 		} elseif ( $formType === MM_WPFS::FORM_TYPE_INLINE_DONATION ) {
 			$title =
 				/* translators: Page title of the "Edit inline donation form" page  */
-				__( 'Inline donation form', 'wp-full-stripe-admin' );
+				__( 'Inline donation form', 'wp-full-stripe-free' );
 		} elseif ( $formType === MM_WPFS::FORM_TYPE_CHECKOUT_DONATION ) {
 			$title =
 				/* translators: Page title of the "Edit checkout donation form" page  */
-				__( 'Checkout donation form', 'wp-full-stripe-admin' );
+				__( 'Checkout donation form', 'wp-full-stripe-free' );
 		} elseif ( $formType === MM_WPFS::FORM_TYPE_INLINE_PAYMENT ) {
 			$title =
 				/* translators: Page title of the "Edit inline one-time payment form" page  */
-				__( 'Inline one-time payment form', 'wp-full-stripe-admin' );
+				__( 'Inline one-time payment form', 'wp-full-stripe-free' );
 		} elseif ( $formType === MM_WPFS::FORM_TYPE_CHECKOUT_PAYMENT ) {
 			$title =
 				/* translators: Page title of the "Edit checkout one-time payment form" page  */
-				__( 'Checkout one-time payment form', 'wp-full-stripe-admin' );
+				__( 'Checkout one-time payment form', 'wp-full-stripe-free' );
 		} elseif ( $formType === MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION ) {
 			$title =
 				/* translators: Page title of the "Edit inline subscription form" page  */
-				__( 'Inline subscription form', 'wp-full-stripe-admin' );
+				__( 'Inline subscription form', 'wp-full-stripe-free' );
 		} elseif ( $formType === MM_WPFS::FORM_TYPE_CHECKOUT_SUBSCRIPTION ) {
 			$title =
 				/* translators: Page title of the "Edit checkout subscription form" page  */
-				__( 'Checkout subscription form', 'wp-full-stripe-admin' );
+				__( 'Checkout subscription form', 'wp-full-stripe-free' );
 		}
 
 		return $title;
@@ -1952,25 +2156,6 @@ class MM_WPFS_Admin_Menu {
 		return $data;
 	}
 
-	function fullstripe_addons() {
-		if ( ! current_user_can( $this->capability ) ) {
-			wp_die( 'You do not have sufficient permissions to access this page.' );
-		}
-
-		$pageTitle =
-			/* translators: Page title of the "Add-ons" page  */
-			__( 'Add-ons', 'wp-full-stripe-admin' );
-		$stripeStatus = $this->getStripeStatus();
-		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
-
-		$backLinkUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS_ADDONS );
-		$backLinkLabel =
-			/* translators: Link label which takes back to the "Settings" page  */
-			__( 'Back to Add-ons', 'wp-full-stripe-admin' );
-
-		include MM_WPFS_Assets::templates( 'admin/wpfs-addons.php' );
-	}
-
 	function fullstripe_edit_form() {
 		if ( ! current_user_can( $this->capability ) ) {
 			wp_die( 'You do not have sufficient permissions to access this page.' );
@@ -1990,7 +2175,7 @@ class MM_WPFS_Admin_Menu {
 		$backLinkUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_FORMS );
 		$backLinkLabel =
 			/* translators: Link label which takes back to the "Manage forms" page  */
-			__( 'Back to Manage forms', 'wp-full-stripe-admin' );
+			__( 'Back to Manage forms', 'wp-full-stripe-free' );
 		if ( $formType === MM_WPFS::FORM_TYPE_INLINE_SAVE_CARD ) {
 			$view = new MM_WPFS_Admin_InlineSaveCardFormView();
 			$data = $this->prepareInlineSaveCardFormData( $form );
@@ -2003,28 +2188,28 @@ class MM_WPFS_Admin_Menu {
 			$data = $this->prepareInlineDonationFormData( $form );
 			$submitButtonDescription =
 				/* translators: Helper label describing how the {{amount}} placeholder token can be used for donation button labels */
-				__( 'Insert {{amount}} to display the donation amount on the button', 'wp-full-stripe-admin' );
+				__( 'Insert {{amount}} to display the donation amount on the button', 'wp-full-stripe-free' );
 		}
 		if ( $formType === MM_WPFS::FORM_TYPE_CHECKOUT_DONATION ) {
 			$view = new MM_WPFS_Admin_CheckoutDonationFormView();
 			$data = $this->prepareCheckoutDonationFormData( $form );
 			$openButtonDescription =
 				/* translators: Helper label describing how the {{amount}} placeholder token can be used for donation button labels */
-				__( 'Insert {{amount}} to display the donation amount on the button', 'wp-full-stripe-admin' );
+				__( 'Insert {{amount}} to display the donation amount on the button', 'wp-full-stripe-free' );
 		}
 		if ( $formType === MM_WPFS::FORM_TYPE_INLINE_PAYMENT ) {
 			$view = new MM_WPFS_Admin_InlinePaymentFormView();
 			$data = $this->prepareInlinePaymentFormData( $form );
 			$submitButtonDescription =
 				/* translators: Helper label describing how the {{amount}} placeholder token can be used for payment button labels */
-				__( 'Insert {{amount}} to display the payment amount on the button', 'wp-full-stripe-admin' );
+				__( 'Insert {{amount}} to display the payment amount on the button', 'wp-full-stripe-free' );
 		}
 		if ( $formType === MM_WPFS::FORM_TYPE_CHECKOUT_PAYMENT ) {
 			$view = new MM_WPFS_Admin_CheckoutPaymentFormView();
 			$data = $this->prepareCheckoutPaymentFormData( $form );
 			$openButtonDescription =
 				/* translators: Helper label describing how the {{amount}} placeholder token can be used for donation button labels */
-				__( 'Insert {{amount}} to display the payment amount on the button', 'wp-full-stripe-admin' );
+				__( 'Insert {{amount}} to display the payment amount on the button', 'wp-full-stripe-free' );
 		}
 		if ( $formType === MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION ) {
 			$view = new MM_WPFS_Admin_InlineSubscriptionFormView();
@@ -2037,6 +2222,52 @@ class MM_WPFS_Admin_Menu {
 
 		/** @noinspection PhpIncludeInspection */
 		include MM_WPFS_Assets::templates( 'admin/wpfs-edit-form.php' );
+	}
+
+	/**
+	 * Get the metadata for survey in Formbricks format.
+	 * 
+	 * @param array $dash_data The dashboard information.
+	 * 
+	 * @return array The metadata in Formbricks format.
+	 */
+	function get_survey_metadata( $dash_data ) {
+		
+		$option_name_prefix  = str_replace( '-', '_', strtolower( trim( WP_FULL_STRIPE_PRODUCT_SLUG ) ) );
+		
+		$install_days_number = intval( ( time() - get_option( $option_name_prefix . '_install', time() ) ) / DAY_IN_SECONDS );
+		
+		$install_category = 0;
+
+		if ( 1 < $install_days_number && 8 > $install_days_number ) {
+			$install_category = 7;
+		} elseif ( 8 <= $install_days_number && 31 > $install_days_number ) {
+			$install_category = 30;
+		} elseif ( 30 < $install_days_number && 90 > $install_days_number ) {
+			$install_category = 90;
+		} elseif ( 90 <= $install_days_number ) {
+			$install_category = 91;
+		}
+
+		$data = array(
+			'environmentId' => 'cm67ylr58000cky030t6vaa9b',
+			'attributes'    => array(
+				'install_days_number' => $install_days_number,
+				'days_since_install'  => $install_category,
+				'has_pro'             => $dash_data['has_pro'],
+				'plan'                => intval( $dash_data['plan'] ),
+				'stripe_connect'      => boolval( $dash_data['connected'] ) ? 'yes' : 'no',
+				'stripe_mode'         => $dash_data['mode'],
+				'stripe_transactions' => intval( $dash_data['transactions'] )
+			)
+		);
+
+		$license_key = WPFS_License::get_key();
+		if ( ! empty( $license_key) ) {
+			$data['attributes']['license_key'] = apply_filters( 'themeisle_sdk_secret_masking', $license_key );
+		}
+
+		return $data;
 	}
 }
 
@@ -2173,7 +2404,7 @@ abstract class MM_WPFS_FormTabCreator {
 		array_push( $tabs, array(
 			'title' =>
 				/* translators: Label of the "General" tab on "Edit form" pages */
-				__( 'General', 'wp-full-stripe-admin' ),
+				__( 'General', 'wp-full-stripe-free' ),
 			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_GENERAL
 		)
 		);
@@ -2183,7 +2414,7 @@ abstract class MM_WPFS_FormTabCreator {
 		array_push( $tabs, array(
 			'title' =>
 				/* translators: Label of the "Payment" tab on "Edit form" pages */
-				__( 'Payment', 'wp-full-stripe-admin' ),
+				__( 'Payment', 'wp-full-stripe-free' ),
 			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENT
 		)
 		);
@@ -2193,7 +2424,7 @@ abstract class MM_WPFS_FormTabCreator {
 		array_push( $tabs, array(
 			'title' =>
 				/* translators: Label of the "Appearance" tab on "Edit form" pages */
-				__( 'Appearance', 'wp-full-stripe-admin' ),
+				__( 'Appearance', 'wp-full-stripe-free' ),
 			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE
 		)
 		);
@@ -2203,7 +2434,7 @@ abstract class MM_WPFS_FormTabCreator {
 		array_push( $tabs, array(
 			'title' =>
 				/* translators: Label of the "Form fields" tab on "Edit form" pages */
-				__( 'Form fields', 'wp-full-stripe-admin' ),
+				__( 'Form fields', 'wp-full-stripe-free' ),
 			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_FORM_LAYOUT
 		)
 		);
@@ -2213,8 +2444,18 @@ abstract class MM_WPFS_FormTabCreator {
 		array_push( $tabs, array(
 			'title' =>
 				/* translators: Label of the "Email notifications" tab on "Edit form" pages */
-				__( 'Email notifications', 'wp-full-stripe-admin' ),
+				__( 'Email notifications', 'wp-full-stripe-free' ),
 			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_EMAIL_NOTIFICATIONS
+		)
+		);
+	}
+
+	protected function webhookTab( &$tabs ) {
+		array_push( $tabs, array(
+			'title' =>
+				/* translators: Label of the "Webhooks" tab on "Edit form" pages */
+				__( 'Webhook', 'wp-full-stripe-free' ),
+			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_WEBHOOK
 		)
 		);
 	}
@@ -2229,6 +2470,7 @@ class MM_WPFS_InlineSaveCardFormTabCreator extends MM_WPFS_FormTabCreator {
 		$this->appearanceTab( $tabs );
 		$this->formFieldsTab( $tabs );
 		$this->emailNotificationsTab( $tabs );
+		$this->webhookTab( $tabs );
 
 		return $tabs;
 	}
@@ -2243,6 +2485,7 @@ class MM_WPFS_CheckoutSaveCardFormTabCreator extends MM_WPFS_FormTabCreator {
 		$this->appearanceTab( $tabs );
 		$this->formFieldsTab( $tabs );
 		$this->emailNotificationsTab( $tabs );
+		$this->webhookTab( $tabs );
 
 		return $tabs;
 	}
@@ -2257,6 +2500,7 @@ class MM_WPFS_InlineDonationFormTabCreator extends MM_WPFS_FormTabCreator {
 		$this->appearanceTab( $tabs );
 		$this->formFieldsTab( $tabs );
 		$this->emailNotificationsTab( $tabs );
+		$this->webhookTab( $tabs );
 
 		return $tabs;
 	}
@@ -2271,6 +2515,7 @@ class MM_WPFS_CheckoutDonationFormTabCreator extends MM_WPFS_FormTabCreator {
 		$this->appearanceTab( $tabs );
 		$this->formFieldsTab( $tabs );
 		$this->emailNotificationsTab( $tabs );
+		$this->webhookTab( $tabs );
 
 		return $tabs;
 	}
@@ -2281,7 +2526,7 @@ trait MM_WPFS_TaxAwareFormTabCreator {
 		array_push( $tabs, array(
 			'title' =>
 				/* translators: Label of the "Tax" tab on "Edit form" pages */
-				__( 'Tax', 'wp-full-stripe-admin' ),
+				__( 'Tax', 'wp-full-stripe-free' ),
 			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_TAX
 		)
 		);
@@ -2300,6 +2545,7 @@ class MM_WPFS_InlinePaymentFormTabCreator extends MM_WPFS_FormTabCreator {
 		$this->appearanceTab( $tabs );
 		$this->formFieldsTab( $tabs );
 		$this->emailNotificationsTab( $tabs );
+		$this->webhookTab( $tabs );
 
 		return $tabs;
 	}
@@ -2317,6 +2563,7 @@ class MM_WPFS_CheckoutPaymentFormTabCreator extends MM_WPFS_FormTabCreator {
 		$this->appearanceTab( $tabs );
 		$this->formFieldsTab( $tabs );
 		$this->emailNotificationsTab( $tabs );
+		$this->webhookTab( $tabs );
 
 		return $tabs;
 	}
@@ -2334,6 +2581,7 @@ class MM_WPFS_InlineSubscriptionFormTabCreator extends MM_WPFS_FormTabCreator {
 		$this->appearanceTab( $tabs );
 		$this->formFieldsTab( $tabs );
 		$this->emailNotificationsTab( $tabs );
+		$this->webhookTab( $tabs );
 
 		return $tabs;
 	}
@@ -2351,6 +2599,7 @@ class MM_WPFS_CheckoutSubscriptionFormTabCreator extends MM_WPFS_FormTabCreator 
 		$this->appearanceTab( $tabs );
 		$this->formFieldsTab( $tabs );
 		$this->emailNotificationsTab( $tabs );
+		$this->webhookTab( $tabs );
 
 		return $tabs;
 	}
@@ -2385,6 +2634,9 @@ class MM_WPFS_AdminScriptLocalizerFactory {
 
 			case MM_WPFS_Admin_Menu::SLUG_SETTINGS_LOGS:
 				return new MM_WPFS_SettingsLogsLocalizer( $options, $tab );
+
+			case MM_WPFS_Admin_Menu::SLUG_SETTINGS_LICENSE:
+				return new MM_WPFS_SettingsLicenseLocalizer( $options, $tab );
 
 			case MM_WPFS_Admin_Menu::SLUG_CREATE_FORM:
 				return new MM_WPFS_CreateFormLocalizer( $options, $tab );
@@ -2446,7 +2698,7 @@ class MM_WPFS_SettingsStripeLocalizer extends MM_WPFS_AdminScriptLocalizer {
 		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', array(
 			'webhookUrlCopiedMessage' =>
 				/* translators: Banner message displayed when a webhook URL is copied to the clipboard */
-				__( 'Webhook URL copied to clipboard.', 'wp-full-stripe-admin' )
+				__( 'Webhook URL copied to clipboard.', 'wp-full-stripe-free' )
 		)
 		);
 	}
@@ -2546,19 +2798,19 @@ class MM_WPFS_SettingsEmailNotificationsLocalizer extends MM_WPFS_AdminScriptLoc
 			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', array(
 				'resetTemplateTitle' =>
 					/* translators: Title of the 'Reset email template' dialog */
-					__( 'Reset email template', 'wp-full-stripe-admin' ),
+					__( 'Reset email template', 'wp-full-stripe-free' ),
 				'resetTemplateConfirmationMessage' =>
 					/* translators: Confirmation message displayed in the 'Reset email template' dialog */
-					__( "Are you sure you'd like to reset the email template?", 'wp-full-stripe-admin' ),
+					__( "Are you sure you'd like to reset the email template?", 'wp-full-stripe-free' ),
 				'sendTestEmailTitle' =>
 					/* translators: Title of the 'Send test email' dialog */
-					__( 'Send test email', 'wp-full-stripe-admin' ),
+					__( 'Send test email', 'wp-full-stripe-free' ),
 				'enterAtLeastOneEmailAddressMessage' =>
 					/* translators: Error message displayed when no email is entered in the 'Send test email' dialog */
-					__( "Please enter at least one email address", 'wp-full-stripe-admin' ),
+					__( "Please enter at least one email address", 'wp-full-stripe-free' ),
 				'emailAddressInvalidMessage' =>
 					/* translators: Error message displayed when an invalid email address is entered in the 'Send test email' dialog */
-					__( "Email address %s is invalid", 'wp-full-stripe-admin' ),
+					__( "Email address %s is invalid", 'wp-full-stripe-free' ),
 			)
 			);
 		}
@@ -2592,10 +2844,21 @@ class MM_WPFS_SettingsLogsLocalizer extends MM_WPFS_AdminScriptLocalizer {
 		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', array(
 			'emptyLogTitle' =>
 				/* translators: Dialog title of the 'Empty log' dialog */
-				__( 'Empty log', 'wp-full-stripe-admin' ),
+				__( 'Empty log', 'wp-full-stripe-free' ),
 			'emptyLogConfirmationMessage' =>
 				/* translators: Confirmation message of the 'Empty log' dialog */
-				__( "Are you use you'd like to delete all log entries?", 'wp-full-stripe-admin' ),
+				__( "Are you use you'd like to delete all log entries?", 'wp-full-stripe-free' ),
+		)
+		);
+	}
+}
+
+class MM_WPFS_SettingsLicenseLocalizer extends MM_WPFS_AdminScriptLocalizer {
+	public function localizeScripts() {
+		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', array(
+			'licenseError' =>
+				/* translators: Error message displayed when the license key is invalid */
+				__( 'License Error', 'wp-full-stripe-free' ),
 		)
 		);
 	}
@@ -2631,137 +2894,152 @@ class MM_WPFS_EditFormLocalizer extends MM_WPFS_AdminScriptLocalizer {
 		$l10n = array(
 			'formCssIdCopiedMessage' =>
 				/* translators: Banner message displayed when a CSS selector is copied to the clipboard */
-				__( 'Form CSS selector ID copied to clipboard', 'wp-full-stripe-admin' ),
+				__( 'Form CSS selector ID copied to clipboard', 'wp-full-stripe-free' ),
 			'textFieldTypeLabel' =>
 				/* translators: File type label of the text custom field type */
-				__( 'Text field', 'wp-full-stripe-admin' ),
+				__( 'Text field', 'wp-full-stripe-free' ),
 			'fieldNameRequiredMessage' =>
 				/* translators: Validation message displayed when the name of the custom field is not filled in */
-				__( 'Please enter field name', 'wp-full-stripe-admin' ),
+				__( 'Please enter field name', 'wp-full-stripe-free' ),
 			'fieldNameTooLongMessage' =>
 				/* translators: Validation message displayed when the length of the custom field name is more than 40 characters */
-				__( 'Maximum custom field length is 40 characters', 'wp-full-stripe-admin' ),
+				__( 'Maximum custom field length is 40 characters', 'wp-full-stripe-free' ),
 			'deleteCustomFieldTitle' =>
 				/* translators: Title of the 'Delete custom field' dialog */
-				__( 'Delete custom field', 'wp-full-stripe-admin' ),
+				__( 'Delete custom field', 'wp-full-stripe-free' ),
 			'deleteCustomFieldConfirmationMessage' =>
 				/* translators: Confirmation message displayed in the  'Delete custom field' dialog
 				 * p1: Name of the custom field
 				 */
-				__( "Are you sure you'd like to delete custom field '%s' ?", 'wp-full-stripe-admin' ),
+				__( "Are you sure you'd like to delete custom field '%s' ?", 'wp-full-stripe-free' ),
 			'addCustomFieldTitle' =>
 				/* translators: Title of the 'Add custom field' dialog */
-				__( 'Add custom field', 'wp-full-stripe-admin' ),
+				__( 'Add custom field', 'wp-full-stripe-free' ),
 			'recurringPriceWithSingularDayFormatter' =>
 				/* translators: Daily recurring price label
 				 * p1: Price
 				 */
-				__( '%1$s / day', 'wp-full-stripe-admin' ),
+				__( '%1$s / day', 'wp-full-stripe-free' ),
 			'recurringPriceWithPluralDayFormatter' =>
 				/* translators: Recurring price label for prices charged every x days
 				 * p1: Price
 				 * p2: Frequency in days
 				 */
-				__( '%1$s / %2$d days', 'wp-full-stripe-admin' ),
+				__( '%1$s / %2$d days', 'wp-full-stripe-free' ),
 			'recurringPriceWithSingularWeekFormatter' =>
 				/* translators: Weekly recurring price label
 				 * p1: Price
 				 */
-				__( '%1$s / week', 'wp-full-stripe-admin' ),
+				__( '%1$s / week', 'wp-full-stripe-free' ),
 			'recurringPriceWithPluralWeekFormatter' =>
 				/* translators: Recurring price label for prices charged every x weeks
 				 * p1: Price
 				 * p2: Frequency in weeks
 				 */
-				__( '%1$s / %2$d weeks', 'wp-full-stripe-admin' ),
+				__( '%1$s / %2$d weeks', 'wp-full-stripe-free' ),
 			'recurringPriceWithSingularMonthFormatter' =>
 				/* translators: Monthly recurring price label
 				 * p1: Price
 				 */
-				__( '%1$s / month', 'wp-full-stripe-admin' ),
+				__( '%1$s / month', 'wp-full-stripe-free' ),
 			'recurringPriceWithPluralMonthFormatter' =>
 				/* translators: Recurring price label for prices charged every x months
 				 * p1: Price
 				 * p2: Frequency in months
 				 */
-				__( '%1$s / %2$d months', 'wp-full-stripe-admin' ),
+				__( '%1$s / %2$d months', 'wp-full-stripe-free' ),
 			'recurringPriceWithSingularYearFormatter' =>
 				/* translators: Annual recurring price label
 				 * p1: Price
 				 */
-				__( '%1$s / year', 'wp-full-stripe-admin' ),
+				__( '%1$s / year', 'wp-full-stripe-free' ),
 			'recurringPriceWithPluralYearFormatter' =>
 				/* translators: Recurring price label for prices charged every x years
 				 * p1: Price
 				 * p2: Frequency in years
 				 */
-				__( '%1$s / %2$d years', 'wp-full-stripe-admin' ),
+				__( '%1$s / %2$d years', 'wp-full-stripe-free' ),
 			'standardPricingLabel' =>
 				/* translators: Label for the pricing type 'Standard pricing' */
-				__( 'Standard pricing', 'wp-full-stripe-admin' ),
+				__( 'Standard pricing', 'wp-full-stripe-free' ),
 			'volumePricingLabel' =>
 				/* translators: Label for the pricing type 'Volume pricing' */
-				__( 'Volume pricing', 'wp-full-stripe-admin' ),
+				__( 'Volume pricing', 'wp-full-stripe-free' ),
 			'graduatedPricingLabel' =>
 				/* translators: Label for the pricing type 'Graduated pricing' */
-				__( 'Graduated pricing', 'wp-full-stripe-admin' ),
+				__( 'Graduated pricing', 'wp-full-stripe-free' ),
 			'meteredBillingLabel' =>
 				/* translators: Label for the pricing mode 'Metered billing' */
-				__( 'Metered billing', 'wp-full-stripe-admin' ),
+				__( 'Metered billing', 'wp-full-stripe-free' ),
 			'setAdditionalPlanPropertiesLabel' =>
 				/* translators: Title of the 'Add subscription plan properties' dialog box
 				 * p1: Name of the subscription plan
 				 */
-				__( 'Set additional properties for <b>%s</b>', 'wp-full-stripe-admin' ),
+				__( 'Set additional properties for <b>%s</b>', 'wp-full-stripe-free' ),
 			'requiredFieldMessage' =>
 				/* translators: Validation error message for required fields which are not filled in */
-				__( 'This is a required field', 'wp-full-stripe-admin' ),
+				__( 'This is a required field', 'wp-full-stripe-free' ),
 			'invalidAmountMessage' =>
 				/* translators: Validation error message for invalid payment amounts entered */
-				__( 'Please enter a valid amount', 'wp-full-stripe-admin' ),
+				__( 'Please enter a valid amount', 'wp-full-stripe-free' ),
 			'enterWholeNumberMessage' =>
 				/* translators: Validation error message displayed when the entered number is not a whole number */
-				__( 'Please enter a whole number', 'wp-full-stripe-admin' ),
+				__( 'Please enter a whole number', 'wp-full-stripe-free' ),
 			'enterPositiveNumberMessage' =>
 				/* translators: Validation error message displayed when the entered number is not a positive number */
-				__( 'Please enter a positive number', 'wp-full-stripe-admin' ),
+				__( 'Please enter a positive number', 'wp-full-stripe-free' ),
 			'billingAnchorDayIntervalMessage' =>
 				/* translators: Validation error message displayed when the entered number is not between 1 and 28 */
-				__( 'Please enter number between 1 and 28', 'wp-full-stripe-admin' ),
+				__( 'Please enter number between 1 and 28', 'wp-full-stripe-free' ),
 			'planAndSetupFeeLabel' =>
 				/* translators: Pricing label of a subscription plan
 				 * p1: Recurring amount
 				 * p2: One-time setup fee
 				 */
-				__( '%1$s + %2$s setup fee', 'wp-full-stripe-admin' ),
+				__( '%1$s + %2$s setup fee', 'wp-full-stripe-free' ),
 			'trialDaysLabel' =>
 				/* translators: Trial days label of a subscription plan
 				 * p1: Number of trial days
 				 */
-				__( '%s-day trial', 'wp-full-stripe-admin' ),
+				__( '%s-day trial', 'wp-full-stripe-free' ),
 			'runningUntilCanceledLabel' =>
 				/* translators: Label describing subscriptions which are running till canceled */
-				__( 'Running until canceled', 'wp-full-stripe-admin' ),
+				__( 'Running until canceled', 'wp-full-stripe-free' ),
 			'canceledAfterXOccurrences' =>
 				/* translators: Label describing subscriptions which are canceled after x charges
 				 * p1: Number of recurring charges after which the subscription is canceled
 				 */
-				__( 'Canceled after %s occurences', 'wp-full-stripe-admin' ),
+				__( 'Canceled after %s occurences', 'wp-full-stripe-free' ),
 			'internalError' =>
 				/* translators: Error banner title for internal, unexpected errors/problems */
-				__( 'Internal error', 'wp-full-stripe-admin' ),
+				__( 'Internal error', 'wp-full-stripe-free' ),
 			'taxRateInclusiveDescription' =>
 				/* translators: Description of an inclusive tax rate
 				 * p1: Tax percentage
 				 * p2: Tax label (VAT, GST, Sales tax, etc)
 				 */
-				__( '%1$s%% %2$s (inclusive)', 'wp-full-stripe-admin' ),
+				__( '%1$s%% %2$s (inclusive)', 'wp-full-stripe-free' ),
 			'taxRateExclusiveDescription' =>
 				/* translators: Description of an exclusive tax rate
 				 * p1: Tax percentage
 				 * p2: Tax label (VAT, GST, Sales tax, etc)
 				 */
-				__( '%1$s%% %2$s (exclusive)', 'wp-full-stripe-admin' ),
+				__( '%1$s%% %2$s (exclusive)', 'wp-full-stripe-free' ),
+			'webhookTestSuccessMessage' =>
+				/* translators: Success message displayed when a webhook test is successful */
+				__( 'Webhook test successful', 'wp-full-stripe-free' ),
+			'webhookTestFailureMessage' =>
+				/* translators: Error message displayed when a webhook test fails */
+				__( 'Webhook test failed', 'wp-full-stripe-free' ),
+			'webhookUrlMissingMessage' =>
+				/* translators: Error message displayed when the webhook URL is missing */
+				__( 'Webhook URL is missing', 'wp-full-stripe-free' ),
+			'key' =>
+				/* translators: Label for the key field */
+				__( 'Key', 'wp-full-stripe-free' ),
+			'value' =>
+				/* translators: Label for the value field */
+				__( 'Value', 'wp-full-stripe-free' ),
 		);
 
 		if ( $this->formType === MM_WPFS::FORM_TYPE_INLINE_SAVE_CARD ) {
@@ -2782,24 +3060,24 @@ class MM_WPFS_EditFormLocalizer extends MM_WPFS_AdminScriptLocalizer {
 
 			$l10n['addSuggestedDonationAmountTitle'] =
 				/* translators: Title of the 'Add suggested donation amount' dialog */
-				__( 'Add suggested donation amount', 'wp-full-stripe-admin' );
+				__( 'Add suggested donation amount', 'wp-full-stripe-free' );
 			$l10n['suggestedDonationAmountRequiredMessage'] =
 				/* translators: Validation error message for an empty donation amount */
-				__( 'Please enter a donation amount', 'wp-full-stripe-admin' );
+				__( 'Please enter a donation amount', 'wp-full-stripe-free' );
 			$l10n['suggestedDonationAmountInvalidMessage'] =
 				/* translators: Validation error message for an invalid donation amount entered */
-				__( 'Please enter a valid amount', 'wp-full-stripe-admin' );
+				__( 'Please enter a valid amount', 'wp-full-stripe-free' );
 			$l10n['suggestedDonationAmountNotWholeNumberMessage'] =
 				/* translators: Validation error message for a donation amount which is not a whole number */
-				__( 'Please enter a number without decimal separator', 'wp-full-stripe-admin' );
+				__( 'Please enter a number without decimal separator', 'wp-full-stripe-free' );
 			$l10n['deleteSuggestedDonationTitle'] =
 				/* translators: Title of the 'Delete suggested donation amount' dialog */
-				__( 'Delete suggested donation amount', 'wp-full-stripe-admin' );
+				__( 'Delete suggested donation amount', 'wp-full-stripe-free' );
 			$l10n['deleteSuggestedDonationAmountConfirmationMessage'] =
 				/* translators: Confirmation message displayed before deleting a suggested donation amount
 				 * p1: The donation amount to be deleted
 				 */
-				__( "Are you sure you'd like to delete donation amount '%s' ?", 'wp-full-stripe-admin' );
+				__( "Are you sure you'd like to delete donation amount '%s' ?", 'wp-full-stripe-free' );
 		} elseif ( $this->formType === MM_WPFS::FORM_TYPE_CHECKOUT_DONATION ) {
 			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
 				MM_WPFS::FORM_TYPE_ADMIN_CHECKOUT_DONATION_FORM => MM_WPFS_Admin_CheckoutDonationFormView::getFields()
@@ -2808,24 +3086,24 @@ class MM_WPFS_EditFormLocalizer extends MM_WPFS_AdminScriptLocalizer {
 
 			$l10n['addSuggestedDonationAmountTitle'] =
 				/* translators: Title of the 'Add suggested donation amount' dialog */
-				__( 'Add suggested donation amount', 'wp-full-stripe-admin' );
+				__( 'Add suggested donation amount', 'wp-full-stripe-free' );
 			$l10n['suggestedDonationAmountRequiredMessage'] =
 				/* translators: Validation error message for an empty donation amount */
-				__( 'Please enter a donation amount', 'wp-full-stripe-admin' );
+				__( 'Please enter a donation amount', 'wp-full-stripe-free' );
 			$l10n['suggestedDonationAmountInvalidMessage'] =
 				/* translators: Validation error message for an invalid donation amount entered */
-				__( 'Please enter a valid amount', 'wp-full-stripe-admin' );
+				__( 'Please enter a valid amount', 'wp-full-stripe-free' );
 			$l10n['suggestedDonationAmountNotWholeNumberMessage'] =
 				/* translators: Validation error message for a donation amount which is not a whole number */
-				__( 'Please enter a number without decimal separator', 'wp-full-stripe-admin' );
+				__( 'Please enter a number without decimal separator', 'wp-full-stripe-free' );
 			$l10n['deleteSuggestedDonationTitle'] =
 				/* translators: Title of the 'Delete suggested donation amount' dialog */
-				__( 'Delete suggested donation amount', 'wp-full-stripe-admin' );
+				__( 'Delete suggested donation amount', 'wp-full-stripe-free' );
 			$l10n['deleteSuggestedDonationAmountConfirmationMessage'] =
 				/* translators: Confirmation message displayed before deleting a suggested donation amount
 				 * p1: The donation amount to be deleted
 				 */
-				__( "Are you sure you'd like to delete donation amount '%s' ?", 'wp-full-stripe-admin' );
+				__( "Are you sure you'd like to delete donation amount '%s' ?", 'wp-full-stripe-free' );
 		} elseif ( $this->formType === MM_WPFS::FORM_TYPE_INLINE_PAYMENT ) {
 			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
 				MM_WPFS::FORM_TYPE_ADMIN_INLINE_PAYMENT_FORM => MM_WPFS_Admin_InlinePaymentFormView::getFields()
@@ -2882,21 +3160,21 @@ class MM_WPFS_FormsLocalizer extends MM_WPFS_AdminScriptLocalizer {
 		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', array(
 			'shortcodeCopiedMessage' =>
 				/* translators: Success banner message when a form shortcode is copied to the clipboard  */
-				__( 'Shortcode copied to clipboard.', 'wp-full-stripe-admin' ),
+				__( 'Shortcode copied to clipboard.', 'wp-full-stripe-free' ),
 			'deleteFormConfirmationMessage' =>
 				/* translators: Confirmation message displayed before deleting a form
 				 * p1: Name of the form
 				 */
-				__( "Are you sure you'd like to delete form '%s' ?", 'wp-full-stripe-admin' ),
+				__( "Are you sure you'd like to delete form '%s' ?", 'wp-full-stripe-free' ),
 			'cloneFormTitle' =>
 				/* translators: Title of the 'Clone form' dialog  */
-				__( 'Clone form', 'wp-full-stripe-admin' ),
+				__( 'Clone form', 'wp-full-stripe-free' ),
 			'deleteFormTitle' =>
 				/* translators: Title of the 'Delete form' dialog  */
-				__( 'Delete form', 'wp-full-stripe-admin' ),
+				__( 'Delete form', 'wp-full-stripe-free' ),
 			'copyPostfix' =>
 				/* translators: This is the postfix add to name of a cloned form. TestForm -> TestFormCopy  */
-				__( 'Copy', 'wp-full-stripe-admin' ),
+				__( 'Copy', 'wp-full-stripe-free' ),
 		)
 		);
 	}
@@ -2907,76 +3185,76 @@ class MM_WPFS_TransactionsLocalizer extends MM_WPFS_AdminScriptLocalizer {
 		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', array(
 			'refundPaymentTitle' =>
 				/* translators: Title of the 'Refund payment' dialog  */
-				__( 'Refund payment', 'wp-full-stripe-admin' ),
+				__( 'Refund payment', 'wp-full-stripe-free' ),
 			'refundPaymentConfirmationMessage' =>
 				/* translators: Confirmation message displayed in the 'Refund payment' dialog
 				 * p1: Identifier of the payment to be refunded
 				 */
-				__( "Are you sure you'd like to refund payment '%s' ?", 'wp-full-stripe-admin' ),
+				__( "Are you sure you'd like to refund payment '%s' ?", 'wp-full-stripe-free' ),
 			'deletePaymentTitle' =>
 				/* translators: Title of the 'Delete payment' dialog  */
-				__( 'Delete payment', 'wp-full-stripe-admin' ),
+				__( 'Delete payment', 'wp-full-stripe-free' ),
 			'deletePaymentConfirmationMessage' =>
 				/* translators: Confirmation message displayed in the 'Delete payment' dialog
 				 * p1: Identifier of the payment to be deleted
 				 */
-				__( "Are you sure you'd like to delete payment '%s' from the WordPress database?", 'wp-full-stripe-admin' ),
+				__( "Are you sure you'd like to delete payment '%s' from the WordPress database?", 'wp-full-stripe-free' ),
 			'capturePaymentTitle' =>
 				/* translators: Title of the 'Capture payment' dialog  */
-				__( 'Capture payment', 'wp-full-stripe-admin' ),
+				__( 'Capture payment', 'wp-full-stripe-free' ),
 			'capturePaymentConfirmationMessage' =>
 				/* translators: Confirmation message displayed in the 'Capture payment' dialog
 				 * p1: Identifier of the payment to be captured
 				 */
-				__( "Are you sure you'd like to capture payment '%s' ?", 'wp-full-stripe-admin' ),
+				__( "Are you sure you'd like to capture payment '%s' ?", 'wp-full-stripe-free' ),
 			'cancelSubscriptionTitle' =>
 				/* translators: Title of the 'Cancel subscription' dialog  */
-				__( 'Cancel subscription', 'wp-full-stripe-admin' ),
+				__( 'Cancel subscription', 'wp-full-stripe-free' ),
 			'cancelSubscriptionConfirmationMessage' =>
 				/* translators: Confirmation message displayed in the 'Cancel subscription' dialog
 				 * p1: Identifier of the subscription to be canceled
 				 */
-				__( "Are you sure you'd like to cancel subscription '%s' ?", 'wp-full-stripe-admin' ),
+				__( "Are you sure you'd like to cancel subscription '%s' ?", 'wp-full-stripe-free' ),
 			'deleteSubscriptionTitle' =>
 				/* translators: Title of the 'Delete subscription' dialog  */
-				__( 'Delete subscription', 'wp-full-stripe-admin' ),
+				__( 'Delete subscription', 'wp-full-stripe-free' ),
 			'deleteSubscriptionConfirmationMessage' =>
 				/* translators: Confirmation message displayed in the 'Delete subscription' dialog
 				 * p1: Identifier of the subscription to be deleted
 				 */
-				__( "Are you sure you'd like to delete subscription '%s' from the WordPress database?", 'wp-full-stripe-admin' ),
+				__( "Are you sure you'd like to delete subscription '%s' from the WordPress database?", 'wp-full-stripe-free' ),
 			'refundDonationTitle' =>
 				/* translators: Title of the 'Refund donation' dialog  */
-				__( 'Refund donation', 'wp-full-stripe-admin' ),
+				__( 'Refund donation', 'wp-full-stripe-free' ),
 			'refundDonationConfirmationMessage' =>
 				/* translators: Confirmation message displayed in the 'Refund donation' dialog
 				 * p1: Identifier of the donation to be refunded
 				 */
-				__( "Are you sure you'd like to refund donation '%s' ?", 'wp-full-stripe-admin' ),
+				__( "Are you sure you'd like to refund donation '%s' ?", 'wp-full-stripe-free' ),
 			'cancelDonationTitle' =>
 				/* translators: Title of the 'Cancel donation' dialog  */
-				__( 'Cancel donation', 'wp-full-stripe-admin' ),
+				__( 'Cancel donation', 'wp-full-stripe-free' ),
 			'cancelDonationConfirmationMessage' =>
 				/* translators: Confirmation message displayed in the 'Cancel donation' dialog
 				 * p1: Identifier of the donation to be canceled
 				 */
-				__( "Are you sure you'd like to cancel donation '%s' ?", 'wp-full-stripe-admin' ),
+				__( "Are you sure you'd like to cancel donation '%s' ?", 'wp-full-stripe-free' ),
 			'deleteDonationTitle' =>
 				/* translators: Title of the 'Delete donation' dialog  */
-				__( 'Delete donation', 'wp-full-stripe-admin' ),
+				__( 'Delete donation', 'wp-full-stripe-free' ),
 			'deleteDonationConfirmationMessage' =>
 				/* translators: Confirmation message displayed in the 'Delete donation' dialog
 				 * p1: Identifier of the donation to be deleted
 				 */
-				__( "Are you sure you'd like to delete donation '%s' from the WordPress database?", 'wp-full-stripe-admin' ),
+				__( "Are you sure you'd like to delete donation '%s' from the WordPress database?", 'wp-full-stripe-free' ),
 			'deleteSavedCardTitle' =>
 				/* translators: Title of the 'Delete saved card' dialog  */
-				__( 'Delete saved card', 'wp-full-stripe-admin' ),
+				__( 'Delete saved card', 'wp-full-stripe-free' ),
 			'deleteSavedCardConfirmationMessage' =>
 				/* translators: Confirmation message displayed in the 'Delete saved card' dialog
 				 * p1: Identifier of the saved card to be deleted
 				 */
-				__( "Are you sure you'd like to delete saved card '%s' from the WordPress database?", 'wp-full-stripe-admin' ),
+				__( "Are you sure you'd like to delete saved card '%s' from the WordPress database?", 'wp-full-stripe-free' ),
 		)
 		);
 	}

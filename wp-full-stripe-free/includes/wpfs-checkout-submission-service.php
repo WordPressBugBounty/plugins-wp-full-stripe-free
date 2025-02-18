@@ -652,10 +652,10 @@ class MM_WPFS_CheckoutSubmissionService {
 				'status' => self::CHECKOUT_SESSION_STATUS_CANCELLED,
 				'lastMessageTitle' =>
 					/* translators: Banner title of cancelled transaction */
-					__( 'Cancelled', 'wp-full-stripe' ),
+					__( 'Cancelled', 'wp-full-stripe-free' ),
 				'lastMessage' =>
 					/* translators: Banner message of cancelled transaction */
-					__( 'The customer has cancelled the payment.', 'wp-full-stripe' )
+					__( 'The customer has cancelled the payment.', 'wp-full-stripe-free' )
 			)
 		);
 	}
@@ -1248,7 +1248,7 @@ class MM_WPFS_CheckoutSessionBuilder_Subscription extends MM_WPFS_CheckoutSessio
 					'product_data' => array(
 						'name' => sprintf(
 							/* translators: It's a line item for the initial payment of a subscription  */
-							__( 'One-time setup fee (plan: %s)', 'wp-full-stripe' ),
+							__( 'One-time setup fee (plan: %s)', 'wp-full-stripe-free' ),
 							MM_WPFS_Localization::translateLabel( $this->formModel->getStripePlan()->product->name )
 						),
 						'metadata' => [ 

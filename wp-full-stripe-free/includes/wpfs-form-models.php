@@ -2090,8 +2090,8 @@ abstract class MM_WPFS_Public_PaymentFormModel extends MM_WPFS_Public_FormModel
 			$products = MM_WPFS_Utils::decodeJsonArray($this->__form->decoratedProducts);
 
 			if (count($products) === 0) {
-				$ex = new WPFS_UserFriendlyException(__('Please add products to the form.', 'wp-full-stripe'));
-				$ex->setTitle(__('Form configuration error', 'wp-full-stripe'));
+				$ex = new WPFS_UserFriendlyException(__('Please add products to the form.', 'wp-full-stripe-free'));
+				$ex->setTitle(__('Form configuration error', 'wp-full-stripe-free'));
 				$this->logger->error( __FUNCTION__, 'Error while rendering form. Products are missing. ', $ex );
 				throw $ex;
 			} else if (count($products) === 1) {
@@ -2248,7 +2248,7 @@ abstract class MM_WPFS_Public_DonationFormModel extends MM_WPFS_Public_FormModel
 		if (isset($this->__form->productDesc)) {
 			$this->__productName = esc_attr($this->__form->productDesc);
 		} else {
-			$this->__productName = __("Donation", 'wp-full-stripe');
+			$this->__productName = __("Donation", 'wp-full-stripe-free');
 		}
 
 		if (1 == $this->__form->allowCustomDonationAmount && 'other' === $this->customAmountValue) {

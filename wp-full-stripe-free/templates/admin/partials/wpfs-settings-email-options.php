@@ -27,7 +27,7 @@
                 </div>
             </div>
             <div class="wpfs-form-group">
-                <label for="" class="wpfs-form-label"><?php esc_html_e( 'Send copy of email notifications to', 'wp-full-stripe-admin' ); ?></label>
+                <label for="" class="wpfs-form-label"><?php esc_html_e( 'Send copy of email notifications to', 'wp-full-stripe-free' ); ?></label>
                 <div class="wpfs-form-check-list">
                     <?php
                         $isCopyAdmin = array_search( $emailOptions->adminEmail, $emailOptions->bccEmails ) !== false;
@@ -54,16 +54,16 @@
                 </div>
             </div>
             <div class="wpfs-form-actions">
-                <button class="wpfs-btn wpfs-btn-primary wpfs-button-loader" type="submit"><?php esc_html_e( 'Save settings', 'wp-full-stripe-admin' ); ?></button>
+                <button class="wpfs-btn wpfs-btn-primary wpfs-button-loader" type="submit"><?php esc_html_e( 'Save settings', 'wp-full-stripe-free' ); ?></button>
             </div>
         </div>
         <div class="wpfs-form__col">
             <div class="wpfs-inline-message wpfs-inline-message--info wpfs-inline-message--w448">
                 <div class="wpfs-inline-message__inner">
-                    <div class="wpfs-inline-message__title"><?php esc_html_e( 'Configure plugin email notifications', 'wp-full-stripe-admin' ); ?></div>
-                    <p><?php esc_html_e( 'These settings apply to plugin email notifications only.', 'wp-full-stripe-admin' ); ?></p>
+                    <div class="wpfs-inline-message__title"><?php esc_html_e( 'Configure plugin email notifications', 'wp-full-stripe-free' ); ?></div>
+                    <p><?php esc_html_e( 'These settings apply to plugin email notifications only.', 'wp-full-stripe-free' ); ?></p>
                     <p>
-                        <a class="wpfs-btn wpfs-btn-link" href="https://support.paymentsplugin.com/article/28-configuring-email-notifications" target="_blank"><?php esc_html_e( 'Learn more about Email notifications', 'wp-full-stripe-admin' ); ?></a>
+                        <a class="wpfs-btn wpfs-btn-link" href="https://docs.themeisle.com/article/2101-configuring-email-notifications" target="_blank"><?php esc_html_e( 'Learn more about Email notifications', 'wp-full-stripe-free' ); ?></a>
                     </p>
                 </div>
             </div>

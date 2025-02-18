@@ -114,10 +114,10 @@ if ($view instanceof MM_WPFS_PaymentFormView && !is_null($view->customAmountOpti
         <div class="wpfs-form-message wpfs-form-message--incorrect">
             <div class="wpfs-form-message-title">
                 <?php /* translators: Banner title of internal error */
-                esc_html_e('Form configuration error', 'wp-full-stripe'); ?>
+                esc_html_e('Form configuration error', 'wp-full-stripe-free'); ?>
             </div>
             <?php /* Banner error message of not finding products added to this form */
-            esc_html_e('Add at least one product to this form!', 'wp-full-stripe'); ?>
+            esc_html_e('Add at least one product to this form!', 'wp-full-stripe-free'); ?>
         </div>
         <?php
 

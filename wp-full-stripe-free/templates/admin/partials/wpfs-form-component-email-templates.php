@@ -6,7 +6,7 @@
 <div class="wpfs-form__cols wpfs-form__cols--templates">
     <div class="wpfs-form__col">
         <div class="wpfs-list-title">
-            <?php esc_html_e('Available email types:', 'wp-full-stripe-admin'); ?>
+            <?php esc_html_e('Available email types:', 'wp-full-stripe-free'); ?>
         </div>
         <div id="wpfs-templates-container" class="wpfs-list wpfs-list--sm wpfs-list--status"></div>
     </div>
@@ -22,7 +22,7 @@
     <div class="wpfs-list__text">
         <div class="wpfs-list__title"><%= typeLabel %></div>
         <div class="wpfs-status-bullet <% if (enabled === true) { %> wpfs-status-bullet--green <% } else { %> wpfs-status-bullet--red <% } %> wpfs-list__bullet">
-            <% if (enabled === true) { %><?php esc_html_e('Enabled', 'wp-full-stripe-admin'); ?><% } else { %><?php esc_html_e('Disabled', 'wp-full-stripe-admin'); ?><% } %>
+            <% if (enabled === true) { %><?php esc_html_e('Enabled', 'wp-full-stripe-free'); ?><% } else { %><?php esc_html_e('Disabled', 'wp-full-stripe-free'); ?><% } %>
         </div>
     </div>
 </script>
@@ -33,10 +33,10 @@
     </div>
     <div class="wpfs-form-group">
         <label class="wpfs-toggler">
-            <span><?php esc_html_e('Disabled', 'wp-full-stripe-admin'); ?></span>
+            <span><?php esc_html_e('Disabled', 'wp-full-stripe-free'); ?></span>
             <input type="checkbox" id="wpfs-send-email-toggle" name="wpfs-send-email-toggle" <% if (enabled === true) { %>checked<% } %>>
             <span class="wpfs-toggler__switcher"></span>
-            <span><?php esc_html_e('Enabled', 'wp-full-stripe-admin'); ?></span>
+            <span><?php esc_html_e('Enabled', 'wp-full-stripe-free'); ?></span>
         </label>
     </div>
 </script>

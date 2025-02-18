@@ -29,6 +29,10 @@
     <input id="<?php $view->formGetParameters()->id(); ?>" name="<?php $view->formGetParameters()->name(); ?>"
         value="<?php $view->formGetParameters()->value(); ?>" <?php $view->formGetParameters()->attributes(); ?>>
     <?php
+    if ($view instanceof MM_WPFS_DonationFormView ) {
+        include("components/wpfs-component-donation-goal.php");
+    }
+
     // show custom amount options. Includes:
     // - dropdown for products with custom price
     // - list of buttons with different prices
@@ -234,7 +238,7 @@
             <div class="wpfs-form-group">
                 <label class="wpfs-form-label">
                     <?php /* translators: Form field label for captcha */
-                    _e('Prove you are a human', 'wp-full-stripe'); ?>
+                    _e('Prove you are a human', 'wp-full-stripe-free'); ?>
                 </label>
                 <div class="wpfs-form-captcha" data-wpfs-field-name="g-recaptcha-response"
                     data-wpfs-form-hash="<?php echo esc_attr($view->getFormHash()); ?>"></div>
@@ -249,7 +253,7 @@
             <div class="wpfs-form-group">
                 <label class="wpfs-form-label">
                     <?php /* translators: Form field label for captcha */
-                    _e('Prove you are a human', 'wp-full-stripe'); ?>
+                    _e('Prove you are a human', 'wp-full-stripe-free'); ?>
                 </label>
                 <div class="wpfs-form-captcha" data-wpfs-field-name="g-recaptcha-response"
                     data-wpfs-form-hash="<?php echo esc_attr($view->getFormHash()); ?>"></div>
@@ -291,7 +295,7 @@
                 class="wpfs-btn wpfs-btn-link wpfs-btn-link--sm" data-toggle="tooltip"
                 data-tooltip-content="<?php echo esc_attr('wpfs-form-summary-' . $view->getFormHash()); ?>">
                 <?php /* translators: Link that trigger the opening of the payment details table */
-                _e('Payment details', 'wp-full-stripe'); ?>
+                _e('Payment details', 'wp-full-stripe-free'); ?>
             </a>
             <div class="wpfs-tooltip-content"
                 data-tooltip-id="<?php echo esc_attr('wpfs-form-summary-' . $view->getFormHash()); ?>">
@@ -323,7 +327,7 @@
                             <tr class="wpfs-summary-table-total" data-wpfs-summary-row="total">
                                 <td class="wpfs-summary-table-cell" data-wpfs-summary-row-label="total">
                                     <?php /* translators: Label for the total price  */
-                                    esc_html_e('Total', 'wp-full-stripe'); ?>
+                                    esc_html_e('Total', 'wp-full-stripe-free'); ?>
                                 </td>
                                 <td class="wpfs-summary-table-cell" data-wpfs-summary-row-value="total">&nbsp;</td>
                             </tr>
@@ -331,6 +335,12 @@
                     </table>
                     <p class="wpfs-summary-description">&nbsp;</p>
                 </div>
+            </div>
+        <?php endif; ?>
+
+        <?php if ( MM_WPFS_Utils::isTestMode() ): ?>
+            <div class="wpfs-form-test-label">
+                <?php _e( 'Test Mode', 'wp-full-stripe-free' ); ?>
             </div>
         <?php endif; ?>
     </div>

@@ -11,7 +11,7 @@
                 <div class="wpfs-icon-expand-vertical-left-right wpfs-field-list__icon"></div>
                 <div class="wpfs-field-list__info">
                     <div class="wpfs-field-list__title"><?php echo $data->customFieldLabels[ $idx-1 ]; ?></div>
-                    <div class="wpfs-field-list__meta"><?php esc_html_e( 'Text field', 'wp-full-stripe-admin' ); ?></div>
+                    <div class="wpfs-field-list__meta"><?php esc_html_e( 'Text field', 'wp-full-stripe-free' ); ?></div>
                 </div>
                 <div class="wpfs-field-list__actions">
                     <button class="wpfs-btn wpfs-btn-icon wpfs-btn-icon--20 js-delete-custom-field">
@@ -24,7 +24,7 @@
     </div>
     <button class="wpfs-field-list__add js-add-custom-field" id="wpfs-add-custom-field">
         <div class="wpfs-icon-add-circle wpfs-field-list__icon"></div>
-        <?php esc_html_e( 'Add field', 'wp-full-stripe-admin' ); ?>
+        <?php esc_html_e( 'Add field', 'wp-full-stripe-free' ); ?>
     </button>
 </div>
 <div class="wpfs-form-group" id="wpfs-custom-fields-required">
@@ -46,17 +46,17 @@
     <form data-wpfs-form-type="<?php echo MM_WPFS::FORM_TYPE_ADMIN_ADD_CUSTOM_FIELD; ?>" class="wpfs-custom-field-form">
         <div class="wpfs-dialog-scrollable">
             <div class="wpfs-form-group">
-                <label class="wpfs-form-label"><?php esc_html_e('Field type', 'wp-full-stripe-admin'); ?></label>
+                <label class="wpfs-form-label"><?php esc_html_e('Field type', 'wp-full-stripe-free'); ?></label>
                 <span>Text</span>
             </div>
             <div class="wpfs-form-group">
-                <label for="wpfs-custom-field-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_ADD_CUSTOM_FIELD; ?>" class="wpfs-form-label"><?php esc_html_e('Field label', 'wp-full-stripe-admin'); ?></label>
+                <label for="wpfs-custom-field-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_ADD_CUSTOM_FIELD; ?>" class="wpfs-form-label"><?php esc_html_e('Field label', 'wp-full-stripe-free'); ?></label>
                 <input id="wpfs-custom-field-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_ADD_CUSTOM_FIELD; ?>" class="wpfs-form-control" type="text" name="wpfs-custom-field-label">
             </div>
         </div>
         <div class="wpfs-dialog-content-actions">
-            <button class="wpfs-btn wpfs-btn-primary js-add-custom-field-dialog" type="submit"><?php esc_html_e('Add custom field', 'wp-full-stripe-admin'); ?></button>
-            <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php esc_html_e('Discard', 'wp-full-stripe-admin'); ?></button>
+            <button class="wpfs-btn wpfs-btn-primary js-add-custom-field-dialog" type="submit"><?php esc_html_e('Add custom field', 'wp-full-stripe-free'); ?></button>
+            <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php esc_html_e('Discard', 'wp-full-stripe-free'); ?></button>
         </div>
     </form>
 </script>
@@ -65,8 +65,8 @@
         <p class="wpfs-dialog-content-text"><%- confirmationMessage %></p>
     </div>
     <div class="wpfs-dialog-content-actions">
-        <button class="wpfs-btn wpfs-btn-danger js-delete-custom-field-dialog"><?php _e( 'Delete field', 'wp-full-stripe-admin'); ?></button>
-        <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php _e( 'Keep field', 'wp-full-stripe-admin' ); ?></button>
+        <button class="wpfs-btn wpfs-btn-danger js-delete-custom-field-dialog"><?php _e( 'Delete field', 'wp-full-stripe-free'); ?></button>
+        <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php _e( 'Keep field', 'wp-full-stripe-free' ); ?></button>
     </div>
 </script>
 <script type="text/template" id="wpfs-custom-field-template">

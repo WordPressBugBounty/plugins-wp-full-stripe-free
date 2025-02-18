@@ -1994,6 +1994,58 @@ button.wpfs-btn-primary:disabled:not(:hover):not(:active):not(.has-text-color), 
   display: none;
 }
 
+.wpfs-form-donation-goal {
+  padding: 20px 0;
+}
+
+.wpfs-progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.wpfs-amount, .wpfs-percentage {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.wpfs-percentage {
+  color: var(--secondary-color);
+}
+
+.wpfs-subtitle {
+  color: #666;
+  font-size: 14px;
+}
+
+.wpfs-percentage-container {
+  text-align: right;
+}
+
+.wpfs-progress-bar {
+  background-color: #f0f0f0;
+  height: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.wpfs-progress-fill {
+  background-color: var(--secondary-color);
+  height: 100%;
+}
+
+.wpfs-form-test-label {
+  background: #fadf9c;
+  color: #954e1c;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 5px;
+  margin-left: 16px;
+  text-align: center;
+}
+
 .wpfs-mt-0, .wpfs-my-0 {
   margin-top: 0;
 }

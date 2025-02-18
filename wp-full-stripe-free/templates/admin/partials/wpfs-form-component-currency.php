@@ -7,7 +7,7 @@
     <label for="<?php $view->currency()->id(); ?>" class="wpfs-form-label"><?php $view->currency()->label(); ?></label>
     <div class="wpfs-ui wpfs-form-select">
         <select id="<?php $view->currency()->id(); ?>" name="<?php $view->currency()->name(); ?>" <?php $view->currency()->attributes(); ?>>
-            <option value=""><?php esc_html_e( 'Select currency', 'wp-full-stripe-admin' ); ?></option>
+            <option value=""><?php esc_html_e( 'Select currency', 'wp-full-stripe-free' ); ?></option>
             <?php
             foreach ( $data->currencies as $currencyKey => $currency ) {
             ?>

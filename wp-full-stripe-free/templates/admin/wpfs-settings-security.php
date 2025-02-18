@@ -13,9 +13,9 @@
             <div class="wpfs-form__cols">
                 <div class="wpfs-form__col">
                     <div class="wpfs-form-block">
-                        <div class="wpfs-form-block__title"><?php esc_html_e( 'Google reCAPTCHA', 'wp-full-stripe-admin' ); ?></div>
+                        <div class="wpfs-form-block__title"><?php esc_html_e( 'Google reCAPTCHA', 'wp-full-stripe-free' ); ?></div>
                         <div class="wpfs-form-group">
-                            <label class="wpfs-form-label"><?php esc_html_e( 'Secure with reCAPTCHA', 'wp-full-stripe-admin' ); ?></label>
+                            <label class="wpfs-form-label"><?php esc_html_e( 'Secure with reCAPTCHA', 'wp-full-stripe-free' ); ?></label>
                             <div class="wpfs-form-check-list">
                                 <div class="wpfs-form-check">
                                     <input id="<?php $view->secureInlineForms()->id(); ?>" name="<?php $view->secureInlineForms()->name(); ?>" value="<?php $view->secureInlineForms()->value(); ?>" <?php $view->secureInlineForms()->attributes(); ?> <?php echo $securityData->secureInlineForms == $view->secureInlineForms()->value(false) ? 'checked' : ''; ?>>
@@ -48,17 +48,17 @@
                         </div>
                     </div>
                     <div class="wpfs-form-actions">
-                        <button class="wpfs-btn wpfs-btn-primary wpfs-button-loader" type="submit"><?php esc_html_e( 'Save settings', 'wp-full-stripe-admin' ); ?></button>
-                        <a href="<?php echo $backLinkUrl; ?>" class="wpfs-btn wpfs-btn-text"><?php esc_html_e( 'Cancel', 'wp-full-stripe-admin' ); ?></a>
+                        <button class="wpfs-btn wpfs-btn-primary wpfs-button-loader" type="submit"><?php esc_html_e( 'Save settings', 'wp-full-stripe-free' ); ?></button>
+                        <a href="<?php echo $backLinkUrl; ?>" class="wpfs-btn wpfs-btn-text"><?php esc_html_e( 'Cancel', 'wp-full-stripe-free' ); ?></a>
                     </div>
                 </div>
                 <div class="wpfs-form__col">
                     <div class="wpfs-inline-message wpfs-inline-message--info wpfs-inline-message--w448">
                         <div class="wpfs-inline-message__inner">
-                            <div class="wpfs-inline-message__title"><?php esc_html_e( 'How to protect forms with Google reCaptcha?', 'wp-full-stripe-admin' ); ?></div>
-                            <p><?php esc_html_e( 'You can find more info about which version you should choose and how to obtain the API keys in our Knowledge base.', 'wp-full-stripe-admin' ); ?></p>
+                            <div class="wpfs-inline-message__title"><?php esc_html_e( 'How to protect forms with Google reCaptcha?', 'wp-full-stripe-free' ); ?></div>
+                            <p><?php esc_html_e( 'You can find more info about which version you should choose and how to obtain the API keys in our Knowledge base.', 'wp-full-stripe-free' ); ?></p>
                             <p>
-                                <a class="wpfs-btn wpfs-btn-link" href="https://support.paymentsplugin.com/article/18-registering-your-website-for-google-recaptcha" target="_blank"><?php esc_html_e( 'Learn more about Google reCAPTCHA', 'wp-full-stripe-admin' ); ?></a>
+                                <a class="wpfs-btn wpfs-btn-link" href="https://docs.themeisle.com/article/2099-registering-your-website-for-google-recaptcha" target="_blank"><?php esc_html_e( 'Learn more about Google reCAPTCHA', 'wp-full-stripe-free' ); ?></a>
                             </p>
                         </div>
                     </div>

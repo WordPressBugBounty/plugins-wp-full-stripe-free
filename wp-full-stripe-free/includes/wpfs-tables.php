@@ -175,21 +175,28 @@ abstract class WPFS_Transactions_Table extends WPFS_List_Table {
 			$disableLast = true;
 		}
 
-		$showingLabel = sprintf(
+		if ( 1 === $totalItems ) {
+			$showingLabel =
+			/* translators: Paging label indicating which items are displayed when there is only one item
+			 */
+				__( 'Showing one item',
+					'wp-full-stripe-free' );
+		} else {
+			$showingLabel = sprintf(
 			/* translators: Paging label indicating which items are displayed
 			 * p1: First item displayed
 			 * p2: Last item displayed
 			 * p3: Total number of items
 			 */
-			_n( 'Showing %3$d item',
-				'Showing %1$d-%2$d of %3$d items',
-				$totalItems,
-				'wp-full-stripe-admin' ),
-			$firstItem,
-			$lastItem,
-			$totalItems
-		);
-
+				_n( 'Showing %1$d-%2$d of %3$d item',
+					'Showing %1$d-%2$d of %3$d items',
+					$totalItems,
+					'wp-full-stripe-free' ),
+				$firstItem,
+				$lastItem,
+				$totalItems
+			);
+		}
 		$output = "<div class='wpfs-data-table-foot'>\n";
 		$output .= "  <div class='wpfs-data-table-foot__show'>{$showingLabel}</div>\n";
 		$output .= "  <div class='wpfs-data-table-foot__pagination'>\n";
@@ -203,7 +210,7 @@ abstract class WPFS_Transactions_Table extends WPFS_List_Table {
 			$firstPageUrl = esc_url( remove_query_arg( 'paged', $currentUrl ) );
 			$firstPageTitle =
 				/* translators: Label of the button showing the first page of the list */
-				__( 'First page', 'wp-full-stripe-admin' );
+				__( 'First page', 'wp-full-stripe-free' );
 			$output .= "          <a class='wpfs-pagination__link' href='{$firstPageUrl}'>←←</a>";
 		}
 		$output .= "        </li>\n";
@@ -215,14 +222,14 @@ abstract class WPFS_Transactions_Table extends WPFS_List_Table {
 			$prevPageUrl = esc_url( add_query_arg( 'paged', max( 1, $currentPage - 1 ), $currentUrl ) );
 			$prevPageTitle =
 				/* translators: Label of the button showing the previous page of the list */
-				__( 'Previous page', 'wp-full-stripe-admin' );
+				__( 'Previous page', 'wp-full-stripe-free' );
 			$output .= "          <a class='wpfs-pagination__link' href='{$prevPageUrl}'>←</a>";
 		}
 		$output .= "        </li>\n";
 
 		$currentPageTitle =
 			/* translators: Label of the button showing the current page of the list */
-			__( 'Current Page', 'wp-full-stripe-admin' );
+			__( 'Current Page', 'wp-full-stripe-free' );
 		$output .= "        <li class='wpfs-pagination__item wpfs-pagination__item--active'>\n";
 		$output .= "          {$currentPage}\n";
 		$output .= "        </li>\n";
@@ -234,7 +241,7 @@ abstract class WPFS_Transactions_Table extends WPFS_List_Table {
 			$nextPageUrl = esc_url( add_query_arg( 'paged', min( $totalPages, $currentPage + 1 ), $currentUrl ) );
 			$nextPageTitle =
 				/* translators: Label of the button showing the next page of the list */
-				__( 'Next page', 'wp-full-stripe-admin' );
+				__( 'Next page', 'wp-full-stripe-free' );
 			$output .= "          <a class='wpfs-pagination__link' href='{$nextPageUrl}'>→</a>";
 		}
 		$output .= "        </li>\n";
@@ -246,7 +253,7 @@ abstract class WPFS_Transactions_Table extends WPFS_List_Table {
 			$lastPageUrl = esc_url( add_query_arg( 'paged', $totalPages, $currentUrl ) );
 			$lastPageTitle =
 				/* translators: Label of the button showing the last page of the list */
-				__( 'Last page', 'wp-full-stripe-admin' );
+				__( 'Last page', 'wp-full-stripe-free' );
 			$output .= "          <a class='wpfs-pagination__link' href='{$lastPageUrl}'>→→</a>";
 		}
 		$output .= "        </li>\n";
@@ -363,10 +370,10 @@ class WPFS_Subscriptions_Table extends WPFS_Transactions_Table {
 		parent::__construct( $loggerService, array(
 			'singular' =>
 				/* translators: Singular version of the word 'subscription', used on the subscription list page */
-				__( 'Subscription', 'wp-full-stripe-admin' ),
+				__( 'Subscription', 'wp-full-stripe-free' ),
 			'plural' =>
 				/* translators: Plural version of the word 'subscription', used on the subscription list page */
-				__( 'Subscriptions', 'wp-full-stripe-admin' ),
+				__( 'Subscriptions', 'wp-full-stripe-free' ),
 			'ajax' => false
 		) );
 	}
@@ -454,27 +461,27 @@ class WPFS_Subscriptions_Table extends WPFS_Transactions_Table {
 			self::COLUMN_PAYMENT_METHOD => '',
 			self::COLUMN_ID_DATE => $this->createCompositeColumnLabel(
 				/* translators: Name of the 'ID' column */
-				__( 'ID', 'wp-full-stripe-admin' ),
+				__( 'ID', 'wp-full-stripe-free' ),
 				/* translators: Name of the 'Date' column */
-				__( 'Date', 'wp-full-stripe-admin' )
+				__( 'Date', 'wp-full-stripe-free' )
 			),
 			self::COLUMN_SUBSCRIBER_FORM => $this->createCompositeColumnLabel(
 				/* translators: Name of the 'Subscriber' column */
-				__( 'Subscriber', 'wp-full-stripe-admin' ),
+				__( 'Subscriber', 'wp-full-stripe-free' ),
 				/* translators: Name of the 'Form' column */
-				__( 'Form', 'wp-full-stripe-admin' )
+				__( 'Form', 'wp-full-stripe-free' )
 			),
 			self::COLUMN_AMOUNT_FREQUENCY => $this->createCompositeColumnLabel(
 				/* translators: Name of the 'Amount' column */
-				__( 'Amount', 'wp-full-stripe-admin' ),
+				__( 'Amount', 'wp-full-stripe-free' ),
 				/* translators: Name of the 'Frequency' column */
-				__( 'Frequency', 'wp-full-stripe-admin' )
+				__( 'Frequency', 'wp-full-stripe-free' )
 			),
 			self::COLUMN_STATUS_MODE => $this->createCompositeColumnLabel(
 				/* translators: Name of the 'Status' column */
-				__( 'Status', 'wp-full-stripe-admin' ),
+				__( 'Status', 'wp-full-stripe-free' ),
 				/* translators: Name of the 'Mode' column */
-				__( 'Mode', 'wp-full-stripe-admin' )
+				__( 'Mode', 'wp-full-stripe-free' )
 			),
 			self::COLUMN_ACTIONS => '',
 		);
@@ -491,7 +498,7 @@ class WPFS_Subscriptions_Table extends WPFS_Transactions_Table {
 	 *
 	 */
 	public function no_items() {
-		_e( 'No subscriptions found.', 'wp-full-stripe-admin' );
+		_e( 'No subscriptions found.', 'wp-full-stripe-free' );
 	}
 
 	/**
@@ -633,7 +640,7 @@ class WPFS_Subscriptions_Table extends WPFS_Transactions_Table {
 		if ( MM_WPFS::SUBSCRIBER_STATUS_RUNNING == $subscription->status ) {
 			$cancelLabel =
 				/* translators: 'Cancel' action label for subscriptions */
-				__( 'Cancel', 'wp-full-stripe-admin' );
+				__( 'Cancel', 'wp-full-stripe-free' );
 
 			$html .= "<a class='wpfs-btn wpfs-btn-icon wpfs-btn-icon--20 js-tooltip js-cancel-subscription' data-tooltip-content='cancel-subscription-tooltip'>
                 <span class='wpfs-icon-cancel'></span>
@@ -645,7 +652,7 @@ class WPFS_Subscriptions_Table extends WPFS_Transactions_Table {
 
 		$deleteLabel =
 			/* translators: 'Delete' action label for subscriptions */
-			__( 'Delete subscription', 'wp-full-stripe-admin' );
+			__( 'Delete subscription', 'wp-full-stripe-free' );
 		$html .= "<a class='wpfs-btn wpfs-btn-icon wpfs-btn-icon--20 js-tooltip js-delete-subscription' data-tooltip-content='delete-subscription-tooltip'>
                 <span class='wpfs-icon-trash'></span>
             </a>
@@ -743,10 +750,10 @@ class WPFS_Donations_Table extends WPFS_Transactions_Table {
 		parent::__construct( $loggerService, array(
 			'singular' =>
 				/* translators: Singular version of the word 'Donation', used on the donation list page */
-				__( 'Donation', 'wp-full-stripe-admin' ),
+				__( 'Donation', 'wp-full-stripe-free' ),
 			'plural' =>
 				/* translators: Plural version of the word 'Donation', used on the donation list page */
-				__( 'Donations', 'wp-full-stripe-admin' ),
+				__( 'Donations', 'wp-full-stripe-free' ),
 			'ajax' => false
 		) );
 	}
@@ -832,27 +839,27 @@ class WPFS_Donations_Table extends WPFS_Transactions_Table {
 			self::COLUMN_PAYMENT_METHOD => '',
 			self::COLUMN_ID_DATE => $this->createCompositeColumnLabel(
 				/* translators: Name of the 'ID' column */
-				__( 'ID', 'wp-full-stripe-admin' ),
+				__( 'ID', 'wp-full-stripe-free' ),
 				/* translators: Name of the 'Date' column */
-				__( 'Date', 'wp-full-stripe-admin' )
+				__( 'Date', 'wp-full-stripe-free' )
 			),
 			self::COLUMN_DONOR_FORM => $this->createCompositeColumnLabel(
 				/* translators: Name of the 'Donor' column */
-				__( 'Donor', 'wp-full-stripe-admin' ),
+				__( 'Donor', 'wp-full-stripe-free' ),
 				/* translators: Name of the 'Form' column */
-				__( 'Form', 'wp-full-stripe-admin' )
+				__( 'Form', 'wp-full-stripe-free' )
 			),
 			self::COLUMN_AMOUNT_FREQUENCY => $this->createCompositeColumnLabel(
 				/* translators: Name of the 'Amount' column */
-				__( 'Amount', 'wp-full-stripe-admin' ),
+				__( 'Amount', 'wp-full-stripe-free' ),
 				/* translators: Name of the 'Frequency' column */
-				__( 'Frequency', 'wp-full-stripe-admin' )
+				__( 'Frequency', 'wp-full-stripe-free' )
 			),
 			self::COLUMN_STATUS_MODE => $this->createCompositeColumnLabel(
 				/* translators: Name of the 'Status' column */
-				__( 'Status', 'wp-full-stripe-admin' ),
+				__( 'Status', 'wp-full-stripe-free' ),
 				/* translators: Name of the 'Mode' column */
-				__( 'Mode', 'wp-full-stripe-admin' )
+				__( 'Mode', 'wp-full-stripe-free' )
 			),
 			self::COLUMN_ACTIONS => '',
 		);
@@ -869,7 +876,7 @@ class WPFS_Donations_Table extends WPFS_Transactions_Table {
 	 *
 	 */
 	public function no_items() {
-		_e( 'No donation found.', 'wp-full-stripe-admin' );
+		_e( 'No donation found.', 'wp-full-stripe-free' );
 	}
 
 	/**
@@ -945,31 +952,31 @@ class WPFS_Donations_Table extends WPFS_Transactions_Table {
 			case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_ONE_TIME:
 				$label =
 					/* translators: Donation frequency 'one-time' displayed in the donation list */
-					__( "one-time", 'wp-full-stripe-admin' );
+					__( "one-time", 'wp-full-stripe-free' );
 				break;
 
 			case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_DAILY:
 				$label =
 					/* translators: Donation frequency 'daily' displayed in the donation list */
-					__( "daily", 'wp-full-stripe-admin' );
+					__( "daily", 'wp-full-stripe-free' );
 				break;
 
 			case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_WEEKLY:
 				$label =
 					/* translators: Donation frequency 'weekly' displayed in the donation list */
-					__( "weekly", 'wp-full-stripe-admin' );
+					__( "weekly", 'wp-full-stripe-free' );
 				break;
 
 			case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_MONTHLY:
 				$label =
 					/* translators: Donation frequency 'monthly' displayed in the donation list */
-					__( "monthly", 'wp-full-stripe-admin' );
+					__( "monthly", 'wp-full-stripe-free' );
 				break;
 
 			case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_ANNUAL:
 				$label =
 					/* translators: Donation frequency 'annual' displayed in the donation list */
-					__( "annual", 'wp-full-stripe-admin' );
+					__( "annual", 'wp-full-stripe-free' );
 				break;
 		}
 
@@ -1056,7 +1063,7 @@ class WPFS_Donations_Table extends WPFS_Transactions_Table {
 		if ( MM_WPFS::PAYMENT_STATUS_PAID === $status ) {
 			$refundLabel =
 				/* translators: 'Refund' action label for donations */
-				__( 'Refund', 'wp-full-stripe-admin' );
+				__( 'Refund', 'wp-full-stripe-free' );
 
 			$html .= "<a class='wpfs-btn wpfs-btn-icon wpfs-btn-icon--20 js-tooltip js-refund-donation' data-tooltip-content='refund-donation-tooltip'>
                 <span class='wpfs-icon-sync'></span>
@@ -1070,7 +1077,7 @@ class WPFS_Donations_Table extends WPFS_Transactions_Table {
 		if ( \StripeWPFS\Subscription::STATUS_ACTIVE === $donation->subscriptionStatus ) {
 			$cancelLabel =
 				/* translators: 'Cancel' action label for donations */
-				__( 'Cancel', 'wp-full-stripe-admin' );
+				__( 'Cancel', 'wp-full-stripe-free' );
 
 			$html .= "<a class='wpfs-btn wpfs-btn-icon wpfs-btn-icon--20 js-tooltip js-cancel-donation' data-tooltip-content='cancel-donation-tooltip'>
                 <span class='wpfs-icon-cancel'></span>
@@ -1082,7 +1089,7 @@ class WPFS_Donations_Table extends WPFS_Transactions_Table {
 
 		$deleteLabel =
 			/* translators: 'Delete' action label for donations */
-			__( 'Delete donation', 'wp-full-stripe-admin' );
+			__( 'Delete donation', 'wp-full-stripe-free' );
 		$html .= "<a class='wpfs-btn wpfs-btn-icon wpfs-btn-icon--20 js-tooltip js-delete-donation' data-tooltip-content='delete-donation-tooltip'>
                 <span class='wpfs-icon-trash'></span>
             </a>
@@ -1152,10 +1159,10 @@ class WPFS_SavedCards_Table extends WPFS_Transactions_Table {
 		parent::__construct( $loggerService, array(
 			'singular' =>
 				/* translators: Singular version of the expression 'Saved card', used on the save card list page */
-				__( 'Saved card', 'wp-full-stripe-admin' ),
+				__( 'Saved card', 'wp-full-stripe-free' ),
 			'plural' =>
 				/* translators: Plural version of the expression 'Saved card', used on the save card list page */
-				__( 'Saved cards', 'wp-full-stripe-admin' ),
+				__( 'Saved cards', 'wp-full-stripe-free' ),
 			'ajax' => false
 		) );
 	}
@@ -1232,19 +1239,19 @@ class WPFS_SavedCards_Table extends WPFS_Transactions_Table {
 			self::COLUMN_PAYMENT_METHOD => '',
 			self::COLUMN_ID_DATE => $this->createCompositeColumnLabel(
 				/* translators: Name of the 'ID' column */
-				__( 'ID', 'wp-full-stripe-admin' ),
+				__( 'ID', 'wp-full-stripe-free' ),
 				/* translators: Name of the 'Date' column */
-				__( 'Date', 'wp-full-stripe-admin' )
+				__( 'Date', 'wp-full-stripe-free' )
 			),
 			self::COLUMN_CUSTOMER_FORM => $this->createCompositeColumnLabel(
 				/* translators: Name of the 'Customer' column */
-				__( 'Customer', 'wp-full-stripe-admin' ),
+				__( 'Customer', 'wp-full-stripe-free' ),
 				/* translators: Name of the 'Form' column */
-				__( 'Form', 'wp-full-stripe-admin' )
+				__( 'Form', 'wp-full-stripe-free' )
 			),
 			self::COLUMN_MODE =>
 				/* translators: Name of the 'Mode' column */
-				__( 'Mode', 'wp-full-stripe-admin' ),
+				__( 'Mode', 'wp-full-stripe-free' ),
 			self::COLUMN_ACTIONS => ''
 		);
 	}
@@ -1260,7 +1267,7 @@ class WPFS_SavedCards_Table extends WPFS_Transactions_Table {
 	 *
 	 */
 	public function no_items() {
-		_e( 'No saved card found.', 'wp-full-stripe-admin' );
+		_e( 'No saved card found.', 'wp-full-stripe-free' );
 	}
 
 	/**
@@ -1343,7 +1350,7 @@ class WPFS_SavedCards_Table extends WPFS_Transactions_Table {
 
 		$deleteLabel =
 			/* translators: 'Delete' action label for saved cards */
-			__( 'Delete saved card', 'wp-full-stripe-admin' );
+			__( 'Delete saved card', 'wp-full-stripe-free' );
 		$html .= "<a class='wpfs-btn wpfs-btn-icon wpfs-btn-icon--20 js-tooltip js-delete-saved-card' data-tooltip-content='delete-saved-card-tooltip'>
                 <span class='wpfs-icon-trash'></span>
             </a>
@@ -1408,10 +1415,10 @@ class WPFS_OneTimePayments_Table extends WPFS_Transactions_Table {
 		parent::__construct( $loggerService, array(
 			'singular' =>
 				/* translators: Singular version of the word 'Payment', used on the payment list page */
-				__( 'Payment', 'wp-full-stripe-admin' ),
+				__( 'Payment', 'wp-full-stripe-free' ),
 			'plural' =>
 				/* translators: Plural version of the word 'Payment', used on the payment list page */
-				__( 'Payments', 'wp-full-stripe-admin' ),
+				__( 'Payments', 'wp-full-stripe-free' ),
 			'ajax' => false
 		) );
 	}
@@ -1521,24 +1528,24 @@ class WPFS_OneTimePayments_Table extends WPFS_Transactions_Table {
 			self::COLUMN_PAYMENT_METHOD => '',
 			self::COLUMN_ID_DATE => $this->createCompositeColumnLabel(
 				/* translators: Name of the 'ID' column */
-				__( 'ID', 'wp-full-stripe-admin' ),
+				__( 'ID', 'wp-full-stripe-free' ),
 				/* translators: Name of the 'Date' column */
-				__( 'Date', 'wp-full-stripe-admin' )
+				__( 'Date', 'wp-full-stripe-free' )
 			),
 			self::COLUMN_CUSTOMER_FORM => $this->createCompositeColumnLabel(
 				/* translators: Name of the 'Customer' column */
-				__( 'Customer', 'wp-full-stripe-admin' ),
+				__( 'Customer', 'wp-full-stripe-free' ),
 				/* translators: Name of the 'Form' column */
-				__( 'Form', 'wp-full-stripe-admin' )
+				__( 'Form', 'wp-full-stripe-free' )
 			),
 			self::COLUMN_AMOUNT =>
 				/* translators: Name of the 'Amount' column */
-				__( 'Amount', 'wp-full-stripe-admin' ),
+				__( 'Amount', 'wp-full-stripe-free' ),
 			self::COLUMN_STATUS_MODE => $this->createCompositeColumnLabel(
 				/* translators: Name of the 'Status' column */
-				__( 'Status', 'wp-full-stripe-admin' ),
+				__( 'Status', 'wp-full-stripe-free' ),
 				/* translators: Name of the 'Mode' column */
-				__( 'Mode', 'wp-full-stripe-admin' )
+				__( 'Mode', 'wp-full-stripe-free' )
 			),
 			self::COLUMN_ACTIONS => '',
 		);
@@ -1555,7 +1562,7 @@ class WPFS_OneTimePayments_Table extends WPFS_Transactions_Table {
 	 *
 	 */
 	public function no_items() {
-		_e( 'No payment found.', 'wp-full-stripe-admin' );
+		_e( 'No payment found.', 'wp-full-stripe-free' );
 	}
 
 	/**
@@ -1689,7 +1696,7 @@ class WPFS_OneTimePayments_Table extends WPFS_Transactions_Table {
 		if ( MM_WPFS::PAYMENT_STATUS_AUTHORIZED == $paymentStatus ) {
 			$captureLabel =
 				/* translators: 'Capture' action label for payments */
-				__( 'Capture', 'wp-full-stripe-admin' );
+				__( 'Capture', 'wp-full-stripe-free' );
 
 			$html .= "<a class='wpfs-btn wpfs-btn-icon wpfs-btn-icon--20 js-tooltip js-capture-payment' data-tooltip-content='authorize-tooltip'>
                 <span class='wpfs-icon-card'></span>
@@ -1703,7 +1710,7 @@ class WPFS_OneTimePayments_Table extends WPFS_Transactions_Table {
 			MM_WPFS::PAYMENT_STATUS_AUTHORIZED === $paymentStatus ) {
 			$refundLabel =
 				/* translators: 'Refund' action label for payments */
-				__( 'Refund', 'wp-full-stripe-admin' );
+				__( 'Refund', 'wp-full-stripe-free' );
 
 			$html .= "<a class='wpfs-btn wpfs-btn-icon wpfs-btn-icon--20 js-tooltip js-refund-payment' data-tooltip-content='refund-tooltip'>
                 <span class='wpfs-icon-sync'></span>
@@ -1715,7 +1722,7 @@ class WPFS_OneTimePayments_Table extends WPFS_Transactions_Table {
 
 		$deleteLabel =
 			/* translators: 'Delete' action label for payments */
-			__( 'Delete payment', 'wp-full-stripe-admin' );
+			__( 'Delete payment', 'wp-full-stripe-free' );
 		$html .= "<a class='wpfs-btn wpfs-btn-icon wpfs-btn-icon--20 js-tooltip js-delete-payment' data-tooltip-content='delete-payment-tooltip'>
                 <span class='wpfs-icon-trash'></span>
             </a>
@@ -1803,7 +1810,7 @@ class WPFS_Base_Table extends WPFS_List_Table {
 			static $cb_counter = 1;
 			$columns['cb'] = '<label class="screen-reader-text" for="cb-select-all-' . $cb_counter . '">' .
 				/* translators: Label for the 'Select all' option of status filter on list pages */
-				__( 'Select All', 'wp-full-stripe-admin' ) . '</label>'
+				__( 'Select All', 'wp-full-stripe-free' ) . '</label>'
 				. '<input id="cb-select-all-' . $cb_counter . '" type="checkbox" />';
 			$cb_counter++;
 		}
@@ -1960,8 +1967,8 @@ class WPFS_Log_Table extends WPFS_Base_Table {
 
 	public function __construct() {
 		parent::__construct( array(
-			'singular' => __( 'Log entry', 'wp-full-stripe-admin' ),
-			'plural' => __( 'Log entries', 'wp-full-stripe-admin' ),
+			'singular' => __( 'Log entry', 'wp-full-stripe-free' ),
+			'plural' => __( 'Log entries', 'wp-full-stripe-free' ),
 			'ajax' => false
 		) );
 	}
@@ -2098,7 +2105,7 @@ class WPFS_Log_Table extends WPFS_Base_Table {
 	}
 
 	public function no_items() {
-		_e( 'No log entries found.', 'wp-full-stripe-admin' );
+		_e( 'No log entries found.', 'wp-full-stripe-free' );
 	}
 
 }

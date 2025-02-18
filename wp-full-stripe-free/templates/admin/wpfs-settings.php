@@ -26,67 +26,67 @@ $mode = isset($_GET['mode']) ? sanitize_text_field($_GET['mode']) : null;
 
         array_push($settingsItems, array(
             'cssClasses' => 'wpfs-illu-stripe',
-            'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE),
-            'title' => __('Stripe account', 'wp-full-stripe-admin'),
-            'description' => __('Configure your Stripe API keys, and set up webhooks', 'wp-full-stripe-admin'),
+            'url' => $this->getAdminUrlBySlugAndParams(MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE, [MM_WPFS_Admin_Menu::PARAM_NAME_TAB => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_CONNECTION]),
+            'title' => __('Stripe account', 'wp-full-stripe-free'),
+            'description' => __('Configure your Stripe API keys, and set up webhooks', 'wp-full-stripe-free'),
             'disabled' => false
         ));
         array_push($settingsItems, array(
             'cssClasses' => 'wpfs-illu-form',
             'url' => $this->getAdminUrlBySlugAndParams(MM_WPFS_Admin_Menu::SLUG_SETTINGS_FORMS, [MM_WPFS_Admin_Menu::PARAM_NAME_TAB => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS]),
-            'title' => __('Forms', 'wp-full-stripe-admin'),
-            'description' => __('Set global settings & styles for your payment forms', 'wp-full-stripe-admin'),
+            'title' => __('Forms', 'wp-full-stripe-free'),
+            'description' => __('Set global settings & styles for your payment forms', 'wp-full-stripe-free'),
             'disabled' => $disabled
         ));
         array_push($settingsItems, array(
             'cssClasses' => 'wpfs-illu-email',
             'url' => $this->getAdminUrlBySlugAndParams(MM_WPFS_Admin_Menu::SLUG_SETTINGS_EMAIL_NOTIFICATIONS, [MM_WPFS_Admin_Menu::PARAM_NAME_TAB => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS]),
-            'title' => __('Email notifications', 'wp-full-stripe-admin'),
-            'description' => __('Customize and align your e-mails to your brand', 'wp-full-stripe-admin'),
+            'title' => __('Email notifications', 'wp-full-stripe-free'),
+            'description' => __('Customize and align your e-mails to your brand', 'wp-full-stripe-free'),
             'disabled' => $disabled
         ));
         array_push($settingsItems, array(
             'cssClasses' => 'wpfs-illu-security',
             'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_SECURITY),
-            'title' => __('Security', 'wp-full-stripe-admin'),
-            'description' => __('Keep your payment forms secure', 'wp-full-stripe-admin'),
+            'title' => __('Security', 'wp-full-stripe-free'),
+            'description' => __('Keep your payment forms secure', 'wp-full-stripe-free'),
             'disabled' => $disabled
         ));
         array_push($settingsItems, array(
             'cssClasses' => 'wpfs-illu-customer-portal',
             'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_CUSTOMER_PORTAL),
-            'title' => __('Customer portal', 'wp-full-stripe-admin'),
-            'description' => __('Configure how your customers can manage their cards, subscriptions, and invoices', 'wp-full-stripe-admin'),
+            'title' => __('Customer portal', 'wp-full-stripe-free'),
+            'description' => __('Configure how your customers can manage their cards, subscriptions, and invoices', 'wp-full-stripe-free'),
             'disabled' => $disabled
         ));
         array_push($settingsItems, array(
             'cssClasses' => 'wpfs-illu-wp',
             'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_WORDPRESS_DASHBOARD),
-            'title' => __('WordPress dashboard', 'wp-full-stripe-admin'),
-            'description' => __('Set your currency format preferences', 'wp-full-stripe-admin'),
-            'disabled' => $disabled
-        ));
-        array_push($settingsItems, array(
-            'cssClasses' => 'wpfs-illu-add-ons',
-            'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_ADDONS),
-            'title' => __('Add-ons', 'wp-full-stripe-admin'),
-            'description' => __('Manage your activated add-ons', 'wp-full-stripe-admin'),
+            'title' => __('WordPress dashboard', 'wp-full-stripe-free'),
+            'description' => __('Set your currency format preferences', 'wp-full-stripe-free'),
             'disabled' => $disabled
         ));
         array_push($settingsItems, array(
             'cssClasses' => 'wpfs-illu-logs',
             'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_LOGS),
-            'title' => __('Error logging', 'wp-full-stripe-admin'),
-            'description' => __('Help the developers debug plugin issues', 'wp-full-stripe-admin'),
+            'title' => __('Error logging', 'wp-full-stripe-free'),
+            'description' => __('Help the developers debug plugin issues', 'wp-full-stripe-free'),
+            'disabled' => false
+        ));
+        array_push($settingsItems, array(
+            'cssClasses' => 'wpfs-illu-lock',
+            'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_LICENSE),
+            'title' => __('License', 'wp-full-stripe-free'),
+            'description' => __('Enter or manage your license key to enable unlimited transactions without fees.', 'wp-full-stripe-free'),
             'disabled' => false
         ));
         ?>
 
         <?php if ($disabled): ?>
             <div class="wpfs-announcement">
-                <?php esc_html_e('Settings are disabled until you have connected your Stripe account.', 'wp-full-stripe-admin'); ?><br />
+                <?php esc_html_e('Settings are disabled until you have connected your Stripe account.', 'wp-full-stripe-free'); ?><br />
                 Follow <a
-                    href="https://support.paymentsplugin.com/article/31-step-by-step-guide-to-setup-stripe-on-fullpay-v7">our
+                    href="https://docs.themeisle.com/article/2100-step-by-step-guide-to-setup-stripe-on-fullpay-v7">our
                     guide</a> for step-by-step instructions.
             </div>
         <?php endif; ?>

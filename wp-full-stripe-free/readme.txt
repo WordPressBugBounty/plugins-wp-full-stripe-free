@@ -3,17 +3,17 @@ Contributors: themeisle
 Tags: credit card payments, donation, stripe checkout, stripe gateway, stripe payments
 Requires at least: 5.3
 Tested up to: 6.7
-Stable tag: 8.0.1
+Stable tag: 8.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Use WP Full Pay to accept Stripe payments on your WordPress. Prebuilt forms to accept payments, donations and subscriptions. 
+🚀 WP Full Pay makes accepting Stripe payments, including donations and subscriptions, easy on WordPress.
+
 
 == Description ==
 
-🚀 WP Full Pay makes it easy to accept Stripe payments, including donations and subscriptions, on WordPress.
 
-=== The only full featured Stripe Payment Form and Stripe Payment Plugin available on WordPress ===
+=== The Best Stripe Payment Forms and Stripe Payments Plugin available on WordPress ===
 
 WP Full Pay is the best Stripe payments plugin for WordPress. It makes it simple to set up and publish forms that accept payment from credit cards, Apple Pay, Google Pay, Alipay and many others. 
 
@@ -45,9 +45,9 @@ To get started with Stripe payments on your WordPress site using WP Full Pay, fo
 
 Done! You can start creating Stripe payment forms and embed them in your WordPress site.
 
-Before publishing, conduct a [Stripe test transaction](https://paymentsplugin.com/blog/stripe-test-transactions/?utm_source=wpdotorg&utm_campaign=wpfullpayfree&utm_medium=link) to ensure everything works smoothly.
+Before publishing, conduct a [Stripe test transaction](https://paymentsplugin.com/blog/stripe-test-transactions/?utm_source=wpadmin&utm_campaign=wpfullpayfree&utm_medium=readme) to ensure everything works smoothly.
 
-Refer to our [installation & setup guide](https://support.paymentsplugin.com/category/79-installation-setup?utm_source=wpdotorg&utm_campaign=wpfullpayfree&utm_medium=link) for detailed instructions on configuring Stripe in WordPress.
+Refer to our [installation & setup guide](https://docs.themeisle.com/article/2097-configuring-the-stripe-api-keys) for detailed instructions on configuring Stripe in WordPress.
 
 === Accept Stripe payments in different ways ===
 
@@ -76,7 +76,7 @@ Your data and transactions are secured using the latest technology from Stripe.
 * Benefit from higher conversion rate with single-step Stripe payment forms.
 * No shopping cart or multi-page payment workflow to set up
 * Embed payment forms in any page or post on your WordPress website using the form shortcode generator for embedding forms easily into pages and posts (simple copy'n'paste)!
-* Integrates with [WP Full Members](https://support.paymentsplugin.com/article/43-how-to-configure-wp-full-members?utm_source=wpdotorg&utm_campaign=wpfullpayfree&utm_medium=link) to easily build out a membership site with protected content that only subscribed members are allowed to view.
+* Integrates with [WP Full Members](https://paymentsplugin.com/wp-full-members-addon/?utm_source=wpadmin&utm_campaign=wpfullpayfree&utm_medium=readme) to easily build out a membership site with protected content that only subscribed members are allowed to view.
 * Easily build subscription plans for recurring payments which include setup fees and non-standard intervals.
 * Sell individual items for a set amount, custom amount, or amount selectable from list.
 * Build donation forms that accept one time donations for set amounts or custom amounts or use the subscription tools to build recurring donation forms. 
@@ -87,13 +87,13 @@ Your data and transactions are secured using the latest technology from Stripe.
 * Easily view and manage your received payments, subscribers, plans, and more.
 * The plugin can auto-update to the latest version with the click of a button!
 * Fully supported, professionally written and regularly updated software.
-* Extensive documentation is available at [support.paymentsplugin.com](https://support.paymentsplugin.com?utm_source=wpdotorg&utm_campaign=wpfullpayfree&utm_medium=link)
+* Extensive documentation is available at [docs.themeisle.com](https://docs.themeisle.com/)
 
-There is a 1.9% (compare that to the other guys!) fee per-transaction to use WP Full Pay without a license. If you upgrade to a fully [supported version of WP Full Pay](https://paymentsplugin.com/pricing/?utm_source=wpdotorg&utm_campaign=wpfullpayfree&utm_medium=link) you’ll pay no added fees and receive one-to-one lightening fast, priority email support from the developers that wrote the plugin.
+There is a 5% fee per-transaction to use WP Full Pay without a license. If you upgrade to a fully [supported version of WP Full Pay](https://paymentsplugin.com/pricing/?utm_source=wpdotorg&utm_campaign=wpfullpayfree&utm_medium=link) you’ll pay no added fees and receive one-to-one lightening fast, priority email support from the developers that wrote the plugin.
 
 === Support ===
 
-WP Full Pay [offers knowledge](https://support.paymentsplugin.com?utm_source=wpdotorg&utm_campaign=wpfullpayfree&utm_medium=link) base and also invites you to [submit a ticket](https://support.paymentsplugin.com?utm_source=wpdotorg&utm_campaign=wpfullpayfree&utm_medium=link) if you need help or encounter any issues.
+WP Full Pay [offers knowledge](https://docs.themeisle.com/collection/2079-wp-full-pay) base and also invites you to [submit a ticket](https://themeisle.com/contact/?utm_source=wpadmin&utm_campaign=wpfullpayfree&utm_medium=readme) if you need help or encounter any issues.
 
 == Installation ==
 
@@ -138,7 +138,7 @@ Yes, it works on WordPress multisite, and it requires a Business or Agency licen
 
 = Are there any transaction fees associated with using WP Full Pay? =
 
-No, WP Full Pay doesn’t impose any extra transaction fees. However, it’s important to note that users without a valid license incur an additional fee of 1.9%.
+No, WP Full Pay doesn’t impose any extra transaction fees. However, it’s important to note that users without a valid license incur an additional fee of 5%.
 
 Also, keep in mind that while using WP Full Pay is free of extra charges, Stripe has its own transaction fees as per their standard rates.
 
@@ -170,6 +170,34 @@ to the customer based on their location and other parameters.
 == Screenshots ==
 
 == Changelog ==
+
+####   Version 8.1.0 (2025-02-18)
+
+##### New Features  
+- Fundraisers can now set a donation goal and display progress directly on the form.  
+- Added a [webhook](https://docs.themeisle.com/article/2224-receiving-payment-notifications-via-webhooks) feature available for all plans, allowing users to configure webhooks per form with a custom URL, request type, and headers. Webhooks trigger on successful transactions, and a test button is included for easy setup.  
+- Added a form preview feature, allowing users to quickly view their forms in a modal without manually inserting shortcodes on a page.  
+- Introduced a basic block for selecting and inserting available forms, eliminating the need to copy and paste shortcodes manually.  
+- Added compatibility with Stripe’s Customer Portal, allowing users to enable a setting that redirects customers to Stripe for subscription management, including upgrades, downgrades, and pauses.  
+
+##### Enhancements  
+- The setup notice can now be dismissed and includes a direct connection option for easier onboarding.  
+- The connection page has been simplified with a cleaner design, correct fee display based on user status, and button styling matching Stripe branding.  
+- The license key field has been moved to the plugin’s settings page for a more intuitive setup experience.  
+- Added transaction count bubbles in tab corners for better visibility and navigation.  
+- Renamed Forms to Payment Forms in the sidebar for better clarity.  
+- Updated the form creation flow to guide users when Stripe is not connected.  
+- Removed the Add-ons sub-menu, as add-ons are now part of plans.  
+- Added a simple onboarding flow to streamline Stripe connection and form creation.  
+- Added a test mode alert on forms and payment buttons, ensuring users know when transactions are in test mode, with a direct link to disable it.  
+- Simplified form creation by setting the default payment type to checkout for quicker setup and replacing the mode column with a shortcode that can be copied with one click.  
+
+##### Bug Fixes  
+- Fixed an issue where Stripe receipts were not being sent when the option was enabled.  
+- Improved loading behavior on the WordPress plugin page for a smoother experience.
+
+
+
 
 #####   Version 8.0.1 (2024-12-03)
 
@@ -229,38 +257,38 @@ to the customer based on their location and other parameters.
 * Fixed: addressed a couple of warnings and unnecessary log messages
 * Fixed: updated handling of coupon codes on subscriptions to reflect Stripe's changes
 * Fixed: fixed issue causing 'validLicense' error
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.23 (Jun 14, 2024) =
 * Fixed: Fixed issue with test vs live on a few requests around invoices and customer
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.22 (Jun 11, 2024) =
 * Fixed: Solved an issue for a few requests to list prices
 * Fixed: "Bad request" error caused by not finding some donations plans
 * Fixed: Issue with customer not found when creating some subscriptions
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.21 (Jun 10, 2024) =
 * Fixed: Prevent showing unnecessary errors messages before completing Stripe Connect flow
 * Hotix: Issue with mismatch of Stripe keys found in 7.0.20, please upgrade
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.20 (Jun 9, 2024) =
 * Feature: migrated to new and faster Connect backend that will speed up the overall user experience
 * Fixed: improved speed of listing forms in the admin view
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.19 (Jun 2, 2024) =
 * fixed: corrected when "restricted soon" error is shown for Stripe account status
 * fixed: corrected logic around updating payment intents
 * fixed: corrected handling of live and test account IDs to address deprecation notice in logs
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.18 (May 22, 2024) =
@@ -268,26 +296,26 @@ to the customer based on their location and other parameters.
 * fixed: corrected issue on calculating billing cycle
 * fixed: corrected issues when refunding transaction
 * deprecation: removed DemoMode option
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.17 (May 21, 2024) =
 * Fixed: corrected issue around subscribing customers to plan
 * Fixed: only shows reminder notice of live mode account hasn't been connected; test mode is not strictly necessary
 * Fixed: Upgraded Freemius SDK to 2.7.2
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.16 (May 16, 2024) = 
 * Fixed: corrected issue in checkout causing "redirect-url" error
 * Fixed: Stripe account status Enabled and Connected now both count as having completed the account setup
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.15 (May 1, 2024) =
 * Fixed: corrected issue with checkout-style subscriptions with setup fees
 * Fixed: Use built-in WordPress method for getting time zone
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.14 (Apr 24, 2024) =
@@ -296,20 +324,20 @@ to the customer based on their location and other parameters.
 * Fixed: improved migration from v5.x
 * Fixed: error throw on missing payment intent
 * Fixed: unblock editing of one-time forms
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.13 (Apr 19, 2024) =
 * Fixed: resolved issue when reactivating cancelled Subscription
 * Fixed: don't check for CVC for ApplePay, GooglePay, and other wallets
 * Fixed: improved default styling of form fields to match default stripe payment element style
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.12 (Apr 15, 2024) =
 * Fixed: Issue saving card using Stripe Link
 * Updated supported WordPress version to 6.5
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.11 (Apr 8, 2024) =
@@ -317,42 +345,42 @@ to the customer based on their location and other parameters.
 * fixed: settings page not available for some configurations
 * fixed: bug around null or whitespace
 * Improved onboarding
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.10 (Apr 2, 2024) =
 * Fixed: brought back the Account page 
 * Improved onboarding
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.9 (Mar 27, 2024) =
 * Fixed: increased timeout for some requests that needed more time
 * Fixed: 3DSecure issue that kept customers waiting
 * Improved onboarding
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.8 (Mar 15, 2024) =
 * Fixed: Issue with coupons not applying
 * Fixed: Stripe client was missing for customer portal customizations. Note that customizations still require the Stripe secret key to be added to the configuration.
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.7 (Mar 11, 2024) =
 * Fixed: bug in customer portal
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.6 (Mar 7, 2024) =
 * Replaced customer portal stripe card elements with stripe payment element for updating payment method
 * Fixed: bug when updating customers in stripe
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.5 (Mar 7, 2024) = 
 * Fixed: bug in retrieving customers
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.4 (March 5, 2024) =
@@ -360,23 +388,23 @@ to the customer based on their location and other parameters.
 * Fixed: bug with stripeAccount
 * Fixed: bug getting prices
 * Fixed: bug getting prices in non-connect integration
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.3 (February 29, 2024) =
 * Fixed: issue in non-connect integration
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.2 (February 28, 2024) =
 * Fixed: Checkout bug
 * Fixed: bug in customer portal
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0.1 (February 23, 2024) =
 * Fixed: bug in customer portal
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v7.0 (February 18, 2024) =
@@ -385,7 +413,7 @@ to the customer based on their location and other parameters.
 * Connects more securely to Stripe via Stripe Connect. This also allows our support team to better assist you with issues that cross over to Stripe.
 * Updated knowledge base with improved search. Access from the "?"-menu in the admin views
 * Fixed: a number of smaller bugs
-* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 1.9% per transaction. To avoid application fees make sure to always have an active license.
+* NOTE: For v7.0 and onwards, FullPay will work without an active license, but will add an application fee of 5% per transaction. To avoid application fees make sure to always have an active license.
 * NOTE: If upgrading from a previous version, your forms will continue to work while you go through the Stripe connect flow
 
 = v6.4 (November 13, 2023) =

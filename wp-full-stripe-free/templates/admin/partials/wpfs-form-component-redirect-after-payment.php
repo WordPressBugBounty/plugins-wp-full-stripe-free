@@ -25,8 +25,8 @@
                     </select>
                 </div>
                 <div class="wpfs-form-help">
-                    <?php esc_html_e( 'Customize the Thank you page with placeholder tokens.', 'wp-full-stripe-admin' ); ?>
-                    <a class="wpfs-btn wpfs-btn-link" href="https://support.paymentsplugin.com/article/4-how-to-create-a-thank-you-page#customize-your-page-with-dynamic-content" target="_blank"><?php esc_html_e( 'Learn more', 'wp-full-stripe-admin' ); ?></a>
+                    <?php esc_html_e( 'Customize the Thank you page with placeholder tokens.', 'wp-full-stripe-free' ); ?>
+                    <a class="wpfs-btn wpfs-btn-link" href="https://docs.themeisle.com/article/2111-how-to-create-a-thank-you-page#customize-your-page-with-dynamic-content" target="_blank"><?php esc_html_e( 'Learn more', 'wp-full-stripe-free' ); ?></a>
                 </div>
             </div>
         </div>

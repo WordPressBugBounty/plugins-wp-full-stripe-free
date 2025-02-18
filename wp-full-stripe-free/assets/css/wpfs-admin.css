@@ -300,6 +300,12 @@
   width: 32px;
   height: 32px;
 }
+.wpfs-illu-lock {
+  background: url(../images/illu/lock.svg);
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+}
 .wpfs-illu-mailchimp {
   background: url(../images/illu/mailchimp.svg);
   display: inline-block;
@@ -573,6 +579,50 @@ a.wpfs-btn-primary:disabled,
   background: #c5c6cd;
   color: #6e7289;
   cursor: not-allowed;
+}
+.wpfs-btn-connect,
+.wpfs-btn-secondary{
+  font-size: 15px;
+  text-decoration: none;
+  line-height: 1;
+  border-radius: 3px;
+  padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  cursor: pointer;
+}
+.wpfs-btn-connect{
+  background-color: #625afa;
+  color: #fff;
+  font-weight: bold;
+}
+.wpfs-btn-connect:focus,
+.wpfs-btn-connect:hover {
+	color: #fff;
+	box-shadow: none;
+	outline: none;
+}
+.wpfs-btn-connect.wpfs-btn-primary--loader::before{
+  color: #fff;
+}
+.wpfs-btn-connect svg {
+	margin-left: 5px;
+}
+.wpfs-btn-secondary{
+  background-color: #f3f4f6;
+  border: 2px solid #f3f4f6;
+  color: #030c1b;
+  font-weight: 600;
+}
+.wpfs-btn-secondary:focus,
+.wpfs-btn-secondary:hover {
+  background: #ffffff;
+	box-shadow: none;
+	outline: none;
+}
+.wpfs-btn-secondary.wpfs-btn-primary--loader::before{
+  color: #030c1b;
 }
 .wpfs-btn-danger,
 button.wpfs-btn-danger,
@@ -1077,6 +1127,9 @@ a.wpfs-btn-icon--20 {
   margin-bottom: 24px;
   width: 33%;
   padding: 0px 20px 0px 20px;
+}
+.wpfs-form__col.wpfs-form__col__third {
+  width: 66%;
 }
 .wpfs-form-block {
   margin-bottom: 32px;
@@ -2904,6 +2957,10 @@ textarea.wpfs-form-control::placeholder {
 .wpfs-form-message__inner p.mb-32 {
   margin-bottom: 32px;
 }
+.wpfs-inline-message__inner p.my-16,
+.wpfs-form-message__inner p.my-16 {
+  margin: 16px 0;
+}
 .wpfs-inline-message__title,
 .wpfs-inline-message-title,
 .wpfs-form-message__title,
@@ -3253,13 +3310,15 @@ textarea.wpfs-form-control::placeholder {
   border: 2px solid #f4f7fe;
   border-radius: 50%;
 }
-.wpfs-page-header__accounts .wpfs-icon-stripe {
+.wpfs-page-header__accounts .wpfs-icon-stripe,
+.wpfs-page-header__preview .wpfs-icon-view {
   position: relative;
   top: 1px;
   color: #568ee8;
   margin-right: 8px;
 }
-.wpfs-page-header__license {
+.wpfs-page-header__license,
+.wpfs-page-header__accounts {
   margin-left: 8px !important;
 }
 .wpfs-page-header__license .wpfs-icon-error,
@@ -3515,7 +3574,8 @@ textarea.wpfs-form-control::placeholder {
   color: #4980d1;
 }
 
-.wpfs-empty-state {
+.wpfs-empty-state,
+.wpfs-connect-state {
   width: 480px;
   text-align: center;
   margin: 120px auto 0;
@@ -3557,17 +3617,26 @@ textarea.wpfs-form-control::placeholder {
   font-size: 32px;
   z-index: 2;
 }
-.wpfs-empty-state__title {
+.wpfs-empty-state__title,
+.wpfs-connect-state__subtitle {
   color: #2c3149;
   font-size: 18px;
   font-weight: 600;
   line-height: 24px;
   margin-bottom: 4px;
 }
-.wpfs-empty-state__message {
+.wpfs-empty-state__message,
+.wpfs-connect-state__message {
   font-size: 14px;
   line-height: 20px;
   margin-bottom: 16px;
+}
+.wpfs-connect-state__title {
+  color: #2c3149;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 24px;
+  margin-bottom: 12px;
 }
 
 .wpfs-success-state {
@@ -4620,6 +4689,18 @@ textarea.wpfs-form-control::placeholder {
   margin-left: 32px;
 }
 
+
+.wpfs-page-tabs__item .wpfs-tag--outline {
+  background: none;
+  border-radius: 24px;
+  margin-left: 6px;
+}
+
+:where( .wpfs-page-tabs__item:hover, .wpfs-page-tabs__item:focus, .wpfs-page-tabs__item--active ) .wpfs-tag--outline {
+  color: #568ee8;
+  border-color: #568ee8;
+}
+
 .ace_editor {
   min-height: 360px;
   margin: 0;
@@ -5218,112 +5299,6 @@ input[type="text"].wpfs-tags-input::placeholder {
   font-weight: 600;
 }
 
-.wpfs-add-ons-list {
-  margin-bottom: 24px;
-}
-.wpfs-add-ons-list__item {
-  position: relative;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-  padding: 16px;
-  border: 1px solid #c5c6cd;
-  border-radius: 4px;
-  margin-bottom: 16px;
-  text-decoration: none;
-}
-.wpfs-add-ons-list__item:after {
-  /* use !important to prevent issues with browser extensions that change fonts */
-  font-family: "wpfs-admin" !important;
-  speak: none;
-  font-style: normal;
-  font-weight: normal;
-  font-variant: normal;
-  text-transform: none;
-  line-height: 1;
-  /* Better Font Rendering =========== */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  content: "\e907";
-  position: absolute;
-  top: 50%;
-  right: 24px;
-  color: #2c3149;
-  font-size: 24px;
-  -webkit-transform: rotate(-90deg);
-  transform: rotate(-90deg);
-  -webkit-transition: all 0.3s ease;
-  transition: all 0.3s ease;
-  margin-top: -12px;
-}
-.wpfs-add-ons-list__item:hover,
-.wpfs-add-ons-list__item--active {
-  background: #f4f7fe;
-}
-.wpfs-add-ons-list__item:hover:after,
-.wpfs-add-ons-list__item--active:after {
-  -webkit-transform: rotate(-90deg) translateY(16px);
-  transform: rotate(-90deg) translateY(16px);
-}
-.wpfs-add-ons-list__icon {
-  width: 40px;
-  height: 40px;
-  margin-right: 16px;
-}
-.wpfs-add-ons-list__title {
-  color: #2c3149;
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 24px;
-}
-
-.wpfs-add-ons-explorer {
-  margin-bottom: 24px;
-}
-.wpfs-add-ons-explorer__item {
-  position: relative;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-  border: 1px solid #c5c6cd;
-  border-radius: 4px;
-  margin-bottom: 16px;
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  max-width: 480px;
-}
-.wpfs-add-ons-explorer__image {
-  width: 100%;
-}
-.wpfs-add-ons-explorer__desc {
-  padding: 8px 16px;
-  margin: 0;
-  background-color: #f9f9f9;
-  border-top: 1px solid #eee;
-  color: #777;
-}
-.wpfs-add-ons-explorer__header {
-  display: flex;
-  width: 100%;
-  padding: 8px 16px;
-  justify-content: space-between;
-  align-items: center;
-}
-.wpfs-add-ons-explorer__title {
-  color: #000;
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .wpfs-sync-settings {
   width: 100%;
   table-layout: fixed;
@@ -5398,4 +5373,222 @@ input[type="text"].wpfs-tags-input::placeholder {
 }
 .wpfs-audiences-autocomplete__price {
   color: #5e6378;
+}
+
+.wpfs-wizard {
+  background: #fff;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999999;
+  --wpfs-primary-color: #568ee8;
+  --wpfs-gray-light: #4b5563;
+  --wpfs-gray-lighter: #d1d5db;
+  --wpfs-white: #ffffff;
+  --wpfs-border-color: #e5e7eb;
+  --wpfs-green: #10b981;
+}
+
+.wpfs-container {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.wpfs-logo {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.wpfs-container .wpfs-logo img {
+  display: inline;
+}
+
+.wpfs-card {
+  background: var(--wpfs-white);
+  border: 1px solid var(--wpfs-border-color);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.wpfs-progress {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.wpfs-step-marker {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid var(--wpfs-gray-lighter);
+  position: relative;
+}
+
+.wpfs-step-marker.wpfs-active {
+  border-color: var(--wpfs-primary-color);
+}
+
+.wpfs-step-marker.wpfs-completed {
+  border-color: var(--wpfs-primary-color);
+  color: #fff;
+}
+
+.wpfs-step-marker.wpfs-completed {
+  background-color: var(--wpfs-primary-color);
+  border-color: var(--wpfs-primary-color);
+}
+
+.wpfs-step-marker.wpfs-completed .wpfs-check {
+  color: var(--wpfs-white);
+  display: none;
+}
+
+.wpfs-step-marker:not( .wpfs-completed ) .wpfs-check {
+  background-color: var(--wpfs-gray-lighter);
+  border-radius: 9999px;
+  width: .5rem;
+  height: .5rem;
+}
+
+.wpfs-step-marker.wpfs-active .wpfs-check,
+.wpfs-step-marker.wpfs-completed .wpfs-check {
+  background-color: var(--wpfs-primary-color);
+  display: block;
+}
+
+.wpfs-progress-line {
+  width: 8rem;
+  height: 2px;
+  background-color: var(--wpfs-gray-lighter);
+  margin: 0 0.5rem;
+}
+
+.wpfs-progress-line.wpfs-completed {
+  background-color: var(--wpfs-primary-color);
+}
+
+.wpfs-subtitle {
+  color: var(--wpfs-gray-light);
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.wpfs-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.wpfs-content-row {
+  display: flex;
+  gap: 2rem;
+}
+
+.wpfs-content-column {
+  flex: 1;
+}
+
+.wpfs-text-description {
+  color: var(--wpfs-gray-light);
+  margin-bottom: 1rem;
+  font-size: 16px;
+}
+
+.wpfs-step {
+  display: none;
+}
+
+.wpfs-step.wpfs-active {
+  display: block;
+}
+
+.wpfs-feature-list {
+  list-style: none;
+  padding: 0;
+}
+
+.wpfs-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--wpfs-gray-light);
+  font-size: 16px;
+}
+
+.wpfs-feature-icon {
+  color: var(--wpfs-green);
+}
+
+input[type="email"].wpfs-input {
+  background: #ffffff;
+  width: 100% !important;
+  height: 36px;
+  color: #2c3149;
+  font-size: 14px;
+  line-height: 20px;
+  padding: 0 16px;
+  margin-top: 12px;
+  border: 1px solid #a4a8bb;
+  border-radius: 4px;
+  box-shadow: none;
+  outline: none;
+  resize: none;
+}
+
+.wpfs-input-label {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 0.5rem;
+}
+
+.wpfs-input-hint {
+  color: var(--wpfs-gray-light);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.wpfs-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.wpfs-actions.wpfs-actions-right {
+  justify-content: flex-end;
+}
+
+.wpfs-footer {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.wpfs-wizard .wpfs-btn-secondary,
+.wpfs-wizard a.wpfs-btn-secondary {
+  background: none;
+  color: var(--wpfs-gray-light);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: unset;
+}
+
+.wpfs-center {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wpfs-gap {
+  gap: 12px;
 }

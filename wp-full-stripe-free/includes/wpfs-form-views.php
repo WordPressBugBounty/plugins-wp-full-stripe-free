@@ -44,7 +44,7 @@ trait MM_WPFS_InlineFormView {
 			null,
 			null,
 			/* translators: Form field label for card holder's name */
-			__( 'Cardholder’s name', 'wp-full-stripe' ),
+			__( 'Cardholder’s name', 'wp-full-stripe-free' ),
 			null
 		);
 		$this->configureTextControl( $this->cardHolderName, $this->fieldConfiguration[ MM_WPFS_ConfigurableFormFields::FIELD_CARDHOLDERS_NAME ] );
@@ -55,7 +55,7 @@ trait MM_WPFS_InlineFormView {
 			null,
 			null,
 			/* translators: Form field label for email address */
-			__( 'E-mail address', 'wp-full-stripe' ),
+			__( 'E-mail address', 'wp-full-stripe-free' ),
 			null
 		);
 		$this->configureTextControl( $this->cardHolderEmail, $this->fieldConfiguration[ MM_WPFS_ConfigurableFormFields::FIELD_EMAIL ] );
@@ -66,7 +66,7 @@ trait MM_WPFS_InlineFormView {
 			null,
 			null,
 			/* translators: Form field label for credit card data */
-			__( 'Card info', 'wp-full-stripe' ),
+			__( 'Card info', 'wp-full-stripe-free' ),
 			null
 		);
 	}
@@ -981,10 +981,10 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 			$this->formHash,
 			self::FIELD_COUPON,
 			/* translators: Form field placeholder for coupon code */
-			__( 'Enter coupon code', 'wp-full-stripe' ),
+			__( 'Enter coupon code', 'wp-full-stripe-free' ),
 			null,
 			/* translators: Form field label for coupon code */
-			__( 'Coupon', 'wp-full-stripe' ),
+			__( 'Coupon', 'wp-full-stripe-free' ),
 			null
 		);
 		$this->customInputs = array();
@@ -993,7 +993,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 
 		$this->coupon->setTooltip(
 			/* translators: Tooltip label for the coupon code field */
-			__( 'Apply a coupon or promotional code for a discount to your subscription or payment', 'wp-full-stripe' )
+			__( 'Apply a coupon or promotional code for a discount to your subscription or payment', 'wp-full-stripe-free' )
 		);
 
 		$this->action->setAttributes(
@@ -1235,7 +1235,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Option label for the default option of the country selector dropdown */
-				__( 'Select country', 'wp-full-stripe' ),
+				__( 'Select country', 'wp-full-stripe-free' ),
 				null,
 				null
 			);
@@ -1282,7 +1282,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 			null,
 			null,
 			/* translators: Option label for the default option of the country selector dropdown */
-			__( 'Select state', 'wp-full-stripe' ),
+			__( 'Select state', 'wp-full-stripe-free' ),
 			null,
 			null
 		);
@@ -1325,7 +1325,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Label for a checkbox which controls whether billing and shipping address can be entered separately  */
-				__( 'Same billing and shipping address', 'wp-full-stripe' ),
+				__( 'Same billing and shipping address', 'wp-full-stripe-free' ),
 				null
 			);
 			$this->addressSwitcher = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_ADDRESS_SWITCHER, null, null, null, null );
@@ -1335,7 +1335,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Form field label for billing address */
-				__( 'Billing address', 'wp-full-stripe' ),
+				__( 'Billing address', 'wp-full-stripe-free' ),
 				0
 			);
 			$this->showShippingAddressPanelRadio = MM_WPFS_ControlUtils::createControl(
@@ -1344,7 +1344,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Form field label for shipping address */
-				__( 'Shipping address', 'wp-full-stripe' ),
+				__( 'Shipping address', 'wp-full-stripe-free' ),
 				1
 			);
 		}
@@ -1368,7 +1368,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Form field label for the billing name */
-				__( 'Billing name', 'wp-full-stripe' ),
+				__( 'Billing name', 'wp-full-stripe-free' ),
 				null
 			);
 			$this->configureTextControl( $this->billingName, $this->fieldConfiguration[ MM_WPFS_ConfigurableFormFields::FIELD_BILLING_NAME ] );
@@ -1379,7 +1379,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Form field label for the billing address */
-				__( 'Billing address street', 'wp-full-stripe' ),
+				__( 'Billing address street', 'wp-full-stripe-free' ),
 				null
 			);
 			$this->configureTextControl( $this->billingAddressLine1, $this->fieldConfiguration[ MM_WPFS_ConfigurableFormFields::FIELD_BILLING_ADDRESS ] );
@@ -1390,7 +1390,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Form field label for the billing address line 2 */
-				__( 'Billing address line 2', 'wp-full-stripe' ),
+				__( 'Billing address line 2', 'wp-full-stripe-free' ),
 				null
 			);
 			$this->configureTextControl( $this->billingAddressLine2, $this->fieldConfiguration[ MM_WPFS_ConfigurableFormFields::FIELD_BILLING_ADDRESS2 ] );
@@ -1401,7 +1401,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Form field label for the postal code of the billing address */
-				__( 'Postal code', 'wp-full-stripe' ),
+				__( 'Postal code', 'wp-full-stripe-free' ),
 				null
 			);
 			$this->configureTextControl( $this->billingAddressZip, $this->fieldConfiguration[ MM_WPFS_ConfigurableFormFields::FIELD_BILLING_ZIP ] );
@@ -1413,7 +1413,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Form field label for the state of the billing address */
-				__( 'State', 'wp-full-stripe' ),
+				__( 'State', 'wp-full-stripe-free' ),
 				null
 			);
 			$this->billingAddressStateSelect = MM_WPFS_ControlUtils::createControl(
@@ -1421,7 +1421,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				self::FIELD_BILLING_ADDRESS_STATE_SELECT,
 				null,
 				null,
-				__( 'State', 'wp-full-stripe' ),
+				__( 'State', 'wp-full-stripe-free' ),
 				null
 			);
 
@@ -1443,7 +1443,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Form field label for the city of the billing address */
-				__( 'City', 'wp-full-stripe' ),
+				__( 'City', 'wp-full-stripe-free' ),
 				null
 			);
 			$this->configureTextControl( $this->billingAddressCity, $this->fieldConfiguration[ MM_WPFS_ConfigurableFormFields::FIELD_BILLING_CITY ] );
@@ -1455,7 +1455,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Form field label for the country of the billing address */
-				__( 'Country', 'wp-full-stripe' ),
+				__( 'Country', 'wp-full-stripe-free' ),
 				null
 			);
 			$this->billingAddressCountry->setOptions( $countryOptions );
@@ -1483,7 +1483,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Form field label for the shipping name */
-				__( 'Shipping name', 'wp-full-stripe' ),
+				__( 'Shipping name', 'wp-full-stripe-free' ),
 				null
 			);
 			$this->configureTextControl( $this->shippingName, $this->fieldConfiguration[ MM_WPFS_ConfigurableFormFields::FIELD_SHIPPING_NAME ] );
@@ -1494,7 +1494,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Form field label for the shipping address */
-				__( 'Shipping address street', 'wp-full-stripe' ),
+				__( 'Shipping address street', 'wp-full-stripe-free' ),
 				null
 			);
 			$this->configureTextControl( $this->shippingAddressLine1, $this->fieldConfiguration[ MM_WPFS_ConfigurableFormFields::FIELD_SHIPPING_ADDRESS ] );
@@ -1505,7 +1505,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Form field label for the shipping address line 2 */
-				__( 'Shipping address line 2', 'wp-full-stripe' ),
+				__( 'Shipping address line 2', 'wp-full-stripe-free' ),
 				null
 			);
 			$this->configureTextControl( $this->shippingAddressLine2, $this->fieldConfiguration[ MM_WPFS_ConfigurableFormFields::FIELD_SHIPPING_ADDRESS2 ] );
@@ -1516,7 +1516,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Form field label for the postal code of the shipping address */
-				__( 'Postal code', 'wp-full-stripe' ),
+				__( 'Postal code', 'wp-full-stripe-free' ),
 				null
 			);
 			$this->configureTextControl( $this->shippingAddressZip, $this->fieldConfiguration[ MM_WPFS_ConfigurableFormFields::FIELD_SHIPPING_ZIP ] );
@@ -1527,7 +1527,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Form field label for the state of the shipping address */
-				__( 'State', 'wp-full-stripe' ),
+				__( 'State', 'wp-full-stripe-free' ),
 				null
 			);
 			$this->shippingAddressStateSelect = MM_WPFS_ControlUtils::createControl(
@@ -1535,7 +1535,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				self::FIELD_SHIPPING_ADDRESS_STATE_SELECT,
 				null,
 				null,
-				__( 'State', 'wp-full-stripe' ),
+				__( 'State', 'wp-full-stripe-free' ),
 				null
 			);
 
@@ -1557,7 +1557,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Form field label for the city of the shipping address */
-				__( 'City', 'wp-full-stripe' ),
+				__( 'City', 'wp-full-stripe-free' ),
 				null
 			);
 			$this->configureTextControl( $this->shippingAddressCity, $this->fieldConfiguration[ MM_WPFS_ConfigurableFormFields::FIELD_SHIPPING_CITY ] );
@@ -1568,7 +1568,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null,
 				null,
 				/* translators: Form field label for the country of the shipping address */
-				__( 'Country', 'wp-full-stripe' ),
+				__( 'Country', 'wp-full-stripe-free' ),
 				null
 			);
 			$this->shippingAddressCountry->setOptions( $countryOptions );
@@ -2036,7 +2036,7 @@ abstract class MM_WPFS_SubscriptionFormView extends MM_WPFS_FormView implements 
 			null,
 			null,
 			/* translators: Form field label for the plan selector */
-			__( 'Choose subscription plan', 'wp-full-stripe' ),
+			__( 'Choose subscription plan', 'wp-full-stripe-free' ),
 			null
 		);
 		$this->planQuantity = MM_WPFS_ControlUtils::createControl(
@@ -2045,7 +2045,7 @@ abstract class MM_WPFS_SubscriptionFormView extends MM_WPFS_FormView implements 
 			null,
 			null,
 			/* translators: Form field label for subscription quantity */
-			__( 'Subscription quantity', 'wp-full-stripe' ),
+			__( 'Subscription quantity', 'wp-full-stripe-free' ),
 			null
 		);
 		$this->plans->setAttributes(
@@ -2376,7 +2376,7 @@ trait MM_WPFS_FormView_PricingAddOn {
 			if ( count( $taxRates ) > 1 ) {
 				foreach ( $taxRates as $taxRate ) {
 					if ( $taxRate->displayName !== $result ) {
-						$result = __( 'Tax', 'wp-full-stripe' );
+						$result = __( 'Tax', 'wp-full-stripe-free' );
 						break;
 					}
 				}
@@ -2455,7 +2455,7 @@ trait MM_WPFS_FormView_InlineTax_AddOn {
 			self::FIELD_TAX_COUNTRY,
 			null,
 			null,
-			__( 'Country', 'wp-full-stripe' ),
+			__( 'Country', 'wp-full-stripe-free' ),
 			null
 		);
 		$this->taxCountry->setOptions( $this->prepareCountryOptions( MM_WPFS_Countries::getAvailableCountries(), $this->getDefaultCountry() ) );
@@ -2465,7 +2465,7 @@ trait MM_WPFS_FormView_InlineTax_AddOn {
 			self::FIELD_TAX_STATE,
 			null,
 			null,
-			__( 'State', 'wp-full-stripe' ),
+			__( 'State', 'wp-full-stripe-free' ),
 			null
 		);
 		$this->taxState->setOptions( $this->prepareStateOptions( null ) );
@@ -2475,7 +2475,7 @@ trait MM_WPFS_FormView_InlineTax_AddOn {
 			self::FIELD_TAX_ZIP,
 			null,
 			null,
-			__( 'Postal code', 'wp-full-stripe' ),
+			__( 'Postal code', 'wp-full-stripe-free' ),
 			null
 		);
 	}
@@ -2486,7 +2486,7 @@ trait MM_WPFS_FormView_InlineTax_AddOn {
 			self::FIELD_BUYING_AS_BUSINESS,
 			null,
 			null,
-			__( "I'm buying as a business", 'wp-full-stripe' ),
+			__( "I'm buying as a business", 'wp-full-stripe-free' ),
 			null
 		);
 
@@ -2495,7 +2495,7 @@ trait MM_WPFS_FormView_InlineTax_AddOn {
 			self::FIELD_BUSINESS_NAME,
 			null,
 			null,
-			__( 'Business name', 'wp-full-stripe' ),
+			__( 'Business name', 'wp-full-stripe-free' ),
 			null
 		);
 
@@ -2505,7 +2505,7 @@ trait MM_WPFS_FormView_InlineTax_AddOn {
 			null,
 			null,
 			/* translators: Form field label for the country of the billing address */
-			__( 'Tax ID Type', 'wp-full-stripe' ),
+			__( 'Tax ID Type', 'wp-full-stripe-free' ),
 			null
 		);
 		$this->taxIdType->setOptions( $this->prepareTaxTypeOptions( $this->getDefaultCountry() ) );
@@ -2515,7 +2515,7 @@ trait MM_WPFS_FormView_InlineTax_AddOn {
 			self::FIELD_TAX_ID,
 			null,
 			null,
-			__( 'Tax ID', 'wp-full-stripe' ),
+			__( 'Tax ID', 'wp-full-stripe-free' ),
 			null
 		);
 	}
@@ -2882,7 +2882,7 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 				null,
 				null,
 				/* translators: Form field label for the payment amount that can be entered manually (think paying invoices) */
-				__( 'Amount', 'wp-full-stripe' ),
+				__( 'Amount', 'wp-full-stripe-free' ),
 				null
 			);
 			$customAmountOptionAttributes = array(
@@ -2909,7 +2909,7 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 				null,
 				null,
 				/* translators: Form field label for selecting a one-time payment amount */
-				__( 'Product', 'wp-full-stripe' ),
+				__( 'Product', 'wp-full-stripe-free' ),
 				null
 			);
 			$this->customAmountOptions->setAttributes( $attributes );
@@ -2963,7 +2963,7 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 					null,
 					null,
 					/* translators: Form field label for the payment amount that can be entered manually (think paying invoices) */
-					__( 'Amount', 'wp-full-stripe' ),
+					__( 'Amount', 'wp-full-stripe-free' ),
 					null
 				);
 				$customAmountAttributes = array_merge( $attributes, [ self::ATTR_DATA_WPFS_AMOUNT_PRICE_ID => 'customAmount' ] );
@@ -2983,7 +2983,7 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 					null,
 					null,
 					/* translators: Button label for entering a payment amount manually (think donation form) */
-					__( 'Other', 'wp-full-stripe' ),
+					__( 'Other', 'wp-full-stripe-free' ),
 					$lastIndex + 1
 				);
 				$customAmountOption->setValue( 'other' );
@@ -3221,6 +3221,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 	protected $donationAmountOptions;
 	/** @var MM_WPFS_Control */
 	protected $donationFrequencyOptions;
+	protected $donationGoal;
 
 	/**
 	 * MM_WPFS_PaymentFormView constructor.
@@ -3237,10 +3238,12 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 		$this->customAmount = null;
 		$this->donationAmountOptions = null;
 		$this->donationFrequencyOptions = null;
+		$this->donationGoal = null;
 
 		$this->prepareCurrency();
 		$this->prepareDonationAmountOptions();
 		$this->prepareDonationFrequencyOptions();
+		$this->prepareDonationGoal();
 
 		$this->attributes = $this->getFormAttributes();
 
@@ -3357,7 +3360,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 			null,
 			null,
 			/* translators: Form field label for selecting a one-time donation amount */
-			__( 'Donation frequency', 'wp-full-stripe' ),
+			__( 'Donation frequency', 'wp-full-stripe-free' ),
 			null
 		);
 		$this->donationFrequencyOptions->setAttributes( $donationFrequencyAttributes );
@@ -3367,7 +3370,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 
 		if ( $this->form->allowOneTimeDonation == 1 ) {
 			$oneTimeOption = $this->createDonationFrequencyOption(
-				__( 'One-time', 'wp-full-stripe' ),
+				__( 'One-time', 'wp-full-stripe-free' ),
 				self::FIELD_VALUE_DONATION_FREQUENCY_ONE_TIME,
 				$frequencyOptionIndex
 			);
@@ -3379,7 +3382,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 			// Let's add the frequencies selected by the the user
 			if ( $this->form->allowDailyRecurring == 1 ) {
 				$dailyOption = $this->createDonationFrequencyOption(
-					__( 'Daily', 'wp-full-stripe' ),
+					__( 'Daily', 'wp-full-stripe-free' ),
 					self::FIELD_VALUE_DONATION_FREQUENCY_DAILY,
 					$frequencyOptionIndex
 				);
@@ -3388,7 +3391,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 			}
 			if ( $this->form->allowWeeklyRecurring == 1 ) {
 				$weeklyOption = $this->createDonationFrequencyOption(
-					__( 'Weekly', 'wp-full-stripe' ),
+					__( 'Weekly', 'wp-full-stripe-free' ),
 					self::FIELD_VALUE_DONATION_FREQUENCY_WEEKLY,
 					$frequencyOptionIndex
 				);
@@ -3397,7 +3400,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 			}
 			if ( $this->form->allowMonthlyRecurring == 1 ) {
 				$monthlyOption = $this->createDonationFrequencyOption(
-					__( 'Monthly', 'wp-full-stripe' ),
+					__( 'Monthly', 'wp-full-stripe-free' ),
 					self::FIELD_VALUE_DONATION_FREQUENCY_MONTHLY,
 					$frequencyOptionIndex
 				);
@@ -3406,7 +3409,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 			}
 			if ( $this->form->allowAnnualRecurring == 1 ) {
 				$annualOption = $this->createDonationFrequencyOption(
-					__( 'Annual', 'wp-full-stripe' ),
+					__( 'Annual', 'wp-full-stripe-free' ),
 					self::FIELD_VALUE_DONATION_FREQUENCY_ANNUAL,
 					$frequencyOptionIndex
 				);
@@ -3445,7 +3448,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 			null,
 			null,
 			/* translators: Form field label for selecting a one-time donation amount */
-			__( 'Donation amount', 'wp-full-stripe' ),
+			__( 'Donation amount', 'wp-full-stripe-free' ),
 			null
 		);
 		$this->donationAmountOptions->setAttributes( $attributes );
@@ -3487,7 +3490,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 				null,
 				null,
 				/* translators: Form field label for the donation amount that can be entered manually */
-				__( 'Amount', 'wp-full-stripe' ),
+				__( 'Amount', 'wp-full-stripe-free' ),
 				null
 			);
 			$customAmountAttributes = $attributes;
@@ -3506,7 +3509,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 				null,
 				null,
 				/* translators: Button label for entering a payment amount manually (think donation form) */
-				__( 'Other', 'wp-full-stripe' ),
+				__( 'Other', 'wp-full-stripe-free' ),
 				$lastIndex + 1
 			);
 			$customAmountOption->setValue( MM_WPFS_DonationFormViewConstants::FIELD_VALUE_CUSTOM_AMOUNT_OTHER );
@@ -3524,6 +3527,29 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 		}
 
 		$this->donationAmountOptions->setOptions( $donationAmountOptions );
+	}
+
+	protected function prepareDonationGoal() {
+		if ( ! isset( $this->form->showDonationGoal ) || ! $this->form->showDonationGoal ) {
+			$this->donationGoal = null;
+
+			return;
+		}
+
+		$db       = new MM_WPFS_Database();
+		$formType = MM_WPFS_Utils::getFormType( $this->form );
+		$formId   = MM_WPFS::FORM_TYPE_CHECKOUT_DONATION == $formType ? $this->form->checkoutDonationFormID : $this->form->donationFormID;
+		$donated  = $db->getTotalDonationsByFormId( $formId, MM_WPFS_Utils::getFormType( $this->form ) );
+		$goal     = isset( $this->form->donationGoal ) ? $this->form->donationGoal : 0;
+		$percent  = $goal > 0 ? round( $donated / $goal * 100, 2 ) : 0;
+		$goal     = MM_WPFS_Currencies::formatByForm( $this->form, $this->form->currency, $goal, false, true );
+		$donated  = MM_WPFS_Currencies::formatByForm( $this->form, $this->form->currency, $donated, false, true );
+
+		$this->donationGoal = [
+			'goal'    => $goal,
+			'donated' => $donated,
+			'percent' => $percent,
+		];
 	}
 
 	/**
@@ -3592,6 +3618,13 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 	 */
 	public function donationFrequencyOptions() {
 		return $this->donationFrequencyOptions;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function donationGoal() {
+		return $this->donationGoal;
 	}
 
 }

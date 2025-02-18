@@ -8,16 +8,13 @@
  */
 class MM_WPFS_Localization {
 
-	public static function echoTranslatedLabel( $label ) {
-		echo MM_WPFS_Localization::translateLabel( $label );
-	}
-
-	public static function translateLabel( $label, $domain = 'wp-full-stripe' ) {
+	public static function translateLabel( $label, $domain = 'wp-full-stripe-free' ) {
 		if ( empty( $label ) ) {
 			return '';
 		}
 
-		return esc_attr( __( $label, $domain ) );
+		//TODO: we need to register the strings in the translation plugins and after use their methods to translate those.
+		return esc_attr( ( $label ) );
 	}
 
 	public static function formatIntervalLabel( $interval, $intervalCount ) {
@@ -26,13 +23,29 @@ class MM_WPFS_Localization {
 		$intervalLabel = 'No interval';
 
 		if ( $interval === "year" ) {
-			$intervalLabel = sprintf( _n( 'year', '%d years', $intervalCount, 'wp-full-stripe' ), number_format_i18n( $intervalCount ) );
+			if($intervalCount == 1) {
+				$intervalLabel = __( 'year', 'wp-full-stripe-free' );
+			} else {
+				$intervalLabel = sprintf( _n( '%d year', '%d years', $intervalCount, 'wp-full-stripe-free' ), number_format_i18n( $intervalCount ) );
+			}
 		} elseif ( $interval === "month" ) {
-			$intervalLabel = sprintf( _n( 'month', '%d months', $intervalCount, 'wp-full-stripe' ), number_format_i18n( $intervalCount ) );
+			if($intervalCount== 1){
+				$intervalLabel = __( 'month', 'wp-full-stripe-free' );
+			}else {
+				$intervalLabel = sprintf( _n( '%d month', '%d months', $intervalCount, 'wp-full-stripe-free' ), number_format_i18n( $intervalCount ) );
+			}
 		} elseif ( $interval === "week" ) {
-			$intervalLabel = sprintf( _n( 'week', '%d weeks', $intervalCount, 'wp-full-stripe' ), number_format_i18n( $intervalCount ) );
+			if ( $intervalCount == 1 ) {
+				$intervalLabel = __( 'week', 'wp-full-stripe-free' );
+			} else {
+				$intervalLabel = sprintf( _n( '%d week', '%d weeks', $intervalCount, 'wp-full-stripe-free' ), number_format_i18n( $intervalCount ) );
+			}
 		} elseif ( $interval === "day" ) {
-			$intervalLabel = sprintf( _n( 'day', '%d days', $intervalCount, 'wp-full-stripe' ), number_format_i18n( $intervalCount ) );
+			if ( $intervalCount == 1 ) {
+				$intervalLabel = __( 'day', 'wp-full-stripe-free' );
+			} else {
+				$intervalLabel = sprintf( _n( '%d day', '%d days', $intervalCount, 'wp-full-stripe-free' ), number_format_i18n( $intervalCount ) );
+			}
 		}
 
 		return $intervalLabel;
@@ -49,51 +62,69 @@ class MM_WPFS_Localization {
 	public static function getPriceAndIntervalLabel( $interval, $intervalCount, $formattedAmount ) {
 		switch ( $interval ) {
 			case 'day':
-                /* translators: Recurring pricing descriptor.
-                 * p1: formatted recurring amount with currency symbol
-                 * p2: interval count
-                 */
-				$formatStr = _n(
-					'%1$s / day',
-					'%1$s / %2$d days',
-					$intervalCount, 'wp-full-stripe'
-				);
+				if ( $intervalCount == 1 ) {
+					$formatStr = __('%1$s / day', 'wp-full-stripe-free');
+				} else {
+					/* translators: Recurring pricing descriptor.
+					 * p1: formatted recurring amount with currency symbol
+					 * p2: interval count
+					 */
+					$formatStr = _n(
+						'%1$s / %2$d day',
+						'%1$s / %2$d days',
+						$intervalCount, 'wp-full-stripe-free'
+					);
+				}
 				break;
 
 			case 'week':
-                /* translators: Recurring pricing descriptor.
-                 * p1: formatted recurring amount with currency symbol
-                 * p2: interval count
-                 */
-				$formatStr = _n(
-					'%1$s / week',
-					'%1$s / %2$d weeks',
-					$intervalCount, 'wp-full-stripe'
-				);
+				if ( $intervalCount == 1 ) {
+					$formatStr = __( '%1$s / week', 'wp-full-stripe-free' );
+				} else {
+					/* translators: Recurring pricing descriptor.
+					 * p1: formatted recurring amount with currency symbol
+					 * p2: interval count
+					 */
+					$formatStr = _n(
+						'%1$s / %2$d week',
+						'%1$s / %2$d weeks',
+						$intervalCount, 'wp-full-stripe-free'
+					);
+				}
 				break;
 
 			case 'month':
-                /* translators: Recurring pricing descriptor.
-                 * p1: formatted recurring amount with currency symbol
-                 * p2: interval count
-                 */
-				$formatStr = _n(
-					'%1$s / month',
-					'%1$s / %2$d months',
-					$intervalCount, 'wp-full-stripe'
-				);
+				if ( $intervalCount == 1 ) {
+					$formatStr = __( '%1$s / month', 'wp-full-stripe-free' );
+				} else {
+
+					/* translators: Recurring pricing descriptor.
+					 * p1: formatted recurring amount with currency symbol
+					 * p2: interval count
+					 */
+					$formatStr = _n(
+						'%1$s / %2$d month',
+						'%1$s / %2$d months',
+						$intervalCount, 'wp-full-stripe-free'
+					);
+
+				}
 				break;
 
 			case 'year':
-                /* translators: Recurring pricing descriptor.
-                 * p1: formatted recurring amount with currency symbol
-                 * p2: interval count
-                 */
-				$formatStr = _n(
-					'%1$s / year',
-					'%1$s / %2$d years',
-					$intervalCount, 'wp-full-stripe'
-				);
+				if ( $intervalCount == 1 ) {
+					$formatStr = __( '%1$s / year', 'wp-full-stripe-free' );
+				} else {
+					/* translators: Recurring pricing descriptor.
+					 * p1: formatted recurring amount with currency symbol
+					 * p2: interval count
+					 */
+					$formatStr = _n(
+						'%1$s / %2$d year',
+						'%1$s / %2$d years',
+						$intervalCount, 'wp-full-stripe-free'
+					);
+				}
 				break;
 
 			default:
@@ -117,31 +148,31 @@ class MM_WPFS_Localization {
             case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_ONE_TIME:
                 /* translators: Label for the one-time donation frequency.
                  */
-                $res = __( 'One-time',  'wp-full-stripe' );
+                $res = __( 'One-time',  'wp-full-stripe-free' );
                 break;
 
             case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_DAILY:
                 /* translators: Label for the daily donation frequency.
                  */
-                $res = __( 'Daily',  'wp-full-stripe' );
+                $res = __( 'Daily',  'wp-full-stripe-free' );
                 break;
 
             case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_WEEKLY:
                 /* translators: Label for the weekly donation frequency.
                  */
-                $res = __( 'Weekly',  'wp-full-stripe' );
+                $res = __( 'Weekly',  'wp-full-stripe-free' );
                 break;
 
             case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_MONTHLY:
                 /* translators: Label for the monthly donation frequency.
                  */
-                $res = __( 'Monthly',  'wp-full-stripe' );
+                $res = __( 'Monthly',  'wp-full-stripe-free' );
                 break;
 
             case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_ANNUAL:
                 /* translators: Label for the annual donation frequency.
                  */
-                $res = __( 'Annual',  'wp-full-stripe' );
+                $res = __( 'Annual',  'wp-full-stripe-free' );
                 break;
 
             default:

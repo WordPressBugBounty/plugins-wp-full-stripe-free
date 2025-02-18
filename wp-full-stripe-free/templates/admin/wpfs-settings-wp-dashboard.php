@@ -71,15 +71,15 @@
                         </div>
                     </div>
                     <div class="wpfs-form-actions">
-                        <button class="wpfs-btn wpfs-btn-primary wpfs-button-loader" type="submit"><?php esc_html_e( 'Save settings', 'wp-full-stripe-admin' ); ?></button>
-                        <a href="<?php echo $backLinkUrl; ?>" class="wpfs-btn wpfs-btn-text"><?php esc_html_e( 'Cancel', 'wp-full-stripe-admin' ); ?></a>
+                        <button class="wpfs-btn wpfs-btn-primary wpfs-button-loader" type="submit"><?php esc_html_e( 'Save settings', 'wp-full-stripe-free' ); ?></button>
+                        <a href="<?php echo $backLinkUrl; ?>" class="wpfs-btn wpfs-btn-text"><?php esc_html_e( 'Cancel', 'wp-full-stripe-free' ); ?></a>
                     </div>
                 </div>
                 <div class="wpfs-form__col">
                     <div class="wpfs-inline-message wpfs-inline-message--info wpfs-inline-message--w448">
                         <div class="wpfs-inline-message__inner">
-                            <div class="wpfs-inline-message__title"><?php esc_html_e( 'What are these settings for?', 'wp-full-stripe-admin' ); ?></div>
-                            <p><?php esc_html_e( 'Options on this page control how payment amounts, dates, etc. are localized on the WordPress dashboard pages of WP Full Pay.', 'wp-full-stripe-admin' ); ?></p>
+                            <div class="wpfs-inline-message__title"><?php esc_html_e( 'What are these settings for?', 'wp-full-stripe-free' ); ?></div>
+                            <p><?php esc_html_e( 'Options on this page control how payment amounts, dates, etc. are localized on the WordPress dashboard pages of WP Full Pay.', 'wp-full-stripe-free' ); ?></p>
                         </div>
                     </div>
                 </div>

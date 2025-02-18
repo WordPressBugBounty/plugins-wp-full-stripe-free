@@ -10,7 +10,7 @@ https://themeisle.com
 */
 
 class MM_WPFS {
-	const VERSION = '7.1.6';
+	const VERSION = '8.1.0';
 	const REQUEST_PARAM_NAME_WPFS_RENDERED_FORMS = 'wpfs_rendered_forms';
 
 	const HANDLE_WP_FULL_STRIPE_JS = 'wp-full-stripe-js';
@@ -185,13 +185,14 @@ class MM_WPFS {
 	const ACTION_NAME_BEFORE_SUBSCRIPTION_ACTIVATION = 'fullstripe_before_subscription_activation';
 	const ACTION_NAME_AFTER_SUBSCRIPTION_ACTIVATION = 'fullstripe_after_subscription_activation';
 
+	const ACTION_NAME_FIRE_WEBHOOK = 'fullstripe_fire_webhook';
+
 	const FILTER_NAME_SELECT_SUBSCRIPTION_PLAN = 'fullstripe_select_subscription_plan';
 	const FILTER_NAME_SET_CUSTOM_AMOUNT = 'fullstripe_set_custom_amount';
 	const FILTER_NAME_ADD_TRANSACTION_METADATA = 'fullstripe_add_transaction_metadata';
 	const FILTER_NAME_MODIFY_EMAIL_MESSAGE = 'fullstripe_modify_email_message';
 	const FILTER_NAME_MODIFY_EMAIL_SUBJECT = 'fullstripe_modify_email_subject';
 	const FILTER_NAME_GET_UPGRADE_DOWNGRADE_PLANS = 'fullstripe_get_upgrade_downgrade_plans';
-	const FILTER_NAME_GET_ADDONS = 'fullstripe_get_addons';
 
 	const FILTER_NAME_CUSTOMER_PORTAL_HEADER = 'fullstripe_customer_portal_header';
 	const FILTER_NAME_CUSTOMER_PORTAL_FOOTER = 'fullstripe_customer_portal_footer';
@@ -251,6 +252,8 @@ class MM_WPFS {
 
 	const DISCOUNT_TYPE_PROMOTION_CODE = 'promotionCode';
 	const DISCOUNT_TYPE_COUPON = 'coupon';
+
+	const ONBOARDING_WIZARD_OPTION_NAME = 'fullstripe_onboarding_wizard';
 
 	public static $instance;
 
@@ -316,6 +319,7 @@ class MM_WPFS {
 		include 'wpfs-form-fields-configurable.php';
 		include 'wpfs-admin.php';
 		include 'wpfs-admin-menu.php';
+		include 'wpfs-block.php';
 		include 'wpfs-form-views.php';
 		include 'wpfs-form-models.php';
 		include 'wpfs-form-validators.php';
@@ -374,6 +378,7 @@ class MM_WPFS {
 		$this->customerPortalService = new MM_WPFS_CustomerPortalService( $this->loggerService );
 		$this->checkoutSubmissionService = new MM_WPFS_CheckoutSubmissionService( $this->loggerService );
 		$this->thankYou = new MM_WPFS_ThankYou( $this->loggerService );
+		new MM_WPFS_Block();
 
 		do_action( 'fullstripe_setup_action' );
 	}
@@ -433,6 +438,7 @@ class MM_WPFS {
 			MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_SHOW_INVOICES_SECTION => '1',
 			MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_SHOW_ALL_INVOICES => '0',
 			MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_SCROLLING_PANE_INTO_VIEW => '1',
+			MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_USE_STRIPE_CUSTOMER_PORTAL => '0',
 			MM_WPFS_Options::OPTION_DECIMAL_SEPARATOR_SYMBOL => MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_DOT,
 			MM_WPFS_Options::OPTION_SHOW_CURRENCY_SYMBOL_INSTEAD_OF_CODE => '1',
 			MM_WPFS_Options::OPTION_SHOW_CURRENCY_SIGN_AT_FIRST_POSITION => '1',
@@ -518,6 +524,7 @@ class MM_WPFS {
 		add_action( 'fullstripe_update_email_template_defaults', array( $this, 'updateEmailTemplateDefaults' ), 10, 0 );
 		add_action( 'wp_head', array( $this, 'fullstripe_wp_head' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'fullstripe_enqueue_scripts_and_styles' ) );
+		add_action( 'init', array( $this, 'init_user_version' ) );
 
 		add_shortcode( self::SHORTCODE_FULLSTRIPE_FORM, array( $this, 'fullstripe_form' ) );
 
@@ -573,7 +580,7 @@ class MM_WPFS {
 		if ( $file == $currentPlugin ) {
 			$settingsLabel =
 				/* translators: Link label displayed on the Plugins page in WP admin */
-				__( 'Settings', 'wp-full-stripe-admin' );
+				__( 'Settings', 'wp-full-stripe-free' );
 			$settingsLink = '<a href="' . menu_page_url( MM_WPFS_Admin_Menu::SLUG_SETTINGS, false ) . '">' . esc_html( $settingsLabel ) . '</a>';
 			array_unshift( $links, $settingsLink );
 		}
@@ -885,24 +892,24 @@ class MM_WPFS {
 				'validation_errors' => array(
 					'internal_error' =>
 						/* translators: Banner message of internal error when no error message is returned by the application */
-						__( 'An internal error occurred.', 'wp-full-stripe' ),
+						__( 'An internal error occurred.', 'wp-full-stripe-free' ),
 					'internal_error_title' =>
 						/* translators: Banner title of internal error */
-						__( 'Internal Error', 'wp-full-stripe' ),
+						__( 'Internal Error', 'wp-full-stripe-free' ),
 					'mandatory_field_is_empty' =>
 						/* translators: Error message for required fields when empty.
 						 * p1: custom input field label
 						 */
-						__( "Please enter a value for '%s'", 'wp-full-stripe' ),
+						__( "Please enter a value for '%s'", 'wp-full-stripe-free' ),
 					'custom_payment_amount_value_is_invalid' =>
 						/* translators: Field validation error message when payment amount is empty or invalid */
-						__( 'Payment amount is invalid', 'wp-full-stripe' ),
+						__( 'Payment amount is invalid', 'wp-full-stripe-free' ),
 					'invalid_payment_amount' =>
 						/* translators: Banner message when the payment amount cannot be determined (the form has been tampered with) */
-						__( 'Cannot determine payment amount', 'wp-full-stripe' ),
+						__( 'Cannot determine payment amount', 'wp-full-stripe-free' ),
 					'invalid_payment_amount_title' =>
 						/* translators: Banner title when the payment amount cannot be determined (the form has been tampered with) */
-						__( 'Invalid payment amount', 'wp-full-stripe' )
+						__( 'Invalid payment amount', 'wp-full-stripe-free' )
 				),
 				'stripe_errors' => array(
 					MM_WPFS_Stripe::INVALID_NUMBER_ERROR => $this->stripe->resolveErrorMessageByCode( MM_WPFS_Stripe::INVALID_NUMBER_ERROR ),
@@ -922,59 +929,59 @@ class MM_WPFS {
 					MM_WPFS_Stripe::COULD_NOT_FIND_PAYMENT_INFORMATION => $this->stripe->resolveErrorMessageByCode( MM_WPFS_Stripe::COULD_NOT_FIND_PAYMENT_INFORMATION )
 				),
 				'subscription_charge_interval_templates' => array(
-					'daily' => __( 'Subscription will be charged every day.', 'wp-full-stripe' ),
-					'weekly' => __( 'Subscription will be charged every week.', 'wp-full-stripe' ),
-					'monthly' => __( 'Subscription will be charged every month.', 'wp-full-stripe' ),
-					'yearly' => __( 'Subscription will be charged every year.', 'wp-full-stripe' ),
-					'y_days' => __( 'Subscription will be charged every %d days.', 'wp-full-stripe' ),
-					'y_weeks' => __( 'Subscription will be charged every %d weeks.', 'wp-full-stripe' ),
-					'y_months' => __( 'Subscription will be charged every %d months.', 'wp-full-stripe' ),
-					'y_years' => __( 'Subscription will be charged every %d years.', 'wp-full-stripe' ),
-					'x_times_daily' => __( 'Subscription will be charged every day, for %d occasions.', 'wp-full-stripe' ),
-					'x_times_weekly' => __( 'Subscription will be charged every week, for %d occasions.', 'wp-full-stripe' ),
-					'x_times_monthly' => __( 'Subscription will be charged every month, for %d occasions.', 'wp-full-stripe' ),
-					'x_times_yearly' => __( 'Subscription will be charged every year, for %d occasions.', 'wp-full-stripe' ),
-					'x_times_y_days' => __( 'Subscription will be charged every %1$d days, for %2$d occasions.', 'wp-full-stripe' ),
-					'x_times_y_weeks' => __( 'Subscription will be charged every %1$d weeks, for %2$d occasions.', 'wp-full-stripe' ),
-					'x_times_y_months' => __( 'Subscription will be charged every %1$d months, for %2$d occasions.', 'wp-full-stripe' ),
-					'x_times_y_years' => __( 'Subscription will be charged every %1$d years, for %2$d occasions.', 'wp-full-stripe' ),
+					'daily' => __( 'Subscription will be charged every day.', 'wp-full-stripe-free' ),
+					'weekly' => __( 'Subscription will be charged every week.', 'wp-full-stripe-free' ),
+					'monthly' => __( 'Subscription will be charged every month.', 'wp-full-stripe-free' ),
+					'yearly' => __( 'Subscription will be charged every year.', 'wp-full-stripe-free' ),
+					'y_days' => __( 'Subscription will be charged every %d days.', 'wp-full-stripe-free' ),
+					'y_weeks' => __( 'Subscription will be charged every %d weeks.', 'wp-full-stripe-free' ),
+					'y_months' => __( 'Subscription will be charged every %d months.', 'wp-full-stripe-free' ),
+					'y_years' => __( 'Subscription will be charged every %d years.', 'wp-full-stripe-free' ),
+					'x_times_daily' => __( 'Subscription will be charged every day, for %d occasions.', 'wp-full-stripe-free' ),
+					'x_times_weekly' => __( 'Subscription will be charged every week, for %d occasions.', 'wp-full-stripe-free' ),
+					'x_times_monthly' => __( 'Subscription will be charged every month, for %d occasions.', 'wp-full-stripe-free' ),
+					'x_times_yearly' => __( 'Subscription will be charged every year, for %d occasions.', 'wp-full-stripe-free' ),
+					'x_times_y_days' => __( 'Subscription will be charged every %1$d days, for %2$d occasions.', 'wp-full-stripe-free' ),
+					'x_times_y_weeks' => __( 'Subscription will be charged every %1$d weeks, for %2$d occasions.', 'wp-full-stripe-free' ),
+					'x_times_y_months' => __( 'Subscription will be charged every %1$d months, for %2$d occasions.', 'wp-full-stripe-free' ),
+					'x_times_y_years' => __( 'Subscription will be charged every %1$d years, for %2$d occasions.', 'wp-full-stripe-free' ),
 				),
 				'subscription_pricing_templates' => array(
-					'daily' => __( '%1$s / day', 'wp-full-stripe' ),
-					'weekly' => __( '%1$s / week', 'wp-full-stripe' ),
-					'monthly' => __( '%1$s / month', 'wp-full-stripe' ),
-					'yearly' => __( '%1$s / year', 'wp-full-stripe' ),
-					'x_days' => __( '%1$s / %2$d days', 'wp-full-stripe' ),
-					'x_weeks' => __( '%1$s / %2$d weeks', 'wp-full-stripe' ),
-					'x_months' => __( '%1$s / %2$d months', 'wp-full-stripe' ),
-					'x_years' => __( '%1$s / %2$d years', 'wp-full-stripe' ),
+					'daily' => __( '%1$s / day', 'wp-full-stripe-free' ),
+					'weekly' => __( '%1$s / week', 'wp-full-stripe-free' ),
+					'monthly' => __( '%1$s / month', 'wp-full-stripe-free' ),
+					'yearly' => __( '%1$s / year', 'wp-full-stripe-free' ),
+					'x_days' => __( '%1$s / %2$d days', 'wp-full-stripe-free' ),
+					'x_weeks' => __( '%1$s / %2$d weeks', 'wp-full-stripe-free' ),
+					'x_months' => __( '%1$s / %2$d months', 'wp-full-stripe-free' ),
+					'x_years' => __( '%1$s / %2$d years', 'wp-full-stripe-free' ),
 				),
 				'products' => array(
-					'default_product_name' => __( 'My product', 'wp-full-stripe' ),
-					'other_amount_label' => __( 'Other amount', 'wp-full-stripe' ),
-					'the_selected_product_label' => __( 'The selected product', 'wp-full-stripe' ),
+					'default_product_name' => __( 'My product', 'wp-full-stripe-free' ),
+					'other_amount_label' => __( 'Other amount', 'wp-full-stripe-free' ),
+					'the_selected_product_label' => __( 'The selected product', 'wp-full-stripe-free' ),
 				),
 				'application_errors' => array(
 					/* translators: Banner title of application error when instantiating the Stripe object */
-					'stripe_instantiation_error_title' => __( 'Stripe error', 'wp-full-stripe' ),
+					'stripe_instantiation_error_title' => __( 'Stripe error', 'wp-full-stripe-free' ),
 					/* translators: Error message when instantiating the Stripe object
 					 * p1: the message of the exception thrown
 					 */
-					'stripe_instantiation_error_message' => __( "Cannot initialize Stripe: %s", 'wp-full-stripe' )
+					'stripe_instantiation_error_message' => __( "Cannot initialize Stripe: %s", 'wp-full-stripe-free' )
 				),
 				'product_pricing' => array(
 					/* translators: Default tax label */
-					'default_tax_label' => __( 'Tax', 'wp-full-stripe' ),
+					'default_tax_label' => __( 'Tax', 'wp-full-stripe-free' ),
 					/* translators: Default label of coupon line items */
-					'default_coupon_label' => __( 'Coupon', 'wp-full-stripe' ),
+					'default_coupon_label' => __( 'Coupon', 'wp-full-stripe-free' ),
 					/* translators: Tax line item label with percentage, inclusive */
-					'tax_label_inclusive_percentage' => __( '%s (%s%%, inclusive)', 'wp-full-stripe' ),
+					'tax_label_inclusive_percentage' => __( '%1$s (%2$s%%, inclusive)', 'wp-full-stripe-free' ),
 					/* translators: Tax line item label with percentage */
-					'tax_label_percentage' => __( '%s (%s%%)', 'wp-full-stripe' ),
+					'tax_label_percentage' => __( '%1$s (%2$s%%)', 'wp-full-stripe-free' ),
 					/* translators: Tax line item label, inclusive */
-					'tax_label_inclusive' => __( '%s (inclusive)', 'wp-full-stripe' ),
+					'tax_label_inclusive' => __( '%s (inclusive)', 'wp-full-stripe-free' ),
 					/* translators: Tax line item label, no decoration (no percentage, not inclusive) */
-					'tax_label' => __( '%s', 'wp-full-stripe' ),
+					'tax_label' => '%s',
 				)
 			)
 		);
@@ -1027,6 +1034,36 @@ class MM_WPFS {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Initialize the user version of the plugin.
+	 */
+	public function init_user_version() {
+		if ( false !== get_option( 'wpfp_user_v1' ) ) {
+			return;
+		}
+
+		$stripe_connected = $this->options->getSeveral( [ 
+			MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID,
+			MM_WPFS_Options::OPTION_TEST_ACCOUNT_ID
+		] );
+
+		if ( ! empty( array_filter( $stripe_connected ) ) ) {
+			update_option( 'wpfp_user_v1', 'yes' );
+		} else {
+			update_option( 'wpfp_user_v1', 'no' );
+		}
+	}
+
+	/**
+	 * Get API version based on wpfp_user_v1 option
+	 * 
+	 * @return string
+	 */
+	public static function get_user_version() {
+		$version = get_option( 'wpfp_user_v1', 'no' );
+		return 'yes' === $version ? 'v1' : 'v2';
 	}
 
 	private function retrieveProductIdsByPriceIds( $priceIds ) {

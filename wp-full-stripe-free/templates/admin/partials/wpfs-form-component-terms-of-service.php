@@ -4,7 +4,7 @@
     /** @var $data */
 ?>
 <div class="wpfs-form-group">
-    <label class="wpfs-form-label"><?php esc_html_e( "Consent", 'wp-full-stripe-admin' ); ?></label>
+    <label class="wpfs-form-label"><?php esc_html_e( "Consent", 'wp-full-stripe-free' ); ?></label>
     <div class="wpfs-form-check-list">
         <div class="wpfs-form-check">
             <input id="<?php $view->showTermsOfService()->id(); ?>" name="<?php $view->showTermsOfService()->name(); ?>" value="<?php $view->showTermsOfService()->value(); ?>" <?php $view->showTermsOfService()->attributes(); ?> <?php echo $form->showTermsOfUse == $view->showTermsOfService()->value(false) ? 'checked' : ''; ?>>

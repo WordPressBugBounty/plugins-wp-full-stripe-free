@@ -1,1 +1,1 @@
-<?php _e( 'Form not found.', 'wp-full-stripe' ); ?>
+<?php _e( 'Form not found.', 'wp-full-stripe-free' ); ?>

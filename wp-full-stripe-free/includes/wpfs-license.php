@@ -14,7 +14,22 @@ class WPFS_License {
 		1 => 1,
 		2 => 2,
 		3 => 3,
+		4 => 4,
+		5 => 1,
+		6 => 2,
+		7 => 3,
 	];
+
+	/**
+	 * Get Namespace.
+	 * 
+	 * @return string
+	 */
+	public static function get_namespace() {
+		$namespace = basename( dirname( WP_FULL_STRIPE_BASENAME ) );
+		$namespace = str_replace( '-', '_', strtolower( trim( $namespace ) ) );
+		return $namespace;
+	}
 
 	/**
 	 * Get the license data.
@@ -22,9 +37,8 @@ class WPFS_License {
 	 * @return bool|\stdClass
 	 */
 	public static function get_data() {
-		$option_name = basename( dirname( WP_FULL_STRIPE_BASENAME ) );
-		$option_name = str_replace( '-', '_', strtolower( trim( $option_name ) ) );
-		return get_option( $option_name . '_license_data' );
+		$namespace = self::get_namespace();
+		return get_option( $namespace . '_license_data' );
 	}
 
 	/**
@@ -163,7 +177,36 @@ class WPFS_License {
 	 * @return string
 	 */
 	public static function get_activation_url() {
-		$admin_url = admin_url( 'options-general.php' );
+		$admin_url = MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS_LICENSE );
 		return $admin_url;
+	}
+
+	/**
+	 * Toggle License.
+	 * 
+	 * @param string $key    License key.
+	 * @param string $status License status.
+	 * @return array
+	 */
+	public static function toggle( $key, $status ) {
+		$namespace = self::get_namespace();
+		$response  = apply_filters( 'themeisle_sdk_license_process_wpfs', $key, $status );
+
+		if ( is_wp_error( $response ) ) {
+			return array(
+				'message' => $response->get_error_message(),
+				'success' => false,
+			);
+		}
+
+		return array(
+			'success' => true,
+			'message' => 'activate' === $status ? __( 'Activated.', 'wp-full-stripe-free' ) : __( 'Deactivated', 'wp-full-stripe-free' ),
+			'license' => array(
+				'key'        => apply_filters( 'product_wpfs_license_key', 'free' ),
+				'valid'      => apply_filters( 'product_wpfs_license_status', false ),
+				'expiration' => self::get_expiration_date(),
+			),
+		);
 	}
 }

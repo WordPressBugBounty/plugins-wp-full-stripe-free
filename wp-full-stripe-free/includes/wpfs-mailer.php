@@ -103,10 +103,10 @@ class MM_WPFS_Mailer {
                 $saveCardReceipt->type              = MM_WPFS::EMAIL_TEMPLATE_ID_CARD_SAVED;
                 $saveCardReceipt->typeLabel         =
                     /* translators: Name of the email template that is used to send an email when a card is saved */
-                    __('Card saved', 'wp-full-stripe-admin');
+                    __('Card saved', 'wp-full-stripe-free');
                 $saveCardReceipt->typeDescription   =
                     /* translators: Description of the 'Card saved' email template */
-                    __('The plugin sends this email when a customer submits a save card form.', 'wp-full-stripe-admin');
+                    __('The plugin sends this email when a customer submits a save card form.', 'wp-full-stripe-free');
                 array_push( $res, $saveCardReceipt );
 
                 break;
@@ -117,20 +117,20 @@ class MM_WPFS_Mailer {
                 $donationReceipt->type              = MM_WPFS::EMAIL_TEMPLATE_ID_DONATION_RECEIPT;
                 $donationReceipt->typeLabel         =
                     /* translators: Name of the email template that is used to send an email when a donation is made */
-                    __('Donation receipt', 'wp-full-stripe-admin');
+                    __('Donation receipt', 'wp-full-stripe-free');
                 $donationReceipt->typeDescription   =
                     /* translators: Description of the 'Donation receipt' email template */
-                    __('The plugin sends this email when a donor makes a donation.', 'wp-full-stripe-admin');
+                    __('The plugin sends this email when a donor makes a donation.', 'wp-full-stripe-free');
                 array_push( $res, $donationReceipt );
 
                 $donationReceiptStripe = new \StdClass();
                 $donationReceiptStripe->type              = MM_WPFS::EMAIL_TEMPLATE_ID_DONATION_RECEIPT_STRIPE;
                 $donationReceiptStripe->typeLabel         =
                     /* translators: Name of the email template that Stripe sends when a donation is made */
-                    __('Donation receipt (Stripe)', 'wp-full-stripe-admin');
+                    __('Donation receipt (Stripe)', 'wp-full-stripe-free');
                 $donationReceiptStripe->typeDescription   =
                     /* translators: Description of the 'Donation receipt (Stripe)' email template */
-                    __('Stripe sends a payment receipt when a donor makes a donation.', 'wp-full-stripe-admin');
+                    __('Stripe sends a payment receipt when a donor makes a donation.', 'wp-full-stripe-free');
                 array_push( $res, $donationReceiptStripe );
 
                 break;
@@ -141,20 +141,20 @@ class MM_WPFS_Mailer {
                 $paymentReceipt->type              = MM_WPFS::EMAIL_TEMPLATE_ID_PAYMENT_RECEIPT;
                 $paymentReceipt->typeLabel         =
                     /* translators: Name of the email template that is used to send an email when a payment is made */
-                    __('Payment receipt', 'wp-full-stripe-admin');
+                    __('Payment receipt', 'wp-full-stripe-free');
                 $paymentReceipt->typeDescription   =
                     /* translators: Description of the 'Payment receipt' email template */
-                    __('The plugin sends this email when a customer makes a one-time payment.', 'wp-full-stripe-admin');
+                    __('The plugin sends this email when a customer makes a one-time payment.', 'wp-full-stripe-free');
                 array_push( $res, $paymentReceipt );
 
                 $paymentReceiptStripe = new \StdClass();
                 $paymentReceiptStripe->type              = MM_WPFS::EMAIL_TEMPLATE_ID_PAYMENT_RECEIPT_STRIPE;
                 $paymentReceiptStripe->typeLabel         =
                     /* translators: Name of the email template that Stripe sends when a payment is made */
-                    __('Payment receipt (Stripe)', 'wp-full-stripe-admin');
+                    __('Payment receipt (Stripe)', 'wp-full-stripe-free');
                 $paymentReceiptStripe->typeDescription   =
                     /* translators: Description of the 'Payment receipt (Stripe)' email template */
-                    __('Stripe sends this payment receipt when a customer makes a payment.', 'wp-full-stripe-admin');
+                    __('Stripe sends this payment receipt when a customer makes a payment.', 'wp-full-stripe-free');
                 array_push( $res, $paymentReceiptStripe );
 
                 break;
@@ -165,30 +165,30 @@ class MM_WPFS_Mailer {
                 $subscriptionReceipt->type              = MM_WPFS::EMAIL_TEMPLATE_ID_SUBSCRIPTION_RECEIPT;
                 $subscriptionReceipt->typeLabel         =
                     /* translators: Name of the email template that is used to send an email when a subscription is started */
-                    __('Subscription receipt', 'wp-full-stripe-admin');
+                    __('Subscription receipt', 'wp-full-stripe-free');
                 $subscriptionReceipt->typeDescription   =
                     /* translators: Description of the 'Subscription receipt' email template */
-                    __('The plugin sends this email when a customer subscribes to a plan.', 'wp-full-stripe-admin');
+                    __('The plugin sends this email when a customer subscribes to a plan.', 'wp-full-stripe-free');
                 array_push( $res, $subscriptionReceipt );
 
                 $subscriptionEndedReceipt = new \StdClass();
                 $subscriptionEndedReceipt->type              = MM_WPFS::EMAIL_TEMPLATE_ID_SUBSCRIPTION_ENDED;
                 $subscriptionEndedReceipt->typeLabel         =
                     /* translators: Name of the email template that is used to send an email when the plugin ends a subscription automatically */
-                    __('Subscription ended', 'wp-full-stripe-admin');
+                    __('Subscription ended', 'wp-full-stripe-free');
                 $subscriptionEndedReceipt->typeDescription   =
                     /* translators: Description of the 'Subscription ended' email template */
-                    __('The plugin sends this email when payment-in-installments plan is cancelled automatically.', 'wp-full-stripe-admin');
+                    __('The plugin sends this email when payment-in-installments plan is cancelled automatically.', 'wp-full-stripe-free');
                 array_push( $res, $subscriptionEndedReceipt );
 
                 $subscriptionReceiptStripe = new \StdClass();
                 $subscriptionReceiptStripe->type              = MM_WPFS::EMAIL_TEMPLATE_ID_SUBSCRIPTION_RECEIPT_STRIPE;
                 $subscriptionReceiptStripe->typeLabel         =
                     /* translators: Name of the email template that Stripe sends when a subscription is started */
-                    __('Subscription receipt (Stripe)', 'wp-full-stripe-admin');
+                    __('Subscription receipt (Stripe)', 'wp-full-stripe-free');
                 $subscriptionReceiptStripe->typeDescription   =
                     /* translators: Description of the 'Subscription receipt (Stripe)' email template */
-                    __('Stripe sends a payment receipt when a customer subscribes to a plan.', 'wp-full-stripe-admin');
+                    __('Stripe sends a payment receipt when a customer subscribes to a plan.', 'wp-full-stripe-free');
                 array_push( $res, $subscriptionReceiptStripe );
 
             break;
@@ -272,8 +272,12 @@ class MM_WPFS_Mailer {
      * @return array|false|mixed|StdClass|string
      */
     public static function extractEmailTemplates( $context, $formType, $emailTemplatesJson ) {
-        $emailTemplates = json_decode( $emailTemplatesJson );
-        if ( json_last_error() !== JSON_ERROR_NONE ) {
+        $emailTemplates = null;
+        if ( $emailTemplatesJson !== null ) {
+            $emailTemplates = json_decode( $emailTemplatesJson );
+        }
+
+        if ( json_last_error() !== JSON_ERROR_NONE || $emailTemplates === null ) {
             $emailTemplates = MM_WPFS_Mailer::createDefaultEmailTemplates( $context, $formType, false, true );
         }
 

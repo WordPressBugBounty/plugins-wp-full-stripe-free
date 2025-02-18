@@ -11,7 +11,6 @@ interface MM_WPFS_AdminViewConstants {
     const FORM_HASH_ADMIN_FORMS_OPTIONS = 'wpfsAdminFormsOptions';
     const FORM_HASH_ADMIN_FORMS_APPEARANCE = 'wpfsAdminFormsAppearance';
     const FORM_HASH_ADMIN_WP_DASHBOARD = 'wpfsAdminWpDashboard';
-    const FORM_HASH_ADMIN_ADDONS = 'wpfsAdminAddOns';
     const FORM_HASH_ADMIN_LOG_LEVELS = 'wpfsAdminLogLevels';
     const FORM_HASH_ADMIN_LOG_EMPTY = 'wpfsAdminLogEmpty';
     const FORM_HASH_ADMIN_INLINE_SAVE_CARD_FORM = 'wpfsAdminInlineSaveCardForm';
@@ -44,7 +43,7 @@ abstract class MM_WPFS_AdminView implements MM_WPFS_AdminViewConstants, MM_WPFS_
         $this->attributes        = $this->getFormAttributes();
         $this->action            = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_ACTION, null, null, null, null );
         $this->formGetParameters = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_GET_PARAMETERS, null, null, null, null );
-        $this->submitButton      = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_FormViewConstants::BUTTON_SUBMIT, null, __( 'Create and Edit form', 'wp-full-stripe-admin' ), null, null );
+        $this->submitButton      = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_FormViewConstants::BUTTON_SUBMIT, null, __( 'Create and Edit form', 'wp-full-stripe-free' ), null, null );
 
         $this->action->setAttributes(
             array(
@@ -146,22 +145,22 @@ class MM_WPFS_Admin_CreateFormView extends MM_WPFS_AdminView {
 
         $this->displayName = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_CreateFormViewConstants::FIELD_FORM_DISPLAY_NAME, null, null,
             /* translators: Form field label for the display name of the form */
-            __( 'Display name', 'wp-full-stripe-admin' ), null );
+            __( 'Display name', 'wp-full-stripe-free' ), null );
         $this->name = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_CreateFormViewConstants::FIELD_FORM_NAME, null, null,
             /* translators: Form field label for the identifier of the form */
-            __( 'Identifier', 'wp-full-stripe-admin' ), null );
+            __( 'Identifier', 'wp-full-stripe-free' ), null );
 
 
         $this->type = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_CreateFormViewConstants::FIELD_FORM_TYPE, null, null,
             /* translators: Form field label for the type of the form */
-            __( 'Form type', 'wp-full-stripe-admin' ), null );
+            __( 'Form type', 'wp-full-stripe-free' ), null );
 
         $typeOptionIndex = 0;
         $typeOptions = array();
 
         $paymentTypeOption = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_CreateFormViewConstants::FIELD_FORM_TYPE, null, null,
             /* translators: One-time payment form type */
-            __( 'One-time payment', 'wp-full-stripe-admin' ), $typeOptionIndex );
+            __( 'One-time payment', 'wp-full-stripe-free' ), $typeOptionIndex );
         $paymentTypeAttributes = array(
             'type'      => 'radio',
             'class'     => 'wpfs-form-check-input',
@@ -174,7 +173,7 @@ class MM_WPFS_Admin_CreateFormView extends MM_WPFS_AdminView {
         $paymentTypeOption->setMetadata( array(
             'description'   =>
             /* translators: Description of the one-time payment form type */
-                __( 'Software, ticket, physical goods, and settle invoices', 'wp-full-stripe-admin' ),
+                __( 'Software, ticket, physical goods, and settle invoices', 'wp-full-stripe-free' ),
             'iconClass'     => 'wpfs-illu-book-close-bookmark'
         ));
         array_push( $typeOptions, $paymentTypeOption );
@@ -182,7 +181,7 @@ class MM_WPFS_Admin_CreateFormView extends MM_WPFS_AdminView {
 
         $subscriptionTypeOption = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_CreateFormViewConstants::FIELD_FORM_TYPE, null, null,
             /* translators: Subscription form type */
-            __( 'Subscription', 'wp-full-stripe-admin' ), $typeOptionIndex );
+            __( 'Subscription', 'wp-full-stripe-free' ), $typeOptionIndex );
         $paymentTypeAttributes = array(
             'type'      => 'radio',
             'class'     => 'wpfs-form-check-input',
@@ -195,7 +194,7 @@ class MM_WPFS_Admin_CreateFormView extends MM_WPFS_AdminView {
         $subscriptionTypeOption->setMetadata( array(
             'description'   =>
             /* translators: Description of the subscription form type */
-                __( 'Online services, consulting, and professional services', 'wp-full-stripe-admin' ),
+                __( 'Online services, consulting, and professional services', 'wp-full-stripe-free' ),
             'iconClass'     => 'wpfs-illu-subscription'
         ));
         array_push( $typeOptions, $subscriptionTypeOption );
@@ -203,7 +202,7 @@ class MM_WPFS_Admin_CreateFormView extends MM_WPFS_AdminView {
 
         $donationTypeOption = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_CreateFormViewConstants::FIELD_FORM_TYPE, null, null,
             /* translators: Donation form type */
-            __( 'Donation', 'wp-full-stripe-admin' ), $typeOptionIndex );
+            __( 'Donation', 'wp-full-stripe-free' ), $typeOptionIndex );
         $paymentTypeAttributes = array(
             'type'      => 'radio',
             'class'     => 'wpfs-form-check-input',
@@ -216,7 +215,7 @@ class MM_WPFS_Admin_CreateFormView extends MM_WPFS_AdminView {
         $donationTypeOption->setMetadata( array(
             'description'   =>
             /* translators: Description of the donation form type */
-                __( 'Donor platform for your fundraising efforts', 'wp-full-stripe-admin' ),
+                __( 'Donor platform for your fundraising efforts', 'wp-full-stripe-free' ),
             'iconClass'     => 'wpfs-illu-donation'
         ));
         array_push( $typeOptions, $donationTypeOption );
@@ -224,7 +223,7 @@ class MM_WPFS_Admin_CreateFormView extends MM_WPFS_AdminView {
 
         $saveCardTypeOption = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_CreateFormViewConstants::FIELD_FORM_TYPE, null, null,
             /* translators: Save card form type */
-            __( 'Save card', 'wp-full-stripe-admin' ), $typeOptionIndex );
+            __( 'Save card', 'wp-full-stripe-free' ), $typeOptionIndex );
         $paymentTypeAttributes = array(
             'type'      => 'radio',
             'class'     => 'wpfs-form-check-input',
@@ -237,7 +236,7 @@ class MM_WPFS_Admin_CreateFormView extends MM_WPFS_AdminView {
         $saveCardTypeOption->setMetadata( array(
             'description'   =>
             /* translators: Description of the save card form type */
-                __( 'Customer\'s payment information', 'wp-full-stripe-admin' ),
+                __( 'Customer\'s payment information', 'wp-full-stripe-free' ),
             'iconClass'     => 'wpfs-illu-credit-card'
         ));
         array_push( $typeOptions, $saveCardTypeOption );
@@ -247,44 +246,44 @@ class MM_WPFS_Admin_CreateFormView extends MM_WPFS_AdminView {
 
         $this->layout = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_CreateFormViewConstants::FIELD_FORM_LAYOUT, null, null,
             /* translators: Form field label for the layout of the form */
-            __( 'Form layout', 'wp-full-stripe-admin' ), null );
+            __( 'Form layout', 'wp-full-stripe-free' ), null );
 
         $layoutOptionIndex = 0;
         $layoutOptions = array();
 
-        $inlineLayoutOption = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_CreateFormViewConstants::FIELD_FORM_LAYOUT, null, null,
-            /* translators: Inline layout type on the Create form page  */
-            __( 'Inline', 'wp-full-stripe-admin' ), $layoutOptionIndex );
-        $inlineLayoutOption->setAttributes( array(
-            'type'      => 'radio',
-            'class'     => 'wpfs-form-check-input',
-            'value'     => MM_WPFS::FORM_LAYOUT_INLINE,
-            'checked'   => 'checked'
-        ));
-        $inlineLayoutOption->setMetadata( array(
-            'description'   =>
-            /* translators: Description of the inline form layout */
-                __( 'Enough screen estate to display the entire form', 'wp-full-stripe-admin' ),
-            'iconClass'     => 'wpfs-illu-layout-inline'
-        ));
-        array_push( $layoutOptions, $inlineLayoutOption );
-        $layoutOptionIndex++;
-
         $checkoutLayoutOption = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_CreateFormViewConstants::FIELD_FORM_LAYOUT, null, null,
             /* translators: Checkout layout type on the Create form page */
-            __( 'Checkout', 'wp-full-stripe-admin' ), $layoutOptionIndex );
+            __( 'Checkout', 'wp-full-stripe-free' ), $layoutOptionIndex );
         $checkoutLayoutOption->setAttributes( array(
             'type'      => 'radio',
             'class'     => 'wpfs-form-check-input',
             'value'     => MM_WPFS::FORM_LAYOUT_CHECKOUT,
+            'checked'   => 'checked'
         ));
         $checkoutLayoutOption->setMetadata( array(
             'description'   =>
             /* translators: Description of the checkout form layout */
-                __( 'When screen estate is constrained, or using pricing tables', 'wp-full-stripe-admin' ),
+                __( 'When screen estate is constrained, or using pricing tables', 'wp-full-stripe-free' ),
             'iconClass'     => 'wpfs-illu-layout-checkout'
         ));
         array_push( $layoutOptions, $checkoutLayoutOption );
+        $layoutOptionIndex++;
+
+        $inlineLayoutOption = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_CreateFormViewConstants::FIELD_FORM_LAYOUT, null, null,
+            /* translators: Inline layout type on the Create form page  */
+            __( 'Inline', 'wp-full-stripe-free' ), $layoutOptionIndex );
+        $inlineLayoutOption->setAttributes( array(
+            'type'      => 'radio',
+            'class'     => 'wpfs-form-check-input',
+            'value'     => MM_WPFS::FORM_LAYOUT_INLINE,
+        ));
+        $inlineLayoutOption->setMetadata( array(
+            'description'   =>
+            /* translators: Description of the inline form layout */
+                __( 'Enough screen estate to display the entire form', 'wp-full-stripe-free' ),
+            'iconClass'     => 'wpfs-illu-layout-inline'
+        ));
+        array_push( $layoutOptions, $inlineLayoutOption );
 
         $this->layout->setOptions( $layoutOptions );
     }
@@ -414,30 +413,30 @@ class MM_WPFS_Admin_ConfigureStripeAccountView extends MM_WPFS_AdminView {
 
         $this->testSecretKey = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_ConfigureStripeAccountViewConstants::FIELD_API_TEST_SECRET_KEY, null, null,
             /* translators: Form field label for API test secret key   */
-            __( 'Secret key', 'wp-full-stripe-admin' ), null );
+            __( 'Secret key', 'wp-full-stripe-free' ), null );
         $this->testPublishableKey = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_ConfigureStripeAccountViewConstants::FIELD_API_TEST_PUBLISHABLE_KEY, null, null,
             /* translators: Form field label for API test publishable key   */
-            __( 'Publishable key', 'wp-full-stripe-admin' ), null );
+            __( 'Publishable key', 'wp-full-stripe-free' ), null );
 
         $this->liveSecretKey = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_ConfigureStripeAccountViewConstants::FIELD_API_LIVE_SECRET_KEY, null, null,
             /* translators: Form field label for API live secret key   */
-            __( 'Secret key', 'wp-full-stripe-admin' ), null );
+            __( 'Secret key', 'wp-full-stripe-free' ), null );
         $this->livePublishableKey = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_ConfigureStripeAccountViewConstants::FIELD_API_LIVE_PUBLISHABLE_KEY, null, null,
             /* translators: Form field label for API live publishable key   */
-            __( 'Publishable key', 'wp-full-stripe-admin' ), null );
+            __( 'Publishable key', 'wp-full-stripe-free' ), null );
 
         $this->apiMode = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_ConfigureStripeAccountViewConstants::FIELD_API_MODE, null, null,
             /* translators: Label for a toggle which controls the Stripe API mode (test or live)  */
-            __( 'Stripe API mode', 'wp-full-stripe-admin' ), null );
+            __( 'Stripe API mode', 'wp-full-stripe-free' ), null );
         $this->testAccountId = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_ConfigureStripeAccountViewConstants::FIELD_API_TEST_ACCOUNT_ID, null, null,
             /* translators: Form field label for API test account ID   */
-            __( 'Account ID', 'wp-full-stripe-admin' ), null );
+            __( 'Account ID', 'wp-full-stripe-free' ), null );
         $this->liveAccountId = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_ConfigureStripeAccountViewConstants::FIELD_API_LIVE_ACCOUNT_ID, null, null,
             /* translators: Form field label for API live account ID   */
-            __( 'Account ID', 'wp-full-stripe-admin' ), null );
+            __( 'Account ID', 'wp-full-stripe-free' ), null );
 
         $this->connectAccountOnboarding = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_ADMIN_ConfigureStripeAccountViewConstants::CONNECT_ACCOUNT_ONBOARDING, null, null,
-            __( 'Connect Account Onboarding', 'wp-full-stripe-admin'), null );
+            __( 'Connect Account Onboarding', 'wp-full-stripe-free'), null );
     }
 
     /**
@@ -526,6 +525,9 @@ class MM_WPFS_Admin_ConfigureStripeAccountView extends MM_WPFS_AdminView {
 }
 
 interface MM_WPFS_Admin_CustomerPortalViewConstants {
+    const FIELD_MY_ACCOUNT_USE_STRIPE_CUSTOMER_PORTAL = 'wpfs-my-account-use-stripe-customer-portal';
+
+    const FIELD_MY_ACCOUNT_STRIPE_PORTAL_SETTINGS = 'wpfs-my-account-stripe-portal-settings';
     const FIELD_MY_ACCOUNT_CUSTOMERS_CAN_VIEW = 'wpfs-my-account-customers-can-view';
     const FIELD_MY_ACCOUNT_SUBSCRIPTION_SETTINGS = 'wpfs-my-account-subscription-settings';
     const FIELD_MY_ACCOUNT_DISPLAY_SETTINGS = 'wpfs-my-account-display-settings';
@@ -541,6 +543,9 @@ interface MM_WPFS_Admin_CustomerPortalViewConstants {
 }
 
 class MM_WPFS_Admin_CustomerPortalView extends MM_WPFS_AdminView implements MM_WPFS_Admin_CustomerPortalViewConstants {
+    /** @var MM_WPFS_Control */
+    protected $useStripeCustomerPortal;
+
     /** @var MM_WPFS_Control */
     protected $showSubscriptions;
     /** @var MM_WPFS_Control */
@@ -571,20 +576,41 @@ class MM_WPFS_Admin_CustomerPortalView extends MM_WPFS_AdminView implements MM_W
 
         $this->action->setValue( MM_WPFS_Admin_CustomerPortalViewConstants::FIELD_ACTION_VALUE_SAVE_CUSTOMER_PORTAL );
 
+        $this->initStripePortalSettings();
         $this->initCustomersCanManage();
         $this->initSubscriptionSettings();
         $this->initDisplaySettings();
     }
 
+    protected function initStripePortalSettings() {
+        $this->useStripeCustomerPortal = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_MY_ACCOUNT_STRIPE_PORTAL_SETTINGS, null, null,
+            __( 'Use Stripe Customer Portal', 'wp-full-stripe-free' ), null );
+
+        $optionIndex = 0;
+        $options = array();
+
+        $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_MY_ACCOUNT_USE_STRIPE_CUSTOMER_PORTAL, null, null,
+            __('Use Stripe Customer Portal', 'wp-full-stripe-free'), $optionIndex );
+        $option->setValue( 1 );
+        $optionAttributes = array(
+            'type'      => 'checkbox',
+            'class'     => 'wpfs-form-check-input',
+        );
+        $option->setAttributes( $optionAttributes );
+        array_push( $options, $option );
+
+        $this->useStripeCustomerPortal->setOptions( $options );
+    }
+
     protected function initDisplaySettings() {
         $this->displaySettings = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_MY_ACCOUNT_DISPLAY_SETTINGS, null, null,
-            __( 'Display settings', 'wp-full-stripe-admin' ), null );
+            __( 'Display settings', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_MY_ACCOUNT_SCROLLING_PANE_INTO_VIEW, null, null,
-            __('Scroll pane into view', 'wp-full-stripe-admin'), $optionIndex );
+            __('Scroll pane into view', 'wp-full-stripe-free'), $optionIndex );
         $option->setValue( 1 );
         $optionAttributes = array(
             'type'      => 'checkbox',
@@ -598,13 +624,13 @@ class MM_WPFS_Admin_CustomerPortalView extends MM_WPFS_AdminView implements MM_W
 
     protected function initSubscriptionSettings() {
         $this->subscriptionSettings = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_MY_ACCOUNT_SUBSCRIPTION_SETTINGS, null, null,
-            __( 'Subscription settings', 'wp-full-stripe-admin' ), null );
+            __( 'Subscription settings', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_MY_ACCOUNT_UPDOWNGRADE_SUBSCRIPTIONS, null, null,
-            __('Customers can upgrade/downgrade subscriptions', 'wp-full-stripe-admin'), $optionIndex );
+            __('Customers can upgrade/downgrade subscriptions', 'wp-full-stripe-free'), $optionIndex );
         $option->setValue( 1 );
         $optionAttributes = array(
             'type'      => 'checkbox',
@@ -615,7 +641,7 @@ class MM_WPFS_Admin_CustomerPortalView extends MM_WPFS_AdminView implements MM_W
         $optionIndex++;
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_MY_ACCOUNT_CANCEL_SUBSCRIPTIONS, null, null,
-            __('Customers can cancel subscriptions', 'wp-full-stripe-admin'), $optionIndex );
+            __('Customers can cancel subscriptions', 'wp-full-stripe-free'), $optionIndex );
         $option->setValue( 1 );
         $optionAttributes = array(
             'type'      => 'checkbox',
@@ -629,14 +655,14 @@ class MM_WPFS_Admin_CustomerPortalView extends MM_WPFS_AdminView implements MM_W
 
         $this->whenCancelSubscriptions = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_CustomerPortalViewConstants::FIELD_MY_ACCOUNT_WHEN_CANCEL_SUBSCRIPTONS, null, null,
             /* translators: Form field label for the 'When to cancel subscriptions' option of the form */
-            __( 'When to cancel subscriptions', 'wp-full-stripe-admin' ), null );
+            __( 'When to cancel subscriptions', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_CustomerPortalViewConstants::FIELD_MY_ACCOUNT_WHEN_CANCEL_SUBSCRIPTONS, null, null,
             /* translators: Subscription cancellation type when the subscription is canceled immediately */
-            __( 'Immediately', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Immediately', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( MM_WPFS::CANCEL_SUBSCRIPTION_IMMEDIATELY );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -648,7 +674,7 @@ class MM_WPFS_Admin_CustomerPortalView extends MM_WPFS_AdminView implements MM_W
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_CustomerPortalViewConstants::FIELD_MY_ACCOUNT_WHEN_CANCEL_SUBSCRIPTONS, null, null,
             /* translators: Subscription cancellation type when the subscription is canceled at the end of the current recurring period */
-            __( 'At period end', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'At period end', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( MM_WPFS::CANCEL_SUBSCRIPTION_AT_PERIOD_END );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -662,13 +688,13 @@ class MM_WPFS_Admin_CustomerPortalView extends MM_WPFS_AdminView implements MM_W
 
     protected function initCustomersCanManage() {
         $this->customersCanManage = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_MY_ACCOUNT_CUSTOMERS_CAN_VIEW, null, null,
-            __( 'Customers can manage', 'wp-full-stripe-admin' ), null );
+            __( 'Customers can manage', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_MY_ACCOUNT_SHOW_SUBSCRIPTIONS, null, null,
-            __('Subscriptions', 'wp-full-stripe-admin'), $optionIndex );
+            __('Subscriptions', 'wp-full-stripe-free'), $optionIndex );
         $option->setValue( 1 );
         $optionAttributes = array(
             'type'      => 'checkbox',
@@ -679,7 +705,7 @@ class MM_WPFS_Admin_CustomerPortalView extends MM_WPFS_AdminView implements MM_W
         $optionIndex++;
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_MY_ACCOUNT_SHOW_INVOICES, null, null,
-            __('Invoices', 'wp-full-stripe-admin'), $optionIndex );
+            __('Invoices', 'wp-full-stripe-free'), $optionIndex );
         $option->setValue( 1 );
         $optionAttributes = array(
             'type'      => 'checkbox',
@@ -696,6 +722,7 @@ class MM_WPFS_Admin_CustomerPortalView extends MM_WPFS_AdminView implements MM_W
      */
     public static function getFields() {
         $fields = array(
+            MM_WPFS_Admin_CustomerPortalViewConstants::FIELD_MY_ACCOUNT_USE_STRIPE_CUSTOMER_PORTAL   => MM_WPFS_ControlUtils::input( MM_WPFS_Admin_CustomerPortalViewConstants::FIELD_MY_ACCOUNT_USE_STRIPE_CUSTOMER_PORTAL ),
             MM_WPFS_Admin_CustomerPortalViewConstants::FIELD_MY_ACCOUNT_SHOW_SUBSCRIPTIONS           => MM_WPFS_ControlUtils::input( MM_WPFS_Admin_CustomerPortalViewConstants::FIELD_MY_ACCOUNT_SHOW_SUBSCRIPTIONS ),
             MM_WPFS_Admin_CustomerPortalViewConstants::FIELD_MY_ACCOUNT_CANCEL_SUBSCRIPTIONS         => MM_WPFS_ControlUtils::input( MM_WPFS_Admin_CustomerPortalViewConstants::FIELD_MY_ACCOUNT_CANCEL_SUBSCRIPTIONS ),
             MM_WPFS_Admin_CustomerPortalViewConstants::FIELD_MY_ACCOUNT_WHEN_CANCEL_SUBSCRIPTONS     => MM_WPFS_ControlUtils::input( MM_WPFS_Admin_CustomerPortalViewConstants::FIELD_MY_ACCOUNT_WHEN_CANCEL_SUBSCRIPTONS ),
@@ -718,6 +745,13 @@ class MM_WPFS_Admin_CustomerPortalView extends MM_WPFS_AdminView implements MM_W
         $attributes                                   = array_merge( $attributes, parent::getFormAttributes() );
 
         return $attributes;
+    }
+
+    /**
+     * @return MM_WPFS_Control
+     */
+    public function useStripeCustomerPortal(): MM_WPFS_Control {
+        return $this->useStripeCustomerPortal;
     }
 
     /**
@@ -822,7 +856,7 @@ class MM_WPFS_Admin_SecurityView extends MM_WPFS_AdminView {
 
         $this->secureInlineForms = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_SecurityViewConstants::FIELD_SECURITY_SECURE_INLINE_FORMS, null, null,
             /* translators: Form field label for the 'Secure inline forms' checkbox of the form */
-            __( 'Inline forms', 'wp-full-stripe-admin' ), null );
+            __( 'Inline forms', 'wp-full-stripe-free' ), null );
         $this->secureInlineForms->setValue('1' );
         $this->secureInlineForms->setAttributes( array(
             'type'      => 'checkbox',
@@ -831,7 +865,7 @@ class MM_WPFS_Admin_SecurityView extends MM_WPFS_AdminView {
 
         $this->secureCheckoutForms = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_SecurityViewConstants::FIELD_SECURITY_SECURE_CHECKOUT_FORMS, null, null,
             /* translators: Form field label for the 'Secure checkout forms' checkbox of the form */
-            __( 'Checkout forms', 'wp-full-stripe-admin' ), null );
+            __( 'Checkout forms', 'wp-full-stripe-free' ), null );
         $this->secureCheckoutForms->setValue('1' );
         $this->secureCheckoutForms->setAttributes( array(
             'type'      => 'checkbox',
@@ -840,7 +874,7 @@ class MM_WPFS_Admin_SecurityView extends MM_WPFS_AdminView {
 
         $this->secureCustomerPortal = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_SecurityViewConstants::FIELD_SECURITY_SECURE_CUSTOMER_PORTAL, null, null,
             /* translators: Form field label for the 'Secure Customer portal' checkbox of the form */
-            __( 'Customer portal', 'wp-full-stripe-admin' ), null );
+            __( 'Customer portal', 'wp-full-stripe-free' ), null );
         $this->secureCustomerPortal->setValue('1' );
         $this->secureCustomerPortal->setAttributes( array(
             'type'      => 'checkbox',
@@ -849,7 +883,7 @@ class MM_WPFS_Admin_SecurityView extends MM_WPFS_AdminView {
 
         $this->reCaptchaSecretKey = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_SecurityViewConstants::FIELD_SECURITY_RECAPTCHA_SECRET_KEY, null, null,
             /* translators: Form field label for the 'Google reCaptcha secret key' field of the form */
-            __( 'Google reCAPTCHA secret key', 'wp-full-stripe-admin' ), null );
+            __( 'Google reCAPTCHA secret key', 'wp-full-stripe-free' ), null );
         $this->reCaptchaSecretKey->setAttributes( array(
             'type'      => 'text',
             'class'     => 'wpfs-form-control'
@@ -857,7 +891,7 @@ class MM_WPFS_Admin_SecurityView extends MM_WPFS_AdminView {
 
         $this->reCaptchaSiteKey = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_SecurityViewConstants::FIELD_SECURITY_RECAPTCHA_SITE_KEY, null, null,
             /* translators: Form field label for the 'Google reCaptcha site key' field of the form */
-            __( 'Google reCAPTCHA site key', 'wp-full-stripe-admin' ), null );
+            __( 'Google reCAPTCHA site key', 'wp-full-stripe-free' ), null );
         $this->reCaptchaSiteKey->setAttributes( array(
             'type'      => 'text',
             'class'     => 'wpfs-form-control'
@@ -961,7 +995,7 @@ class MM_WPFS_Admin_EmailOptionsView extends MM_WPFS_AdminView {
      * @return string
      */
     protected function createSiteAdminLabel( $name, $email ) {
-        return __( 'Website Admin', 'wp-full-stripe-admin' ) . ': ' . MM_WPFS_Mailer::generateSenderStringFromNameAndEmail( $name, $email );
+        return __( 'Website Admin', 'wp-full-stripe-free' ) . ': ' . MM_WPFS_Mailer::generateSenderStringFromNameAndEmail( $name, $email );
     }
 
     /**
@@ -976,7 +1010,7 @@ class MM_WPFS_Admin_EmailOptionsView extends MM_WPFS_AdminView {
 
         $this->fromAddress = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_EmailOptionsViewConstants::FIELD_EMAIL_OPTIONS_FROM_ADDRESS, null, null,
             /* translators: Form field label for the 'Email From address' option of the form */
-            __( "Email 'From' address", 'wp-full-stripe-admin' ), null );
+            __( "Email 'From' address", 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
@@ -994,7 +1028,7 @@ class MM_WPFS_Admin_EmailOptionsView extends MM_WPFS_AdminView {
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_EmailOptionsViewConstants::FIELD_EMAIL_OPTIONS_FROM_ADDRESS, null, null,
             /* translators: Option chosen when the administrator enters a custom email 'From' address */
-            __( 'Custom email address', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Custom email address', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( MM_WPFS_Admin_EmailOptionsViewConstants::FIELD_VALUE_FROM_ADDRESS_CUSTOM );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -1006,7 +1040,7 @@ class MM_WPFS_Admin_EmailOptionsView extends MM_WPFS_AdminView {
         $this->fromAddress->setOptions( $options );
 
 
-        $this->fromAddressCustom = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_EmailOptionsViewConstants::FIELD_EMAIL_OPTIONS_FROM_ADDRESS_CUSTOM, __( 'Enter email address', 'wp-full-stripe-admin' ), null,
+        $this->fromAddressCustom = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_EmailOptionsViewConstants::FIELD_EMAIL_OPTIONS_FROM_ADDRESS_CUSTOM, __( 'Enter email address', 'wp-full-stripe-free' ), null,
             null, null );
         $this->fromAddressCustom->setAttributes( array(
             'type'      => 'text',
@@ -1023,7 +1057,7 @@ class MM_WPFS_Admin_EmailOptionsView extends MM_WPFS_AdminView {
         ));
 
 
-        $this->sendCopyToList = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_EmailOptionsViewConstants::FIELD_EMAIL_OPTIONS_SEND_COPY_TO_LIST, __( 'Add more email addresses here', 'wp-full-stripe-admin' ), null,
+        $this->sendCopyToList = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_EmailOptionsViewConstants::FIELD_EMAIL_OPTIONS_SEND_COPY_TO_LIST, __( 'Add more email addresses here', 'wp-full-stripe-free' ), null,
             null, null );
         $this->sendCopyToList->setAttributes( array(
             'type'      => 'text',
@@ -1183,7 +1217,7 @@ class MM_WPFS_Admin_FormsOptionsView extends MM_WPFS_AdminView {
 
         $this->fillInEmailForLoggedInUsers = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_FormsOptionsViewConstants::FIELD_FORMS_OPTIONS_FILL_IN_EMAIL, null, null,
             /* translators: Form field label for the 'Fill in email for logged in users?' option of the form */
-            __( 'Fill in email field for logged in users', 'wp-full-stripe-admin' ), null );
+            __( 'Fill in email field for logged in users', 'wp-full-stripe-free' ), null );
         $this->fillInEmailForLoggedInUsers->setValue('1' );
         $this->fillInEmailForLoggedInUsers->setAttributes( array(
             'type'      => 'checkbox',
@@ -1192,7 +1226,7 @@ class MM_WPFS_Admin_FormsOptionsView extends MM_WPFS_AdminView {
 
         $this->setFormFieldsViaUrlParameters = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_FormsOptionsViewConstants::FIELD_FORMS_OPTIONS_SET_FIELDS_VIA_URL_PARAMETERS, null, null,
             /* translators: Form field label for the 'Enable setting form fields via URL parameters' option of the form */
-            __( 'Allow setting form fields via URL parameters', 'wp-full-stripe-admin' ), null );
+            __( 'Allow setting form fields via URL parameters', 'wp-full-stripe-free' ), null );
         $this->setFormFieldsViaUrlParameters->setValue('1' );
         $this->setFormFieldsViaUrlParameters->setAttributes( array(
             'type'      => 'checkbox',
@@ -1345,14 +1379,14 @@ class MM_WPFS_Admin_WordpressDashboardView extends MM_WPFS_AdminView {
 
         $this->decimalSeparator = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_DECIMAL_SEPARATOR, null, null,
             /* translators: Form field label for the 'Format decimals with' option of the form */
-            __( 'Format decimals with', 'wp-full-stripe-admin' ), null );
+            __( 'Format decimals with', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_DECIMAL_SEPARATOR, null, null,
             /* translators: It's a example showing that the decimal separator is a dot */
-            __( '$10.99 (dot)', 'wp-full-stripe-admin' ), $optionIndex );
+            __( '$10.99 (dot)', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_DOT );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -1364,7 +1398,7 @@ class MM_WPFS_Admin_WordpressDashboardView extends MM_WPFS_AdminView {
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_DECIMAL_SEPARATOR, null, null,
             /* translators: It's a example showing that the decimal separator is a comma */
-            __( '$10,99 (comma)', 'wp-full-stripe-admin' ), $optionIndex );
+            __( '$10,99 (comma)', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_COMMA );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -1378,14 +1412,14 @@ class MM_WPFS_Admin_WordpressDashboardView extends MM_WPFS_AdminView {
 
         $this->useSymbolNotCode = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SYMBOL_NOT_CODE, null, null,
             /* translators: Form field label for the 'Use currency symbol or code?' option of the form */
-            __( 'Use currency symbol or code?', 'wp-full-stripe-admin' ), null );
+            __( 'Use currency symbol or code?', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SYMBOL_NOT_CODE, null, null,
             /* translators: It's a example showing that the currency symbol ($) is used */
-            __( '$10.99 (symbol)', 'wp-full-stripe-admin' ), $optionIndex );
+            __( '$10.99 (symbol)', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '1' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -1397,7 +1431,7 @@ class MM_WPFS_Admin_WordpressDashboardView extends MM_WPFS_AdminView {
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SYMBOL_NOT_CODE, null, null,
             /* translators: It's a example showing that the currency code (USD) is used */
-            __( 'USD 10.99 (code)', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'USD 10.99 (code)', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '0' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -1411,14 +1445,14 @@ class MM_WPFS_Admin_WordpressDashboardView extends MM_WPFS_AdminView {
 
         $this->currencySymbolAtFirstPosition = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SYMBOL_AT_FIRST_POSITION, null, null,
             /* translators: Form field label for the 'Put currency identifier on' option of the form */
-            __( 'Put currency identifier on', 'wp-full-stripe-admin' ), null );
+            __( 'Put currency identifier on', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SYMBOL_AT_FIRST_POSITION, null, null,
             /* translators: It's a example showing that the currency symbol is on the left */
-            __( '€10.99 (left)', 'wp-full-stripe-admin' ), $optionIndex );
+            __( '€10.99 (left)', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '1' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -1430,7 +1464,7 @@ class MM_WPFS_Admin_WordpressDashboardView extends MM_WPFS_AdminView {
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SYMBOL_AT_FIRST_POSITION, null, null,
             /* translators: It's a example showing that the currency symbol is on the right */
-            __( '10.99€ (right)', 'wp-full-stripe-admin' ), $optionIndex );
+            __( '10.99€ (right)', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '0' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -1444,14 +1478,14 @@ class MM_WPFS_Admin_WordpressDashboardView extends MM_WPFS_AdminView {
 
         $this->putSpaceBetweenSymbolAndAmount = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SPACE_BETWEEN_SYMBOL_AND_AMOUNT, null, null,
             /* translators: Form field label for the 'Insert space between amount and currency?' option of the form */
-            __( 'Insert space between amount and currency?', 'wp-full-stripe-admin' ), null );
+            __( 'Insert space between amount and currency?', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SPACE_BETWEEN_SYMBOL_AND_AMOUNT, null, null,
             /* translators: It's a example showing that there is no space between the number and the currency code */
-            __( '10.99EUR (no)', 'wp-full-stripe-admin' ), $optionIndex );
+            __( '10.99EUR (no)', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '0' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -1463,7 +1497,7 @@ class MM_WPFS_Admin_WordpressDashboardView extends MM_WPFS_AdminView {
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SPACE_BETWEEN_SYMBOL_AND_AMOUNT, null, null,
             /* translators: It's a example showing that there is space between the number and the currency code */
-            __( '10.99 EUR (yes)', 'wp-full-stripe-admin' ), $optionIndex );
+            __( '10.99 EUR (yes)', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '1' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -1568,13 +1602,13 @@ class MM_WPFS_Admin_LogLevel_View extends MM_WPFS_AdminView implements MM_WPFS_A
 
     protected function initLogBehavior() {
         $this->logBehavior = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_BEHAVIOR, null, null,
-            __( 'Behavior', 'wp-full-stripe-admin' ), null );
+            __( 'Behavior', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_CATCH_UNCAUGHT_ERRORS, null, null,
-            __('Catch all errors not caught by plugins', 'wp-full-stripe-admin'), $optionIndex );
+            __('Catch all errors not caught by plugins', 'wp-full-stripe-free'), $optionIndex );
         $option->setValue( 1 );
         $optionAttributes = array(
             'type'      => 'checkbox',
@@ -1588,13 +1622,13 @@ class MM_WPFS_Admin_LogLevel_View extends MM_WPFS_AdminView implements MM_WPFS_A
 
     protected function initLogChannels() {
         $this->logChannel = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_LOG_CHANNEL, null, null,
-            __( 'Logging channels', 'wp-full-stripe-admin' ), null );
+            __( 'Logging channels', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_LOG_TO_WORDPRESS_DATABASE, null, null,
-            __('WordPress database', 'wp-full-stripe-admin'), $optionIndex );
+            __('WordPress database', 'wp-full-stripe-free'), $optionIndex );
         $option->setValue( 1 );
         $optionAttributes = array(
             'type'      => 'checkbox',
@@ -1606,7 +1640,7 @@ class MM_WPFS_Admin_LogLevel_View extends MM_WPFS_AdminView implements MM_WPFS_A
         $optionIndex++;
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_LOG_TO_WEB_SERVER, null, null,
-            __('Webserver error log', 'wp-full-stripe-admin'), $optionIndex );
+            __('Webserver error log', 'wp-full-stripe-free'), $optionIndex );
         $option->setValue( 1 );
         $optionAttributes = array(
             'type'      => 'checkbox',
@@ -1620,7 +1654,7 @@ class MM_WPFS_Admin_LogLevel_View extends MM_WPFS_AdminView implements MM_WPFS_A
 
     protected function initLogLevel() {
         $this->logLevel = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_LOG_LEVEL, null, null,
-            __( 'Logging level', 'wp-full-stripe-admin' ), null );
+            __( 'Logging level', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
@@ -1773,6 +1807,7 @@ interface MM_WPFS_Admin_FormViewConstants {
     const FIELD_FORM_CUSTOM_FIELDS = 'wpfs-form-custom-fields';
     const FIELD_FORM_MAKE_CUSTOM_FIELDS_REQUIRED = 'wpfs-form-make-custom-fields-required';
     const FIELD_FORM_EMAIL_TEMPLATES = 'wpfs-form-email-templates';
+    const FIELD_FORM_WEBHOOK = 'wpfs-form-webhook';
     const FIELD_FORM_STRIPE_ELEMENTS_THEME_SELECTOR = 'wpfs-form-stripe-elements-theme-selector';
     const FIELD_FORM_STRIPE_ELEMENTS_FONT_SELECTOR = 'wpfs-form-stripe-elements-font-selector';
 }
@@ -1794,7 +1829,7 @@ trait MM_WPFS_Admin_FormView_CouponAddOn {
 
     protected function initCoupon() {
         $this->showCouponField = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_SHOW_COUPON_FIELD, null, null,
-            __( 'Coupon', 'wp-full-stripe-admin' ), null );
+            __( 'Coupon', 'wp-full-stripe-free' ), null );
         $this->showCouponField->setValue('1' );
         $this->showCouponField->setAttributes( array(
             'type'      => 'checkbox',
@@ -1839,7 +1874,7 @@ trait MM_WPFS_Admin_FormView_TaxAddOn {
 
     protected function initTaxRates() {
         $this->taxRates = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_View_TaxConstants::FIELD_FORM_TAX_RATES, null, null,
-            __( 'Tax rates', 'wp-full-stripe-admin' ), null );
+            __( 'Tax rates', 'wp-full-stripe-free' ), null );
         $this->taxRates->setAttributes( array(
             'type'      => 'hidden',
         ));
@@ -1848,7 +1883,7 @@ trait MM_WPFS_Admin_FormView_TaxAddOn {
     protected function initPaymentMethod(){
         $this->paymentMethod = MM_WPFS_ControlUtils::createControl( $this->formHash,
             MM_WPFS_Admin_View_PaymentMethodConstants::FIELD_FORM_PAYMENT_METHOD, null, null,
-            __( 'Payment Methods', 'wp-full-stripe-admin' ), null );
+            __( 'Payment Methods', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
@@ -1858,7 +1893,7 @@ trait MM_WPFS_Admin_FormView_TaxAddOn {
         foreach ($paymentMethods as $paymentMethod) {
             $option = MM_WPFS_ControlUtils::createControl( $this->formHash,
                 MM_WPFS_Admin_View_PaymentMethodConstants::FIELD_FORM_PAYMENT_METHOD, null, null,
-                __( $paymentMethod['longTitle'], 'wp-full-stripe-admin'), $optionIndex );
+                $paymentMethod['longTitle'], $optionIndex );
             $option->setValue( $paymentMethod['id'] );
             $optionAttributes = array(
                 'type'      => 'checkbox',
@@ -1878,14 +1913,14 @@ trait MM_WPFS_Admin_FormView_TaxAddOn {
 
     protected function initTaxType() {
         $this->taxType = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_View_TaxConstants::FIELD_FORM_TAX_TYPE, null, null,
-            __( 'Tax calculation method', 'wp-full-stripe-admin' ), null );
+            __( 'Tax calculation method', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_View_TaxConstants::FIELD_FORM_TAX_TYPE, null, null,
             /* translators: It means no tax is applied to the purchased goods */
-            __( 'No tax', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'No tax', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue(MM_WPFS::FIELD_VALUE_TAX_RATE_NO_TAX);
         $optionAttributes = array(
             'type'      => 'radio',
@@ -1897,7 +1932,7 @@ trait MM_WPFS_Admin_FormView_TaxAddOn {
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_View_TaxConstants::FIELD_FORM_TAX_TYPE, null, null,
             /* translators: It means that the tax rates are automatically calculated by Stripe Tax */
-            __( 'Stripe auto tax', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Stripe auto tax', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue(MM_WPFS::FIELD_VALUE_TAX_RATE_STRIPE_TAX);
         $optionAttributes = array(
             'type'      => 'radio',
@@ -1909,7 +1944,7 @@ trait MM_WPFS_Admin_FormView_TaxAddOn {
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_View_TaxConstants::FIELD_FORM_TAX_TYPE, null, null,
             /* translators: It means that the applied tax rates are based on tax rates added manually by the user */
-            __( 'Stripe tax rates', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Stripe tax rates', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue(MM_WPFS::FIELD_VALUE_TAX_RATE_TAX_RATES);
         $optionAttributes = array(
             'type'      => 'radio',
@@ -1923,14 +1958,14 @@ trait MM_WPFS_Admin_FormView_TaxAddOn {
 
     protected function initTaxRateType() {
         $this->taxRateType = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_View_TaxConstants::FIELD_FORM_TAX_RATE_TYPE, null, null,
-            __( 'Tax rate type', 'wp-full-stripe-admin' ), null );
+            __( 'Tax rate type', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_View_TaxConstants::FIELD_FORM_TAX_RATE_TYPE, null, null,
             /* translators: It means that the applied tax rates are preselected, and they don't vary by country and state */
-            __( 'Fixed rate', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Fixed rate', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue(MM_WPFS::FIELD_VALUE_TAX_RATE_FIXED);
         $optionAttributes = array(
             'type'      => 'radio',
@@ -1942,7 +1977,7 @@ trait MM_WPFS_Admin_FormView_TaxAddOn {
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_View_TaxConstants::FIELD_FORM_TAX_RATE_TYPE, null, null,
             /* translators: It means that the applied tax rates are selected dynamically depending on the country and state */
-            __( 'Dynamic rate', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Dynamic rate', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue(MM_WPFS::FIELD_VALUE_TAX_RATE_DYNAMIC);
         $optionAttributes = array(
             'type'      => 'radio',
@@ -1957,13 +1992,13 @@ trait MM_WPFS_Admin_FormView_TaxAddOn {
     protected function initCollectCustomerTaxId() {
         $this->collectCustomerTaxId = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_View_TaxConstants::FIELD_FORM_COLLECT_CUSTOMER_TAX_ID, null, null,
             /* translators: Is there a dedicated field on the form to edit the tax id or not? */
-            __( "Collect customer's tax id?", 'wp-full-stripe-admin' ), null );
+            __( "Collect customer's tax id?", 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_View_TaxConstants::FIELD_FORM_COLLECT_CUSTOMER_TAX_ID, null, null,
-            __( 'No', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'No', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( 0 );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -1974,7 +2009,7 @@ trait MM_WPFS_Admin_FormView_TaxAddOn {
         $optionIndex++;
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_View_TaxConstants::FIELD_FORM_COLLECT_CUSTOMER_TAX_ID, null, null,
-            __( 'Yes', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Yes', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( 1 );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -2072,6 +2107,8 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
     /** @var MM_WPFS_Control */
     protected $emailTemplates;
     /** @var MM_WPFS_Control */
+    protected $webhook;
+    /** @var MM_WPFS_Control */
     protected $stripeElementsThemeSelector;
     /** @var MM_WPFS_Control */
     protected $stripeElementsFontSelector;
@@ -2086,6 +2123,7 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
         $this->createOptionalFormFields();
         $this->createCustomFields();
         $this->createEmailTemplates();
+        $this->createWebhook();
         $this->initStripeElementsThemeSelector();
         $this->initStripeElementsFontSelector();
     }
@@ -2093,14 +2131,14 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
     protected function initStripeElementsThemeSelector() {
 
         $this->stripeElementsThemeSelector = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_STRIPE_ELEMENTS_THEME_SELECTOR, null, null,
-            __( 'Stripe Elements Appearance Theme', 'wp-full-stripe-admin' ), null );
+            __( 'Stripe Elements Appearance Theme', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $selectorStyleOptions = array();
 
         $stripeOption = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_STRIPE_ELEMENTS_THEME_SELECTOR, null, null,
             /* translators: This selector style is a list of radio buttons  */
-            __( 'Stripe', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Stripe', 'wp-full-stripe-free' ), $optionIndex );
         $stripeOption->setValue( MM_WPFS::ELEMENTS_THEME_STRIPE );
         $stripeOption->setAttributes( array(
             'type'      => 'radio',
@@ -2114,7 +2152,7 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
 
         $nightOption = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_STRIPE_ELEMENTS_THEME_SELECTOR, null, null,
             /* translators: This selector style is a list of radio buttons  */
-            __( 'Night', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Night', 'wp-full-stripe-free' ), $optionIndex );
         $nightOption->setValue( MM_WPFS::ELEMENTS_THEME_NIGHT );
         $nightOption->setAttributes( array(
             'type'      => 'radio',
@@ -2128,7 +2166,7 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
 
         $flatOption = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_STRIPE_ELEMENTS_THEME_SELECTOR, null, null,
             /* translators: This selector style is a list of radio buttons  */
-            __( 'Flat', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Flat', 'wp-full-stripe-free' ), $optionIndex );
         $flatOption->setValue( MM_WPFS::ELEMENTS_THEME_FLAT );
         $flatOption->setAttributes( array(
             'type'      => 'radio',
@@ -2145,12 +2183,12 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
     protected function initStripeElementsFontSelector() {
         $this->stripeElementsFontSelector = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_STRIPE_ELEMENTS_FONT_SELECTOR, null, null,
             /* translators: Form field label for the display name of the form */
-            __( 'Stripe Elements Appearance Font', 'wp-full-stripe-admin' ), null );
+            __( 'Stripe Elements Appearance Font', 'wp-full-stripe-free' ), null );
     }
 
     protected function createEmailTemplates() {
         $this->emailTemplates = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_EMAIL_TEMPLATES, null, null,
-            __( 'Email templates', 'wp-full-stripe-admin' ), null );
+            __( 'Email templates', 'wp-full-stripe-free' ), null );
         $this->emailTemplates->setAttributes( array(
             'type' => 'hidden'
         ));
@@ -2158,19 +2196,19 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
 
     protected function createCustomFields() {
         $this->customFields = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_CUSTOM_FIELDS, null, null,
-            __( 'Custom fields', 'wp-full-stripe-admin' ), null );
+            __( 'Custom fields', 'wp-full-stripe-free' ), null );
         $this->customFields->setAttributes( array(
             'type' => 'hidden'
         ));
 
         $this->makeCustomFieldsRequired = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_MAKE_CUSTOM_FIELDS_REQUIRED, null, null,
-            __( 'Make custom fields required?', 'wp-full-stripe-admin' ), null );
+            __( 'Make custom fields required?', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_MAKE_CUSTOM_FIELDS_REQUIRED, null, null,
-            __( 'No', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'No', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '0' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -2181,7 +2219,7 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
         $optionIndex++;
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_MAKE_CUSTOM_FIELDS_REQUIRED, null, null,
-            __( 'Yes', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Yes', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '1' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -2193,9 +2231,17 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
         $this->makeCustomFieldsRequired->setOptions( $options );
     }
 
+    protected function createWebhook() {
+        $this->webhook = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_WEBHOOK, null, null,
+            __( 'Webhook', 'wp-full-stripe-free' ), null );
+        $this->webhook->setAttributes( array(
+            'type' => 'hidden'
+        ));
+    }
+
     protected function createOptionalFormFields() {
         $this->collectBillingAddress = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_COLLECT_BILLING_ADDRESS, null, null,
-            __( 'Billing address', 'wp-full-stripe-admin' ), null );
+            __( 'Billing address', 'wp-full-stripe-free' ), null );
         $this->collectBillingAddress->setValue('1' );
         $this->collectBillingAddress->setAttributes( array(
             'type'      => 'checkbox',
@@ -2204,8 +2250,8 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
 
 
         $defaultBillingCountryLabel = $this instanceof MM_WPFS_Admin_DonationFormView ?
-            __( "Nonprofit's seat country", 'wp-full-stripe-admin' ) :
-            __( "Seller's seat country", 'wp-full-stripe-admin' );
+            __( "Nonprofit's seat country", 'wp-full-stripe-free' ) :
+            __( "Seller's seat country", 'wp-full-stripe-free' );
         $this->defaultBillingCountry = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_DEFAULT_BILLING_COUNTRY, null, null,
             $defaultBillingCountryLabel, null );
         $this->defaultBillingCountry->setAttributes( array(
@@ -2214,7 +2260,7 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
 
 
         $this->collectShippingAddress = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_COLLECT_SHIPPING_ADDRESS, null, null,
-            __( 'Shipping address', 'wp-full-stripe-admin' ), null );
+            __( 'Shipping address', 'wp-full-stripe-free' ), null );
         $this->collectShippingAddress->setValue('1' );
         $this->collectShippingAddress->setAttributes( array(
             'type'      => 'checkbox',
@@ -2223,7 +2269,7 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
 
 
         $this->showTermsOfService = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_SHOW_TERMS_OF_SERVICE, null, null,
-            __( 'Terms of Service checkbox', 'wp-full-stripe-admin' ), null );
+            __( 'Terms of Service checkbox', 'wp-full-stripe-free' ), null );
         $this->showTermsOfService->setValue('1' );
         $this->showTermsOfService->setAttributes( array(
             'type'      => 'checkbox',
@@ -2232,15 +2278,15 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
 
         $this->termsOfServiceLabel = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_TERMS_OF_SERVICE_LABEL, null, null,
             /* translators: Label of the Terms of Service checkbox displayed to the customer */
-            __( 'Terms of service label', 'wp-full-stripe-admin' ), null );
+            __( 'Terms of service label', 'wp-full-stripe-free' ), null );
         $this->termsOfServiceErrorMessage = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_TERMS_OF_SERVICE_ERROR, null, null,
             /* translators: Validation error message displayed when the custom doesn't accept the Terms of Service */
-            __( 'Terms of service error message', 'wp-full-stripe-admin' ), null );
+            __( 'Terms of service error message', 'wp-full-stripe-free' ), null );
     }
 
     protected function createAppearanceFields() {
         $this->buttonLabel = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_BUTTON_LABEL, null, null,
-            __( 'Form submit button label', 'wp-full-stripe-admin' ), null );
+            __( 'Form submit button label', 'wp-full-stripe-free' ), null );
         $this->buttonLabel->setAttributes( array(
             'type'      => 'text',
             'class'     => 'wpfs-form-control'
@@ -2250,13 +2296,13 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
     protected function createRedirectFields() {
         $this->redirectType = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_REDIRECT_TYPE, null, null,
             /* translators: Title of the section where the administrator can decide what should happen after payment, eg. display success banner, redirect to Thank you page, etc */
-            __( 'After successful payment', 'wp-full-stripe-admin' ), null );
+            __( 'After successful payment', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_REDIRECT_TYPE, null, null,
-            __( 'Show confirmation message', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Show confirmation message', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( MM_WPFS::REDIRECT_TYPE_SHOW_CONFIRMATION_MESSAGE );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -2267,7 +2313,7 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
         $optionIndex++;
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_REDIRECT_TYPE, null, null,
-            __( 'Redirect to a Thank you page', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Redirect to a Thank you page', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( MM_WPFS::REDIRECT_TYPE_TO_PAGE_OR_POST );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -2278,7 +2324,7 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
         $optionIndex++;
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_REDIRECT_TYPE, null, null,
-            __( 'Redirect to a custom URL', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Redirect to a custom URL', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( MM_WPFS::REDIRECT_TYPE_TO_CUSTOM_URL );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -2291,14 +2337,14 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
 
 
         $this->redirectPagePostId = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_REDIRECT_PAGE_POST_ID, null, null,
-            __( 'Redirect to a Thank you page', 'wp-full-stripe-admin' ), null );
+            __( 'Redirect to a Thank you page', 'wp-full-stripe-free' ), null );
         $this->redirectPagePostId->setAttributes( array(
             'class'     => 'js-combobox'
         ));
 
 
-        $this->redirectUrl = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_REDIRECT_CUSTOM_URL, __( 'Enter an URL starting with http:// or https://', 'wp-full-stripe-admin' ), null,
-            __( 'Redirect to custom URL', 'wp-full-stripe-admin' ), null );
+        $this->redirectUrl = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_REDIRECT_CUSTOM_URL, __( 'Enter an URL starting with http:// or https://', 'wp-full-stripe-free' ), null,
+            __( 'Redirect to custom URL', 'wp-full-stripe-free' ), null );
         $this->redirectUrl->setAttributes( array(
             'type'      => 'text',
             'class'     => 'wpfs-form-control'
@@ -2309,23 +2355,23 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
     protected function createNameFields() {
         $this->displayName = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_DISPLAY_NAME, null, null,
             /* translators: Form field label for the display name of the form */
-            __( 'Display name', 'wp-full-stripe-admin' ), null );
+            __( 'Display name', 'wp-full-stripe-free' ), null );
         $this->name = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_NAME, null, null,
             /* translators: Form field label for the identifier of the form */
-            __( 'Identifier', 'wp-full-stripe-admin' ), null );
+            __( 'Identifier', 'wp-full-stripe-free' ), null );
     }
 
     protected function createCurrencyFields() {
         $this->localeDecimalSeparator = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_LOCALE_DECIMAL_SEPARATOR, null, null,
             /* translators: Form field label for the 'Format decimals with' option of the form */
-            __( 'Format decimals with', 'wp-full-stripe-admin' ), null );
+            __( 'Format decimals with', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_LOCALE_DECIMAL_SEPARATOR, null, null,
             /* translators: Example of using dot for the decimal point */
-            __( '$10.99 (dot)', 'wp-full-stripe-admin' ), $optionIndex );
+            __( '$10.99 (dot)', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_DOT );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -2337,7 +2383,7 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_LOCALE_DECIMAL_SEPARATOR, null, null,
             /* translators: Example of using comma for the decimal point */
-            __( '$10,99 (comma)', 'wp-full-stripe-admin' ), $optionIndex );
+            __( '$10,99 (comma)', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_COMMA );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -2351,14 +2397,14 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
 
         $this->localeUseSymbolNotCode = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_LOCALE_SYMBOL_NOT_CODE, null, null,
             /* translators: Form field label for the 'Use currency symbol or code?' option of the form */
-            __( 'Use currency symbol or code?', 'wp-full-stripe-admin' ), null );
+            __( 'Use currency symbol or code?', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_LOCALE_SYMBOL_NOT_CODE, null, null,
             /* translators: Example of displaying the currency symbol ($)  */
-            __( '$10.99 (symbol)', 'wp-full-stripe-admin' ), $optionIndex );
+            __( '$10.99 (symbol)', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '1' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -2370,7 +2416,7 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_LOCALE_SYMBOL_NOT_CODE, null, null,
             /* translators: Example of displaying the currency code (USD)  */
-            __( 'USD 10.99 (code)', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'USD 10.99 (code)', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '0' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -2384,14 +2430,14 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
 
         $this->localeCurrencySymbolAtFirstPosition = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_LOCALE_SYMBOL_AT_FIRST_POSITION, null, null,
             /* translators: Form field label for the 'Put currency identifier on' option of the form */
-            __( 'Put currency identifier on', 'wp-full-stripe-admin' ), null );
+            __( 'Put currency identifier on', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_LOCALE_SYMBOL_AT_FIRST_POSITION, null, null,
             /* translators: Example of displaying the currency symbol on the left  */
-            __( '€10.99 (left)', 'wp-full-stripe-admin' ), $optionIndex );
+            __( '€10.99 (left)', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '1' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -2403,7 +2449,7 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_LOCALE_SYMBOL_AT_FIRST_POSITION, null, null,
             /* translators: Example of displaying the currency symbol on the right  */
-            __( '10.99€ (right)', 'wp-full-stripe-admin' ), $optionIndex );
+            __( '10.99€ (right)', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '0' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -2417,14 +2463,14 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
 
         $this->localePutSpaceBetweenSymbolAndAmount = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_LOCALE_SPACE_BETWEEN_SYMBOL_AND_AMOUNT, null, null,
             /* translators: Form field label for the 'Insert space between amount and currency?' option of the form */
-            __( 'Insert space between amount and currency?', 'wp-full-stripe-admin' ), null );
+            __( 'Insert space between amount and currency?', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_LOCALE_SPACE_BETWEEN_SYMBOL_AND_AMOUNT, null, null,
             /* translators: Example of not having a space between the amount and the currency symbol */
-            __( '10.99EUR (no)', 'wp-full-stripe-admin' ), $optionIndex );
+            __( '10.99EUR (no)', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '0' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -2436,7 +2482,7 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_LOCALE_SPACE_BETWEEN_SYMBOL_AND_AMOUNT, null, null,
             /* translators: Example of inserting a space between the amount and the currency symbol */
-            __( '10.99 EUR (yes)', 'wp-full-stripe-admin' ), $optionIndex );
+            __( '10.99 EUR (yes)', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '1' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -2463,6 +2509,7 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
             self::FIELD_FORM_LOCALE_SPACE_BETWEEN_SYMBOL_AND_AMOUNT   => MM_WPFS_ControlUtils::input( self::FIELD_FORM_LOCALE_SPACE_BETWEEN_SYMBOL_AND_AMOUNT ),
             self::FIELD_FORM_TERMS_OF_SERVICE_LABEL                   => MM_WPFS_ControlUtils::input( self::FIELD_FORM_TERMS_OF_SERVICE_LABEL ),
             self::FIELD_FORM_TERMS_OF_SERVICE_ERROR                   => MM_WPFS_ControlUtils::input( self::FIELD_FORM_TERMS_OF_SERVICE_ERROR ),
+            self::FIELD_FORM_WEBHOOK                                   => MM_WPFS_ControlUtils::input( self::FIELD_FORM_WEBHOOK ),
         );
 
         return array_merge( $fields, parent::getFields() );
@@ -2617,6 +2664,13 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
     /**
      * @return MM_WPFS_Control
      */
+    public function webhook(): MM_WPFS_Control {
+        return $this->webhook;
+    }
+
+    /**
+     * @return MM_WPFS_Control
+     */
     public function stripeElementsThemeSelector(): MM_WPFS_Control {
         return $this->stripeElementsThemeSelector;
     }
@@ -2639,7 +2693,7 @@ trait MM_WPFS_Admin_InlineFormView {
 
     protected function initInlineFields( $formHash ) {
         $this->cardFieldLanguage = MM_WPFS_ControlUtils::createControl( $formHash, MM_WPFS_Admin_InlineFormViewConstants::FIELD_FORM_CARD_FIELD_LANGUAGE, null, null,
-            __( 'Card input field language', 'wp-full-stripe-admin' ), null );
+            __( 'Card input field language', 'wp-full-stripe-free' ), null );
         $this->cardFieldLanguage->setAttributes( array(
             'class'     => 'js-combobox'
         ));
@@ -2673,14 +2727,14 @@ trait MM_WPFS_Admin_CheckoutFormView {
 
     protected function initCheckoutFields( $formHash ) {
         $this->openButtonLabel = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_CheckoutFormViewConstants::FIELD_FORM_OPEN_BUTTON_LABEL, null, null,
-            __( 'Open form button label', 'wp-full-stripe-admin' ), null );
+            __( 'Open form button label', 'wp-full-stripe-free' ), null );
         $this->openButtonLabel->setAttributes( array(
             'type'      => 'text',
             'class'     => 'wpfs-form-control'
         ));
 
         $this->checkoutLanguage = MM_WPFS_ControlUtils::createControl( $formHash, MM_WPFS_Admin_CheckoutFormViewConstants::FIELD_FORM_CHECKOUT_LANGUAGE, null, null,
-            __( 'Checkout form language', 'wp-full-stripe-admin' ), null );
+            __( 'Checkout form language', 'wp-full-stripe-free' ), null );
         $this->checkoutLanguage->setAttributes( array(
             'class'     => 'js-combobox'
         ));
@@ -2723,7 +2777,7 @@ trait MM_WPFS_Admin_CheckoutPhoneView_AddOn {
 
     protected function initCheckoutPhoneFields( $formHash ) {
         $this->collectPhoneNumber = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_CheckoutPhoneViewConstants::FIELD_FORM_COLLECT_PHONE_NUMBER, null, null,
-            __( 'Phone number', 'wp-full-stripe-admin' ), null );
+            __( 'Phone number', 'wp-full-stripe-free' ), null );
         $this->collectPhoneNumber->setValue('1' );
         $this->collectPhoneNumber->setAttributes( array(
             'type'      => 'checkbox',
@@ -2757,7 +2811,7 @@ trait MM_WPFS_Admin_CheckoutProductImageView_AddOn {
 
     protected function initCheckoutProductImageFields( $formHash ) {
         $this->checkoutProductImage = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_CheckoutProductImageViewConstants::FIELD_FORM_PRODUCT_IMAGE, null, null,
-            __( 'Product image', 'wp-full-stripe-admin' ), null );
+            __( 'Product image', 'wp-full-stripe-free' ), null );
         $this->checkoutProductImage->setAttributes( array(
             'type'      => 'hidden',
         ));
@@ -2798,7 +2852,7 @@ class MM_WPFS_Admin_SaveCardFormView extends MM_WPFS_Admin_FormView implements M
 
     protected function initFields() {
         $this->transactionDescription = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_TRANSACTION_DESCRIPTION, null, null,
-            __( 'Transaction description', 'wp-full-stripe-admin' ), null );
+            __( 'Transaction description', 'wp-full-stripe-free' ), null );
         $this->transactionDescription->setAttributes( array(
             'class'     => 'wpfs-form-control js-token-target-transaction-description js-position-tracking-transaction-description',
             'rows'      => '3'
@@ -2899,6 +2953,9 @@ interface MM_WPFS_Admin_DonationFormViewConstants {
     const FIELD_FORM_DONATION_FREQUENCY_ANNUAL = 'wpfs-form-donation-frequency-annual';
     const FIELD_FORM_MINIMUM_DONATION_AMOUNT = 'wpfs-form-minimum-donation-amount';
     const FIELD_FORM_MINIMUM_DONATION_AMOUNT_HIDDEN = 'wpfs-form-minimum-donation-amount-hidden';
+    const FIELD_FORM_SHOW_DONATION_GOAL = 'wpfs-form-show-donation-goal';
+    const FIELD_FORM_DONATION_GOAL = 'wpfs-form-donation-goal';
+    const FIELD_FORM_DONATION_GOAL_HIDDEN = 'wpfs-form-donation-goal-hidden';
 }
 
 class MM_WPFS_Admin_DonationFormView extends MM_WPFS_Admin_FormView implements MM_WPFS_Admin_DonationFormViewConstants, MM_WPFS_Admin_View_InvoiceConstants {
@@ -2930,6 +2987,12 @@ class MM_WPFS_Admin_DonationFormView extends MM_WPFS_Admin_FormView implements M
     protected $minimumDonationAmount;
     /** @var MM_WPFS_Control */
     protected $minimumDonationAmountHidden;
+    /** @var MM_WPFS_Control */
+    protected $showDonationGoal;
+    /** @var MM_WPFS_Control */
+    protected $donationGoal;
+    /** @var MM_WPFS_Control */
+    protected $donationGoalHidden;
 
     public function __construct() {
         parent::__construct();
@@ -2938,13 +3001,13 @@ class MM_WPFS_Admin_DonationFormView extends MM_WPFS_Admin_FormView implements M
 
     protected function createDonationFrequencies() {
         $this->donationFrequencies = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_DONATION_FREQUENCIES, null, null,
-            __( 'Donation frequencies', 'wp-full-stripe-admin' ), null );
+            __( 'Donation frequencies', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
 
         $this->donationFrequencyOnetime = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_DONATION_FREQUENCY_ONETIME, null, null,
             /* translators: The 'one-time' donation frequency label */
-            __( 'One-time', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'One-time', 'wp-full-stripe-free' ), $optionIndex );
         $optionAttributes = array(
             'type'      => 'checkbox',
             'class'     => 'wpfs-form-check-input',
@@ -2955,7 +3018,7 @@ class MM_WPFS_Admin_DonationFormView extends MM_WPFS_Admin_FormView implements M
 
         $this->donationFrequencyDaily = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_DONATION_FREQUENCY_DAILY, null, null,
             /* translators: The 'daily' donation frequency label */
-            __( 'Daily', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Daily', 'wp-full-stripe-free' ), $optionIndex );
         $optionAttributes = array(
             'type'      => 'checkbox',
             'class'     => 'wpfs-form-check-input',
@@ -2966,7 +3029,7 @@ class MM_WPFS_Admin_DonationFormView extends MM_WPFS_Admin_FormView implements M
 
         $this->donationFrequencyWeekly = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_DONATION_FREQUENCY_WEEKLY, null, null,
             /* translators: The 'weekly' donation frequency label */
-            __( 'Weekly', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Weekly', 'wp-full-stripe-free' ), $optionIndex );
         $this->donationFrequencyWeekly->setValue( '1' );
         $optionAttributes = array(
             'type'      => 'checkbox',
@@ -2978,7 +3041,7 @@ class MM_WPFS_Admin_DonationFormView extends MM_WPFS_Admin_FormView implements M
 
         $this->donationFrequencyMonthly = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_DONATION_FREQUENCY_MONTHLY, null, null,
             /* translators: The 'monthly' donation frequency label */
-            __( 'Monthly', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Monthly', 'wp-full-stripe-free' ), $optionIndex );
         $this->donationFrequencyMonthly->setValue( '1' );
         $optionAttributes = array(
             'type'      => 'checkbox',
@@ -2990,7 +3053,7 @@ class MM_WPFS_Admin_DonationFormView extends MM_WPFS_Admin_FormView implements M
 
         $this->donationFrequencyAnnual = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_DONATION_FREQUENCY_ANNUAL, null, null,
             /* translators: The 'annual' donation frequency label */
-            __( 'Annual', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Annual', 'wp-full-stripe-free' ), $optionIndex );
         $this->donationFrequencyAnnual->setValue( '1' );
         $optionAttributes = array(
             'type'      => 'checkbox',
@@ -3002,31 +3065,31 @@ class MM_WPFS_Admin_DonationFormView extends MM_WPFS_Admin_FormView implements M
 
     protected function initFields() {
         $this->transactionDescription = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_TRANSACTION_DESCRIPTION, null, null,
-            __( 'Transaction description', 'wp-full-stripe-admin' ), null );
+            __( 'Transaction description', 'wp-full-stripe-free' ), null );
         $this->transactionDescription->setAttributes( array(
             'class'     => 'wpfs-form-control js-token-target-transaction-description js-position-tracking-transaction-description',
             'rows'      => '3'
         ));
 
         $this->currency = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_CURRENCY, null, null,
-            __( 'Currency', 'wp-full-stripe-admin' ), null );
+            __( 'Currency', 'wp-full-stripe-free' ), null );
         $this->currency->setAttributes( array(
             'class'     => 'js-combobox'
         ));
 
         $this->donationAmounts = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_DONATION_AMOUNTS, null, null,
-            __( 'Suggested donation amounts', 'wp-full-stripe-admin' ), null );
+            __( 'Suggested donation amounts', 'wp-full-stripe-free' ), null );
         $this->donationAmounts->setAttributes( array(
             'type'      => 'hidden',
         ));
 
         $this->addAmountButton = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_ADD_AMOUNT, null, null,
             /* translators: Label for the button which opens the "Add amount" dialog */
-            __( 'Add suggested donation amount', 'wp-full-stripe-admin' ), null );
+            __( 'Add suggested donation amount', 'wp-full-stripe-free' ), null );
 
 
         $this->allowCustomDonationAmount = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_ALLOW_CUSTOM_DONATION_AMOUNT, null, null,
-            __( 'Allow custom amount to be entered', 'wp-full-stripe-admin' ), null );
+            __( 'Allow custom amount to be entered', 'wp-full-stripe-free' ), null );
         $optionAttributes = array(
             'type'      => 'checkbox',
             'class'     => 'wpfs-form-check-input',
@@ -3037,11 +3100,33 @@ class MM_WPFS_Admin_DonationFormView extends MM_WPFS_Admin_FormView implements M
 
         $this->minimumDonationAmount = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_MINIMUM_DONATION_AMOUNT, null, null,
             /* translators: Form field label for the minimum donation amount */
-            __( 'Minimum donation amount', 'wp-full-stripe-admin' ), null );
+            __( 'Minimum donation amount', 'wp-full-stripe-free' ), null );
 
         $this->minimumDonationAmountHidden = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_MINIMUM_DONATION_AMOUNT_HIDDEN, null, null,
-            __( 'One-time products', 'wp-full-stripe-admin' ), null );
+            __( 'One-time products', 'wp-full-stripe-free' ), null );
         $this->minimumDonationAmountHidden->setAttributes( array(
+            'type'      => 'hidden',
+        ));
+
+        $this->showDonationGoal = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_SHOW_DONATION_GOAL, null, null,
+            __( 'Show donation goal', 'wp-full-stripe-free' ), null );
+
+        $this->showDonationGoal->setAttributes( array(
+            'type'      => 'checkbox',
+            'value'     => 1,
+            'class'     => 'wpfs-form-check-input'
+        ));
+
+        $this->donationGoal = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_DONATION_GOAL, null, null,
+            __( 'Donation goal', 'wp-full-stripe-free' ), null );
+        $this->donationGoal->setAttributes( array(
+            'type'      => 'text',
+            'class'     => 'wpfs-form-control'
+        ));
+
+        $this->donationGoalHidden = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_DONATION_GOAL_HIDDEN, null, null,
+            __( 'Donation goal', 'wp-full-stripe-free' ), null );
+        $this->donationGoalHidden->setAttributes( array(
             'type'      => 'hidden',
         ));
 
@@ -3063,6 +3148,8 @@ class MM_WPFS_Admin_DonationFormView extends MM_WPFS_Admin_FormView implements M
             self::FIELD_FORM_DONATION_FREQUENCY_WEEKLY      => MM_WPFS_ControlUtils::checkbox( self::FIELD_FORM_DONATION_FREQUENCY_WEEKLY ),
             self::FIELD_FORM_DONATION_FREQUENCY_MONTHLY     => MM_WPFS_ControlUtils::checkbox( self::FIELD_FORM_DONATION_FREQUENCY_MONTHLY ),
             self::FIELD_FORM_DONATION_FREQUENCY_ANNUAL      => MM_WPFS_ControlUtils::checkbox( self::FIELD_FORM_DONATION_FREQUENCY_ANNUAL ),
+            self::FIELD_FORM_SHOW_DONATION_GOAL             => MM_WPFS_ControlUtils::checkbox( self::FIELD_FORM_SHOW_DONATION_GOAL, 0 ),
+            self::FIELD_FORM_DONATION_GOAL                  => MM_WPFS_ControlUtils::input( self::FIELD_FORM_DONATION_GOAL )
         );
 
         return array_merge( $fields,
@@ -3161,6 +3248,27 @@ class MM_WPFS_Admin_DonationFormView extends MM_WPFS_Admin_FormView implements M
     public function minimumDonationAmountHidden(): MM_WPFS_Control {
         return $this->minimumDonationAmountHidden;
     }
+
+    /**
+     * @return MM_WPFS_Control
+     */
+    public function showDonationGoal(): MM_WPFS_Control {
+        return $this->showDonationGoal;
+    }
+
+    /**
+     * @return MM_WPFS_Control
+     */
+    public function donationGoal(): MM_WPFS_Control {
+        return $this->donationGoal;
+    }
+
+    /**
+     * @return MM_WPFS_Control
+     */
+    public function donationGoalHidden(): MM_WPFS_Control {
+        return $this->donationGoalHidden;
+    }
 }
 
 interface MM_WPFS_Admin_InlineDonationFormViewConstants {
@@ -3186,7 +3294,7 @@ class MM_WPFS_Admin_InlineDonationFormView extends MM_WPFS_Admin_DonationFormVie
 
     protected function initInlineDonationFields( $formHash ) {
         $this->defaultProductName = MM_WPFS_ControlUtils::createControl( $formHash, self::FIELD_FORM_DEFAULT_PRODUCT_NAME, null, null,
-            __( 'Donation product name', 'wp-full-stripe-admin' ), null );
+            __( 'Donation product name', 'wp-full-stripe-free' ), null );
         $this->defaultProductName->setAttributes( array(
             'type'      => 'text',
             'class'     => 'wpfs-form-control'
@@ -3197,7 +3305,7 @@ class MM_WPFS_Admin_InlineDonationFormView extends MM_WPFS_Admin_DonationFormVie
         $inlineFields = self::getInlineFields();
 
         $inlineDonationFields = array(
-            self::FIELD_FORM_DEFAULT_PRODUCT_NAME        => MM_WPFS_ControlUtils::input( self::FIELD_FORM_DEFAULT_PRODUCT_NAME ),
+            self::FIELD_FORM_DEFAULT_PRODUCT_NAME => MM_WPFS_ControlUtils::input( self::FIELD_FORM_DEFAULT_PRODUCT_NAME ),
         );
 
         return array_merge( $inlineFields,
@@ -3255,7 +3363,7 @@ class MM_WPFS_Admin_CheckoutDonationFormView extends MM_WPFS_Admin_DonationFormV
     protected function initCheckoutDonationFields() {
         $this->checkoutProductName = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_CHECKOUT_PRODUCT_NAME, null, null,
             /* translators: Name of the donation product displayed as a line item */
-            __( 'Donation product name', 'wp-full-stripe-admin' ), null );
+            __( 'Donation product name', 'wp-full-stripe-free' ), null );
         $this->checkoutProductName->setAttributes( array(
             'class'     => 'wpfs-form-control',
             'type'      => 'text'
@@ -3263,7 +3371,7 @@ class MM_WPFS_Admin_CheckoutDonationFormView extends MM_WPFS_Admin_DonationFormV
 
         $this->checkoutProductDescription = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_CHECKOUT_PRODUCT_DESCRIPTION, null, null,
             /* translators: Description of the donation product displayed as descripition of the line item */
-            __( 'Donation product description', 'wp-full-stripe-admin' ), null );
+            __( 'Donation product description', 'wp-full-stripe-free' ), null );
         $this->checkoutProductDescription->setAttributes( array(
             'class'     => 'wpfs-form-control',
             'type'      => 'text'
@@ -3331,13 +3439,13 @@ trait MM_WPFS_Admin_FormView_InvoiceAddOn {
 
     protected function initGenerateInvoice() {
         $this->generateInvoice = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_View_InvoiceConstants::FIELD_FORM_GENERATE_INVOICE, null, null,
-            __( 'Generate invoice', 'wp-full-stripe-admin' ), null );
+            __( 'Generate invoice', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_View_InvoiceConstants::FIELD_FORM_GENERATE_INVOICE, null, null,
-            __( 'No', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'No', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '0' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -3348,7 +3456,7 @@ trait MM_WPFS_Admin_FormView_InvoiceAddOn {
         $optionIndex++;
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_View_InvoiceConstants::FIELD_FORM_GENERATE_INVOICE, null, null,
-            __( 'Yes', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Yes', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '1' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -3407,14 +3515,14 @@ class MM_WPFS_Admin_PaymentFormView extends MM_WPFS_Admin_FormView implements MM
 
     protected function initPaymentType() {
         $this->paymentType = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_PAYMENT_TYPE, null, null,
-            __( 'Payment type', 'wp-full-stripe-admin' ), null );
+            __( 'Payment type', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_PAYMENT_TYPE, null, null,
             /* translators: Payment type where customers can pick a product offered by the payment form  */
-            __( 'List of products', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'List of products', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( MM_WPFS::PAYMENT_TYPE_LIST_OF_AMOUNTS );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -3426,7 +3534,7 @@ class MM_WPFS_Admin_PaymentFormView extends MM_WPFS_Admin_FormView implements MM
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_PAYMENT_TYPE, null, null,
             /* translators: Payment type where customers can enter the amount to be paid, eg. paying invoices  */
-            __( 'User defined amount', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'User defined amount', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( MM_WPFS::PAYMENT_TYPE_CUSTOM_AMOUNT );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -3440,14 +3548,14 @@ class MM_WPFS_Admin_PaymentFormView extends MM_WPFS_Admin_FormView implements MM
 
     protected function initChargeType() {
         $this->chargeType = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_CHARGE_TYPE, null, null,
-            __( 'Charge type', 'wp-full-stripe-admin' ), null );
+            __( 'Charge type', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_CHARGE_TYPE, null, null,
             /* translators: Immediate charge type, the card is charged when the form is submitted  */
-            __( 'Immediate', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Immediate', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( MM_WPFS::CHARGE_TYPE_IMMEDIATE );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -3459,7 +3567,7 @@ class MM_WPFS_Admin_PaymentFormView extends MM_WPFS_Admin_FormView implements MM
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_CHARGE_TYPE, null, null,
             /* translators: Authorize and capture charge type, the payment is in a pending state when the form is submitted, it can be captured later */
-            __( 'Authorize and capture', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Authorize and capture', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( MM_WPFS::CHARGE_TYPE_AUTHORIZE_AND_CAPTURE );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -3473,14 +3581,14 @@ class MM_WPFS_Admin_PaymentFormView extends MM_WPFS_Admin_FormView implements MM
 
     protected function initProductSelectorStyle() {
         $this->productSelectorStyle = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_PRODUCT_SELECTOR_STYLE, null, null,
-            __( 'Product selector style', 'wp-full-stripe-admin' ), null );
+            __( 'Product selector style', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $selectorStyleOptions = array();
 
         $listOption = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_PRODUCT_SELECTOR_STYLE, null, null,
             /* translators: This selector style is a list of radio buttons  */
-            __( 'List of products', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'List of products', 'wp-full-stripe-free' ), $optionIndex );
         $listOption->setValue( MM_WPFS::SELECTOR_STYLE_RADIO_BUTTONS );
         $listOption->setAttributes( array(
             'type'      => 'radio',
@@ -3488,7 +3596,7 @@ class MM_WPFS_Admin_PaymentFormView extends MM_WPFS_Admin_FormView implements MM
         ));
         $listOption->setMetadata( array(
             'description'   =>
-                __( 'Recommended if there are less than 5 options', 'wp-full-stripe-admin' ),
+                __( 'Recommended if there are less than 5 options', 'wp-full-stripe-free' ),
             'iconClass'     => 'wpfs-illu-layout-bullets'
         ));
         array_push( $selectorStyleOptions, $listOption );
@@ -3496,7 +3604,7 @@ class MM_WPFS_Admin_PaymentFormView extends MM_WPFS_Admin_FormView implements MM
 
         $dropdownOption = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_PRODUCT_SELECTOR_STYLE, null, null,
             /* translators: This selector style is a dropdown  */
-            __( 'Product selector dropdown', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Product selector dropdown', 'wp-full-stripe-free' ), $optionIndex );
         $dropdownOption->setValue( MM_WPFS::SELECTOR_STYLE_DROPDOWN );
         $dropdownOption->setAttributes( array(
             'type'      => 'radio',
@@ -3504,7 +3612,7 @@ class MM_WPFS_Admin_PaymentFormView extends MM_WPFS_Admin_FormView implements MM
         ));
         $dropdownOption->setMetadata( array(
             'description'   =>
-                __( 'Recommended if there are 5 or more options', 'wp-full-stripe-admin' ),
+                __( 'Recommended if there are 5 or more options', 'wp-full-stripe-free' ),
             'iconClass'     => 'wpfs-illu-layout-top'
         ));
         array_push( $selectorStyleOptions, $dropdownOption );
@@ -3512,7 +3620,7 @@ class MM_WPFS_Admin_PaymentFormView extends MM_WPFS_Admin_FormView implements MM
 
         $buttonGroupOption = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_PRODUCT_SELECTOR_STYLE, null, null,
             /* translators: This selector style is a group of buttons showing only payment amounts, not product names */
-            __( 'Product buttons with amount (deprecated)', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Product buttons with amount (deprecated)', 'wp-full-stripe-free' ), $optionIndex );
         $buttonGroupOption->setValue( MM_WPFS::SELECTOR_STYLE_BUTTON_GROUP );
         $buttonGroupOption->setAttributes( array(
             'type'      => 'radio',
@@ -3520,7 +3628,7 @@ class MM_WPFS_Admin_PaymentFormView extends MM_WPFS_Admin_FormView implements MM
         ));
         $buttonGroupOption->setMetadata( array(
             'description'   =>
-                __( 'Use donation forms instead', 'wp-full-stripe-admin' ),
+                __( 'Use donation forms instead', 'wp-full-stripe-free' ),
             'iconClass'     => 'wpfs-illu-amount'
         ));
         array_push( $selectorStyleOptions, $buttonGroupOption );
@@ -3531,10 +3639,10 @@ class MM_WPFS_Admin_PaymentFormView extends MM_WPFS_Admin_FormView implements MM
     protected function initMinimumPaymentAmount() {
         $this->minimumPaymentAmount = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_MINIMUM_PAYMENT_AMOUNT, null, null,
             /* translators: Form field label for the minimum payment amount */
-            __( 'Minimum payment amount', 'wp-full-stripe-admin' ), null );
+            __( 'Minimum payment amount', 'wp-full-stripe-free' ), null );
 
         $this->minimumPaymentAmountHidden = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_MINIMUM_PAYMENT_AMOUNT_HIDDEN, null, null,
-            __( 'Minimum payment amount hidden', 'wp-full-stripe-admin' ), null );
+            __( 'Minimum payment amount hidden', 'wp-full-stripe-free' ), null );
         $this->minimumPaymentAmountHidden->setAttributes( array(
             'type'      => 'hidden',
         ));
@@ -3542,20 +3650,20 @@ class MM_WPFS_Admin_PaymentFormView extends MM_WPFS_Admin_FormView implements MM
 
     protected function initFields() {
         $this->transactionDescription = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_TRANSACTION_DESCRIPTION, null, null,
-            __( 'Transaction description', 'wp-full-stripe-admin' ), null );
+            __( 'Transaction description', 'wp-full-stripe-free' ), null );
         $this->transactionDescription->setAttributes( array(
             'class'     => 'wpfs-form-control js-token-target-transaction-description js-position-tracking-transaction-description',
             'rows'      => '3'
         ));
 
         $this->currency = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_CURRENCY, null, null,
-            __( 'Currency', 'wp-full-stripe-admin' ), null );
+            __( 'Currency', 'wp-full-stripe-free' ), null );
         $this->currency->setAttributes( array(
             'class'     => 'js-combobox'
         ));
 
         $this->allowCustomPaymentAmount = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_ALLOW_CUSTOM_PAYMENT_AMOUNT, null, null,
-            __( 'Allow custom amount to be entered', 'wp-full-stripe-admin' ), null );
+            __( 'Allow custom amount to be entered', 'wp-full-stripe-free' ), null );
         $optionAttributes = array(
             'type'      => 'checkbox',
             'class'     => 'wpfs-form-check-input',
@@ -3564,7 +3672,7 @@ class MM_WPFS_Admin_PaymentFormView extends MM_WPFS_Admin_FormView implements MM
         $this->allowCustomPaymentAmount->setAttributes( $optionAttributes );
 
         $this->onetimeProducts = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_ONETIME_PRODUCTS, null, null,
-            __( 'One-time products', 'wp-full-stripe-admin' ), null );
+            __( 'One-time products', 'wp-full-stripe-free' ), null );
         $this->onetimeProducts->setAttributes( array(
             'type'      => 'hidden',
         ));
@@ -3734,7 +3842,7 @@ class MM_WPFS_Admin_CheckoutPaymentFormView extends MM_WPFS_Admin_PaymentFormVie
     protected function initCheckoutPaymentFields() {
         $this->checkoutProductName = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_CHECKOUT_PRODUCT_NAME, null, null,
             /* translators: When a custom amount is entered on the form, this is the name which is used for the line item  */
-            __( 'Custom product name', 'wp-full-stripe-admin' ), null );
+            __( 'Custom product name', 'wp-full-stripe-free' ), null );
         $this->checkoutProductName->setAttributes( array(
             'class'     => 'wpfs-form-control',
             'type'      => 'text'
@@ -3742,7 +3850,7 @@ class MM_WPFS_Admin_CheckoutPaymentFormView extends MM_WPFS_Admin_PaymentFormVie
 
         $this->checkoutProductDescription = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_CHECKOUT_PRODUCT_DESCRIPTION, null, null,
             /* translators: When a custom amount is entered on the form, this is the description which is used for the line item  */
-            __( 'Custom product description', 'wp-full-stripe-admin' ), null );
+            __( 'Custom product description', 'wp-full-stripe-free' ), null );
         $this->checkoutProductDescription->setAttributes( array(
             'class'     => 'wpfs-form-control',
             'type'      => 'text'
@@ -3821,13 +3929,13 @@ class MM_WPFS_Admin_SubscriptionFormView extends MM_WPFS_Admin_FormView implemen
 
     protected function initAllowSubscriptionQuantity() {
         $this->allowSubscriptionQuantity = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_ALLOW_SUBSCRIPTION_QUANTITY, null, null,
-            __( 'Allow subscribing to plans in bulk', 'wp-full-stripe-admin' ), null );
+            __( 'Allow subscribing to plans in bulk', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_ALLOW_SUBSCRIPTION_QUANTITY, null, null,
-            __( 'No', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'No', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '0' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -3838,7 +3946,7 @@ class MM_WPFS_Admin_SubscriptionFormView extends MM_WPFS_Admin_FormView implemen
         $optionIndex++;
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_ALLOW_SUBSCRIPTION_QUANTITY, null, null,
-            __( 'Yes', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Yes', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( '1' );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -3852,14 +3960,14 @@ class MM_WPFS_Admin_SubscriptionFormView extends MM_WPFS_Admin_FormView implemen
 
     protected function initPlanSelectorStyle() {
         $this->productSelectorStyle = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_PLAN_SELECTOR_STYLE, null, null,
-            __( 'Plan selector style', 'wp-full-stripe-admin' ), null );
+            __( 'Plan selector style', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $selectorStyleOptions = array();
 
         $listOption = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_PLAN_SELECTOR_STYLE, null, null,
             /* translators: This style is a list of radio buttons  */
-            __( 'List of products', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'List of products', 'wp-full-stripe-free' ), $optionIndex );
         $listOption->setValue( MM_WPFS::SELECTOR_STYLE_RADIO_BUTTONS );
         $listOption->setAttributes( array(
             'type'      => 'radio',
@@ -3867,7 +3975,7 @@ class MM_WPFS_Admin_SubscriptionFormView extends MM_WPFS_Admin_FormView implemen
         ));
         $listOption->setMetadata( array(
             'description'   =>
-                __( 'Recommended if there are less than 5 options', 'wp-full-stripe-admin' ),
+                __( 'Recommended if there are less than 5 options', 'wp-full-stripe-free' ),
             'iconClass'     => 'wpfs-illu-layout-bullets'
         ));
         array_push( $selectorStyleOptions, $listOption );
@@ -3875,7 +3983,7 @@ class MM_WPFS_Admin_SubscriptionFormView extends MM_WPFS_Admin_FormView implemen
 
         $dropdownOption = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_PLAN_SELECTOR_STYLE, null, null,
             /* translators: This style is a dropdown */
-            __( 'Product selector dropdown', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Product selector dropdown', 'wp-full-stripe-free' ), $optionIndex );
         $dropdownOption->setValue( MM_WPFS::SELECTOR_STYLE_DROPDOWN );
         $dropdownOption->setAttributes( array(
             'type'      => 'radio',
@@ -3883,7 +3991,7 @@ class MM_WPFS_Admin_SubscriptionFormView extends MM_WPFS_Admin_FormView implemen
         ));
         $dropdownOption->setMetadata( array(
             'description'   =>
-                __( 'Recommended if there are 5 or more options', 'wp-full-stripe-admin' ),
+                __( 'Recommended if there are 5 or more options', 'wp-full-stripe-free' ),
             'iconClass'     => 'wpfs-illu-layout-top'
         ));
         array_push( $selectorStyleOptions, $dropdownOption );
@@ -3893,20 +4001,20 @@ class MM_WPFS_Admin_SubscriptionFormView extends MM_WPFS_Admin_FormView implemen
 
     protected function initFields() {
         $this->recurringProducts = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_RECURRING_PRODUCTS, null, null,
-            __( 'Recurring products', 'wp-full-stripe-admin' ), null );
+            __( 'Recurring products', 'wp-full-stripe-free' ), null );
         $this->recurringProducts->setAttributes( array(
             'type'      => 'hidden',
         ));
 
         $this->subscriptionMinimumQuantity = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_SUBSCRIPTION_MINIMUM_QUANTITY, null, null,
-            __( 'MIN', 'wp-full-stripe-admin' ), null );
+            __( 'MIN', 'wp-full-stripe-free' ), null );
         $this->subscriptionMinimumQuantity->setAttributes( array(
             'type'      => 'text',
             'class'     => 'wpfs-input-group-form-control wpfs-input-group-form-control--center'
         ));
 
         $this->subscriptionMaximumQuantity = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_SUBSCRIPTION_MAXIMUM_QUANTITY, null, null,
-            __( 'MAX', 'wp-full-stripe-admin' ), null );
+            __( 'MAX', 'wp-full-stripe-free' ), null );
         $this->subscriptionMaximumQuantity->setAttributes( array(
             'type'      => 'text',
             'class'     => 'wpfs-input-group-form-control wpfs-input-group-form-control--center'
@@ -4031,13 +4139,13 @@ class MM_WPFS_Admin_CheckoutSubscriptionFormView extends MM_WPFS_Admin_Subscript
     protected function initCheckoutSubscriptionFields( $formHash ) {
         $this->simpleButtonLayout = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_SIMPLE_BUTTON_LAYOUT, null, null,
             /* translators: When turned on, only the button to open the form is displayed, all other fields are hidden */
-            __( 'Simple button layout', 'wp-full-stripe-admin' ), null );
+            __( 'Simple button layout', 'wp-full-stripe-free' ), null );
 
         $optionIndex = 0;
         $options = array();
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_SIMPLE_BUTTON_LAYOUT, null, null,
-            __( 'Disable', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Disable', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( 0 );
         $optionAttributes = array(
             'type'      => 'radio',
@@ -4048,7 +4156,7 @@ class MM_WPFS_Admin_CheckoutSubscriptionFormView extends MM_WPFS_Admin_Subscript
         $optionIndex++;
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_SIMPLE_BUTTON_LAYOUT, null, null,
-            __( 'Enable', 'wp-full-stripe-admin' ), $optionIndex );
+            __( 'Enable', 'wp-full-stripe-free' ), $optionIndex );
         $option->setValue( 1 );
         $optionAttributes = array(
             'type'      => 'radio',

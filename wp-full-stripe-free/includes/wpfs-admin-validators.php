@@ -24,11 +24,11 @@ class MM_WPFS_Admin_CreateFormValidator extends MM_WPFS_Validator {
             if ( empty( $formModelObject->getDisplayName() )) {
                 $bindingResult->addFieldError( $displayNameFieldName, $displayNameFieldId,
                     /* translators: Create form validation error when no display name specified */
-                    __( "Please enter a display name", 'wp-full-stripe-admin' ) );
+                    __( "Please enter a display name", 'wp-full-stripe-free' ) );
             } elseif ( ! preg_match('/^[^\s]{1,}.{0,}$/', $formModelObject->getDisplayName() ) ) {
                 $bindingResult->addFieldError( $displayNameFieldName, $displayNameFieldId,
                     /* translators: Create form validation error when the display name contains invalid characters */
-                    __( 'The display name may contain any characters but it shouldn\'t start with a space.', 'wp-full-stripe-admin' ) );
+                    __( 'The display name may contain any characters but it shouldn\'t start with a space.', 'wp-full-stripe-free' ) );
             }
 
             $nameFieldName  = MM_WPFS_Admin_CreateFormViewConstants::FIELD_FORM_NAME;
@@ -37,15 +37,15 @@ class MM_WPFS_Admin_CreateFormValidator extends MM_WPFS_Validator {
             if ( empty( $formModelObject->getName() )) {
                 $bindingResult->addFieldError( $nameFieldName, $nameFieldId,
                     /* translators: Create form validation error when no identifier is specified  */
-                    __( "Please enter an identifier", 'wp-full-stripe-admin' ) );
+                    __( "Please enter an identifier", 'wp-full-stripe-free' ) );
             } elseif ( ! preg_match('/^[\w\-]+$/', $formModelObject->getName() ) ) {
                 $bindingResult->addFieldError( $nameFieldName, $nameFieldId,
                     /* translators: Create form validation error when the identifier contains invalid characters */
-                    __( 'The identifier may contain only alphanumeric characters, dashes, and underscores.', 'wp-full-stripe-admin' ) );
+                    __( 'The identifier may contain only alphanumeric characters, dashes, and underscores.', 'wp-full-stripe-free' ) );
             } elseif ( $this->isFormNameAlreadyUsed( $formModelObject ) ) {
                 $bindingResult->addFieldError( $nameFieldName, $nameFieldId,
                     /* translators: Create form validation error when a form with the specified identifier already exists */
-                    __( 'This identifier is already in use, choose a different one.', 'wp-full-stripe-admin' ) );
+                    __( 'This identifier is already in use, choose a different one.', 'wp-full-stripe-free' ) );
             }
 
             $formTypes = array(
@@ -56,7 +56,7 @@ class MM_WPFS_Admin_CreateFormValidator extends MM_WPFS_Validator {
             if ( false === array_search( $formModelObject->getType(), $formTypes ) ) {
                 $error =
                     /* translators: Create form validation error message when no form type is selected */
-                    __( 'Please select a form type', 'wp-full-stripe-admin' );
+                    __( 'Please select a form type', 'wp-full-stripe-free' );
 
                 $bindingResult->addGlobalError( $error );
             }
@@ -68,7 +68,7 @@ class MM_WPFS_Admin_CreateFormValidator extends MM_WPFS_Validator {
             if ( false === array_search( $formModelObject->getLayout(), $formLayouts ) ) {
                 $error =
                     /* translators: Create form validation error message when no form layout is selected */
-                    __( 'Please select a form layout', 'wp-full-stripe-admin' );
+                    __( 'Please select a form layout', 'wp-full-stripe-free' );
 
                 $bindingResult->addGlobalError( $error );
             }
@@ -102,7 +102,7 @@ class MM_WPFS_Admin_StripeAccountValidator extends MM_WPFS_Validator {
         if ( false === array_search( $formModelObject->getApiMode(), $apiModes ) ) {
             $error =
                 /* translators: Save Stripe settings validation error when no API mode is selected */
-                __( 'Please select an API mode', 'wp-full-stripe-admin' );
+                __( 'Please select an API mode', 'wp-full-stripe-free' );
 
             $bindingResult->addGlobalError( $error );
         }
@@ -128,42 +128,49 @@ class MM_WPFS_Admin_MyAccountValidator extends MM_WPFS_Validator {
         if ( false === array_search( $formModelObject->getShowSubscriptions(), $yesNoValues ) ) {
             $error =
                 /* translators: Validation error message displayed if it's not selected whether subscriptions should be shown to customers */
-                __( 'Please select if customers can see their subscriptions', 'wp-full-stripe-admin' );
+                __( 'Please select if customers can see their subscriptions', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
         if ( false === array_search( $formModelObject->getCancelSubscriptions(), $yesNoValues ) ) {
             $error =
                 /* translators: Validation error message displayed if it's not selected whether customers can cancel subscriptions */
-                __( 'Please select if customers can cancel subscriptions', 'wp-full-stripe-admin' );
+                __( 'Please select if customers can cancel subscriptions', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
         if ( false === array_search( $formModelObject->getWhenCancelSubscriptions(), $whenCancelValues ) ) {
             $error =
                 /* translators: Validation error message displayed if it's not selected when subscriptions are canceled (immediately, or at the end of the term) */
-                __( 'Please select when to cancel subscriptions', 'wp-full-stripe-admin' );
+                __( 'Please select when to cancel subscriptions', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
         if ( false === array_search( $formModelObject->getUpdowngradeSubscriptions(), $yesNoValues ) ) {
             $error =
                 /* translators: Validation error message displayed if it's not selected whether customers can upgrade/downgrade subscriptions */
-                __( 'Please select if customers can upgrade/downgrade subscriptions', 'wp-full-stripe-admin' );
+                __( 'Please select if customers can upgrade/downgrade subscriptions', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
         if ( false === array_search( $formModelObject->getShowInvoices(), $yesNoValues ) ) {
             $error =
                 /* translators: Validation error message displayed if it's not selected whether customers can view invoices */
-                __( 'Please select if customers can view invoices', 'wp-full-stripe-admin' );
+                __( 'Please select if customers can view invoices', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
         if ( false === array_search( $formModelObject->getScrollingPaneIntoView(), $yesNoValues ) ) {
             $error =
                 /* translators: Validation error message displayed if it's not selected whether scrolling pane into view is enabled or disabled */
-                __( 'Please select if pane should scroll into view', 'wp-full-stripe-admin' );
+                __( 'Please select if pane should scroll into view', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+        }
+
+        if ( false === array_search( $formModelObject->useStripeCustomerPortal(), $yesNoValues ) ) {
+            $error =
+                /* translators: Validation error message displayed if it's not selected whether the Stripe Customer Portal is enabled or disabled */
+                __( 'Please select if the Stripe Customer Portal should be enabled', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }
@@ -184,21 +191,21 @@ class MM_WPFS_Admin_SecurityValidator extends MM_WPFS_Validator {
         if ( false === array_search( $formModelObject->getSecureInlineForms(), $yesNoValues ) ) {
             $error =
                 /* translators: Validation error message displayed if it's not selected whether inline forms are secured with Google reCaptcha */
-                __( 'Please select whether inline forms should be secured with Google reCAPTCHA', 'wp-full-stripe-admin' );
+                __( 'Please select whether inline forms should be secured with Google reCAPTCHA', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
         if ( false === array_search( $formModelObject->getSecureCheckoutForms(), $yesNoValues ) ) {
             $error =
                 /* translators: Validation error message displayed if it's not selected whether checkout forms are secured with Google reCaptcha */
-                __( 'Please select whether checkout forms should be secured with Google reCAPTCHA', 'wp-full-stripe-admin' );
+                __( 'Please select whether checkout forms should be secured with Google reCAPTCHA', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
         if ( false === array_search( $formModelObject->getSecureCustomerPortal(), $yesNoValues ) ) {
             $error =
                 /* translators: Validation error message displayed if it's not selected whether the Customer Portal is secured with Google reCaptcha */
-                __( 'Please select whether the Customer Portal should be secured with Google reCAPTCHA', 'wp-full-stripe-admin' );
+                __( 'Please select whether the Customer Portal should be secured with Google reCAPTCHA', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
@@ -244,7 +251,7 @@ class MM_WPFS_Admin_EmailOptionsValidator extends MM_WPFS_Validator {
         if ( false === array_search( $formModelObject->getFromAddress(), $fromAddressValues ) ) {
             $error =
                 /* translators: Validation error message displayed if it's not selected whether the "From" address of emails sent by the plugin should be the site admin or somebody else */
-                __( 'Please select whether the From address should be the site admin or somebody else.', 'wp-full-stripe-admin' );
+                __( 'Please select whether the From address should be the site admin or somebody else.', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
@@ -255,11 +262,11 @@ class MM_WPFS_Admin_EmailOptionsValidator extends MM_WPFS_Validator {
             if ( empty( $formModelObject->getFromAddressCustom() )) {
                 $bindingResult->addFieldError( $fromAddressCustomFieldName, $fromAddressCustomFieldId,
                     /* translators: Email options error when no custom email sender address is provided */
-                    __( 'Please enter a sender address', 'wp-full-stripe-admin' ) );
+                    __( 'Please enter a sender address', 'wp-full-stripe-free' ) );
             } elseif ( !filter_var( $formModelObject->getFromAddressCustom(), FILTER_VALIDATE_EMAIL) ) {
                 $bindingResult->addFieldError( $fromAddressCustomFieldName, $fromAddressCustomFieldId,
                     /* translators: Email options error when no custom email sender address is provided */
-                    __( 'Please enter a valid sender address', 'wp-full-stripe-admin' ) );
+                    __( 'Please enter a valid sender address', 'wp-full-stripe-free' ) );
             }
         }
 
@@ -272,7 +279,7 @@ class MM_WPFS_Admin_EmailOptionsValidator extends MM_WPFS_Validator {
                 /* translators: Email options error when no custom email sender address is provided
                  * p1: The invalid email address
                  */
-                sprintf( __( "The email address '%s' is invalid", 'wp-full-stripe-admin' ), $formModelObject->getSendCopyToAdmin() ) );
+                sprintf( __( "The email address '%s' is invalid", 'wp-full-stripe-free' ), $formModelObject->getSendCopyToAdmin() ) );
         }
 
         foreach( $formModelObject->getSendCopyToList() as $email ) {
@@ -283,7 +290,7 @@ class MM_WPFS_Admin_EmailOptionsValidator extends MM_WPFS_Validator {
                 $bindingResult->addFieldError( $copyToListFieldName, $copyToListFieldId,
                     sprintf(
                     /* translators: Email options error when an invalid email sender address is provided */
-                        __( "The email address '%s' is invalid", 'wp-full-stripe-admin' ), $email ) );
+                        __( "The email address '%s' is invalid", 'wp-full-stripe-free' ), $email ) );
 
                 break;
             }
@@ -306,14 +313,14 @@ class MM_WPFS_Admin_FormsOptionsValidator extends MM_WPFS_Validator {
         if ( false === array_search( $formModelObject->getFillInEmail(), $yesNoValues ) ) {
             $error =
                 /* translators: Validation error message when it's not specified whether the email address field on forms should be filled in for logged in users */
-                __( 'Please select whether the email address should be filled in for logged in user', 'wp-full-stripe-admin' );
+                __( 'Please select whether the email address should be filled in for logged in user', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
         if ( false === array_search( $formModelObject->getSetFormFieldsViaUrlParameters(), $yesNoValues ) ) {
             $error =
                 /* translators: Validation error message when it's not specified whether fields forms can be set via URL parameters */
-                __( 'Please select whether form fields can be set via URL parameters', 'wp-full-stripe-admin' );
+                __( 'Please select whether form fields can be set via URL parameters', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }
@@ -351,27 +358,27 @@ class MM_WPFS_Admin_WordpressDashboardValidator extends MM_WPFS_Validator {
         if ( false === array_search( $formModelObject->getDecimalSeparator(), $decimalSeparatorValues ) ) {
             $error =
                 /* translators: Validation error message when the decimal separator character of numbers is not selected */
-                __( 'Please select the decimal separator', 'wp-full-stripe-admin' );
+                __( 'Please select the decimal separator', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
         if ( false === array_search( $formModelObject->getUseSymbolNotCode(), $yesNoValues ) ) {
             $error =
                 /* translators: Validation error message when it is not selected whether currency symbols or currecny codes should be displayed */
-                __( 'Please select whether currency symbols or codes should be displayed', 'wp-full-stripe-admin' );
+                __( 'Please select whether currency symbols or codes should be displayed', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
         if ( false === array_search( $formModelObject->getCurrencySymbolAtFirstPosition(), $yesNoValues ) ) {
             $error =
                 /* translators: Validation error message when it is not selected whether currency symbols should be displayed on the left or right */
-                __( 'Please select whether the currency symbol should be displayed on the left or right ', 'wp-full-stripe-admin' );
+                __( 'Please select whether the currency symbol should be displayed on the left or right ', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
         if ( false === array_search( $formModelObject->getPutSpaceBetweenSymbolAndAmount(), $yesNoValues ) ) {
             $error =
-                __( 'Please select whether space should be inserted between the currency symbol and amount', 'wp-full-stripe-admin' );
+                __( 'Please select whether space should be inserted between the currency symbol and amount', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }
@@ -398,21 +405,21 @@ class MM_WPFS_Admin_LogsValidator extends MM_WPFS_Validator {
         if ( false === array_search( $formModelObject->getLogLevel(), $logLevelValues ) ) {
             $error =
                 /* translators: Validation error message when the log level is not selected */
-                __( 'Please select the logging level', 'wp-full-stripe-admin' );
+                __( 'Please select the logging level', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
         if ( false === array_search( $formModelObject->getLogToWebServer(), $yesNoValues ) ) {
             $error =
                 /* translators: Validation error message when it is not selected whether the plugin should log to the webserver error log */
-                __( 'Please select whether the plugin should log to the webserver error log', 'wp-full-stripe-admin' );
+                __( 'Please select whether the plugin should log to the webserver error log', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
         if ( false === array_search( $formModelObject->getCatchUncaughtErrors(), $yesNoValues ) ) {
             $error =
                 /* translators: Validation error message when it is not selected whether the plugin should catch all uncaught errors */
-                __( 'Please select whether the plugin should catch all uncaught errors', 'wp-full-stripe-admin' );
+                __( 'Please select whether the plugin should catch all uncaught errors', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }
@@ -434,15 +441,68 @@ abstract class MM_WPFS_Admin_FormValidator extends MM_WPFS_Validator {
             $labelFieldName = MM_WPFS_Admin_FormView::FIELD_FORM_TERMS_OF_SERVICE_LABEL;
             $labelFieldId   = MM_WPFS_Utils::generateFormElementId( $labelFieldName, $formModel->getFormHash() );
             if ( empty( $formModel->getTermsOfUseLabel() )) {
-                $error     = __( 'Please enter a label for the terms of service input field', 'wp-full-stripe-admin' );
+                $error     = __( 'Please enter a label for the terms of service input field', 'wp-full-stripe-free' );
                 $bindingResult->addFieldError( $labelFieldName, $labelFieldId, $error );
             }
 
             $errorFieldName = MM_WPFS_Admin_FormView::FIELD_FORM_TERMS_OF_SERVICE_ERROR;
             $errorFieldId   = MM_WPFS_Utils::generateFormElementId( $errorFieldName, $formModel->getFormHash() );
             if ( empty( $formModel->getTermsOfUseErrorMessage() )) {
-                $error     = __( "Please enter an error message that's displayed when the terms of service field is empty", 'wp-full-stripe-admin' );
+                $error     = __( "Please enter an error message that's displayed when the terms of service field is empty", 'wp-full-stripe-free' );
                 $bindingResult->addFieldError( $errorFieldName, $errorFieldId, $error );
+            }
+        }
+    }
+
+    /**
+     * @param MM_WPFS_BindingResult $bindingResult
+     * @param $formModel MM_WPFS_Binder|MM_WPFS_Admin_FormModel
+     */
+    protected function validateWebhook( $bindingResult, $formModel ) {
+        $webhook_json = $formModel->getWebhook();
+
+        if ( !empty( $webhook_json ) ) {
+            $labelFieldName = MM_WPFS_Admin_FormViewConstants::FIELD_FORM_WEBHOOK;
+            $labelFieldId   = MM_WPFS_Utils::generateFormElementId( $labelFieldName, $formModel->getFormHash() );
+
+            $webhook = json_decode( $webhook_json, true );
+            if ( $webhook === null ) {
+                $bindingResult->addFieldError( $labelFieldName, $labelFieldId,
+                    /* translators: Validation error message when the webhook is not a valid JSON string */
+                    __( 'The webhook is not a valid JSON string', 'wp-full-stripe-free' ) );
+            } else {
+                if ( array_key_exists( 'url', $webhook ) && !empty( $webhook['url'] ) ) {
+                    if ( filter_var( $webhook['url'], FILTER_VALIDATE_URL) === false) {
+                        $bindingResult->addFieldError( $labelFieldName, $labelFieldId,
+                            /* translators: Validation error message when the webhook URL is not a valid URL */
+                            __( 'The webhook URL is not a valid URL', 'wp-full-stripe-free' ) );
+                    }
+                }
+
+                if ( !array_key_exists( 'headers', $webhook ) ) {
+                    $bindingResult->addFieldError( $labelFieldName, $labelFieldId,
+                        /* translators: Validation error message when the webhook headers are missing */
+                        __( 'The webhook headers are missing', 'wp-full-stripe-free' ) );
+                } elseif ( !is_array( $webhook['headers'] ) ) {
+                    $bindingResult->addFieldError( $labelFieldName, $labelFieldId,
+                        /* translators: Validation error message when the webhook headers are not an array */
+                        __( 'The webhook headers should be an array', 'wp-full-stripe-free' ) );
+                } else {
+                    foreach ( $webhook['headers'] as $key => $value ) {
+                        if ( !is_string( $key ) ) {
+                            $bindingResult->addFieldError( $labelFieldName, $labelFieldId,
+                                /* translators: Validation error message when the webhook header key is not a string */
+                                __( 'The webhook header key should be a string', 'wp-full-stripe-free' ) );
+                            break;
+                        }
+                        if ( !is_string( $value ) ) {
+                            $bindingResult->addFieldError( $labelFieldName, $labelFieldId,
+                                /* translators: Validation error message when the webhook header value is not a string */
+                                __( 'The webhook header value should be a string', 'wp-full-stripe-free' ) );
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
@@ -460,25 +520,25 @@ abstract class MM_WPFS_Admin_FormValidator extends MM_WPFS_Validator {
 
         if ( false === array_search( $formModel->getLocaleDecimalSeparator(), $decimalSeparatorValues ) ) {
             $error =
-                __( 'Please select the decimal separator (General tab)', 'wp-full-stripe-admin' );
+                __( 'Please select the decimal separator (General tab)', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
         if ( false === array_search( $formModel->getLocaleUseSymbolNotCode(), $yesNoValues ) ) {
             $error =
-                __( 'Please select whether currency symbols or codes should be displayed (General tab)', 'wp-full-stripe-admin' );
+                __( 'Please select whether currency symbols or codes should be displayed (General tab)', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
         if ( false === array_search( $formModel->getLocaleCurrencySymbolAtFirstPosition(), $yesNoValues ) ) {
             $error =
-                __( 'Please select whether the currency symbol should be displayed on the left or right (General tab)', 'wp-full-stripe-admin' );
+                __( 'Please select whether the currency symbol should be displayed on the left or right (General tab)', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
         if ( false === array_search( $formModel->getLocalePutSpaceBetweenSymbolAndAmount(), $yesNoValues ) ) {
             $error =
-                __( 'Please select whether space should be inserted between the currency symbol and amount (General tab)', 'wp-full-stripe-admin' );
+                __( 'Please select whether space should be inserted between the currency symbol and amount (General tab)', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }
@@ -493,12 +553,12 @@ abstract class MM_WPFS_Admin_FormValidator extends MM_WPFS_Validator {
 
         if ( empty( $formModel->getButtonLabel() )) {
             /* translators: Validation error message when no form submit button label is entered */
-            $error     = __( 'Please enter a button label', 'wp-full-stripe-admin' );
+            $error     = __( 'Please enter a button label', 'wp-full-stripe-free' );
             $bindingResult->addFieldError( $fieldName, $fieldId, $error );
         } elseif ( empty( preg_replace('/\s+/', '', $formModel->getButtonLabel())) ) {
             $bindingResult->addFieldError( $fieldName, $fieldId,
                 /* translators: Validation error message when the submit button label doesn't contain at least one non-whitespace character */
-                __( 'The button label should contain at least one character other than whitespace', 'wp-full-stripe-admin' ));
+                __( 'The button label should contain at least one character other than whitespace', 'wp-full-stripe-free' ));
         }
     }
 
@@ -511,24 +571,24 @@ abstract class MM_WPFS_Admin_FormValidator extends MM_WPFS_Validator {
         $displayNameFieldId   = MM_WPFS_Utils::generateFormElementId( $displayNameFieldName, $formModel->getFormHash() );
         if ( empty( $formModel->getDisplayName() )) {
             /* translators: Validation error message when the display name of the form is empty */
-            $error     = __( 'Please enter a display name', 'wp-full-stripe-admin' );
+            $error     = __( 'Please enter a display name', 'wp-full-stripe-free' );
             $bindingResult->addFieldError( $displayNameFieldName, $displayNameFieldId, $error );
         } elseif ( ! preg_match('/^[^\s]{1,}.{0,}$/', $formModel->getDisplayName() ) ) {
             $bindingResult->addFieldError( $displayNameFieldName, $displayNameFieldId,
                 /* translators: Validation error message when the display name starts with a space */
-                __( 'The display name may contain any characters but it shouldn\'t start with a space.', 'wp-full-stripe-admin' ) );
+                __( 'The display name may contain any characters but it shouldn\'t start with a space.', 'wp-full-stripe-free' ) );
         }
 
         $nameFieldName = MM_WPFS_Admin_FormView::FIELD_FORM_NAME;
         $nameFieldId   = MM_WPFS_Utils::generateFormElementId( $nameFieldName, $formModel->getFormHash() );
         if ( empty( $formModel->getName() )) {
             /* translators: Validation error message when the identifier of the form is empty */
-            $error     = __( 'Please enter the form identifier', 'wp-full-stripe-admin' );
+            $error     = __( 'Please enter the form identifier', 'wp-full-stripe-free' );
             $bindingResult->addFieldError( $nameFieldName, $nameFieldId, $error );
         } elseif ( ! preg_match('/^[\w\-]+$/', $formModel->getName() ) ) {
             $bindingResult->addFieldError( $nameFieldName, $nameFieldId,
                 /* translators: Validation error message when the identifier of the form contains invalid characters */
-                __( 'The identifier may contain only alphanumeric characters, dashes, and underscores.', 'wp-full-stripe-admin' ) );
+                __( 'The identifier may contain only alphanumeric characters, dashes, and underscores.', 'wp-full-stripe-free' ) );
         }
     }
 
@@ -544,7 +604,7 @@ abstract class MM_WPFS_Admin_FormValidator extends MM_WPFS_Validator {
         );
         if ( false === array_search( $formModel->getRedirectType(), $redirectValues ) ) {
             $error =
-                __( 'Please decide what should happen after a successful payment (General tab)', 'wp-full-stripe-admin' );
+                __( 'Please decide what should happen after a successful payment (General tab)', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
@@ -553,11 +613,11 @@ abstract class MM_WPFS_Admin_FormValidator extends MM_WPFS_Validator {
             $redirectFieldId   = MM_WPFS_Utils::generateFormElementId( $redirectFieldName, $formModel->getFormHash() );
 
             if ( empty( $formModel->getRedirectURl() )) {
-                $error     = __( 'Please enter an URL', 'wp-full-stripe-admin' );
+                $error     = __( 'Please enter an URL', 'wp-full-stripe-free' );
                 $bindingResult->addFieldError( $redirectFieldName, $redirectFieldId, $error );
             } elseif ( filter_var( $formModel->getRedirectURl(), FILTER_VALIDATE_URL) === false) {
                 $bindingResult->addFieldError( $redirectFieldName, $redirectFieldId,
-                    __( 'Please enter a valid URL', 'wp-full-stripe-admin' ));
+                    __( 'Please enter a valid URL', 'wp-full-stripe-free' ));
             }
         }
     }
@@ -572,6 +632,7 @@ abstract class MM_WPFS_Admin_FormValidator extends MM_WPFS_Validator {
         $this->validateButtonLabel( $bindingResult, $formModel );
         $this->validateLocaleSettings( $bindingResult, $formModel );
         $this->validateTermsOfUse( $bindingResult, $formModel );
+        $this->validateWebhook( $bindingResult, $formModel );
     }
 }
 
@@ -585,7 +646,7 @@ trait MM_WPFS_Admin_InlineFormValidator {
         if ( $formModel->getCardInputFieldLanguage() !== MM_WPFS::PREFERRED_LANGUAGE_AUTO ) {
             if ( false === array_search( $formModel->getCardInputFieldLanguage(), MM_WPFS_Languages::getStripeElementsLanguageCodes()) ) {
                 $error =
-                    __( 'Please select the card input field language (Appearance tab)', 'wp-full-stripe-admin' );
+                    __( 'Please select the card input field language (Appearance tab)', 'wp-full-stripe-free' );
                 $bindingResult->addGlobalError( $error );
             }
         }
@@ -614,12 +675,12 @@ trait MM_WPFS_Admin_CheckoutFormValidator {
         if ( empty( $formModel->getOpenButtonLabel() )) {
             $error     =
                 /* translators: Validation error message when the form open button label is empty */
-                __( 'Please enter a button label', 'wp-full-stripe-admin' );
+                __( 'Please enter a button label', 'wp-full-stripe-free' );
             $bindingResult->addFieldError( $fieldName, $fieldId, $error );
         } elseif ( empty( preg_replace('/\s+/', '', $formModel->getOpenButtonLabel())) ) {
             $error  =
                 /* translators: Validation error message when the form open button label doesn't contain at least one character other than whitespace */
-                __( 'The button label should contain at least one character other than whitespace', 'wp-full-stripe-admin' );
+                __( 'The button label should contain at least one character other than whitespace', 'wp-full-stripe-free' );
             $bindingResult->addFieldError( $fieldName, $fieldId, $error );
         }
     }
@@ -632,7 +693,7 @@ trait MM_WPFS_Admin_CheckoutFormValidator {
         if ( $formModel->getCheckoutFormLanguage() !== MM_WPFS::PREFERRED_LANGUAGE_AUTO ) {
             if ( false === array_search( $formModel->getCheckoutFormLanguage(), MM_WPFS_Languages::getCheckoutLanguageCodes()) ) {
                 $error =
-                    __( 'Please select the checkout form language (Appearance tab)', 'wp-full-stripe-admin' );
+                    __( 'Please select the checkout form language (Appearance tab)', 'wp-full-stripe-free' );
                 $bindingResult->addGlobalError( $error );
             }
         }
@@ -701,7 +762,7 @@ abstract class MM_WPFS_Admin_DonationFormValidator extends MM_WPFS_Admin_FormVal
             $fieldName = MM_WPFS_Admin_DonationFormViewConstants::FIELD_FORM_ALLOW_CUSTOM_DONATION_AMOUNT;
             $fieldId   = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModel->getFormHash() );
             /* translators: Donations forms can have a custom amount field and/or suggested amount buttons. Having none of them is an issue */
-            $error     = __( 'Please add suggested donation amounts or allow entering a custom donation amount', 'wp-full-stripe-admin' );
+            $error     = __( 'Please add suggested donation amounts or allow entering a custom donation amount', 'wp-full-stripe-free' );
 
             $bindingResult->addFieldError( $fieldName, $fieldId, $error );
         }
@@ -734,7 +795,7 @@ abstract class MM_WPFS_Admin_DonationFormValidator extends MM_WPFS_Admin_FormVal
             $minimumAmount = MM_WPFS_Currencies::formatAndEscapeByAdmin( $this->staticContext, $formModel->getCurrency(), $formModel->getMinimumDonationAmount(), false, true );
             $error = sprintf(
             /* translators: This error message is displayed when the donation form's minimum donation amount is larger than the lowest suggested donation amount */
-                __( 'The suggested donation amount of %1$s is lower than the minimum donation amount of %2$s.', 'wp-full-stripe-admin' ), $suggestedAmount, $minimumAmount  );
+                __( 'The suggested donation amount of %1$s is lower than the minimum donation amount of %2$s.', 'wp-full-stripe-free' ), $suggestedAmount, $minimumAmount  );
             $bindingResult->addFieldError( $fieldName, $fieldId, $error );
         }
     }
@@ -761,7 +822,7 @@ abstract class MM_WPFS_Admin_DonationFormValidator extends MM_WPFS_Admin_FormVal
             $fieldName = MM_WPFS_Admin_DonationFormViewConstants::FIELD_FORM_DONATION_FREQUENCIES;
             $fieldId   = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModel->getFormHash() );
             /* translators: Validation error message when no donation frequency selected such as one-time, daily, weekly, etc */
-            $error     = __( 'Please select at least one donation frequency', 'wp-full-stripe-admin' );
+            $error     = __( 'Please select at least one donation frequency', 'wp-full-stripe-free' );
 
             $bindingResult->addFieldError( $fieldName, $fieldId, $error );
         }
@@ -776,8 +837,42 @@ abstract class MM_WPFS_Admin_DonationFormValidator extends MM_WPFS_Admin_FormVal
 
         if ( false === array_search( $formModel->getCurrency(), array_keys( $currencies ) )) {
             $error =
-                __( 'Please select the payment currency (Payment tab)', 'wp-full-stripe-admin' );
+                __( 'Please select the payment currency (Payment tab)', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
+        }
+    }
+
+    /**
+     * @param MM_WPFS_BindingResult $bindingResult
+     * @param $formModel MM_WPFS_Admin_InlineDonationFormModel
+     */
+    protected function validateShowDonationGoal( $bindingResult, $formModel ) {
+        $yesNoValues = array( 0, 1 );
+
+        if ( false === array_search( $formModel->getShowDonationGoal(), $yesNoValues ) ) {
+            $error =
+                /* translators: Validation error message displayed if it's not selected whether the donation goal should be displayed */
+                __( 'Please select if the donation goal should be displayed', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+        }
+    }
+
+    /**
+     * @param MM_WPFS_BindingResult $bindingResult
+     * @param $formModel MM_WPFS_Admin_InlineDonationFormModel
+     */
+    protected function validateDonationGoal( $bindingResult, $formModel ) {
+        if ( $formModel->getShowDonationGoal() === 1 ) {
+            $fieldName = MM_WPFS_Admin_InlineDonationFormViewConstants::FIELD_FORM_DONATION_GOAL;
+            $fieldId   = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModel->getFormHash() );
+
+            if ( empty( $formModel->getDonationGoal() )) {
+                $error     = __( 'Please enter a donation goal', 'wp-full-stripe-free' );
+                $bindingResult->addFieldError( $fieldName, $fieldId, $error );
+            } elseif ( !is_numeric( $formModel->getDonationGoal() ) ) {
+                $error     = __( 'Please enter a valid donation goal', 'wp-full-stripe-free' );
+                $bindingResult->addFieldError( $fieldName, $fieldId, $error );
+            }
         }
     }
 
@@ -788,6 +883,8 @@ abstract class MM_WPFS_Admin_DonationFormValidator extends MM_WPFS_Admin_FormVal
         $this->validateDonationAmounts( $bindingResult, $formModel );
         $this->validateMinimumDonationAmount( $bindingResult, $formModel );
         $this->validateDonationFrequencies( $bindingResult, $formModel );
+        $this->validateShowDonationGoal( $bindingResult, $formModel );
+        $this->validateDonationGoal( $bindingResult, $formModel );
     }
 }
 
@@ -807,7 +904,7 @@ class MM_WPFS_Admin_InlineDonationFormValidator extends MM_WPFS_Admin_DonationFo
             $fieldName = MM_WPFS_Admin_InlineDonationFormViewConstants::FIELD_FORM_DEFAULT_PRODUCT_NAME;
             $fieldId   = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModel->getFormHash() );
             /* translators: Validation error message when no default donation product name is entered. */
-            $error     = __( 'Please enter a donation product name', 'wp-full-stripe-admin' );
+            $error     = __( 'Please enter a donation product name', 'wp-full-stripe-free' );
             $bindingResult->addFieldError( $fieldName, $fieldId, $error );
         }
     }
@@ -835,7 +932,7 @@ trait MM_WPFS_Admin_CheckoutPhoneNumberValidator_AddOn {
         if ( false === array_search( $formModelObject->getCollectPhoneNumber(), $yesNoValues ) ) {
             $error =
                 /* translators: Validation error message displayed if it's not selected whether the customer's phone number should be collected  */
-                __( 'Please select if the customer\'s phone number should be collected', 'wp-full-stripe-admin' );
+                __( 'Please select if the customer\'s phone number should be collected', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }
@@ -866,7 +963,7 @@ class MM_WPFS_Admin_CheckoutDonationFormValidator extends MM_WPFS_Admin_Donation
             $fieldName = MM_WPFS_Admin_CheckoutDonationFormView::FIELD_FORM_CHECKOUT_PRODUCT_NAME;
             $fieldId   = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModel->getFormHash() );
             /* translators: Validation error message when no donation product name is entered. The product name is displayed as line item of the donation form. */
-            $error     = __( 'Please enter a donation product name', 'wp-full-stripe-admin' );
+            $error     = __( 'Please enter a donation product name', 'wp-full-stripe-free' );
             $bindingResult->addFieldError( $fieldName, $fieldId, $error );
         }
     }
@@ -892,7 +989,7 @@ trait MM_WPFS_Admin_TaxRateValidatorTools {
 
         if ( false === array_search( $formModel->getTaxType(), $taxRateTypes )) {
             $error =
-                __( 'Please select a tax type (Tax tab)', 'wp-full-stripe-admin' );
+                __( 'Please select a tax type (Tax tab)', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
@@ -900,7 +997,7 @@ trait MM_WPFS_Admin_TaxRateValidatorTools {
             if ( count( $formModel->getTaxRates() ) > 2 ) {
                 $fieldName = MM_WPFS_Admin_View_TaxConstants::FIELD_FORM_TAX_RATES_ERROR;
                 $fieldId   = MM_WPFS_Admin_View_TaxConstants::FIELD_FORM_TAX_RATES_ERROR;
-                $error     = __( 'Please select at most two tax rates for the fixed rate calculation', 'wp-full-stripe-admin' );
+                $error     = __( 'Please select at most two tax rates for the fixed rate calculation', 'wp-full-stripe-free' );
 
                 $bindingResult->addFieldError( $fieldName, $fieldId, $error );
             }
@@ -921,7 +1018,7 @@ trait MM_WPFS_Admin_TaxRateValidatorTools {
             if ( $containsInclusive && $containsExclusive ) {
                 $fieldName = MM_WPFS_Admin_View_TaxConstants::FIELD_FORM_TAX_RATES_ERROR;
                 $fieldId   = MM_WPFS_Admin_View_TaxConstants::FIELD_FORM_TAX_RATES_ERROR;
-                $error     = __( 'Please don\'t mix inclusive and exclusive tax rates' , 'wp-full-stripe-admin' );
+                $error     = __( 'Please don\'t mix inclusive and exclusive tax rates' , 'wp-full-stripe-free' );
 
                 $bindingResult->addFieldError( $fieldName, $fieldId, $error );
             }
@@ -946,7 +1043,7 @@ abstract class MM_WPFS_Admin_PaymentFormValidator extends MM_WPFS_Admin_FormVali
 
         if ( false === array_search( $formModel->getCurrency(), array_keys( $currencies ) )) {
             $error =
-                __( 'Please select the payment currency (Payment tab)', 'wp-full-stripe-admin' );
+                __( 'Please select the payment currency (Payment tab)', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }
@@ -963,7 +1060,7 @@ abstract class MM_WPFS_Admin_PaymentFormValidator extends MM_WPFS_Admin_FormVali
 
         if ( false === array_search( $formModel->getPaymentType(), $paymentTypes )) {
             $error =
-                __( 'Please select a payment type (Payment tab)', 'wp-full-stripe-admin' );
+                __( 'Please select a payment type (Payment tab)', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }
@@ -1014,7 +1111,7 @@ abstract class MM_WPFS_Admin_PaymentFormValidator extends MM_WPFS_Admin_FormVali
                 $minimumAmount = MM_WPFS_Currencies::formatAndEscapeByAdmin( $this->staticContext, $formModel->getCurrency(), $formModel->getMinimumPaymentAmount(), false, true );
                 $error = sprintf(
                 /* translators: This error message is displayed when the payment form's minimum payment amount is larger than the lowest product price */
-                    __( 'The product price of %1$s is lower than the minimum payment amount of %2$s.', 'wp-full-stripe-admin' ), $productAmount, $minimumAmount  );
+                    __( 'The product price of %1$s is lower than the minimum payment amount of %2$s.', 'wp-full-stripe-free' ), $productAmount, $minimumAmount  );
                 $bindingResult->addFieldError( $fieldName, $fieldId, $error );
             }
         }
@@ -1032,7 +1129,7 @@ abstract class MM_WPFS_Admin_PaymentFormValidator extends MM_WPFS_Admin_FormVali
 
         if ( false === array_search( $formModel->getChargeType(), $chargeTypes )) {
             $error =
-                __( 'Please select a payment type (Payment tab)', 'wp-full-stripe-admin' );
+                __( 'Please select a payment type (Payment tab)', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }
@@ -1046,7 +1143,7 @@ abstract class MM_WPFS_Admin_PaymentFormValidator extends MM_WPFS_Admin_FormVali
             if ( count( $formModel->getOnetimeProducts() ) === 0 ) {
                 $fieldName = MM_WPFS_Admin_PaymentFormViewConstants::FIELD_FORM_ONETIME_PRODUCTS_ERROR;
                 $fieldId   = MM_WPFS_Admin_PaymentFormViewConstants::FIELD_FORM_ONETIME_PRODUCTS_ERROR;
-                $error     = __( 'Please select at least one product', 'wp-full-stripe-admin' );
+                $error     = __( 'Please select at least one product', 'wp-full-stripe-free' );
 
                 $bindingResult->addFieldError( $fieldName, $fieldId, $error );
             }
@@ -1067,7 +1164,7 @@ abstract class MM_WPFS_Admin_PaymentFormValidator extends MM_WPFS_Admin_FormVali
         if ( false === array_search( $formModel->getProductSelectorStyle(), $productSelectorStyles )) {
             $error =
                 /* translators: Validation error message when no product selector style selected, such as radio button list, or dropdown */
-                __( 'Please select a product selector style (Appearance tab)', 'wp-full-stripe-admin' );
+                __( 'Please select a product selector style (Appearance tab)', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }
@@ -1081,7 +1178,7 @@ abstract class MM_WPFS_Admin_PaymentFormValidator extends MM_WPFS_Admin_FormVali
 
         if ( false === array_search( $formModel->getShowCouponField(), $yesNoValues ) ) {
             $error =
-                __( 'Please select whether the coupon field should be displayed (Layout tab)', 'wp-full-stripe-admin' );
+                __( 'Please select whether the coupon field should be displayed (Layout tab)', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }
@@ -1095,7 +1192,7 @@ abstract class MM_WPFS_Admin_PaymentFormValidator extends MM_WPFS_Admin_FormVali
 
         if ( false === array_search( $formModel->getGenerateInvoice(), $yesNoValues ) ) {
             $error =
-                __( 'Please select whether invoice should be generated (Payment tab)', 'wp-full-stripe-admin' );
+                __( 'Please select whether invoice should be generated (Payment tab)', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }
@@ -1160,7 +1257,7 @@ class MM_WPFS_Admin_CheckoutPaymentFormValidator extends MM_WPFS_Admin_PaymentFo
             $fieldName = MM_WPFS_Admin_CheckoutPaymentFormViewConstants::FIELD_FORM_CHECKOUT_PRODUCT_NAME;
             $fieldId   = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModel->getFormHash() );
             /* translators: Validation error message when no name specified for the custom product. When a custom amount is entered on the form, the custom product name will be the name of the line item */
-            $error     = __( 'Please enter a custom product name', 'wp-full-stripe-admin' );
+            $error     = __( 'Please enter a custom product name', 'wp-full-stripe-free' );
             $bindingResult->addFieldError( $fieldName, $fieldId, $error );
         }
     }
@@ -1196,7 +1293,7 @@ abstract class MM_WPFS_Admin_SubscriptionFormValidator extends MM_WPFS_Admin_For
             $fieldName = MM_WPFS_Admin_SubscriptionFormViewConstants::FIELD_FORM_RECURRING_PRODUCTS_ERROR;
             $fieldId   = MM_WPFS_Admin_SubscriptionFormViewConstants::FIELD_FORM_RECURRING_PRODUCTS_ERROR;
             /* translators: Validation error message when no subscription plan is selected on a subscription form */
-            $error     = __( 'Please select at least one plan', 'wp-full-stripe-admin' );
+            $error     = __( 'Please select at least one plan', 'wp-full-stripe-free' );
 
             $bindingResult->addFieldError( $fieldName, $fieldId, $error );
         }
@@ -1217,7 +1314,7 @@ abstract class MM_WPFS_Admin_SubscriptionFormValidator extends MM_WPFS_Admin_For
                 $fieldName = MM_WPFS_Admin_SubscriptionFormViewConstants::FIELD_FORM_SUBSCRIPTION_MINIMUM_QUANTITY;
                 $fieldId   = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModel->getFormHash() );
                 /* translators: Validation error message when subscriptions can be purchased in bulk but no minimum quantity is entered */
-                $error     = __( 'Please enter the minimum subscription quantity or zero', 'wp-full-stripe' );
+                $error     = __( 'Please enter the minimum subscription quantity or zero', 'wp-full-stripe-free' );
                 $bindingResult->addFieldError( $fieldName, $fieldId, $error );
             }
             $filterOptions = array(
@@ -1229,7 +1326,7 @@ abstract class MM_WPFS_Admin_SubscriptionFormValidator extends MM_WPFS_Admin_For
                 $fieldName = MM_WPFS_Admin_SubscriptionFormViewConstants::FIELD_FORM_SUBSCRIPTION_MAXIMUM_QUANTITY;
                 $fieldId   = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModel->getFormHash() );
                 /* translators: Validation error message when subscriptions can be purchased in bulk but no maximum quantity is entered */
-                $error     = __( 'Please enter the maximum subscription quantity or zero', 'wp-full-stripe-admin' );
+                $error     = __( 'Please enter the maximum subscription quantity or zero', 'wp-full-stripe-free' );
                 $bindingResult->addFieldError( $fieldName, $fieldId, $error );
             }
             if ( ! $bindingResult->hasErrors() ) {
@@ -1238,7 +1335,7 @@ abstract class MM_WPFS_Admin_SubscriptionFormValidator extends MM_WPFS_Admin_For
                         $fieldName = MM_WPFS_Admin_SubscriptionFormViewConstants::FIELD_FORM_SUBSCRIPTION_MINIMUM_QUANTITY;
                         $fieldId   = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModel->getFormHash() );
                         /* translators: Validation error message when subscriptions can be purchased in bulk but maximum quantity is less than maximum quantity */
-                        $error     = __( 'Please enter a lower value for minimum subscription quantity', 'wp-full-stripe-admin' );
+                        $error     = __( 'Please enter a lower value for minimum subscription quantity', 'wp-full-stripe-free' );
                         $bindingResult->addFieldError( $fieldName, $fieldId, $error );
                     }
                 }
@@ -1259,7 +1356,7 @@ abstract class MM_WPFS_Admin_SubscriptionFormValidator extends MM_WPFS_Admin_For
         if ( false === array_search( $formModel->getProductSelectorStyle(), $productSelectorStyles )) {
             $error =
                 /* translators: Validation error message when no plan selector style selected, such as radio button list, dropdown, etc */
-                __( 'Please select a plan selector style (Appearance tab)', 'wp-full-stripe-admin' );
+                __( 'Please select a plan selector style (Appearance tab)', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }
@@ -1273,7 +1370,7 @@ abstract class MM_WPFS_Admin_SubscriptionFormValidator extends MM_WPFS_Admin_For
 
         if ( false === array_search( $formModel->getShowCouponField(), $yesNoValues ) ) {
             $error =
-                __( 'Please select whether the coupon field should be displayed (Layout tab)', 'wp-full-stripe-admin' );
+                __( 'Please select whether the coupon field should be displayed (Layout tab)', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }

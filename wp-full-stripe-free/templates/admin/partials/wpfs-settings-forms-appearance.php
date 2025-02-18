@@ -9,23 +9,23 @@
         <div class="wpfs-form__col">
             <div class="wpfs-form-group">
                 <label for="<?php $view->customCss()->id(); ?>" class="wpfs-form-label wpfs-form-label--actions">
-                    <?php esc_html_e( 'Custom CSS styles', 'wp-full-stripe-admin' ); ?>
+                    <?php esc_html_e( 'Custom CSS styles', 'wp-full-stripe-free' ); ?>
                 </label>
                 <textarea id="<?php $view->customCss()->id(); ?>" name="<?php $view->customCss()->name(); ?>" <?php $view->customCss()->attributes(); ?>>
                     <?php echo esc_html( $formsAppearance->customCss ); ?>
                 </textarea>
             </div>
             <div class="wpfs-form-actions">
-                <button class="wpfs-btn wpfs-btn-primary wpfs-button-loader"><?php esc_html_e( 'Save settings', 'wp-full-stripe-admin' ); ?></button>
+                <button class="wpfs-btn wpfs-btn-primary wpfs-button-loader"><?php esc_html_e( 'Save settings', 'wp-full-stripe-free' ); ?></button>
             </div>
         </div>
         <div class="wpfs-form__col">
             <div class="wpfs-inline-message wpfs-inline-message--info wpfs-inline-message--w448">
                 <div class="wpfs-inline-message__inner">
-                    <div class="wpfs-inline-message__title"><?php esc_html_e( 'About custom CSS styles', 'wp-full-stripe-admin' ); ?></div>
-                    <p><?php esc_html_e( "Add styling to your forms. Proceed only if you know what you're doing!", 'wp-full-stripe-admin' ); ?></p>
+                    <div class="wpfs-inline-message__title"><?php esc_html_e( 'About custom CSS styles', 'wp-full-stripe-free' ); ?></div>
+                    <p><?php esc_html_e( "Add styling to your forms. Proceed only if you know what you're doing!", 'wp-full-stripe-free' ); ?></p>
                     <p>
-                        <a class="wpfs-btn wpfs-btn-link" href="https://support.paymentsplugin.com/article/45-customizing-forms-with-css" target="_blank"><?php esc_html_e( 'Learn more about custom CSS styles', 'wp-full-stripe-admin' ); ?></a>
+                        <a class="wpfs-btn wpfs-btn-link" href="https://docs.themeisle.com/article/2114-customizing-forms-with-css" target="_blank"><?php esc_html_e( 'Learn more about custom CSS styles', 'wp-full-stripe-free' ); ?></a>
                     </p>
                 </div>
             </div>

@@ -30,6 +30,7 @@ jQuery.noConflict();
       "wpfs-suggested-donation-amount";
     const FORM_FIELD_MINIMUM_DONATION_AMOUNT =
       "wpfs-form-minimum-donation-amount";
+    const FORM_FIELD_DONATION_GOAL = "wpfs-form-donation-goal";
     const FORM_FIELD_MINIMUM_PAYMENT_AMOUNT =
       "wpfs-form-minimum-payment-amount";
     const FORM_FIELD_PLAN_SETUP_FEE = "wpfs-plan-setup-fee";
@@ -83,6 +84,8 @@ jQuery.noConflict();
       EMAIL_TEMPLATE_ID_DONATION_RECEIPT,
       EMAIL_TEMPLATE_ID_CUSTOMER_PORTAL_SECURITY_CODE,
     ];
+
+    const MY_ACCOUNT_USE_STRIPE_CUSTOMER_PORTAL  = "wpfs-my-account-use-stripe-customer-portal";
 
     WPFS.debugLog = false;
 
@@ -164,88 +167,47 @@ jQuery.noConflict();
       },
     };
 
-    WPFS.ShortcodePopover = {
-      init: function () {
-        $(".js-open-shortcode-popover").on("click", function (e) {
-          e.preventDefault();
-          e.stopPropagation();
+    function initPreviewDialog() {
+        if ( ! $( '#wpfs-modal-preview-form' ).length ) {
+          return;
+        }
 
-          $(".js-open-shortcode-popover")
-            .not(this)
-            .each(function () {
-              var tooltip = $(this).data("ui-tooltip");
-              if (tooltip) {
-                tooltip.enable();
-              }
-            });
+        WPFS.PreviewFormDialogView = Backbone.View.extend({
+          id: 'wpfs-preview-form-dialog',
+          className: 'wpfs-dialog-content',
+          attributes: {
+            title: 'Preview Form',
+          },
+          template: _.template( $( '#wpfs-modal-preview-form' ).html() ),
+          render: function () {
+            this.$el.html(this.template(this.model.attributes));
+            return this;
+          },
+        });
+
+        WPFS.PreviewFormDialogModel = Backbone.Model.extend({});
+
+        $('.js-open-preview-popover').on('click', function (event) {
+          event.preventDefault();
 
           var $this = $(this);
-          var $shortcodePopover = $(".js-shortcode-popover");
+          var shortcodeValue = '';
+          var shortcodeValue = $this.data('shortcode-value');
 
-          $this.blur();
-
-          $shortcodePopover.find("input").val($this.data("shortcode-value"));
-
-          var $window = $(window);
-          var viewportHeight = $window.height() + $window.scrollTop();
-          var popoverTop = $this.offset().top - 32;
-          var popoverBottomTop =
-            popoverTop + $shortcodePopover.outerHeight() + 60;
-
-          if (viewportHeight > popoverBottomTop) {
-            $shortcodePopover.css({
-              top: popoverTop + 28,
-            });
-          } else {
-            $shortcodePopover.css({
-              top: popoverTop - $shortcodePopover.outerHeight() - 8,
-            });
-          }
-
-          $shortcodePopover.fadeIn(300);
-          var tooltip = $this.data("ui-tooltip");
-          if (tooltip) {
-            tooltip.disable();
-          }
-
-          $(document.body).on("click.wpfs-shortcode-popover", function (e) {
-            if (!$(e.target).closest(".js-shortcode-popover").length) {
-              if (tooltip) {
-                tooltip.enable();
-              }
-
-              $shortcodePopover.fadeOut(300);
-
-              $(document.body).off("click.wpfs-shortcode-popover");
-              $(document.body).off("keyup.wpfs-shortcode-popover");
-            }
+          WPFS.previewFormDialogModel = new WPFS.PreviewFormDialogModel({
+            previewUrl: window.ajaxurl + '?action=wpfs-preview-form&shortcode=' + encodeURIComponent( shortcodeValue ) + '&nonce=' + wpfsAdminSettings.nonce,
           });
 
-          $(document).on("keyup.wpfs-shortcode-popover", function (e) {
-            if (WPFS.KeyboardKeys.isEsc(e)) {
-              $(document.body).trigger("click");
-            }
+          var previewFormDialogView = new WPFS.PreviewFormDialogView({
+            model: WPFS.previewFormDialogModel,
           });
+
+          $('#wpfs-dialog-container')
+          .empty()
+          .append(previewFormDialogView.render().el);
+
+          WPFS.Dialog.open('#wpfs-preview-form-dialog');
         });
-
-        $(".js-close-shortcode-popover").on("click", function (e) {
-          e.preventDefault();
-          $(document.body).trigger("click");
-        });
-
-        $(".js-copy-shortcode").on("click", function (e) {
-          e.preventDefault();
-
-          var $shortcodePopover = $(".js-shortcode-popover");
-          var shortcode = $shortcodePopover.find("input").val();
-          WPFS.copyToClipboard(shortcode);
-          WPFS.displaySuccessMessageBanner(
-            wpfsAdminL10n.shortcodeCopiedMessage
-          );
-
-          $(document.body).trigger("click");
-        });
-      },
     };
 
     WPFS.InsertToken = {
@@ -795,9 +757,24 @@ jQuery.noConflict();
       return $("#wpfs-form-list") && $("#wpfs-form-list").length > 0;
     }
 
+    function onFormsConnectPage() {
+      return $(".wpfs-connect-state").length > 0;
+    }
+
     function initManageFormsDialogs() {
       initDeleteFormDialog();
       initCloneFormDialog();
+    }
+
+    function initShortcodeCopy() {
+      const shortcodeCopy = document.querySelectorAll( '.js-copy-shortcode' );
+
+      shortcodeCopy.forEach( inputField => {
+        inputField.addEventListener( 'click', () => {
+          WPFS.copyToClipboard( inputField.value );
+          WPFS.displaySuccessMessageBanner( wpfsAdminL10n.shortcodeCopiedMessage );
+        });
+      });
     }
 
     function initFormListFilter() {
@@ -811,6 +788,11 @@ jQuery.noConflict();
         initErrorDialog();
         initManageFormsDialogs();
         initFormListFilter();
+        initShortcodeCopy();
+      }
+
+      if (onFormsConnectPage()) {
+        initEventHandlersOnTheSettingsStripeAccountPage();
       }
     };
 
@@ -1731,12 +1713,6 @@ jQuery.noConflict();
       );
     }
 
-    function onMainSettingsPage() {
-      return (
-        $("div.wpfs-page-settings") && $("div.wpfs-page-settings").length > 0
-      );
-    }
-
     function checkQueryParameters() {
       if (
         typeof accountIdFromPHP !== "undefined" &&
@@ -1787,9 +1763,7 @@ jQuery.noConflict();
     }
 
     function initWebhookUrlCopyToClipboard() {
-      $(".js-copy-webhook-url").on("click", function (e) {
-        e.preventDefault();
-
+      $(".js-copy-webhook-url").on("focus", function (e) {
         var $this = $(this);
         copyWebhookUrlToClipboardFromNode($this);
       });
@@ -1804,9 +1778,7 @@ jQuery.noConflict();
     };
 
     WPFS.initSettings = function () {
-      if (onMainSettingsPage()) {
-        checkQueryParameters();
-      }
+      checkQueryParameters();
     };
 
     function updateWhenToCancelSubscriptionOption() {
@@ -2576,6 +2548,36 @@ jQuery.noConflict();
       }
     };
 
+    function initStripePortalEffect() {
+      var $useStripePortal = $('input[name="' + MY_ACCOUNT_USE_STRIPE_CUSTOMER_PORTAL + '"]');
+      var $stripePortalFormBlocks = $(".wpfs-form-block--can-be-disabled");
+
+      function toggleStripePortalFormBlocks() {
+        if ($useStripePortal.prop("checked")) {
+          $stripePortalFormBlocks.css("pointer-events", "none").css("opacity", "0.5");
+        } else {
+          $stripePortalFormBlocks.css("pointer-events", "auto").css("opacity", "1");
+        }
+      }
+
+      $useStripePortal.on("change", toggleStripePortalFormBlocks);
+
+      toggleStripePortalFormBlocks();
+    };
+
+    function onSettingsCustomerPortal() {
+      return (
+        $("div.wpfs-page-settings-my-account") &&
+        $("div.wpfs-page-settings-my-account").length > 0
+      );
+    }
+
+    WPFS.initSettingsCustomerPortal = function () {
+      if ( onSettingsCustomerPortal() ) {
+        initStripePortalEffect();
+      }
+    };
+
     function initEventHandlersOnSettingsWordpressDashboard() {
       $("#wpfs-save-wp-dashboard").submit(function (e) {
         e.preventDefault();
@@ -2639,6 +2641,70 @@ jQuery.noConflict();
       if (onSettingsLogs()) {
         initEventHandlersOnSettingsLogs();
         initErrorDialog();
+      }
+    };
+
+    function onSettingsLicense() {
+      return (
+        $("div.wpfs-page-settings-license") &&
+        $("div.wpfs-page-settings-license").length > 0
+      );
+    }
+
+    function toggleLicense( $form, $key, $action ) {
+      WPFS.showButtonLoader($form);
+      $.ajax({
+        type: "POST",
+        url: wpfsAdminSettings.ajaxUrl,
+        data: {
+          action: "wpfs-toggle-license",
+          key: $key,
+          licenseAction: $action,
+          nonce: wpfsAdminSettings.nonce,
+        },
+        cache: false,
+        dataType: "json",
+        success: function (responseData) {
+          if (responseData.success && responseData.license.valid ) {
+            WPFS.displaySuccessMessageBanner(responseData?.message);
+            WPFS.setTimeoutToRedirect(responseData.redirectURL, 1000);
+          } else {
+            WPFS.showErrorGlobalMessage(
+              $form,
+              wpfsAdminL10n.licenseError,
+              responseData?.message
+            );
+          }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          logError(
+            "wpfs-admin.makeAjaxCallWithForm()",
+            jqXHR,
+            textStatus,
+            errorThrown
+          );
+        },
+        complete: function () {
+          WPFS.hideButtonLoader($form);
+        },
+      });
+    }
+
+    WPFS.initSettingsLicense = function () {
+      if ( onSettingsLicense() ) {
+        $("#wpfs-form-license-activate").on("submit", function (e) {
+          e.preventDefault();
+          var $form = $(this);
+          $key = $("#wpfs-form-license").val();
+          toggleLicense( $form, $key, "activate" );
+        });
+
+        $("#wpfs-form-license-deactivate").on("submit", function (e) {
+          e.preventDefault();
+          var $form = $(this);
+          $key = $("#wpfs-form-license").val();
+          toggleLicense( $form, $key, "deactivate" );
+        });
       }
     };
 
@@ -3187,6 +3253,15 @@ jQuery.noConflict();
       return extractAmountWithCurrencyNode(amountStr, $currency);
     }
 
+    function extractDonationGoalAmount($form) {
+      var $currency = $('select[name="wpfs-form-currency"] option:selected');
+      var amountStr = $(
+        'input[name="' + FORM_FIELD_DONATION_GOAL + '"]'
+      ).val();
+
+      return extractAmountWithCurrencyNode(amountStr, $currency);
+    }
+
     function extractMininumPaymentAmount($form) {
       var $currency = $('select[name="wpfs-form-currency"] option:selected');
       var amountStr = $(
@@ -3225,6 +3300,12 @@ jQuery.noConflict();
       initEditFormMinimumDonationAmountEvents();
     }
 
+    function initEditDonationGoalAmount() {
+      initEditFormDonationGoalAmountTemplate();
+      initEditFormRenderDonationGoalAmount();
+      initEditFormDonationGoalAmountEvents();
+    }
+
     function initEditDonationFormAmounts() {
       initEditSuggestDonationAmounts();
       initEditMinimumDonationAmount();
@@ -3254,6 +3335,7 @@ jQuery.noConflict();
       initEditFormCustomFields();
       initEditFormEmailTemplates();
       initFormCssIdCopyToClipboard();
+      new WebhookFormManager( WPFS );
 
       $("#wpfs-save-inline-save-card-form").submit(function (e) {
         e.preventDefault();
@@ -3273,6 +3355,7 @@ jQuery.noConflict();
       initEditFormCustomFields();
       initEditFormEmailTemplates();
       initFormCssIdCopyToClipboard();
+      new WebhookFormManager( WPFS );
 
       $("#wpfs-save-checkout-save-card-form").submit(function (e) {
         e.preventDefault();
@@ -3304,6 +3387,7 @@ jQuery.noConflict();
     function initInlineSaveCardFormEdit() {
       if (onInlineSaveCardFormEdit()) {
         initEventHandlersOnInlineSaveCardFormEdit();
+        initPreviewDialog();
       }
     }
 
@@ -3317,6 +3401,7 @@ jQuery.noConflict();
     function initCheckoutSaveCardFormEdit() {
       if (onCheckoutSaveCardFormEdit()) {
         initEventHandlersOnCheckoutSaveCardFormEdit();
+        initPreviewDialog();
       }
     }
 
@@ -3408,6 +3493,89 @@ jQuery.noConflict();
       );
 
       updateMinimumDonationAmount();
+    }
+
+    function initEditFormDonationGoalAmountTemplate() {
+      WPFS.DonationGoalAmountView = Backbone.View.extend({
+        className: "wpfs-input-group wpfs-input-group--sm",
+        template: _.template(
+          $("#wpfs-fragment-donation-goal-amount-template").html()
+        ),
+        render: function () {
+          this.$el.html(this.template(this.model.attributes));
+          return this;
+        },
+      });
+      WPFS.DonationGoalAmountModel = Backbone.Model.extend({});
+
+      WPFS.donationGoalAmountModel = new WPFS.DonationGoalAmountModel({});
+      WPFS.donationGoalAmountView = new WPFS.DonationGoalAmountView({
+        model: WPFS.donationGoalAmountModel,
+      });
+    }
+
+    function renderDonationGoalAmount() {
+      $("#wpfs-donation-goal-amount-container").append(
+        WPFS.donationGoalAmountView.render().el
+      );
+    }
+
+    function initEditFormRenderDonationGoalAmount() {
+      var currencyKey = getSelectedCurrencyCode();
+
+      WPFS.donationGoalAmountModel.set(
+        "currencySymbol",
+        getCurrencySymbolByAdminSettings(currencyKey)
+      );
+      WPFS.donationGoalAmountModel.set(
+        "donationGoal",
+        formatAmountWithAdminSettings(window.wpfsDonationGoalAmount, currencyKey)
+      );
+
+      renderDonationGoalAmount();
+    }
+
+    function initEditFormDonationGoalAmountEvents() {
+      function updateDonationGoalAmount() {
+        if (
+          $('input[name="wpfs-form-show-donation-goal"]').is(
+            ":checked"
+          )
+        ) {
+          $("#wpfs-donation-goal").show();
+        } else {
+          $("#wpfs-donation-goal").hide();
+        }
+      }
+
+      $('input[name="wpfs-form-donation-goal"]').on(
+        "blur",
+        function () {
+          WPFS.donationGoalAmountModel.set(
+            "donationGoal",
+            $('input[name="wpfs-form-donation-goal"]').val()
+          );
+        }
+      );
+
+      $('select[name="wpfs-form-currency"]').on("comboboxchange", function () {
+        var currencyKey = getSelectedCurrencyCode();
+        WPFS.donationGoalAmountModel.set(
+          "currencySymbol",
+          getCurrencySymbolByAdminSettings(currencyKey)
+        );
+
+        renderDonationGoalAmount();
+      });
+
+      $('input[name="wpfs-form-show-donation-goal"]').on(
+        "click",
+        function (e) {
+          updateDonationGoalAmount();
+        }
+      );
+
+      updateDonationGoalAmount();
     }
 
     function initEditFormSuggestedDonationAmountTemplates() {
@@ -3511,6 +3679,14 @@ jQuery.noConflict();
         .val(minimumDonationAmount);
     }
 
+    function transformDonationGoalAmount($form) {
+      var donationGoalAmount = extractDonationGoalAmount($form);
+
+      $form
+        .find('input[name="wpfs-form-donation-goal-hidden"]')
+        .val(donationGoalAmount);
+    }
+
     function transformMinimumPaymentAmount($form) {
       var minimumPaymentAmount = extractMininumPaymentAmount($form);
 
@@ -3522,12 +3698,14 @@ jQuery.noConflict();
     function initEventHandlersOnInlineDonationFormEdit() {
       initEditFormTabs();
       initEditDonationFormAmounts();
+      initEditDonationGoalAmount();
       initEditFormTransactionDescription();
       initEditFormBillingShippingAddress();
       initEditFormTermsOfService();
       initEditFormCustomFields();
       initEditFormEmailTemplates();
       initFormCssIdCopyToClipboard();
+      new WebhookFormManager( WPFS );
 
       $("#wpfs-save-inline-donation-form").submit(function (e) {
         e.preventDefault();
@@ -3536,6 +3714,7 @@ jQuery.noConflict();
         transformCustomFields($form);
         transformEmailTemplates($form);
         transformDonationAmounts($form);
+        transformDonationGoalAmount($form);
         transformMinimumDonationAmount($form);
         WPFS.makeAjaxCallWithForm($form);
       });
@@ -3551,18 +3730,21 @@ jQuery.noConflict();
     function initInlineDonationFormEdit() {
       if (onInlineDonationFormEdit()) {
         initEventHandlersOnInlineDonationFormEdit();
+        initPreviewDialog();
       }
     }
 
     function initEventHandlersOnCheckoutDonationFormEdit() {
       initEditFormTabs();
       initEditDonationFormAmounts();
+      initEditDonationGoalAmount();
       initEditFormTransactionDescription();
       initEditFormBillingShippingAddress();
       initEditFormTermsOfService();
       initEditFormCustomFields();
       initEditFormEmailTemplates();
       initFormCssIdCopyToClipboard();
+      new WebhookFormManager( WPFS );
 
       $("#wpfs-save-checkout-donation-form").submit(function (e) {
         e.preventDefault();
@@ -3571,6 +3753,7 @@ jQuery.noConflict();
         transformCustomFields($form);
         transformEmailTemplates($form);
         transformDonationAmounts($form);
+        transformDonationGoalAmount($form);
         transformMinimumDonationAmount($form);
         WPFS.makeAjaxCallWithForm($form);
       });
@@ -3586,6 +3769,7 @@ jQuery.noConflict();
     function initCheckoutDonationFormEdit() {
       if (onCheckoutDonationFormEdit()) {
         initEventHandlersOnCheckoutDonationFormEdit();
+        initPreviewDialog();
       }
     }
 
@@ -4367,6 +4551,7 @@ jQuery.noConflict();
       initEditFormCustomFields();
       initEditFormEmailTemplates();
       initFormCssIdCopyToClipboard();
+      new WebhookFormManager( WPFS );
 
       $("#wpfs-save-inline-payment-form").submit(function (e) {
         e.preventDefault();
@@ -4391,6 +4576,7 @@ jQuery.noConflict();
     function initInlinePaymentFormEdit() {
       if (onInlinePaymentFormEdit()) {
         initEventHandlersOnInlinePaymentFormEdit();
+        initPreviewDialog();
       }
     }
 
@@ -4406,6 +4592,7 @@ jQuery.noConflict();
       initEditFormCustomFields();
       initEditFormEmailTemplates();
       initFormCssIdCopyToClipboard();
+      new WebhookFormManager( WPFS );
 
       $("#wpfs-save-checkout-payment-form").submit(function (e) {
         e.preventDefault();
@@ -4430,6 +4617,7 @@ jQuery.noConflict();
     function initCheckoutPaymentFormEdit() {
       if (onCheckoutPaymentFormEdit()) {
         initEventHandlersOnCheckoutPaymentFormEdit();
+        initPreviewDialog();
       }
     }
 
@@ -5333,6 +5521,7 @@ jQuery.noConflict();
       initEditFormCustomFields();
       initEditFormEmailTemplates();
       initFormCssIdCopyToClipboard();
+      new WebhookFormManager( WPFS );
 
       $("#wpfs-save-inline-subscription-form").submit(function (e) {
         e.preventDefault();
@@ -5356,6 +5545,7 @@ jQuery.noConflict();
     function initInlineSubscriptionFormEdit() {
       if (onInlineSubscriptionFormEdit()) {
         initEventHandlersOnInlineSubscriptionFormEdit();
+        initPreviewDialog();
       }
     }
 
@@ -5369,6 +5559,7 @@ jQuery.noConflict();
       initEditFormCustomFields();
       initEditFormEmailTemplates();
       initFormCssIdCopyToClipboard();
+      new WebhookFormManager( WPFS );
 
       $("#wpfs-save-checkout-subscription-form").submit(function (e) {
         e.preventDefault();
@@ -5392,6 +5583,20 @@ jQuery.noConflict();
     function initCheckoutSubscriptionFormEdit() {
       if (onCheckoutSubscriptionFormEdit()) {
         initEventHandlersOnCheckoutSubscriptionFormEdit();
+        initPreviewDialog();
+      }
+    }
+
+    function onEditFormList() {
+      return (
+        $("div.wpfs-page-payment-forms") &&
+        $("div.wpfs-page-payment-forms").length > 0
+      );
+    };
+
+    function initEditFormList() {
+      if ( onEditFormList() ) {
+        initPreviewDialog();
       }
     }
 
@@ -5404,6 +5609,7 @@ jQuery.noConflict();
       initCheckoutPaymentFormEdit();
       initInlineSubscriptionFormEdit();
       initCheckoutSubscriptionFormEdit();
+      initEditFormList();
     };
 
     WPFS.initDemoMessage = function () {
@@ -5417,6 +5623,105 @@ jQuery.noConflict();
       }
     };
 
+    WPFS.initOnboarding = function () {
+      if ( window.location.search.indexOf( 'onboarding=true' ) === -1 ) {
+        return;
+      }
+
+      const steps = document.querySelectorAll( '.wpfs-step' );
+      const progressMarkers = document.querySelectorAll( '.wpfs-step-marker' );
+      const progressLines = document.querySelectorAll( '.wpfs-progress-line' );
+      const stripeConnectBtn = document.getElementById( 'wpfs-create-test-stripe-connect-account' );
+      const subscribeBtn = document.getElementById( 'wpfs-subscribe-brevo' );
+
+      stripeConnectBtn?.addEventListener( 'click', e => {
+        e.preventDefault();
+        WPFS.makeCreateStripeConnectAccountAjaxCall("test");
+      });
+
+      subscribeBtn?.addEventListener( 'click', e => {
+        e.preventDefault();
+        $( '.wpfs-button-loader' ).addClass( 'wpfs-btn-primary--loader' ).prop( 'disabled', true );
+
+        let emailInput = document.getElementById( 'wpfs-subscribe-email' );
+
+        const emailInputParent = emailInput.parentElement;
+        const emailInputError = emailInputParent.querySelector( '.wpfs-form-error-message' );
+        if ( emailInputError ) {
+          emailInputError.remove();
+        }
+
+        if ( ! emailInput?.value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test( emailInput?.value ) ) {
+          $( '.wpfs-button-loader' ).removeClass( 'wpfs-btn-primary--loader' ).prop( 'disabled', false );
+
+            const emailInputErrorMessage = document.createElement( 'p' );
+            emailInputErrorMessage.classList.add( 'wpfs-form-error-message' );
+            emailInputErrorMessage.textContent = 'Please enter a valid email address.';
+            emailInputParent.appendChild( emailInputErrorMessage );
+        }
+
+        fetch( 'https://api.themeisle.com/tracking/subscribe', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json, */*;q=0.1',
+            'Cache-Control': 'no-cache'
+          },
+          body: JSON.stringify({
+            slug: 'wp-full-pay',
+            site: window.wpfsAdminSettings.rootUrl,
+            email: emailInput?.value
+          })
+        }).then( r => {
+          nextStep();
+        })?.catch( () => {
+          $( '.wpfs-button-loader' ).removeClass( 'wpfs-btn-primary--loader' ).prop( 'disabled', false );
+
+          const emailInputErrorMessage = document.createElement( 'p' );
+          emailInputErrorMessage.classList.add( 'wpfs-form-error-message' );
+          emailInputErrorMessage.textContent = 'An error occurred. Please try again later.';
+          emailInputParent.appendChild( emailInputErrorMessage );
+        });
+      });
+
+      function updateProgress ( currentStep ) {
+          steps.forEach( ( step, index ) => {
+              step.classList.remove( 'wpfs-active' );
+              progressMarkers[ index ].classList.remove( 'wpfs-active', 'wpfs-completed' );
+              progressLines[ index ]?.classList.remove( 'wpfs-completed' );
+
+              if ( index < currentStep ) {
+                  progressMarkers[ index ].classList.add( 'wpfs-completed' );
+                  progressMarkers[ index ].textContent = '✓';
+                  progressLines[ index ].classList.add( 'wpfs-completed' );
+              }
+              
+              if ( index === currentStep ) {
+                  step.classList.add( 'wpfs-active' );
+                  progressMarkers[ index ].classList.add( 'wpfs-active' );
+              }
+          });
+      }
+
+      let currentStep = 0;
+
+      function nextStep () {
+          if ( currentStep < steps.length - 1 ) {
+              currentStep++;
+              updateProgress( currentStep );
+          }
+      }
+
+      if ( Boolean( window.wpfsAdminSettings.connected ) ) {
+        nextStep();
+      }
+
+      const nextButtons = document.querySelectorAll( '.wpfs-next' );
+      nextButtons.forEach( ( button ) => {
+          button.addEventListener( 'click', nextStep );
+      });
+    };
+
     $(function () {
       WPFS.InputGroup.init();
       WPFS.Selectmenu.init();
@@ -5427,7 +5732,6 @@ jQuery.noConflict();
       WPFS.HelpDropdown.init();
       WPFS.Controls.init();
       WPFS.Carousel.init();
-      WPFS.ShortcodePopover.init();
       WPFS.Webhook.init();
       WPFS.ToPascalCase.init();
       WPFS.Sortable.init();
@@ -5446,10 +5750,255 @@ jQuery.noConflict();
       WPFS.initSettingsEmailTemplates();
       WPFS.initSettingsFormsOptions();
       WPFS.initSettingsFormsAppearance();
+      WPFS.initSettingsCustomerPortal();
       WPFS.initSettingsWordpressDashboard();
       WPFS.initSettingsLogs();
+      WPFS.initSettingsLicense();
       WPFS.initFormEdit();
       WPFS.initDemoMessage();
+      WPFS.initOnboarding();
     });
   });
 })(jQuery);
+
+class WebhookFormManager {
+  constructor( WPFS ) {
+      // Initialize elements
+      this.initializeElements();
+
+      // Only proceed if required elements exist
+      if (!this.jsonInput) {
+          console.error('Webhook JSON input not found');
+          return;
+      }
+
+      // Initialize state and bind events if we have the minimum required elements
+      this.initializeState();
+      this.bindEvents();
+      this.WPFS = WPFS;
+  }
+
+  initializeElements() {
+      this.jsonInput = document.querySelector('input[name*="webhook"]');
+      this.urlInput = document.querySelector('#wpfs-form-webhook-url');
+      this.headersContainer = document.querySelector('#wpfs-form-webhook-headers');
+      this.addHeaderButton = document.querySelector('#wpfs-add-webhook-header');
+      this.testButton = document.querySelector('#wpfs-test-webhook');
+
+      // Log missing elements for debugging
+      if (!this.urlInput) console.warn('URL input not found');
+      if (!this.headersContainer) console.warn('Headers container not found');
+      if (!this.addHeaderButton) console.warn('Add header button not found');
+      if (!this.testButton) console.warn('Test button not found');
+  }
+
+  initializeState() {
+      try {
+          this.state = this.jsonInput.value ?
+              JSON.parse(this.jsonInput.value) :
+              {
+                  url: '',
+                  headers: {
+                      'Content-Type': 'application/json'
+                  }
+              };
+      } catch (e) {
+          console.error('Error parsing webhook JSON:', e);
+          this.state = {
+              url: '',
+              headers: {
+                  'Content-Type': 'application/json'
+              }
+          };
+      }
+
+      // Initialize form with current state
+      if (this.urlInput) {
+          this.urlInput.value = this.state.url;
+      }
+      if (this.headersContainer) {
+          this.renderHeaders();
+      }
+  }
+
+  bindEvents() {
+      // URL changes
+      if (this.urlInput) {
+          this.urlInput.addEventListener('input', () => {
+              this.state.url = this.urlInput.value;
+              this.updateJsonInput();
+          });
+      }
+
+      // Add new header - ensure button click doesn't submit form
+      if (this.addHeaderButton) {
+          this.addHeaderButton.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              this.addHeader();
+          });
+      }
+
+      // Header container delegation for all buttons and input changes
+      if (this.headersContainer) {
+          this.headersContainer.addEventListener('click', (e) => {
+              // Prevent any button clicks from submitting the form
+              if (e.target.tagName.toLowerCase() === 'button' ||
+                  e.target.closest('button')) {
+                  e.preventDefault();
+                  e.stopPropagation();
+              }
+
+              const removeBtn = e.target.closest('#wpfs-remove-webhook-header');
+              if (removeBtn) {
+                  const headerRow = removeBtn.closest('.wpfs-form-group');
+                  this.removeHeader(headerRow);
+              }
+          });
+
+          // Prevent form submission on enter key in header inputs
+          this.headersContainer.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter' && e.target.matches('input[type="text"]')) {
+                  e.preventDefault();
+                  e.stopPropagation();
+              }
+          });
+
+          this.headersContainer.addEventListener('input', (e) => {
+              if (e.target.matches('input[type="text"]')) {
+                  this.updateHeaderState();
+              }
+          });
+      }
+
+      // Test button
+      if (this.testButton) {
+          this.testButton.addEventListener('click', (e) => {
+              e.preventDefault();
+              this.testWebhook();
+          });
+      }
+  }
+
+  renderHeaders() {
+      if (!this.headersContainer || !this.addHeaderButton) return;
+
+      // Clear existing header rows (except the label and add button)
+      const headerRows = this.headersContainer.querySelectorAll('.wpfs-form-group.wpfs-center');
+      headerRows.forEach(row => row.remove());
+
+      // Add header rows from state
+      Object.entries(this.state.headers).forEach(([key, value]) => {
+          this.addHeader(key, value);
+      });
+  }
+
+  addHeader(key = '', value = '') {
+      if (!this.headersContainer || !this.addHeaderButton) return;
+
+      const headerRow = document.createElement('div');
+      headerRow.className = 'wpfs-form-group wpfs-center wpfs-gap';
+      headerRow.innerHTML = `
+          <input type="text"
+                 class="wpfs-form-control"
+                 name="wpfs-form-webhook-header-key[]"
+                 placeholder="${ wpfsAdminL10n?.key }"
+                 value="${ key }">
+          <input type="text"
+                 class="wpfs-form-control"
+                 name="wpfs-form-webhook-header-value[]"
+                 placeholder="${ wpfsAdminL10n?.value }"
+                 value="${ value }">
+          <button type="button"
+                  class="wpfs-btn wpfs-btn-icon wpfs-btn-icon--20"
+                  id="wpfs-remove-webhook-header">
+              <span class="wpfs-icon-trash"></span>
+          </button>
+      `;
+
+      // Insert before the "Add Header" button
+      this.addHeaderButton.parentElement.insertBefore(headerRow, this.addHeaderButton);
+      this.updateHeaderState();
+  }
+
+  removeHeader(headerRow) {
+      if (!headerRow) return;
+
+      headerRow.remove();
+      this.updateHeaderState();
+  }
+
+  updateHeaderState() {
+      if (!this.headersContainer) return;
+
+      // Rebuild headers object from current inputs
+      const headers = {};
+      const rows = this.headersContainer.querySelectorAll('.wpfs-form-group.wpfs-center');
+
+      rows.forEach(row => {
+          const keyInput = row.querySelector('input[name="wpfs-form-webhook-header-key[]"]');
+          const valueInput = row.querySelector('input[name="wpfs-form-webhook-header-value[]"]');
+
+          if (keyInput && valueInput) {
+              const key = keyInput.value.trim();
+              const value = valueInput.value.trim();
+
+              if (key) {
+                  headers[key] = value;
+              }
+          }
+      });
+
+      this.state.headers = headers;
+      this.updateJsonInput();
+  }
+
+  updateJsonInput() {
+      if (this.jsonInput) {
+          this.jsonInput.value = JSON.stringify(this.state);
+      }
+  }
+
+  async testWebhook() {
+      if ( ! this.state.url ) {
+          alert( wpfsAdminL10n?.webhookUrlMissingMessage );
+          return;
+      }
+
+      this.WPFS.showButtonLoader();
+      try {
+          const response = await fetch(this.state.url, {
+              method: 'POST',
+              headers: this.state.headers,
+              body: JSON.stringify({
+                  test: true
+              })
+          });
+
+          if (response.ok) {
+            this.WPFS.displaySuccessMessageBanner( wpfsAdminL10n?.webhookTestSuccessMessage );
+          } else {
+              alert( wpfsAdminL10n?.webhookTestFailureMessage );
+          }
+      } catch (e) {
+          console.error( wpfsAdminL10n?.webhookTestFailureMessage, e );
+          alert( wpfsAdminL10n?.webhookTestFailureMessage );
+      }
+      this.WPFS.hideButtonLoader();
+  }
+}
+
+const convertToCategory = ( number, scale = 1 ) => {
+	const normalizedNumber = Math.round( number / scale );
+	if ( 0 === normalizedNumber || 1 === normalizedNumber ) {
+		return 0;
+	} else if ( 1 < normalizedNumber && 8 > normalizedNumber ) {
+		return 7;
+	} else if ( 8 <= normalizedNumber && 31 > normalizedNumber ) {
+		return 30;
+	} else if ( 30 < normalizedNumber && 90 > normalizedNumber ) {
+		return 90;
+	} else if ( 90 < normalizedNumber ) {
+		return 91;
+	}
+};

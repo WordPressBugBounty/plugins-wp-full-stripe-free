@@ -18,7 +18,7 @@
     </div>
 </div>
 <div id="subscription-maximum-plan-quantity" class="wpfs-form-group" style="<?php echo $form->allowMultipleSubscriptions == 0 ? 'display: none;' : ''; ?>">
-    <label for="<?php $view->subscriptionMinimumQuantity()->id(); ?>" class="wpfs-form-label"><?php esc_html_e( 'Limit plan quantity', 'wp-full-stripe-admin' ); ?></label>
+    <label for="<?php $view->subscriptionMinimumQuantity()->id(); ?>" class="wpfs-form-label"><?php esc_html_e( 'Limit plan quantity', 'wp-full-stripe-free' ); ?></label>
     <div class="wpfs-form-inputs">
         <div class="wpfs-input-group wpfs-input-group--filled wpfs-input-group--w120">
             <div class="wpfs-input-group-prepend">
@@ -34,5 +34,5 @@
             <input id="<?php $view->subscriptionMaximumQuantity()->id(); ?>" name="<?php $view->subscriptionMaximumQuantity()->name(); ?>" <?php $view->subscriptionMaximumQuantity()->attributes(); ?> value="<?php echo $form->maximumQuantityOfSubscriptions; ?>">
         </div>
     </div>
-    <div class="wpfs-form-help"><?php esc_html_e( 'Enter 0 (zero) if there is no limit', 'wp-full-stripe-admin' ); ?></div>
+    <div class="wpfs-form-help"><?php esc_html_e( 'Enter 0 (zero) if there is no limit', 'wp-full-stripe-free' ); ?></div>
 </div>

@@ -216,19 +216,19 @@ class MM_WPFS_LoggerService {
 
 		switch ( $level ) {
 			case self::LEVEL_ERROR:
-				$result = __( 'Error', 'wp-full-stripe-admin' );
+				$result = __( 'Error', 'wp-full-stripe-free' );
 				break;
 
 			case self::LEVEL_WARNING:
-				$result = __( 'Warning', 'wp-full-stripe-admin' );
+				$result = __( 'Warning', 'wp-full-stripe-free' );
 				break;
 
 			case self::LEVEL_INFO:
-				$result = __( 'Info', 'wp-full-stripe-admin' );
+				$result = __( 'Info', 'wp-full-stripe-free' );
 				break;
 
 			case self::LEVEL_DEBUG:
-				$result = __( 'Debug', 'wp-full-stripe-admin' );
+				$result = __( 'Debug', 'wp-full-stripe-free' );
 				break;
 		}
 

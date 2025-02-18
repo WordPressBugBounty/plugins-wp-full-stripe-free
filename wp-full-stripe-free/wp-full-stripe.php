@@ -5,9 +5,9 @@ Plugin Name: WP Full Pay
 Plugin URI: https://paymentsplugin.com
 Description: Use WP Full Pay to accept Stripe payments on your WordPress. Prebuilt forms to accept payments, donations and subscriptions. 
 Author: Themeisle
-Version: 8.0.1
+Version: 8.1.0
 Author URI: https://themeisle.com
-Text Domain: wp-full-stripe
+Text Domain: wp-full-stripe-free
 Domain Path: /languages
 Requires License: yes
 WordPress Available: yes
@@ -25,6 +25,7 @@ define( 'WP_FULL_STRIPE_CRON_SCHEDULES_KEY_15_MIN', '15min' );
 
 if ( ! defined( 'WP_FULL_STRIPE_NAME' ) ) {
 	define( 'WP_FULL_STRIPE_NAME', trim( dirname( plugin_basename( __FILE__ ) ), '/' ) );
+    define( 'WP_FULL_STRIPE_PRODUCT_SLUG', dirname( plugin_basename( __FILE__ ) ) );
 }
 
 if ( ! defined( 'WP_FULL_STRIPE_BASENAME' ) ) {
@@ -35,10 +36,10 @@ if ( ! defined( 'WP_FULL_STRIPE_DIR' ) ) {
 	define( 'WP_FULL_STRIPE_DIR', plugin_dir_path( __FILE__ ) );
 }
 
-function wp_full_stripe_load_plugin_textdomain() {
-    load_plugin_textdomain( 'wp-full-stripe', false, basename( dirname( __FILE__ ) ) . '/languages/' );
-    load_plugin_textdomain( 'wp-full-stripe-admin', false, basename( dirname( __FILE__ ) ) . '/languages/' );
+if ( ! defined( 'WP_FULL_STRIPE_PATH' ) ) {
+	define( 'WP_FULL_STRIPE_PATH', __DIR__ );
 }
+
 
 function wp_full_stripe_prepare_cron_schedules( $schedules ) {
     if ( ! isset( $schedules[ WP_FULL_STRIPE_CRON_SCHEDULES_KEY_15_MIN ] ) ) {
@@ -46,7 +47,7 @@ function wp_full_stripe_prepare_cron_schedules( $schedules ) {
             'interval' => 15 * 60,
             'display'  =>
             /* translators: Textual description of how often a periodic task of the plugin runs */
-                __( 'Every 15 minutes', 'wp-full-stripe' )
+                __( 'Every 15 minutes', 'wp-full-stripe-free' )
         );
     }
 
@@ -75,16 +76,16 @@ function wpfsIsMbStringAvailable() {
 
 function wpfsShowAdminNotices() {
     if ( ! wpfsIsPhpCompatible() ) {
-        wpfsShowAdminNotice( sprintf( __( 'PHP version required is %1$s but %2$s found.', 'wp-full-stripe-admin' ), WP_FULL_STRIPE_MIN_PHP_VERSION, PHP_VERSION ));
+        wpfsShowAdminNotice( sprintf( __( 'PHP version required is %1$s but %2$s found.', 'wp-full-stripe-free' ), WP_FULL_STRIPE_MIN_PHP_VERSION, PHP_VERSION ));
     }
     if ( ! wpfsIsWordpressCompatible() ) {
-        wpfsShowAdminNotice( sprintf( __( 'WordPress version required is %1$s but %2$s found.', 'wp-full-stripe-admin' ), WP_FULL_STRIPE_MIN_WP_VERSION, get_bloginfo( 'version' )));
+        wpfsShowAdminNotice( sprintf( __( 'WordPress version required is %1$s but %2$s found.', 'wp-full-stripe-free' ), WP_FULL_STRIPE_MIN_WP_VERSION, get_bloginfo( 'version' )));
     }
     if ( ! wpfsIsCurlAvailable() ) {
-        wpfsShowAdminNotice( sprintf( __( 'Required PHP extension called "%1$s" is missing.', 'wp-full-stripe-admin' ), 'cURL' ));
+        wpfsShowAdminNotice( sprintf( __( 'Required PHP extension called "%1$s" is missing.', 'wp-full-stripe-free' ), 'cURL' ));
     }
     if ( ! wpfsIsMbStringAvailable() ) {
-        wpfsShowAdminNotice( sprintf( __( 'Required PHP extension called "%1$s" is missing.', 'wp-full-stripe-admin' ), 'MBString' ));
+        wpfsShowAdminNotice( sprintf( __( 'Required PHP extension called "%1$s" is missing.', 'wp-full-stripe-free' ), 'MBString' ));
     }
 }
 
@@ -113,25 +114,29 @@ if ( $wpfsDiagCheck ) {
         }
     );
 
-    // We hide the license notice as it is not required for this plugin.
-    add_filter( 'wp_full_stripe_free_hide_license_notices', '__return_true', 10, 1 );
 
-    add_filter( 'wp_full_stripe_free_about_us_metadata', function ( $config ) {
+    if ( ! class_exists( 'WPFS_License' ) ) {
+        include( dirname( __FILE__ ) . '/includes/wpfs-license.php' );
+    }
+
+    $namespace = WPFS_License::get_namespace();
+
+    // We hide the license notice as it is not required for this plugin.
+    add_filter( $namespace . '_hide_license_notices', '__return_true', 10, 1 );
+    add_filter( $namespace . '_hide_license_field', '__return_true' );
+
+    add_filter( $namespace . '_about_us_metadata', function ( $config ) {
         return [
             'location'         => 'wpfs-transactions',
             'logo'             => MM_WPFS_Assets::images( 'wpfs-logo.svg' ),
             'has_upgrade_menu' => ! WPFS_License::is_active(),
-            'upgrade_link'     => esc_url( 'https://paymentsplugin.com/pricing/' ),
-            'upgrade_text'     => __( 'Get Pro Version', 'wp-full-stripe-admin' ),
+            'upgrade_link'     => tsdk_utmify( 'https://paymentsplugin.com/pricing/' ,'admin-menu'),
+            'upgrade_text'     => __( 'Get Pro Version', 'wp-full-stripe-free' ),
         ];
     } );
 
     if ( ! class_exists( '\StripeWPFS\StripeWPFS' ) ) {
         require_once( dirname( __FILE__ ) . '/includes/stripe/init.php' );
-    }
-
-    if ( ! class_exists( 'WPFS_License' ) ) {
-        include( dirname( __FILE__ ) . '/includes/wpfs-license.php' );
     }
 
     require_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'wpfs-main.php';
@@ -146,7 +151,6 @@ if ( $wpfsDiagCheck ) {
 
     \StripeWPFS\StripeWPFS::setAppInfo( 'WP Full Pay', MM_WPFS::VERSION, 'https://paymentsplugin.com', 'pp_partner_FnULHViL0IqHp6' );
 
-    add_action( 'init', 'wp_full_stripe_load_plugin_textdomain' );
     add_filter( 'cron_schedules', 'wp_full_stripe_prepare_cron_schedules' );
 } else {
     add_action( 'admin_notices', 'wpfsShowAdminNotices' );

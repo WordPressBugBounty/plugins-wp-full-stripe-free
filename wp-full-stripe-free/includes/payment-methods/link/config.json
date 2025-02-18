@@ -12,6 +12,6 @@
   "stripe_checkout": true,
   "bnpl": false,
   "external_docs": "https://stripe.com/payments/link",
-  "internal_docs": "https://support.paymentsplugin.com/category/35-creating-forms",
+  "internal_docs": "https://docs.themeisle.com/category/2087-creating-forms",
   "enabled": true
 }

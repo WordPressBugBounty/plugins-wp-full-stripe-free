@@ -26,7 +26,7 @@
 <script type="text/template" id="wpfs-modal-add-suggested-donation-amount">
     <form data-wpfs-form-type="<?php echo MM_WPFS::FORM_TYPE_ADMIN_ADD_SUGGESTED_DONATION_AMOUNT; ?>" class="wpfs-custom-field-form">
         <div class="wpfs-dialog-scrollable wpfs-form-group">
-            <label for="wpfs-suggested-donation-amount--<?php echo MM_WPFS::FORM_TYPE_ADMIN_ADD_SUGGESTED_DONATION_AMOUNT; ?>" class="wpfs-form-label"><?php esc_html_e('Donation amount', 'wp-full-stripe-admin'); ?></label>
+            <label for="wpfs-suggested-donation-amount--<?php echo MM_WPFS::FORM_TYPE_ADMIN_ADD_SUGGESTED_DONATION_AMOUNT; ?>" class="wpfs-form-label"><?php esc_html_e('Donation amount', 'wp-full-stripe-free'); ?></label>
             <div class="wpfs-input-group wpfs-input-group--sm">
                 <% if ( wpfsAdminSettings.preferences.currencyShowIdentifierOnLeft == '1' ) { %>
                 <div class="wpfs-input-group-prepend">
@@ -42,8 +42,8 @@
             </div>
         </div>
         <div class="wpfs-dialog-content-actions">
-            <button class="wpfs-btn wpfs-btn-primary js-add-suggested-donation-amount-dialog" type="submit"><?php esc_html_e('Add amount', 'wp-full-stripe-admin'); ?></button>
-            <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php esc_html_e('Discard', 'wp-full-stripe-admin'); ?></button>
+            <button class="wpfs-btn wpfs-btn-primary js-add-suggested-donation-amount-dialog" type="submit"><?php esc_html_e('Add amount', 'wp-full-stripe-free'); ?></button>
+            <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php esc_html_e('Discard', 'wp-full-stripe-free'); ?></button>
         </div>
     </form>
 </script>
@@ -52,8 +52,8 @@
         <p class="wpfs-dialog-content-text"><%- confirmationMessage %></p>
     </div>
     <div class="wpfs-dialog-content-actions">
-        <button class="wpfs-btn wpfs-btn-danger js-delete-suggested-donation-amount-dialog"><?php _e( 'Delete amount', 'wp-full-stripe-admin'); ?></button>
-        <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php _e( 'Keep amount', 'wp-full-stripe-admin' ); ?></button>
+        <button class="wpfs-btn wpfs-btn-danger js-delete-suggested-donation-amount-dialog"><?php _e( 'Delete amount', 'wp-full-stripe-free'); ?></button>
+        <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php _e( 'Keep amount', 'wp-full-stripe-free' ); ?></button>
     </div>
 </script>
 <script type="text/template" id="wpfs-suggested-donation-amount-template">

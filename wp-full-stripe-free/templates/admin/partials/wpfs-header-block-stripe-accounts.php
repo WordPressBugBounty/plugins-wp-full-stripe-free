@@ -5,5 +5,5 @@
     <span class="wpfs-icon-stripe"></span><?php echo esc_html( $stripeStatus->apiModeLabel ); ?>
 </a>
 <div class="wpfs-tooltip-content" data-tooltip-id="stripe-tooltip">
-    <div class="wpfs-info-tooltip"><?php esc_html_e( 'Manage Stripe account', 'wp-full-stripe-admin' ); ?></div>
+    <div class="wpfs-info-tooltip"><?php esc_html_e( 'Manage Stripe account', 'wp-full-stripe-free' ); ?></div>
 </div>

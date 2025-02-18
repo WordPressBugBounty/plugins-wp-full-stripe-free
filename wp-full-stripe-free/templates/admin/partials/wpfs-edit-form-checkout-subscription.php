@@ -9,11 +9,11 @@
         <div class="wpfs-form__cols">
             <div class="wpfs-form__col">
                 <div class="wpfs-form-block">
-                    <div class="wpfs-form-block__title"><?php esc_html_e( 'Properties', 'wp-full-stripe-admin'); ?></div>
+                    <div class="wpfs-form-block__title"><?php esc_html_e( 'Properties', 'wp-full-stripe-free'); ?></div>
                     <?php include( 'wpfs-form-component-display-name.php' ); ?>
                 </div>
                 <div class="wpfs-form-block">
-                    <div class="wpfs-form-block__title"><?php esc_html_e( 'Behavior', 'wp-full-stripe-admin'); ?></div>
+                    <div class="wpfs-form-block__title"><?php esc_html_e( 'Behavior', 'wp-full-stripe-free'); ?></div>
                     <?php include( 'wpfs-form-component-redirect-after-payment.php' ); ?>
                 </div>
                 <?php include( 'wpfs-form-component-action-buttons.php' ); ?>
@@ -64,7 +64,7 @@
                     <?php include( 'wpfs-form-component-simple-button-layout.php' ); ?>
                 </div>
                 <div class="wpfs-form-block">
-                    <div class="wpfs-form-block__title"><?php esc_html_e( 'Locale', 'wp-full-stripe-admin'); ?></div>
+                    <div class="wpfs-form-block__title"><?php esc_html_e( 'Locale', 'wp-full-stripe-free'); ?></div>
                     <?php include( 'wpfs-form-component-locale-currency.php' ); ?>
                 </div>
                 <?php include( 'wpfs-form-component-action-buttons.php' ); ?>
@@ -78,13 +78,13 @@
         <div class="wpfs-form__cols">
             <div class="wpfs-form__col">
                 <div class="wpfs-form-block">
-                    <div class="wpfs-form-block__title"><?php esc_html_e( 'Optional form fields', 'wp-full-stripe-admin'); ?></div>
+                    <div class="wpfs-form-block__title"><?php esc_html_e( 'Optional form fields', 'wp-full-stripe-free'); ?></div>
                     <?php include( 'wpfs-form-component-customer-data-checkout-with-phone-number.php' ); ?>
                     <?php include( 'wpfs-form-component-terms-of-service.php' ); ?>
                     <?php include( 'wpfs-form-component-coupon.php' ); ?>
                 </div>
                 <div class="wpfs-form-block">
-                    <div class="wpfs-form-block__title"><?php esc_html_e( 'Custom fields', 'wp-full-stripe-admin'); ?></div>
+                    <div class="wpfs-form-block__title"><?php esc_html_e( 'Custom fields', 'wp-full-stripe-free'); ?></div>
                     <?php include( 'wpfs-form-component-custom-fields.php' ); ?>
                 </div>
                 <?php include( 'wpfs-form-component-action-buttons.php' ); ?>
@@ -94,5 +94,13 @@
     <div class="wpfs-edit-form-pane" data-tab-id="<?php echo MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_EMAIL_NOTIFICATIONS; ?>" style="display: none;">
         <?php include( 'wpfs-form-component-email-templates.php' ); ?>
         <?php include( 'wpfs-form-component-action-buttons.php' ); ?>
+    </div>
+    <div class="wpfs-edit-form-pane" data-tab-id="<?php echo MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_WEBHOOK; ?>" style="display: none;">
+        <div class="wpfs-form__cols">
+            <div class="wpfs-form__col wpfs-form__col__third">
+                <?php include( 'wpfs-form-component-webhook.php' ); ?>
+                <?php include( 'wpfs-form-component-action-buttons.php' ); ?>
+            </div>
+        </div>
     </div>
 </form>

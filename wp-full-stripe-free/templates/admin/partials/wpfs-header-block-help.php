@@ -10,7 +10,7 @@ $globalArticles  = $help->getGlobalArticles();
     <span class="wpfs-icon-help"></span>
 </a>
 <div class="wpfs-tooltip-content" data-tooltip-id="help-tooltip">
-    <div class="wpfs-info-tooltip"><?php esc_html_e( 'Find help', 'wp-full-stripe-admin' ); ?></div>
+    <div class="wpfs-info-tooltip"><?php esc_html_e( 'Find help', 'wp-full-stripe-free' ); ?></div>
 </div>
 
 <div class="wpfs-help-dropdown js-help-dropdown">

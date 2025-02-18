@@ -12,7 +12,7 @@
                 <div class="wpfs-form__col">
                     <div class="wpfs-form-block">
                         <div class="wpfs-form-block__title"><?php
-                            /* translators: Section title on the Create form page */ _e('Basic info', 'wp-full-stripe-admin'); ?></div>
+                            /* translators: Section title on the Create form page */ _e('Basic info', 'wp-full-stripe-free'); ?></div>
                     </div>
                 </div>
             </div>
@@ -35,12 +35,12 @@
                         <div class="wpfs-inline-message__inner">
                             <p><?php
                                 /* translators: Description of what the form display name is */
-                                _e( "<strong>Display name</strong> shows up in the form list, and helps you identify the form.", 'wp-full-stripe-admin' ); ?></p>
+                                _e( "<strong>Display name</strong> shows up in the form list, and helps you identify the form.", 'wp-full-stripe-free' ); ?></p>
                             <p><?php
                                 /* translators: Description of what the form identifier is */
-                                _e( "<strong>Identifier</strong> is used to insert the form into pages via a shortcode. Use alphanumerical characters, underscores and dashes, without spaces.", 'wp-full-stripe-admin' );?></p>
+                                _e( "<strong>Identifier</strong> is used to insert the form into pages via a shortcode. Use alphanumerical characters, underscores and dashes, without spaces.", 'wp-full-stripe-free' );?></p>
                             <p>
-                                <a class="wpfs-btn wpfs-btn-link" target="_blank" href="https://support.paymentsplugin.com/article/27-how-to-use-form-shortcodes"><?php _e( "Learn more about form shortcodes", 'wp-full-stripe-admin' ); ?></a>
+                                <a class="wpfs-btn wpfs-btn-link" target="_blank" href="https://docs.themeisle.com/article/2106-how-to-use-form-shortcodes"><?php _e( "Learn more about form shortcodes", 'wp-full-stripe-free' ); ?></a>
                             </p>
                         </div>
                     </div>
@@ -80,8 +80,8 @@
                         <?php } ?>
                     </div>
                     <div class="wpfs-form-actions">
-                        <button type="submit" class="wpfs-btn wpfs-btn-primary wpfs-button-loader"><?php _e( 'Create & edit form', 'wp-full-stripe-admin' ); ?></button>
-                        <a href="<?php /** @noinspection PhpUndefinedVariableInspection */ echo $backLinkUrl; ?>" class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php _e( 'Discard', 'wp-full-stripe-admin' ); ?></a>
+                        <button type="submit" class="wpfs-btn wpfs-btn-primary wpfs-button-loader"><?php _e( 'Create & edit form', 'wp-full-stripe-free' ); ?></button>
+                        <a href="<?php /** @noinspection PhpUndefinedVariableInspection */ echo $backLinkUrl; ?>" class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php _e( 'Discard', 'wp-full-stripe-free' ); ?></a>
                     </div>
                 </div>
             </div>

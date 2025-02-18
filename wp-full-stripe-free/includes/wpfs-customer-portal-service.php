@@ -408,7 +408,10 @@ class MM_WPFS_CustomerPortalService
 
     public function renderShortCode($attributes)
     {
+
         $session = null;
+        $should_not_redirect = ! ( is_admin() || is_search() || defined('REST_REQUEST') && REST_REQUEST ); // Not redirecting in admin, search pages, or REST requests.
+        $useStripePortal = $should_not_redirect && $this->options->get( MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_USE_STRIPE_CUSTOMER_PORTAL );
 
         if (self::isWordpressAuthenticationNeeded($attributes)) {
             $content = null;
@@ -465,15 +468,28 @@ class MM_WPFS_CustomerPortalService
                         $this->enqueueCardUpdateScript($cookieAction, is_null($session) ? null : $session->hash, $model);
                         $content = $this->renderSelectAccountForm($attributes, $model);
                     } elseif ($this->isConfirmed($session)) {
-                        $stripeCustomer = $this->stripe->retrieveCustomerWithParams($session->stripeCustomerId, ['expand' => ['sources']]);
-                        $this->fetchDataIntoCustomerPortalModel($model, $stripeCustomer);
+                        if ( $useStripePortal ) {
+                            $returnUrl = get_permalink();
+                            $portalSession = $this->stripe->createCustomerPortalSession( $session->stripeCustomerId, $returnUrl );
 
-
-                        $this->enqueueCardUpdateScript($cookieAction, is_null($session) ? null : $session->hash, $model);
-                        $content = $this->renderCardsAndSubscriptionsTable($attributes, $model);
+                            if ( isset( $portalSession->session ) && isset( $portalSession->session->url ) && ! empty( $portalSession->session->url ) ) {
+                                $this->invalidateSession($session);
+                                wp_redirect( esc_url( $portalSession->session->url ) );
+                                exit;
+                            } else {
+                                $content = __('Error while creating Customer Portal session', 'wp-full-stripe-free');
+                            }
+                        } else {
+                            $stripeCustomer = $this->stripe->retrieveCustomerWithParams($session->stripeCustomerId, ['expand' => ['sources']]);
+                            $this->fetchDataIntoCustomerPortalModel($model, $stripeCustomer);
+    
+    
+                            $this->enqueueCardUpdateScript($cookieAction, is_null($session) ? null : $session->hash, $model);
+                            $content = $this->renderCardsAndSubscriptionsTable($attributes, $model);
+                        }
                     }
                 } else {
-                    $content = __('You haven\'t made any payments yet', 'wp-full-stripe');
+                    $content = __('You haven\'t made any payments yet', 'wp-full-stripe-free');
                 }
             } else {
                 if (!is_null($session)) {
@@ -513,12 +529,25 @@ class MM_WPFS_CustomerPortalService
                 $this->enqueueCardUpdateScript($cookieAction, is_null($session) ? null : $session->hash, $model);
                 $content = $this->renderSelectAccountForm($attributes, $model);
             } elseif (self::TEMPLATE_CUSTOMER_PORTAL === $templateToShow) {
-                $stripeCustomer = $this->stripe->retrieveCustomerWithParams($session->stripeCustomerId, ['expand' => ['sources']]);
-                $this->fetchDataIntoCustomerPortalModel($model, $stripeCustomer);
+                if ( $useStripePortal ) {
+                    $returnUrl = get_permalink();
+                    $portalSession = $this->stripe->createCustomerPortalSession( $session->stripeCustomerId, $returnUrl );
 
-
-                $this->enqueueCardUpdateScript($cookieAction, is_null($session) ? null : $session->hash, $model);
-                $content = $this->renderCardsAndSubscriptionsTable($attributes, $model);
+                    if ( isset( $portalSession->session ) && isset( $portalSession->session->url ) && ! empty( $portalSession->session->url ) ) {
+                        $this->invalidateSession($session);
+                        wp_redirect( esc_url( $portalSession->session->url ) );
+                        exit;
+                    } else {
+                        $content = __('Error while creating Customer Portal session', 'wp-full-stripe-free');
+                    }
+                } else {
+                    $stripeCustomer = $this->stripe->retrieveCustomerWithParams($session->stripeCustomerId, ['expand' => ['sources']]);
+                    $this->fetchDataIntoCustomerPortalModel($model, $stripeCustomer);
+    
+    
+                    $this->enqueueCardUpdateScript($cookieAction, is_null($session) ? null : $session->hash, $model);
+                    $content = $this->renderCardsAndSubscriptionsTable($attributes, $model);
+                }
             } else {
                 $content = $this->renderInvalidSession($attributes);
             }
@@ -1208,24 +1237,24 @@ class MM_WPFS_CustomerPortalService
         $wpfsMyAccountOptions = array();
 
         $sessionData['i18n'] = array(
-            'confirmSubscriptionCancellationMessage' => __('Are you sure you\'d like to cancel the selected subscriptions?', 'wp-full-stripe'),
-            'confirmSingleSubscriptionCancellationMessage' => __('Are you sure you\'d like to cancel this subscription?', 'wp-full-stripe'),
-            'confirmSingleSubscriptionActivationMessage' => __('Are you sure you\'d like to activate this subscription again?', 'wp-full-stripe'),
-            'selectAtLeastOneSubscription' => __('Select at least one subscription!', 'wp-full-stripe'),
+            'confirmSubscriptionCancellationMessage' => __('Are you sure you\'d like to cancel the selected subscriptions?', 'wp-full-stripe-free'),
+            'confirmSingleSubscriptionCancellationMessage' => __('Are you sure you\'d like to cancel this subscription?', 'wp-full-stripe-free'),
+            'confirmSingleSubscriptionActivationMessage' => __('Are you sure you\'d like to activate this subscription again?', 'wp-full-stripe-free'),
+            'selectAtLeastOneSubscription' => __('Select at least one subscription!', 'wp-full-stripe-free'),
             'cancelSubscriptionSubmitButtonCaptionDefault' =>
                 /* translators: Default button text for cancelling subscriptions - disabled state */
-                __('Cancel subscription', 'wp-full-stripe'),
+                __('Cancel subscription', 'wp-full-stripe-free'),
             'cancelSubscriptionSubmitButtonCaptionSingular' =>
                 /* translators: Button text for cancelling one subscription */
-                __('Cancel 1 subscription', 'wp-full-stripe'),
+                __('Cancel 1 subscription', 'wp-full-stripe-free'),
             'cancelSubscriptionSubmitButtonCaptionPlural' =>
                 /* translators: Button text for cancelling several subscriptions at once */
-                __('Cancel %d subscriptions', 'wp-full-stripe'),
+                __('Cancel %d subscriptions', 'wp-full-stripe-free'),
             'stripeInstantiationErrorMessage' =>
                 /* translators: Error message when instantiating the Stripe object
                  * p1: the message of the exception thrown
                  */
-                __("Cannot initialize Stripe: %s", 'wp-full-stripe')
+                __("Cannot initialize Stripe: %s", 'wp-full-stripe-free')
         );
 
         // Converting the string ('0' or '1') to int, it makes dealing with it in javascript easier
@@ -1467,7 +1496,7 @@ class MM_WPFS_CustomerPortalService
             $validRequest = true;
             if (is_null($stripeCustomerEmail) || !filter_var($stripeCustomerEmail, FILTER_VALIDATE_EMAIL)) {
                 $return['success'] = false;
-                $return['message'] = __('The entered email address is invalid.', 'wp-full-stripe');
+                $return['message'] = __('The entered email address is invalid.', 'wp-full-stripe-free');
                 $return['fieldError'] = self::PARAM_EMAIL_ADDRESS;
                 $validRequest = false;
             }
@@ -1477,7 +1506,7 @@ class MM_WPFS_CustomerPortalService
                     $return['success'] = false;
                     $return['message'] =
                         /* translators: Captcha validation error message displayed when the form is submitted without completing the captcha challenge */
-                        __('Please prove that you are not a robot. ', 'wp-full-stripe');
+                        __('Please prove that you are not a robot. ', 'wp-full-stripe-free');
                     $return['fieldError'] = self::PARAM_GOOGLE_RE_CAPTCHA_RESPONSE;
                     $validRequest = false;
                 } else {
@@ -1487,14 +1516,14 @@ class MM_WPFS_CustomerPortalService
                         $return['success'] = false;
                         $return['message'] =
                             /* translators: Captcha validation error message displayed when the form is submitted without completing the captcha challenge */
-                            __('Please prove that you are not a robot. ', 'wp-full-stripe');
+                            __('Please prove that you are not a robot. ', 'wp-full-stripe-free');
                         $return['fieldError'] = self::PARAM_GOOGLE_RE_CAPTCHA_RESPONSE;
                         $validRequest = false;
                     } elseif (!isset($googleReCAPTCHVerificationResult->success) || $googleReCAPTCHVerificationResult->success === false) {
                         $return['success'] = false;
                         $return['message'] =
                             /* translators: Captcha validation error message displayed when the form is submitted without completing the captcha challenge */
-                            __('Please prove that you are not a robot. ', 'wp-full-stripe');
+                            __('Please prove that you are not a robot. ', 'wp-full-stripe-free');
                         $return['fieldError'] = self::PARAM_GOOGLE_RE_CAPTCHA_RESPONSE;
                         $validRequest = false;
                     }
@@ -1506,7 +1535,7 @@ class MM_WPFS_CustomerPortalService
                 $stripeCustomer = $this->findExistingStripeCustomerAnywhereByEmail($stripeCustomerEmail);
                 if (is_null($stripeCustomer)) {
                     $return['success'] = false;
-                    $return['message'] = __('The entered email address is invalid.', 'wp-full-stripe');
+                    $return['message'] = __('The entered email address is invalid.', 'wp-full-stripe-free');
                     $return['fieldError'] = self::PARAM_EMAIL_ADDRESS;
                     $validRequest = false;
                 }
@@ -1674,7 +1703,7 @@ class MM_WPFS_CustomerPortalService
                 $return['success'] = false;
                 $return['message'] =
                     /* translators: Login form validation error when no security code is entered */
-                    __('Enter a security code', 'wp-full-stripe');
+                    __('Enter a security code', 'wp-full-stripe-free');
             } else {
                 $success = false;
                 if (!is_null($cardUpdateSessionHash)) {
@@ -1699,7 +1728,7 @@ class MM_WPFS_CustomerPortalService
                     $return['success'] = false;
                     $return['message'] =
                         /* translators: Login form validation error when an invalid security code is entered */
-                        __('Enter a valid security code', 'wp-full-stripe');
+                        __('Enter a valid security code', 'wp-full-stripe-free');
                 }
             }
         } catch (Exception $ex) {
@@ -1726,7 +1755,7 @@ class MM_WPFS_CustomerPortalService
                 $return['success'] = false;
                 $return['message'] =
                     /* translators: Customer portal error when no Stripe customer was selected */
-                    __('Select an account', 'wp-full-stripe');
+                    __('Select an account', 'wp-full-stripe-free');
             } else {
                 $sessionHash = $this->findSessionCookieValue();
                 $success = false;
@@ -1761,7 +1790,7 @@ class MM_WPFS_CustomerPortalService
                     $return['success'] = false;
                     $return['message'] =
                         /* translators: Login form validation error when an invalid security code is entered */
-                        __('Select an account', 'wp-full-stripe');
+                        __('Select an account', 'wp-full-stripe-free');
                 }
             }
         } catch (Exception $ex) {
@@ -1798,7 +1827,7 @@ class MM_WPFS_CustomerPortalService
                 $return['success'] = false;
                 $return['message'] =
                     /* translators: Cannot transition the Customer portal to selecting an account because it's in a wrong state  */
-                    __('Cannot transition to selecting an account from the current state', 'wp-full-stripe');
+                    __('Cannot transition to selecting an account from the current state', 'wp-full-stripe-free');
             }
         } catch (Exception $ex) {
             $this->logger->error(__FUNCTION__, 'Error while showing accounts', $ex);
@@ -1857,13 +1886,13 @@ class MM_WPFS_CustomerPortalService
                                     $return['setupIntentClientSecret'] = $stripeSetupIntent->client_secret;
                                     $return['message'] =
                                         /* translators: Banner message of a pending card saving transaction requiring a second factor authentication (SCA/PSD2) */
-                                        __('Saving this card requires additional action before completion!', 'wp-full-stripe');
+                                        __('Saving this card requires additional action before completion!', 'wp-full-stripe-free');
                                 } elseif (\StripeWPFS\SetupIntent::STATUS_SUCCEEDED === $stripeSetupIntent->status) {
                                     $this->logger->debug(__FUNCTION__, 'SetupIntent succeeded.');
 
                                     $this->stripe->attachPaymentMethodToCustomerIfMissing($stripeCustomer, $stripePaymentMethod, true);
                                     $return['success'] = true;
-                                    $return['message'] = __('The default credit card has been updated successfully!', 'wp-full-stripe');
+                                    $return['message'] = __('The default credit card has been updated successfully!', 'wp-full-stripe-free');
                                 } else {
                                     // This is an internal error, no need to localize it
                                     $errorMessage = sprintf("Unknown SetupIntent status '%s'!", $stripeSetupIntent->status);
@@ -1961,7 +1990,6 @@ class MM_WPFS_CustomerPortalService
         exit;
     }
 
-
     /**
      * @param $subscriptionId string
      *
@@ -2016,10 +2044,10 @@ class MM_WPFS_CustomerPortalService
                     }
                 }
                 $return['success'] = true;
-                $return['message'] = __('The subscriptions have been cancelled', 'wp-full-stripe');
+                $return['message'] = __('The subscriptions have been cancelled', 'wp-full-stripe-free');
             } else {
                 $return['success'] = false;
-                $return['message'] = __('Select at least one subscription!', 'wp-full-stripe');
+                $return['message'] = __('Select at least one subscription!', 'wp-full-stripe-free');
             }
 
         } catch (Exception $ex) {
@@ -2145,7 +2173,7 @@ class MM_WPFS_CustomerPortalService
                     }
                 }
                 $data['success'] = true;
-                $data['message'] = __('The subscription has been updated successfully', 'wp-full-stripe');
+                $data['message'] = __('The subscription has been updated successfully', 'wp-full-stripe-free');
             }
         } catch (Exception $ex) {
             $this->logger->error(__FUNCTION__, 'Error while updating subscription', $ex);
@@ -2340,7 +2368,7 @@ class MM_WPFS_CustomerPortalService
                  */
                 __(
                     'Your subscription plan will be changed to %1$s. The new subscription fee will be %2$s.',
-                    'wp-full-stripe'
+                    'wp-full-stripe-free'
                 ),
                 $plan->product->name,
                 $priceAndIntervalLabel
@@ -2353,7 +2381,7 @@ class MM_WPFS_CustomerPortalService
                  */
                 __(
                     'Your subscription plan will be changed to %1$s. The new subscription fee will be @QUANTITY@x %2$s.',
-                    'wp-full-stripe'
+                    'wp-full-stripe-free'
                 ),
                 $plan->product->name,
                 $priceAndIntervalLabel
@@ -2982,7 +3010,7 @@ class MM_WPFS_ManagedSubscriptionEntry
             $model->planId = null;
             $model->planName =
                 /* translators: Displayed in the subscription list when a subscription is composed of more than one subscription plan */
-                __('Multiple plans', 'wp-full-stripe');
+                __('Multiple plans', 'wp-full-stripe-free');
             $model->planQuantity = 1;
             $model->allowMultipleSubscriptions = false;
             $model->minimumPlanQuantity = 0;
@@ -3030,19 +3058,19 @@ class MM_WPFS_ManagedSubscriptionEntry
 
         if (\StripeWPFS\Subscription::STATUS_TRIALING === $this->subscription->status) {
             /* translators: The 'Trialing' subscription status */
-            $locStatus = __('Trialing', 'wp-full-stripe');
+            $locStatus = __('Trialing', 'wp-full-stripe-free');
         } elseif (\StripeWPFS\Subscription::STATUS_ACTIVE === $this->subscription->status) {
             /* translators: The 'Active' subscription status */
-            $locStatus = __('Active', 'wp-full-stripe');
+            $locStatus = __('Active', 'wp-full-stripe-free');
         } elseif (\StripeWPFS\Subscription::STATUS_PAST_DUE === $this->subscription->status) {
             /* translators: The 'Past due' subscription status */
-            $locStatus = __('Past due', 'wp-full-stripe');
+            $locStatus = __('Past due', 'wp-full-stripe-free');
         } elseif (\StripeWPFS\Subscription::STATUS_CANCELED === $this->subscription->status) {
             /* translators: The 'Canceled' subscription status */
-            $locStatus = __('Canceled', 'wp-full-stripe');
+            $locStatus = __('Canceled', 'wp-full-stripe-free');
         } elseif (\StripeWPFS\Subscription::STATUS_UNPAID === $this->subscription->status) {
             /* translators: The 'Unpaid' subscription status */
-            $locStatus = __('Unpaid', 'wp-full-stripe');
+            $locStatus = __('Unpaid', 'wp-full-stripe-free');
         }
 
         return $locStatus;
@@ -3126,7 +3154,7 @@ class MM_WPFS_ManagedSubscriptionEntry
                  */
                 __(
                     'The new subscription fee will be %1$s.',
-                    'wp-full-stripe'
+                    'wp-full-stripe-free'
                 ),
                 $this->getPriceAndIntervalLabel()
             ),
@@ -3137,7 +3165,7 @@ class MM_WPFS_ManagedSubscriptionEntry
                  */
                 __(
                     'The new subscription fee will be @QUANTITY@x %1$s.',
-                    'wp-full-stripe'
+                    'wp-full-stripe-free'
                 ),
                 $this->getPriceAndIntervalLabel()
             )

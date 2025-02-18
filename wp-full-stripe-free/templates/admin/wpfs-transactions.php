@@ -78,7 +78,7 @@
             </div>
         </div>
         <div class="wpfs-dialog-content-actions">
-            <a class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php _e( 'Close', 'wp-full-stripe-admin' ); ?></a>
+            <a class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php _e( 'Close', 'wp-full-stripe-free' ); ?></a>
         </div>
     </script>
     <script type="text/template" id="wpfs-success-message">

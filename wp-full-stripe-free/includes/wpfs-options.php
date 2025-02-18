@@ -28,6 +28,7 @@ class MM_WPFS_Options {
 	const OPTION_ACCOUNT_STATUS_ENABLED = 'ENABLED';
 	const OPTION_ACCOUNT_STATUS_COMPLETE = 'COMPLETE';
 	const OPTION_ACCOUNT_STATUS_NULL = 'NULL';
+	const OPTION_CUSTOMER_PORTAL_USE_STRIPE_CUSTOMER_PORTAL = 'my_account_use_stripe_customer_portal';
 	const OPTION_CUSTOMER_PORTAL_SCROLLING_PANE_INTO_VIEW = 'my_account_scrolling_pane_into_view';
 	const OPTION_CUSTOMER_PORTAL_SHOW_ALL_INVOICES = 'my_account_show_all_invoices';
 	const OPTION_SHOW_CURRENCY_SYMBOL_INSTEAD_OF_CODE = 'show_currency_symbol_instead_of_code';
@@ -60,6 +61,7 @@ class MM_WPFS_Options {
 	const OPTION_WEBHOOK_TOKEN = 'webhook_token';
 	const OPTION_CUSTOM_INPUT_FIELD_MAX_COUNT = 'custom_input_field_max_count';
 	const OPTION_SET_FORM_FIELDS_VIA_URL_PARAMETERS = 'set_form_fields_via_url_parameters';
+	const OPTION_STRIPE_CONNECT_NOTICE = 'connect_notice';
 
 	public function __construct() {
 	}

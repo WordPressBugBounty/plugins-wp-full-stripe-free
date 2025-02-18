@@ -53,6 +53,7 @@ class MM_WPFS_Admin {
 		// show notice banner if not fully configured
 		add_action( 'admin_notices', array( $this, 'wpfp_config_notice' ) );
 		add_action( 'admin_notices', array( $this, 'wpfp_coupon_notice' ) );
+		add_action( 'wp_ajax_wpfs-dismiss-stripe-connect-notice', array( $this, 'wpfp_dismiss_notice' ) );
 
 		// actions for forms
 		add_action( 'wp_ajax_wpfs-create-form', array( $this, 'createForm' ) );
@@ -110,12 +111,16 @@ class MM_WPFS_Admin {
 		add_action( 'wp_ajax_wpfs-save-wp-dashboard', array( $this, 'saveWordpressDashboard' ) );
 		add_action( 'wp_ajax_wpfs-save-logs', array( $this, 'saveLogs' ) );
 		add_action( 'wp_ajax_wpfs-empty-logs', array( $this, 'emptyLogs' ) );
+		add_action( 'wp_ajax_wpfs-toggle-license', array( $this, 'toggleLicense' ) );
 
 		// actions for in-form ajax requests
 		add_action( 'wp_ajax_wpfs-get-onetime-products', array( $this, 'getOnetimeProducts' ) );
 		add_action( 'wp_ajax_wpfs-get-recurring-products', array( $this, 'getRecurringProducts' ) );
 		add_action( 'wp_ajax_wpfs-get-tax-rates', array( $this, 'getTaxRates' ) );
 		add_action( 'wp_ajax_wpfs-send-test-email', array( $this, 'sendTestEmail' ) );
+
+		// actions for form preview
+		add_action( 'wp_ajax_wpfs-preview-form', array( $this, 'previewForm' ) );
 
 		// handle stripe webhook events
 		add_action(
@@ -126,25 +131,172 @@ class MM_WPFS_Admin {
 			)
 		);
 
+		// trigger webhook events
+		add_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, array( $this, 'triggerWebhook' ), 10, 2 );
+
 		add_action( 'admin_init', array( $this->loggerService, 'downloadLog' ) );
+
+		register_activation_hook( WP_FULL_STRIPE_BASENAME, array( $this, 'activate' ) );
+		add_action( 'admin_init', array( $this, 'maybeRedirect' ) );
+
+		add_action( 'admin_bar_menu', array( $this, 'adminBarNotice' ), 1000, 1 );
+		add_action( 'admin_head', array( $this, 'adminBarNoticeCSS' ) );
+		add_action( 'wp_head', array( $this, 'adminBarNoticeCSS' ) );
 	}
 
+	/**
+	 * Stripe Connect Notice.
+	 * 
+	 * @return void
+	 */
 	public static function wpfp_config_notice() {
 		$options = new MM_WPFS_Options();
-		$wpfp_options = $options->getSeveral( [ 
-			MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID
-		] );
-		if (
-			empty( $wpfp_options[ MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID ] )
-		) {
-			$url = admin_url( 'admin.php?page=wpfs-settings-stripe' );
 
-			echo
-				'<div class="notice notice-error">
-            <p>Important! WP Full Pay is not fully configured. <b>Connect your Stripe account</b> to ensure you have access to all features and can continue to use the plugin.</p>
-            <p>Go to your <a href="' . $url . '">Stripe account settings</a> and click the "Connect live account" button.</p>
-            </div>';
+		$wpfp_options = $options->getSeveral( [ 
+			MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID,
+			MM_WPFS_Options::OPTION_TEST_ACCOUNT_ID,
+			MM_WPFS_Options::OPTION_API_TEST_SECRET_KEY,
+			MM_WPFS_Options::OPTION_API_TEST_PUBLISHABLE_KEY,
+			MM_WPFS_Options::OPTION_STRIPE_CONNECT_NOTICE
+		] );
+
+		if ( ! empty( array_filter( $wpfp_options ) ) ) {
+			return;
 		}
+
+		echo '<div class="wpfs-stripe-connect-notice notice notice-info is-dismissible">
+			<p>' . __( 'WP Full Pay is not fully configured. <b>Connect your Stripe account</b> to ensure you have access to all features and can continue to use the plugin.', 'wp-full-stripe-free' ) . '</p>
+			<p>
+				<a href="#" aria-label="' . __( 'Connect with Stripe', 'wp-full-stripe-free' ) . '" class="wpfs-stripe-connect">
+					<span>' . __( 'Connect with', 'wp-full-stripe-free' ) . '</span>
+					<svg width="49" height="20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.4718 10.3338c0-3.41791-1.6696-6.11484-4.8607-6.11484-3.2045 0-5.1434 2.69693-5.1434 6.08814 0 4.0187 2.289 6.048 5.5743 6.048 1.6023 0 2.8141-.3604 3.7296-.8678v-2.6702c-.9155.4539-1.9658.7343-3.2987.7343-1.3061 0-2.464-.4539-2.6121-2.0294h6.5841c0-.1735.0269-.8678.0269-1.1882Zm-6.6514-1.26838c0-1.50868.929-2.13618 1.7773-2.13618.8213 0 1.6965.6275 1.6965 2.13618h-3.4738Zm-8.5499-4.84646c-1.3195 0-2.1678.61415-2.639 1.04139l-.1751-.82777h-2.9621V20l3.3661-.7076.0134-3.7784c.4847.3471 1.1984.8411 2.3832.8411 2.4102 0 4.6048-1.9225 4.6048-6.1548-.0134-3.87186-2.235-5.98134-4.5913-5.98134Zm-.8079 9.19894c-.7944 0-1.2656-.2804-1.5888-.6275l-.0134-4.95328c.35-.38719.8348-.65421 1.6022-.65421 1.2253 0 2.0735 1.36182 2.0735 3.11079 0 1.7891-.8347 3.1242-2.0735 3.1242Zm-9.6001-9.98666 3.3796-.72096V0l-3.3796.70761v2.72363Zm0 1.01469h3.3796V16.1282h-3.3796V4.44593Zm-3.6219.98798-.2154-.98798h-2.9083V16.1282h3.3661V8.21095c.7944-1.02804 2.1408-.84112 2.5582-.69426V4.44593c-.4309-.16022-2.0062-.45394-2.8006.98798Zm-6.7322-3.88518-3.2853.69426-.01346 10.69421c0 1.976 1.49456 3.4313 3.48726 3.4313 1.1041 0 1.912-.2003 2.3563-.4406v-2.7103c-.4309.1736-2.5583.7877-2.5583-1.1882V7.28972h2.5583V4.44593h-2.5583l.0135-2.8972ZM3.40649 7.83712c0-.5207.43086-.72096 1.14447-.72096 1.0233 0 2.31588.30707 3.33917.85447V4.83311c-1.11755-.44059-2.22162-.61415-3.33917-.61415C1.81769 4.21896 0 5.63418 0 7.99733c0 3.68487 5.11647 3.09747 5.11647 4.68627 0 .6141-.53858.8144-1.29258.8144-1.11755 0-2.54477-.4539-3.675782-1.0681v3.1776c1.252192.534 2.517842.761 3.675782.761 2.80059 0 4.72599-1.3752 4.72599-3.765-.01346-3.97867-5.14339-3.27106-5.14339-4.76638Z" fill="#fff"></path></svg>
+				</a>
+				<a href="https://docs.themeisle.com/article/2130-getting-started-with-wp-full-pay" target="_blank" rel="noopener noreferrer" class="button button-secondary" style="margin-left: 5px;">' . __( 'Learn More', 'wp-full-stripe-free' ) . '</a>
+			</p>
+			<button type="button" class="notice-dismiss"><span class="screen-reader-text">' . __( 'Dismiss this notice.', 'wp-full-stripe-free' ) . '</span></button>
+
+			<style>
+				.wpfs-stripe-connect {
+					color: #fff;
+					font-size: 15px;
+					font-weight: bold;
+					text-decoration: none;
+					line-height: 1;
+					background-color: #625afa;
+					border-radius: 3px;
+					padding: 8px 16px;
+					display: inline-flex;
+					align-items: center;
+				}
+
+				.wpfs-stripe-connect:focus,
+				.wpfs-stripe-connect:hover {
+					color: #fff;
+					box-shadow: none;
+					outline: none;
+				}
+
+				.wpfs-stripe-connect svg {
+					margin-left: 5px;
+				}
+			</style>
+		</div>';
+
+		add_action( 'admin_footer',  array( __CLASS__, 'enqueue_inline_script' ) );
+	}
+
+	/**
+	 * Dismiss the Stripe Connect notice.
+	 * 
+	 * @return void
+	 */
+	public function wpfp_dismiss_notice() {
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid nonce.', 'wp-full-stripe-free' ) ) );
+		}
+
+		$options = new MM_WPFS_Options();
+		$options->set( MM_WPFS_Options::OPTION_STRIPE_CONNECT_NOTICE, true );
+
+		wp_send_json_success();
+	}
+
+	/**
+	 * Enqueue inline script for connecting to Stripe.
+	 * 
+	 * @return void
+	 */
+	public static function enqueue_inline_script() {
+		?>
+		<script>
+			window.document.addEventListener( 'DOMContentLoaded', () => {
+				const connectButton = document.querySelector( '.wpfs-stripe-connect-notice .wpfs-stripe-connect' );
+				const dismissButton = document.querySelector( '.wpfs-stripe-connect-notice .notice-dismiss' );
+
+				if ( connectButton ) {
+					connectButton.addEventListener( 'click', ( e ) => {
+						e.preventDefault();
+
+						fetch( '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>', {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/x-www-form-urlencoded'
+							},
+							body: new URLSearchParams( {
+								action: 'wpfs-create-stripe-connect-account',
+								current_page_url: '<?php echo esc_url( admin_url( 'admin.php?page=wpfs-settings-stripe' ) ); ?>',
+								mode: 'test',
+								nonce: '<?php echo esc_attr( wp_create_nonce( 'wp-full-stripe-admin-nonce' ) ); ?>'
+							} )
+						} )
+						.then( response => response.json() )
+						.then( responseData => {
+							if ( responseData.success ) {
+								window.location = responseData.redirectURL;
+							}
+						} )
+						.catch( error => {
+							console.error( 'Error:', error );
+							const errorNotice = document.createElement( 'div' );
+							errorNotice.className = 'notice notice-error is-dismissible';
+							errorNotice.innerHTML = `<p>${ error.message }</p>`;
+							document.querySelector( '.wpfs-stripe-connect-notice' ).insertAdjacentElement( 'beforebegin', errorNotice );
+						});
+					});
+				}
+
+				if ( dismissButton ) {
+					dismissButton.addEventListener( 'click', ( e ) => {
+						e.preventDefault();
+
+						fetch( '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>', {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/x-www-form-urlencoded'
+							},
+							body: new URLSearchParams( {
+								action: 'wpfs-dismiss-stripe-connect-notice',
+								nonce: '<?php echo esc_attr( wp_create_nonce( 'wp-full-stripe-admin-nonce' ) ); ?>'
+							} )
+						} )
+						.then( response => response.json() )
+						.then( responseData => {
+							if ( responseData.success ) {
+								document.querySelector( '.wpfs-stripe-connect-notice' ).remove();
+							}
+						} )
+						.catch( error => {
+							console.error( 'Error:', error );
+							const errorNotice = document.createElement( 'div' );
+							errorNotice.className = 'notice notice-error is-dismissible';
+							errorNotice.innerHTML = `<p>${ error.message }</p>`;
+							document.querySelector( '.wpfs-stripe-connect-notice' ).insertAdjacentElement( 'beforebegin', errorNotice );
+						});
+					});
+				}
+			});
+		</script>
+		<?php
 	}
 
 	public static function wpfp_coupon_notice() {
@@ -158,7 +310,7 @@ class MM_WPFS_Admin {
 			! empty( $wpfp_options[ MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID ] ) &&
 			! $validLicense
 		) {
-			$url = 'https://paymentsplugin.com/pricing';
+			$url = tsdk_utmify( 'https://paymentsplugin.com/pricing', 'no-license');
 			echo
 				'<div class="notice notice-info">
 					<p><b>Get 10% off your license!</b> Use coupon code <b>WPFP10OFF1Y</b> during checkout via <a href="' . $url . '">https://paymentsplugin.com/pricing</a>/</p>
@@ -176,35 +328,35 @@ class MM_WPFS_Admin {
 		if ( MM_WPFS::PAYMENT_STATUS_AUTHORIZED === $paymentStatus ) {
 			$label =
 				/* translators: The 'Authorized' payment status */
-				__( 'Authorized', 'wp-full-stripe-admin' );
+				__( 'Authorized', 'wp-full-stripe-free' );
 		} elseif ( MM_WPFS::PAYMENT_STATUS_PAID === $paymentStatus ) {
 			$label =
 				/* translators: The 'Paid' payment status */
-				__( 'Paid', 'wp-full-stripe-admin' );
+				__( 'Paid', 'wp-full-stripe-free' );
 		} elseif ( MM_WPFS::PAYMENT_STATUS_EXPIRED === $paymentStatus ) {
 			$label =
 				/* translators: The 'Expired' payment status */
-				__( 'Expired', 'wp-full-stripe-admin' );
+				__( 'Expired', 'wp-full-stripe-free' );
 		} elseif ( MM_WPFS::PAYMENT_STATUS_RELEASED === $paymentStatus ) {
 			$label =
 				/* translators: The 'Released' payment status */
-				__( 'Released', 'wp-full-stripe-admin' );
+				__( 'Released', 'wp-full-stripe-free' );
 		} elseif ( MM_WPFS::PAYMENT_STATUS_REFUNDED === $paymentStatus ) {
 			$label =
 				/* translators: The 'Refunded' payment status */
-				__( 'Refunded', 'wp-full-stripe-admin' );
+				__( 'Refunded', 'wp-full-stripe-free' );
 		} elseif ( MM_WPFS::PAYMENT_STATUS_FAILED === $paymentStatus ) {
 			$label =
 				/* translators: The 'Failed' payment status */
-				__( 'Failed', 'wp-full-stripe-admin' );
+				__( 'Failed', 'wp-full-stripe-free' );
 		} elseif ( MM_WPFS::PAYMENT_STATUS_PENDING === $paymentStatus ) {
 			$label =
 				/* translators: The 'Pending' payment status */
-				__( 'Pending', 'wp-full-stripe-admin' );
+				__( 'Pending', 'wp-full-stripe-free' );
 		} else {
 			$label =
 				/* translators: The 'Unknown' payment status */
-				__( 'Unknown', 'wp-full-stripe-admin' );
+				__( 'Unknown', 'wp-full-stripe-free' );
 		}
 
 		return $label;
@@ -219,23 +371,23 @@ class MM_WPFS_Admin {
 		if ( MM_WPFS::SUBSCRIBER_STATUS_RUNNING === $subscriptionStatus ) {
 			$label =
 				/* translators: The 'Running' subscription status */
-				__( 'Running', 'wp-full-stripe-admin' );
+				__( 'Running', 'wp-full-stripe-free' );
 		} elseif ( MM_WPFS::SUBSCRIBER_STATUS_INCOMPLETE === $subscriptionStatus ) {
 			$label =
 				/* translators: The 'Incomplete' subscription status */
-				__( 'Incomplete', 'wp-full-stripe-admin' );
+				__( 'Incomplete', 'wp-full-stripe-free' );
 		} elseif ( MM_WPFS::SUBSCRIBER_STATUS_CANCELLED === $subscriptionStatus ) {
 			$label =
 				/* translators: The 'Canceled' subscription status */
-				__( 'Canceled', 'wp-full-stripe-admin' );
+				__( 'Canceled', 'wp-full-stripe-free' );
 		} elseif ( MM_WPFS::SUBSCRIBER_STATUS_ENDED === $subscriptionStatus ) {
 			$label =
 				/* translators: The 'Ended' subscription status */
-				__( 'Ended', 'wp-full-stripe-admin' );
+				__( 'Ended', 'wp-full-stripe-free' );
 		} else {
 			$label =
 				/* translators: The 'Unknown' subscription status */
-				__( 'Unknown', 'wp-full-stripe-admin' );
+				__( 'Unknown', 'wp-full-stripe-free' );
 		}
 
 		return $label;
@@ -259,19 +411,19 @@ class MM_WPFS_Admin {
 		if ( MM_WPFS::DONATION_STATUS_RUNNING === $donationStatus ) {
 			$label =
 				/* translators: The 'Running' donation status */
-				__( 'Running', 'wp-full-stripe-admin' );
+				__( 'Running', 'wp-full-stripe-free' );
 		} elseif ( MM_WPFS::DONATION_STATUS_PAID === $donationStatus ) {
 			$label =
 				/* translators: The 'Paid' donation status */
-				__( 'Paid', 'wp-full-stripe-admin' );
+				__( 'Paid', 'wp-full-stripe-free' );
 		} elseif ( MM_WPFS::DONATION_STATUS_REFUNDED === $donationStatus ) {
 			$label =
 				/* translators: The 'Refunded' donation status */
-				__( 'Refunded', 'wp-full-stripe-admin' );
+				__( 'Refunded', 'wp-full-stripe-free' );
 		} else {
 			$label =
 				/* translators: The 'Unknown' donation status */
-				__( 'Unknown', 'wp-full-stripe-admin' );
+				__( 'Unknown', 'wp-full-stripe-free' );
 		}
 
 		return $label;
@@ -285,9 +437,9 @@ class MM_WPFS_Admin {
 	public static function getApiModeLabelFromInteger( $liveMode ): string {
 		return $liveMode == 1 ?
 			/* translators: The 'Live' API mode status */
-			__( 'Live', 'wp-full-stripe-admin' ) :
+			__( 'Live', 'wp-full-stripe-free' ) :
 			/* translators: The 'Test' API mode status */
-			__( 'Test', 'wp-full-stripe-admin' );
+			__( 'Test', 'wp-full-stripe-free' );
 	}
 
 	/**
@@ -298,9 +450,9 @@ class MM_WPFS_Admin {
 	public static function getApiModeLabelFromString( $apiMode ): string {
 		return $apiMode === MM_WPFS::STRIPE_API_MODE_LIVE ?
 			/* translators: The 'Live' API mode status */
-			__( 'Live', 'wp-full-stripe-admin' ) :
+			__( 'Live', 'wp-full-stripe-free' ) :
 			/* translators: The 'Test' API mode status */
-			__( 'Test', 'wp-full-stripe-admin' );
+			__( 'Test', 'wp-full-stripe-free' );
 	}
 
 	/**
@@ -319,40 +471,57 @@ class MM_WPFS_Admin {
 	 * @return string|void
 	 */
 	public static function formatIntervalLabelAdmin( $interval, $intervalCount ) {
-		$intervalLabel = __( 'No interval', 'wp-full-stripe-admin' );
+		$intervalLabel = __( 'No interval', 'wp-full-stripe-free' );
 
 		if ( $interval === "year" ) {
-			$intervalLabel = sprintf(
-				/* translators: Singular and plural annual interval label
-				 * p1: interval count
-				 */
-				_n( 'year', '%d years', $intervalCount, 'wp-full-stripe-admin' ),
-				number_format_i18n( $intervalCount )
-			);
+            if($intervalCount === 1) {
+                $intervalLabel = __( 'year', 'wp-full-stripe-free' );
+            } else {
+                $intervalLabel = sprintf(
+                    /* translators: Singular and plural annual interval label
+                     * p1: interval count
+                     */
+                    _n( '%d year', '%d years', $intervalCount, 'wp-full-stripe-free' ),
+                    number_format_i18n( $intervalCount )
+                );
+            }
 		} elseif ( $interval === "month" ) {
-			$intervalLabel = sprintf(
+            if($intervalCount === 1){
+                $intervalLabel = __( 'month', 'wp-full-stripe-free' );
+            }
+			else {
+				$intervalLabel = sprintf(
 				/* translators: Singular and plural monthly interval label
 				 * p1: interval count
 				 */
-				_n( 'month', '%d months', $intervalCount, 'wp-full-stripe-admin' ),
-				number_format_i18n( $intervalCount )
-			);
+					_n( '%d month', '%d months', $intervalCount, 'wp-full-stripe-free' ),
+					number_format_i18n( $intervalCount )
+				);
+			}
 		} elseif ( $interval === "week" ) {
-			$intervalLabel = sprintf(
+			if ( $intervalCount === 1 ) {
+				$intervalLabel = __( 'week', 'wp-full-stripe-free' );
+			} else {
+				$intervalLabel = sprintf(
 				/* translators: Singular and plural weekly interval label
 				 * p1: interval count
 				 */
-				_n( 'week', '%d weeks', $intervalCount, 'wp-full-stripe-admin' ),
-				number_format_i18n( $intervalCount )
-			);
+					_n( '%d week', '%d weeks', $intervalCount, 'wp-full-stripe-free' ),
+					number_format_i18n( $intervalCount )
+				);
+			}
 		} elseif ( $interval === "day" ) {
-			$intervalLabel = sprintf(
+			if ( $intervalCount === 1 ) {
+				$intervalLabel = __( 'day', 'wp-full-stripe-free' );
+			} else {
+				$intervalLabel = sprintf(
 				/* translators: Singular and plural daily interval label
 				 * p1: interval count
 				 */
-				_n( 'day', '%d days', $intervalCount, 'wp-full-stripe-admin' ),
-				number_format_i18n( $intervalCount )
-			);
+					_n( '%d day', '%d days', $intervalCount, 'wp-full-stripe-free' ),
+					number_format_i18n( $intervalCount )
+				);
+			}
 		}
 
 		return $intervalLabel;
@@ -422,7 +591,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a save card form is saved */
-						__( 'Save card form saved', 'wp-full-stripe-admin' ),
+						__( 'Save card form saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -431,7 +600,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a save card form is saved */
-					__( 'There was an error saving the save card form: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error saving the save card form: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -474,7 +643,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a payment form is saved */
-						__( 'Payment form saved', 'wp-full-stripe-admin' ),
+						__( 'Payment form saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -483,7 +652,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a payment form is saved */
-					__( 'There was an error saving the payment form: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error saving the payment form: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -526,7 +695,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a payment form is saved */
-						__( 'Payment form saved', 'wp-full-stripe-admin' ),
+						__( 'Payment form saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -535,7 +704,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a payment form is saved */
-					__( 'There was an error saving the payment form: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error saving the payment form: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 		header( "Content-Type: application/json" );
@@ -576,7 +745,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a subscription form is saved */
-						__( 'Subscription form saved', 'wp-full-stripe-admin' ),
+						__( 'Subscription form saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -585,7 +754,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a subscription form is saved */
-					__( 'There was an error saving the subscription form: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error saving the subscription form: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -628,7 +797,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a subscription form is saved */
-						__( 'Subscription form saved', 'wp-full-stripe-admin' ),
+						__( 'Subscription form saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -637,7 +806,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a subscription form is saved */
-					__( 'There was an error saving the subscription form: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error saving the subscription form: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -679,7 +848,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a donation form is saved */
-						__( 'Donation form saved', 'wp-full-stripe-admin' ),
+						__( 'Donation form saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -688,7 +857,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a donation form is saved */
-					__( 'There was an error saving the donation form: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error saving the donation form: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -730,7 +899,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a donation form is saved */
-						__( 'Donation form saved', 'wp-full-stripe-admin' ),
+						__( 'Donation form saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -739,7 +908,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a donation form is saved */
-					__( 'There was an error saving the donation form: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error saving the donation form: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 		header( "Content-Type: application/json" );
@@ -772,7 +941,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a save card form is saved */
-						__( 'Save card form saved', 'wp-full-stripe-admin' ),
+						__( 'Save card form saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -781,7 +950,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a save card form is saved */
-					__( 'There was an error saving the save card form: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error saving the save card form: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -834,7 +1003,7 @@ class MM_WPFS_Admin {
 		} else {
 			$subscriptionDetails['productName'] =
 				/* translators: This label is displayed when a product has no name */
-				__( '(Not available)', 'wp-full-stripe-admin' );
+				__( '(Not available)', 'wp-full-stripe-free' );
 		}
 
 		if ( ! empty( $subscription->addressCountry ) ) {
@@ -927,7 +1096,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a subscription is canceled */
-						__( 'Subscription canceled.', 'wp-full-stripe-admin' ),
+						__( 'Subscription canceled.', 'wp-full-stripe-free' ),
 					'redirectURL' => add_query_arg(
 						array(
 							'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
@@ -951,7 +1120,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a subscription is canceled */
-					__( 'There was an error canceling the subscription: ', 'wp-full-stripe-admin' ) . $ex->getMessage()
+					__( 'There was an error canceling the subscription: ', 'wp-full-stripe-free' ) . $ex->getMessage()
 			);
 		}
 
@@ -983,7 +1152,7 @@ class MM_WPFS_Admin {
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label after a recurring donation is canceled */
-					__( 'Donation canceled.', 'wp-full-stripe-admin' ),
+					__( 'Donation canceled.', 'wp-full-stripe-free' ),
 				'redirectURL' => add_query_arg(
 					array(
 						'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
@@ -1004,7 +1173,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a recurring donation is canceled */
-					__( 'There was an error canceling the donation: ', 'wp-full-stripe-admin' ) . $ex->getMessage()
+					__( 'There was an error canceling the donation: ', 'wp-full-stripe-free' ) . $ex->getMessage()
 			);
 		}
 
@@ -1031,7 +1200,7 @@ class MM_WPFS_Admin {
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label after a subscription is deleted */
-					__( 'Subscription deleted.', 'wp-full-stripe-admin' ),
+					__( 'Subscription deleted.', 'wp-full-stripe-free' ),
 				'redirectURL' => add_query_arg(
 					array(
 						'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
@@ -1052,7 +1221,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a subscription is deleted */
-					__( 'There was an error deleting the subscription: ', 'wp-full-stripe-admin' ) . $ex->getMessage()
+					__( 'There was an error deleting the subscription: ', 'wp-full-stripe-free' ) . $ex->getMessage()
 			);
 		}
 
@@ -1079,7 +1248,7 @@ class MM_WPFS_Admin {
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label after a one-time payment is deleted */
-					__( 'Payment deleted.', 'wp-full-stripe-admin' ),
+					__( 'Payment deleted.', 'wp-full-stripe-free' ),
 				'redirectURL' => add_query_arg(
 					array(
 						'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
@@ -1100,7 +1269,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a one-time payment is deleted */
-					__( 'There was an error deleting the payment: ', 'wp-full-stripe-admin' ) . $ex->getMessage()
+					__( 'There was an error deleting the payment: ', 'wp-full-stripe-free' ) . $ex->getMessage()
 			);
 		}
 		header( "Content-Type: application/json" );
@@ -1126,7 +1295,7 @@ class MM_WPFS_Admin {
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label after a donaton is deleted */
-					__( 'Donation deleted.', 'wp-full-stripe-admin' ),
+					__( 'Donation deleted.', 'wp-full-stripe-free' ),
 				'redirectURL' => add_query_arg(
 					array(
 						'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
@@ -1147,7 +1316,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a donaton is deleted */
-					__( 'There was an error deleting the donation: ', 'wp-full-stripe-admin' ) . $ex->getMessage()
+					__( 'There was an error deleting the donation: ', 'wp-full-stripe-free' ) . $ex->getMessage()
 			);
 		}
 
@@ -1164,9 +1333,9 @@ class MM_WPFS_Admin {
 	private function getLocalizedApiMode( $isLiveMode ): string {
 		return $isLiveMode == 1 ?
 			/* translators: The 'Live' API mode status */
-			__( 'Live', 'wp-full-stripe-admin' ) :
+			__( 'Live', 'wp-full-stripe-free' ) :
 			/* translators: The 'Test' API mode status */
-			__( 'Test', 'wp-full-stripe-admin' );
+			__( 'Test', 'wp-full-stripe-free' );
 	}
 
 	/**
@@ -1247,7 +1416,7 @@ class MM_WPFS_Admin {
 		$return = array(
 			'wpfs-credit-card wpfs-credit-card--generic wpfs-credit-card--lg',
 			/* translators: Label for the credit or debit card payment method */
-			__( 'Credit or debit card', 'wp-full-stripe-admin' )
+			__( 'Credit or debit card', 'wp-full-stripe-free' )
 		);
 		if ( isset( $payment->payment_method ) ) {
 			switch ( $payment->payment_method ) {
@@ -1255,105 +1424,105 @@ class MM_WPFS_Admin {
 					$return = array(
 						'wpfs-credit-card wpfs-alipay wpfs-credit-card--lg',
 						/* translators: Label for the alipay payment method */
-						__( 'AliPay', 'wp-full-stripe-admin' )
+						__( 'AliPay', 'wp-full-stripe-free' )
 					);
 					break;
 				case 'amazon_pay':
 					$return = array(
 						'wpfs-credit-card wpfs-bancontact wpfs-credit-card--lg',
 						/* translators: Label for the amazonpay payment method */
-						__( 'Bancontact', 'wp-full-stripe-admin' )
+						__( 'Bancontact', 'wp-full-stripe-free' )
 					);
 					break;
 				case 'bancontact':
 					$return = array(
 						'wpfs-credit-card wpfs-bancontact wpfs-credit-card--lg',
 						/* translators: Label for the bancontact payment method */
-						__( 'Bancontact', 'wp-full-stripe-admin' )
+						__( 'Bancontact', 'wp-full-stripe-free' )
 					);
 					break;
 				case 'blik':
 					$return = array(
 						'wpfs-credit-card wpfs-blik wpfs-credit-card--lg',
 						/* translators: Label for the blik payment method */
-						__( 'BLIK', 'wp-full-stripe-admin' )
+						__( 'BLIK', 'wp-full-stripe-free' )
 					);
 					break;
 				case 'cashapp':
 					$return = array(
 						'wpfs-credit-card wpfs-cashapp wpfs-credit-card--lg',
 						/* translators: Label for the cashapp payment method */
-						__( 'Cash App Pay', 'wp-full-stripe-admin' )
+						__( 'Cash App Pay', 'wp-full-stripe-free' )
 					);
 					break;
 				case 'eps':
 					$return = array(
 						'wpfs-credit-card wpfs-eps wpfs-credit-card--lg',
 						/* translators: Label for the eps payment method */
-						__( 'EPS', 'wp-full-stripe-admin' )
+						__( 'EPS', 'wp-full-stripe-free' )
 					);
 					break;
 				case 'grabpay':
 					$return = array(
 						'wpfs-credit-card wpfs-grabpay wpfs-credit-card--lg',
 						/* translators: Label for the GrabPay payment method */
-						__( 'GrabPay', 'wp-full-stripe-admin' )
+						__( 'GrabPay', 'wp-full-stripe-free' )
 					);
 					break;
 				case 'ideal':
 					$return = array(
 						'wpfs-credit-card wpfs-ideal wpfs-credit-card--lg',
 						/* translators: Label for the iDEAL payment method */
-						__( 'iDEAL', 'wp-full-stripe-admin' )
+						__( 'iDEAL', 'wp-full-stripe-free' )
 					);
 					break;
 				case 'klarna':
 					$return = array(
 						'wpfs-credit-card wpfs-klarna wpfs-credit-card--lg',
 						/* translators: Label for the klarna payment method */
-						__( 'Klarna', 'wp-full-stripe-admin' )
+						__( 'Klarna', 'wp-full-stripe-free' )
 					);
 					break;
 				case 'link':
 					$return = array(
 						'wpfs-credit-card wpfs-link wpfs-credit-card--lg',
 						/* translators: Label for the eps payment method */
-						__( 'Link', 'wp-full-stripe-admin' )
+						__( 'Link', 'wp-full-stripe-free' )
 					);
 					break;
 				case 'mobilepay':
 					$return = array(
 						'wpfs-credit-card wpfs-mobilepay wpfs-credit-card--lg',
 						/* translators: Label for the mobilepay payment method */
-						__( 'MobilePay', 'wp-full-stripe-admin' )
+						__( 'MobilePay', 'wp-full-stripe-free' )
 					);
 					break;
 				case 'p24':
 					$return = array(
 						'wpfs-credit-card wpfs-przelewy24 wpfs-credit-card--lg',
 						/* translators: Label for the przelewy24 payment method */
-						__( 'Przelewy24', 'wp-full-stripe-admin' )
+						__( 'Przelewy24', 'wp-full-stripe-free' )
 					);
 					break;
 				case 'revolut_pay':
 					$return = array(
 						'wpfs-credit-card wpfs-revolut wpfs-credit-card--lg',
 						/* translators: Label for the revolut payment method */
-						__( 'Revolut Pay', 'wp-full-stripe-admin' )
+						__( 'Revolut Pay', 'wp-full-stripe-free' )
 					);
 					break;
 				case 'twint':
 					$return = array(
 						'wpfs-credit-card wpfs-twint wpfs-credit-card--lg',
 						/* translators: Label for the twint payment method */
-						__( 'TWINT', 'wp-full-stripe-admin' )
+						__( 'TWINT', 'wp-full-stripe-free' )
 					);
 					break;
 				case 'wechat_pay':
 					$return = array(
 						'wpfs-credit-card wpfs-wechat wpfs-credit-card--lg',
 						/* translators: Label for the wechat payment method */
-						__( 'WeChat Pay', 'wp-full-stripe-admin' )
+						__( 'WeChat Pay', 'wp-full-stripe-free' )
 					);
 					break;
 			}
@@ -1598,7 +1767,7 @@ class MM_WPFS_Admin {
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label for a successfully refunded payment */
-					__( 'Payment refunded.', 'wp-full-stripe-admin' ),
+					__( 'Payment refunded.', 'wp-full-stripe-free' ),
 				'redirectURL' => add_query_arg(
 					array(
 						'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
@@ -1619,7 +1788,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for a payment that cannot be refunded */
-					__( 'There was an error refunding the payment: ', 'wp-full-stripe-admin' ) . $ex->getMessage()
+					__( 'There was an error refunding the payment: ', 'wp-full-stripe-free' ) . $ex->getMessage()
 			);
 		}
 
@@ -1646,7 +1815,7 @@ class MM_WPFS_Admin {
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label for a successfully refunded donation */
-					__( 'Donation refunded.', 'wp-full-stripe-admin' ),
+					__( 'Donation refunded.', 'wp-full-stripe-free' ),
 				'redirectURL' => add_query_arg(
 					array(
 						'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
@@ -1667,7 +1836,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for a donation that cannot be refunded */
-					__( 'There was an error refunding the donation: ', 'wp-full-stripe-admin' ) . $ex->getMessage()
+					__( 'There was an error refunding the donation: ', 'wp-full-stripe-free' ) . $ex->getMessage()
 			);
 		}
 		header( "Content-Type: application/json" );
@@ -1801,7 +1970,7 @@ class MM_WPFS_Admin {
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label for an authorize & capture payment which has been captured successfully */
-					__( 'Payment captured.', 'wp-full-stripe-admin' ),
+					__( 'Payment captured.', 'wp-full-stripe-free' ),
 				'redirectURL' => add_query_arg(
 					array(
 						'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
@@ -1822,7 +1991,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for an authorize & capture payment which cannot be captured */
-					__( 'There was an error capturing the payment: ', 'wp-full-stripe-admin' ) . $ex->getMessage()
+					__( 'There was an error capturing the payment: ', 'wp-full-stripe-free' ) . $ex->getMessage()
 			);
 		}
 
@@ -2013,7 +2182,7 @@ class MM_WPFS_Admin {
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label for successfully deleted save card record */
-					__( 'Saved card deleted.', 'wp-full-stripe-admin' ),
+					__( 'Saved card deleted.', 'wp-full-stripe-free' ),
 				'redirectURL' => add_query_arg(
 					array(
 						'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
@@ -2034,7 +2203,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for save card record that cannot deleted */
-					__( 'There was an error deleting the saved card: ', 'wp-full-stripe-admin' ) . $ex->getMessage()
+					__( 'There was an error deleting the saved card: ', 'wp-full-stripe-free' ) . $ex->getMessage()
 			);
 		}
 
@@ -2069,7 +2238,7 @@ class MM_WPFS_Admin {
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label for cloned form */
-					__( 'Form cloned.', 'wp-full-stripe-admin' ),
+					__( 'Form cloned.', 'wp-full-stripe-free' ),
 				'redirectURL' => $redirectUrl
 			);
 		} catch (WPFS_UserFriendlyException $e) {
@@ -2082,7 +2251,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for a form that cannot be cloned */
-					__( 'There was an error cloning the form: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error cloning the form: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -2111,7 +2280,7 @@ class MM_WPFS_Admin {
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label for a deleted form */
-					__( 'Form deleted.', 'wp-full-stripe-admin' ),
+					__( 'Form deleted.', 'wp-full-stripe-free' ),
 				'redirectURL' => admin_url( 'admin.php?page=' . MM_WPFS_Admin_Menu::SLUG_FORMS )
 			);
 		} catch (Exception $e) {
@@ -2119,7 +2288,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for a form that cannot be deleted */
-					__( 'There was an error deleting the form: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error deleting the form: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -2157,13 +2326,13 @@ class MM_WPFS_Admin {
 				$return = MM_WPFS_Utils::generateReturnValueFromBindings( $bindingResult );
 			} else {
 				$this->saveStripeSettings( $stripeAccountModel );
-				$redirectUrl = admin_url( 'admin.php?page=' . MM_WPFS_Admin_Menu::SLUG_SETTINGS );
+				$redirectUrl = admin_url( 'admin.php?page=' . MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE );
 
 				$return = array(
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the Stripe settings */
-						__( 'Stripe settings saved.', 'wp-full-stripe-admin' ),
+						__( 'Stripe settings saved.', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -2172,7 +2341,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to save the Stripe settings */
-					__( 'There was an error saving Stripe settings: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error saving Stripe settings: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -2308,7 +2477,7 @@ class MM_WPFS_Admin {
 			'success' => true,
 			'msg' =>
 				/* translators: Success banner label for clearing the Stripe settings */
-				__( 'Stripe settings cleared.', 'wp-full-stripe-admin' ),
+				__( 'Stripe settings cleared.', 'wp-full-stripe-free' ),
 			'redirectURL' => admin_url( 'admin.php?page=' . MM_WPFS_Admin_Menu::SLUG_SETTINGS )
 		);
 
@@ -2327,7 +2496,8 @@ class MM_WPFS_Admin {
 			MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_WHEN_CANCEL_SUBSCRIPTIONS => $stripeAccountModel->getWhenCancelSubscriptions(),
 			MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_LET_SUBSCRIBERS_UPDOWNGRADE_SUBSCRIPTIONS => $stripeAccountModel->getUpdowngradeSubscriptions(),
 			MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_SHOW_INVOICES_SECTION => $stripeAccountModel->getShowInvoices(),
-			MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_SCROLLING_PANE_INTO_VIEW => $stripeAccountModel->getScrollingPaneIntoView()
+			MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_SCROLLING_PANE_INTO_VIEW => $stripeAccountModel->getScrollingPaneIntoView(),
+			MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_USE_STRIPE_CUSTOMER_PORTAL => $stripeAccountModel->useStripeCustomerPortal(),
 		] );
 	}
 
@@ -2356,7 +2526,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the Customer portal settings */
-						__( 'Customer portal settings saved', 'wp-full-stripe-admin' ),
+						__( 'Customer portal settings saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -2365,7 +2535,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to save the Customer portal settings */
-					__( 'There was an error saving Customer portal settings: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error saving Customer portal settings: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 		header( "Content-Type: application/json" );
@@ -2410,7 +2580,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the WordPress dashboard settings */
-						__( 'WordPress dashboard settings saved', 'wp-full-stripe-admin' ),
+						__( 'WordPress dashboard settings saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -2419,7 +2589,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Success banner label for not being able to save the WordPress dashboard settings */
-					__( 'There was an error saving WordPress dashboard settings: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error saving WordPress dashboard settings: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -2461,7 +2631,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the Log settings */
-						__( 'Log settings saved', 'wp-full-stripe-admin' ),
+						__( 'Log settings saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -2470,7 +2640,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to save the Log settings */
-					__( 'There was an error saving log settings: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error saving log settings: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -2495,7 +2665,7 @@ class MM_WPFS_Admin {
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label for deleting the log entries */
-					__( 'Log entries deleted', 'wp-full-stripe-admin' ),
+					__( 'Log entries deleted', 'wp-full-stripe-free' ),
 				'redirectURL' => $redirectUrl
 			);
 		} catch (Exception $e) {
@@ -2503,7 +2673,51 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to delete logs */
-					__( 'There was an error emptying the log: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error emptying the log: ', 'wp-full-stripe-free' ) . $e->getMessage()
+			);
+		}
+
+		header( "Content-Type: application/json" );
+		echo json_encode( $return );
+		exit;
+	}
+
+	public function toggleLicense() {
+		// check for nonce and return 400 error if not valid
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
+			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
+			http_response_code( 400 );
+			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			exit;
+		}
+		$key    = isset( $_POST['key'] ) ? sanitize_text_field( $_POST['key'] ) : '';
+		$action = isset( $_POST['licenseAction'] ) ? sanitize_text_field( $_POST['licenseAction'] ) : '';
+
+		// If key or action are empty, return an error
+		if ( empty( $key ) || empty( $action ) ) {
+			$return = array(
+				'success' => false,
+				'msg' =>
+					/* translators: Error banner label for not being able to toggle the license */
+					__( 'There was an error toggling the license.', 'wp-full-stripe-free' )
+			);
+
+			header( "Content-Type: application/json" );
+			echo json_encode( $return );
+			exit;
+		}
+
+		try {
+			$redirectUrl = admin_url( 'admin.php?page=' . MM_WPFS_Admin_Menu::SLUG_SETTINGS_LICENSE );
+			$return      = WPFS_License::toggle( $key, $action );
+
+			$return['redirectURL'] = $redirectUrl;
+		} catch (Exception $e) {
+			$return = array(
+				'success' => false,
+				'msg' =>
+					/* translators: Error banner label for not being able to toggle license */
+					__( 'There was an error toggling the license:', 'wp-full-stripe-free' ) . ' ' . $e->getMessage()
 			);
 		}
 
@@ -2550,7 +2764,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the security settings */
-						__( 'Security settings saved', 'wp-full-stripe-admin' ),
+						__( 'Security settings saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -2559,7 +2773,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to save the security settings */
-					__( 'There was an error saving Security settings: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error saving Security settings: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -2620,7 +2834,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the email notification settings */
-						__( 'Email notification options saved', 'wp-full-stripe-admin' ),
+						__( 'Email notification options saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -2629,7 +2843,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to save the email notification settings */
-					__( 'There was an error saving Email notification options: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error saving Email notification options: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -2676,7 +2890,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the email templates */
-						__( 'Email templates saved', 'wp-full-stripe-admin' ),
+						__( 'Email templates saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -2685,7 +2899,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to save the email templates */
-					__( 'There was an error saving the email templates: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error saving the email templates: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -2734,7 +2948,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the form options */
-						__( 'Form options saved', 'wp-full-stripe-admin' ),
+						__( 'Form options saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -2743,7 +2957,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to save the form options */
-					__( 'There was an error saving Forms settings: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error saving Forms settings: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 		header( "Content-Type: application/json" );
@@ -2788,7 +3002,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the form appearance settings */
-						__( 'Form appearance settings saved', 'wp-full-stripe-admin' ),
+						__( 'Form appearance settings saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -2797,7 +3011,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to save the form appearance settings */
-					__( 'There was an error saving Form appearance settings: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error saving Form appearance settings: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 		header( "Content-Type: application/json" );
@@ -2827,7 +3041,7 @@ class MM_WPFS_Admin {
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for creating a new form */
-						__( 'Form created. Redirecting to edit form.', 'wp-full-stripe-admin' ),
+						__( 'Form created. Redirecting to edit form.', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
 				);
 			}
@@ -2836,7 +3050,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to create a new form */
-					__( 'There was an error creating the form: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error creating the form: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 		header( "Content-Type: application/json" );
@@ -2876,7 +3090,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error message for not being able to fetch one-time products from Stripe */
-					__( 'There was an error getting one-time products from Stripe: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error getting one-time products from Stripe: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -2922,7 +3136,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error message for not being able to fetch tax rates from Stripe */
-					__( 'There was an error getting tax rates from Stripe: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error getting tax rates from Stripe: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -2947,14 +3161,14 @@ class MM_WPFS_Admin {
 				'success' => true,
 				'msg' =>
 					/* translators: Error message for not being able to fetch tax rates from Stripe */
-					__( 'Test email sent successfully.', 'wp-full-stripe-admin' )
+					__( 'Test email sent successfully.', 'wp-full-stripe-free' )
 			);
 		} catch (Exception $ex) {
 			$return = array(
 				'success' => false,
 				'msg' =>
 					/* translators: Error message for not being able to send the test email */
-					__( 'There was an error sending the test email: ', 'wp-full-stripe-admin' ) . $ex->getMessage()
+					__( 'There was an error sending the test email: ', 'wp-full-stripe-free' ) . $ex->getMessage()
 			);
 
 			$this->logger->error( __FUNCTION__, 'Error sending test email', $ex );
@@ -3018,7 +3232,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error message for not being able to fetch recurring products from Stripe */
-					__( 'There was an error getting recurring products from Stripe: ', 'wp-full-stripe-admin' ) . $e->getMessage()
+					__( 'There was an error getting recurring products from Stripe: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -3046,51 +3260,67 @@ class MM_WPFS_Admin {
 
 		switch ( $interval ) {
 			case 'day':
-				/* translators: Recurring pricing descriptor.
-				 * p1: interval count
-				 */
-				$formatStr = _n(
-					'daily',
-					'every %d days',
-					$intervalCount,
-					'wp-full-stripe-admin'
-				);
+				if ( $intervalCount == 1 ) {
+					$formatStr = __( 'daily', 'wp-full-stripe-free' );
+				} else {
+					/* translators: Recurring pricing descriptor.
+					 * p1: interval count
+					 */
+					$formatStr = _n(
+						'every %d day',
+						'every %d days',
+						$intervalCount,
+						'wp-full-stripe-free'
+					);
+				}
 				break;
 
 			case 'week':
-				/* translators: Recurring pricing descriptor.
-				 * p1: interval count
-				 */
-				$formatStr = _n(
-					'weekly',
-					'every %d weeks',
-					$intervalCount,
-					'wp-full-stripe-admin'
-				);
+				if ( $intervalCount == 1 ) {
+					$formatStr = __( 'weekly', 'wp-full-stripe-free' );
+				} else {
+					/* translators: Recurring pricing descriptor.
+					 * p1: interval count
+					 */
+					$formatStr = _n(
+						'every %d week',
+						'every %d weeks',
+						$intervalCount,
+						'wp-full-stripe-free'
+					);
+				}
 				break;
 
 			case 'month':
-				/* translators: Recurring pricing descriptor.
-				 * p1: interval count
-				 */
-				$formatStr = _n(
-					'monthly',
-					'every %d months',
-					$intervalCount,
-					'wp-full-stripe-admin'
-				);
+				if ( $intervalCount == 1 ) {
+					$formatStr = __( 'monthly', 'wp-full-stripe-free' );
+				} else {
+					/* translators: Recurring pricing descriptor.
+					 * p1: interval count
+					 */
+					$formatStr = _n(
+						'every %d month',
+						'every %d months',
+						$intervalCount,
+						'wp-full-stripe-free'
+					);
+				}
 				break;
 
 			case 'year':
-				/* translators: Recurring pricing descriptor.
-				 * p1: interval count
-				 */
-				$formatStr = _n(
-					'annually',
-					'every %d year',
-					$intervalCount,
-					'wp-full-stripe-admin'
-				);
+				if ( $intervalCount == 1 ) {
+					$formatStr = __( 'annually', 'wp-full-stripe-free' );
+				} else {
+					/* translators: Recurring pricing descriptor.
+					 * p1: interval count
+					 */
+					$formatStr = _n(
+						'every %d year',
+						'every %d years',
+						$intervalCount,
+						'wp-full-stripe-free'
+					);
+				}
 				break;
 
 			default:
@@ -3145,6 +3375,168 @@ class MM_WPFS_Admin {
 		return $rawCustomFields;
 	}
 
+	/**
+	 * @param $data
+	 *
+	 * @return mixed
+	 */
+	public function triggerWebhook( $form, $data ) {
+		if ( ! isset( $form->webhook ) ) {
+			return;
+		}
+
+		$webhook = $form->webhook;
+		$webhook = json_decode( $webhook, true );
+
+		if ( ! isset( $webhook['url'] ) ) {
+			return;
+		}
+
+		$webhookUrl     = $webhook['url'];
+		$webhookHeaders = isset( $webhook['headers'] ) ? $webhook['headers'] : array();
+		$webhookData    = apply_filters( 'fullstripe_webhook_data', $data );
+
+		$webhookData = json_encode( $webhookData );
+
+		$webhookResponse = wp_remote_post(
+			$webhookUrl,
+			array(
+				'headers' => $webhookHeaders,
+				'body'    => $webhookData,
+			)
+		);
+
+		$webhookResponseCode = wp_remote_retrieve_response_code( $webhookResponse );
+		$webhookResponseBody = wp_remote_retrieve_body( $webhookResponse );
+
+		$this->logger->info(
+			__FUNCTION__,
+			"Webhook response code: $webhookResponseCode, response body: $webhookResponseBody"
+		);
+	}
+ 
+	/**
+	 * On plugin activate.
+	 *
+	 * @return void
+	 */
+	public function activate() {
+		if ( get_option( MM_WPFS::ONBOARDING_WIZARD_OPTION_NAME ) === false ) {
+			update_option( MM_WPFS::ONBOARDING_WIZARD_OPTION_NAME, 'yes' );
+		}
+	}
+
+	/**
+	 * Redirection for onboarding wizard.
+	 * 
+	 * @return void
+	 */
+	public function maybeRedirect() {
+		if ( 'yes' !== get_option( MM_WPFS::ONBOARDING_WIZARD_OPTION_NAME, 'no' ) ) {
+			return;
+		}
+
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+			return;
+		}
+
+		if ( is_network_admin() || isset( $_GET['activate-multi'] ) ) {
+			return;
+		}
+
+		update_option( MM_WPFS::ONBOARDING_WIZARD_OPTION_NAME, 'no' );
+		wp_safe_redirect( admin_url( 'admin.php?page=wpfs-settings-stripe&onboarding=true' ) );
+		exit;
+	}
+
+	/**
+	 * Form preview.
+	 */
+	public function previewForm() {
+		if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'Unauthorized' );
+		}
+
+		if ( ! isset( $_GET['nonce'] ) || ! wp_verify_nonce( $_GET['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
+			wp_die( 'Invalid nonce' );
+		}
+
+		if ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) {
+			wp_die( 'Invalid request' );
+		}
+
+		$shortcode      = isset( $_GET['shortcode'] ) ? wp_unslash( $_GET['shortcode'] ) : '';
+		$stylesheet_url = get_stylesheet_uri();
+
+		?>
+		<!DOCTYPE html>
+		<html <?php language_attributes(); ?>>
+		<head>
+			<meta charset="<?php bloginfo('charset'); ?>">
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+			<link rel="stylesheet" href="<?php echo esc_url( $stylesheet_url ); ?>">
+			<style>
+				.shortcode-preview {
+					padding: 20px;
+					pointer-events: none; /* Disable interactions */
+				}
+			</style>
+			<?php wp_head(); ?>
+		</head>
+		<body>
+			<div class="shortcode-preview">
+				<?php echo do_shortcode( $shortcode ); ?>
+			</div>
+			<?php wp_footer(); ?>
+		</body>
+		</html>
+		<?php
+		exit;
+	}
+
+	/**
+	 * Add admin bar notice for test mode.
+	 */
+	public function adminBarNotice( $menu ) {
+		if ( ! MM_WPFS_Utils::isTestMode() || ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$menu->add_menu(
+			array(
+				'id'     => 'wpfs-test-notice',
+				'href'   => MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE ),
+				'parent' => 'top-secondary',
+				'title'  => __( 'WP Full Pay: Test Mode', 'wp-full-stripe-free' ),
+				'meta'   => array(
+					'class' => 'wpfs-test-mode',
+				),
+			)
+		);
+	}
+
+	/**
+	 * Add admin bar notice CSS.
+	 */
+	public function adminBarNoticeCSS( $menu ) {
+		if ( ! MM_WPFS_Utils::isTestMode() || ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		?>
+		<style>
+			#wpadminbar .wpfs-test-mode > .ab-item {
+				color: #fff;
+				background-color: #568ee8;
+			}
+
+			#wpadminbar .wpfs-test-mode:hover > .ab-item, #wpadminbar .wpfs-test-mode:hover > .ab-item {
+				background-color: #74a2ec !important;
+				color: #fff !important;
+			}
+		</style>
+		<?php
+	}
 }
 
 
@@ -3243,7 +3635,7 @@ class MM_WPFS_Admin_CloneFormFactory {
 				/* translators: Error message for not being able to clone a form
 																																																																																																																												   p1: form name
 																																																																																																																												*/
-				__( "Cannot clone form because a form with id '{$newFormName}' already exists.", 'wp-full-stripe-admin' )
+				sprintf( __( "Cannot clone form because a form with id %s already exists.", 'wp-full-stripe-free' ), $newFormName )
 			);
 		}
 	}
@@ -3274,7 +3666,7 @@ class MM_WPFS_Admin_CloneFormFactory {
 				/* translators: Error message for not being able to clone a form
 																																																																																																																												   p1: form name
 																																																																																																																												*/
-				__( "Cannot clone form because a form with id '{$newFormName}' already exists.", 'wp-full-stripe-admin' )
+				sprintf( __( "Cannot clone form because a form with id %s already exists.", 'wp-full-stripe-free' ), $newFormName )
 			);
 		}
 	}
@@ -3305,7 +3697,7 @@ class MM_WPFS_Admin_CloneFormFactory {
 				/* translators: Error message for not being able to clone a form
 																																																																																																																												   p1: form name
 																																																																																																																												*/
-				__( "Cannot clone form because a form with id '{$newFormName}' already exists.", 'wp-full-stripe-admin' )
+				sprintf( __( "Cannot clone form because a form with id %s already exists.", 'wp-full-stripe-free' ), $newFormName )
 			);
 		}
 	}
@@ -3336,7 +3728,7 @@ class MM_WPFS_Admin_CloneFormFactory {
 				/* translators: Error message for not being able to clone a form
 																																																																																																																												   p1: form name
 																																																																																																																												*/
-				__( "Cannot clone form because a form with id '{$newFormName}' already exists.", 'wp-full-stripe-admin' )
+				sprintf( __( "Cannot clone form because a form with id %s already exists.", 'wp-full-stripe-free' ), $newFormName )
 			);
 		}
 	}
@@ -3367,7 +3759,7 @@ class MM_WPFS_Admin_CloneFormFactory {
 				/* translators: Error message for not being able to clone a form
 																																																																																																																												   p1: form name
 																																																																																																																												*/
-				__( "Cannot clone form because a form with id '{$newFormName}' already exists.", 'wp-full-stripe-admin' )
+				sprintf( __( "Cannot clone form because a form with id %s already exists.", 'wp-full-stripe-free' ), $newFormName )
 			);
 		}
 	}
@@ -3398,7 +3790,7 @@ class MM_WPFS_Admin_CloneFormFactory {
 				/* translators: Error message for not being able to clone a form
 																																																																																																																												   p1: form name
 																																																																																																																												*/
-				__( "Cannot clone form because a form with id '{$newFormName}' already exists.", 'wp-full-stripe-admin' )
+				sprintf( __( "Cannot clone form because a form with id %s already exists.", 'wp-full-stripe-free' ), $newFormName )
 			);
 		}
 	}
@@ -3899,65 +4291,65 @@ class MacroHelperTools {
 	 */
 	public static function getMacroDescriptions(): array {
 		$macros = array(
-			'%CUSTOMERNAME%' => __( "Customer's cardholder name", 'wp-full-stripe-admin' ),
-			'%CUSTOMER_EMAIL%' => __( "Customer's email address", 'wp-full-stripe-admin' ),
-			'%CUSTOMER_PHONE%' => __( "Customer's phone number", 'wp-full-stripe-admin' ),
-			'%CUSTOMER_TAX_ID%' => __( "Customer's tax id", 'wp-full-stripe-admin' ),
-			'%STRIPE_CUSTOMER_ID%' => __( "Identifier of the Stripe customer", 'wp-full-stripe-admin' ),
-			'%NAME%' => __( "Name of your WordPress site", 'wp-full-stripe-admin' ),
-			'%FORM_NAME%' => __( "Name of the form used to make the transaction", 'wp-full-stripe-admin' ),
-			'%DATE%' => __( "Current date", 'wp-full-stripe-admin' ),
-			'%TRANSACTION_ID%' => __( "Identifier of the Stripe object created in the transaction", 'wp-full-stripe-admin' ),
-			'%AMOUNT%' => __( "Gross payment amount", 'wp-full-stripe-admin' ),
-			'%PRODUCT_NAME%' => __( "Name of product purchased", 'wp-full-stripe-admin' ),
-			'%PRODUCT_AMOUNT_GROSS%' => __( "Gross amount of product purchased", 'wp-full-stripe-admin' ),
-			'%PRODUCT_AMOUNT_TAX%' => __( "Tax of product purchased", 'wp-full-stripe-admin' ),
-			'%PRODUCT_AMOUNT_NET%' => __( "Net amount of product purchased", 'wp-full-stripe-admin' ),
-			'%PLAN_NAME%' => __( "Name of the subscription plan", 'wp-full-stripe-admin' ),
-			'%PLAN_QUANTITY%' => __( "The number of subscription plans purchased", 'wp-full-stripe-admin' ),
-			'%PLAN_AMOUNT%' => __( "Gross amount of the subscription plan", 'wp-full-stripe-admin' ),
-			'%PLAN_AMOUNT_TOTAL%' => __( "Gross subscription amount (= PLAN_AMOUNT × PLAN_QUANTITY)", 'wp-full-stripe-admin' ),
-			'%PLAN_AMOUNT_GROSS%' => __( "Gross amount of the subscription plan", 'wp-full-stripe-admin' ),
-			'%PLAN_AMOUNT_GROSS_TOTAL%' => __( "Gross subscription amount (= PLAN_AMOUNT_GROSS × PLAN_QUANTITY)", 'wp-full-stripe-admin' ),
-			'%PLAN_AMOUNT_NET%' => __( "Net amount of the subscription plan", 'wp-full-stripe-admin' ),
-			'%PLAN_AMOUNT_NET_TOTAL%' => __( "Net subscription amount (= PLAN_AMOUNT_NET × PLAN_QUANTITY)", 'wp-full-stripe-admin' ),
-			'%PLAN_AMOUNT_VAT%' => __( "VAT amount of the subscription plan", 'wp-full-stripe-admin' ),
-			'%PLAN_AMOUNT_VAT_TOTAL%' => __( "VAT amount of the subscription (= PLAN_AMOUNT_VAT × PLAN_QUANTITY)", 'wp-full-stripe-admin' ),
-			'%PLAN_FUTURE_AMOUNT_NET%' => __( "Net amount of the subscription plan after trial", 'wp-full-stripe-admin' ),
-			'%PLAN_FUTURE_AMOUNT_VAT%' => __( "VAT amount of the subscription plan after trial", 'wp-full-stripe-admin' ),
-			'%PLAN_FUTURE_AMOUNT_GROSS%' => __( "Gross amount of the subscription plan after trial", 'wp-full-stripe-admin' ),
-			'%SETUP_FEE%' => __( "Gross setup fee of the subscription plan", 'wp-full-stripe-admin' ),
-			'%SETUP_FEE_TOTAL%' => __( "Gross setup fee (= SETUP_FEE × PLAN_QUANTITY)", 'wp-full-stripe-admin' ),
-			'%SETUP_FEE_GROSS%' => __( "Gross setup fee of the subscription plan", 'wp-full-stripe-admin' ),
-			'%SETUP_FEE_GROSS_TOTAL%' => __( "Gross setup fee (= SETUP_FEE × PLAN_QUANTITY)", 'wp-full-stripe-admin' ),
-			'%SETUP_FEE_NET%' => __( "Net setup fee of the subscription plan", 'wp-full-stripe-admin' ),
-			'%SETUP_FEE_NET_TOTAL%' => __( "Net setup fee (= SETUP_FEE_NET × PLAN_QUANTITY)", 'wp-full-stripe-admin' ),
-			'%SETUP_FEE_VAT%' => __( "VAT amount of the subscription plan’s setup fee", 'wp-full-stripe-admin' ),
-			'%SETUP_FEE_VAT_TOTAL%' => __( "VAT amount of the subscription’s setup fee (= SETUP_FEE_VAT × PLAN_QUANTITY)", 'wp-full-stripe-admin' ),
-			'%INVOICE_URL%' => __( "Link to the downloadable PDF invoice of the payment", 'wp-full-stripe-admin' ),
-			'%INVOICE_NUMBER%' => __( "Invoice number of the payment", 'wp-full-stripe-admin' ),
-			'%RECEIPT_URL%' => __( "Link to the downloadable PDF receipt of the payment", 'wp-full-stripe-admin' ),
-			'%BILLING_NAME%' => __( "Billing name", 'wp-full-stripe-admin' ),
-			'%ADDRESS1%' => __( "Billing address line 1", 'wp-full-stripe-admin' ),
-			'%ADDRESS2%' => __( "Billing address line 2", 'wp-full-stripe-admin' ),
-			'%CITY%' => __( "Billing address city", 'wp-full-stripe-admin' ),
-			'%STATE%' => __( "Billing address state", 'wp-full-stripe-admin' ),
-			'%ZIP%' => __( "Billing address zip (or postal) code", 'wp-full-stripe-admin' ),
-			'%COUNTRY%' => __( "Billing address country", 'wp-full-stripe-admin' ),
-			'%COUNTRY_CODE%' => __( "ISO code of the billing address country", 'wp-full-stripe-admin' ),
-			'%SHIPPING_NAME%' => __( "Shipping name", 'wp-full-stripe-admin' ),
-			'%SHIPPING_ADDRESS1%' => __( "Shipping address line 1", 'wp-full-stripe-admin' ),
-			'%SHIPPING_ADDRESS2%' => __( "Shipping address line 2", 'wp-full-stripe-admin' ),
-			'%SHIPPING_CITY%' => __( "Shipping address city", 'wp-full-stripe-admin' ),
-			'%SHIPPING_STATE%' => __( "Shipping address state", 'wp-full-stripe-admin' ),
-			'%SHIPPING_ZIP%' => __( "Shipping address zip (or postal) code", 'wp-full-stripe-admin' ),
-			'%SHIPPING_COUNTRY%' => __( "Shipping address country", 'wp-full-stripe-admin' ),
-			'%SHIPPING_COUNTRY_CODE%' => __( "ISO code of the shipping address country", 'wp-full-stripe-admin' ),
-			'%COUPON_CODE%' => __( "Coupon code redeemed on the form", 'wp-full-stripe-admin' ),
-			'%DONATION_FREQUENCY%' => __( "Donation frequency (one-time, daily, weekly, monthly, or annual)", 'wp-full-stripe-admin' ),
-			'%CUSTOMFIELD1%' => __( "Custom field 1 value", 'wp-full-stripe-admin' ),
-			'%CARD_UPDATE_SECURITY_CODE%' => __( "Login code generated by the Customer Portal page", 'wp-full-stripe-admin' ),
-			'%IP_ADDRESS%' => __( "Customer's IP address", 'wp-full-stripe-admin' )
+			'%CUSTOMERNAME%' => __( "Customer's cardholder name", 'wp-full-stripe-free' ),
+			'%CUSTOMER_EMAIL%' => __( "Customer's email address", 'wp-full-stripe-free' ),
+			'%CUSTOMER_PHONE%' => __( "Customer's phone number", 'wp-full-stripe-free' ),
+			'%CUSTOMER_TAX_ID%' => __( "Customer's tax id", 'wp-full-stripe-free' ),
+			'%STRIPE_CUSTOMER_ID%' => __( "Identifier of the Stripe customer", 'wp-full-stripe-free' ),
+			'%NAME%' => __( "Name of your WordPress site", 'wp-full-stripe-free' ),
+			'%FORM_NAME%' => __( "Name of the form used to make the transaction", 'wp-full-stripe-free' ),
+			'%DATE%' => __( "Current date", 'wp-full-stripe-free' ),
+			'%TRANSACTION_ID%' => __( "Identifier of the Stripe object created in the transaction", 'wp-full-stripe-free' ),
+			'%AMOUNT%' => __( "Gross payment amount", 'wp-full-stripe-free' ),
+			'%PRODUCT_NAME%' => __( "Name of product purchased", 'wp-full-stripe-free' ),
+			'%PRODUCT_AMOUNT_GROSS%' => __( "Gross amount of product purchased", 'wp-full-stripe-free' ),
+			'%PRODUCT_AMOUNT_TAX%' => __( "Tax of product purchased", 'wp-full-stripe-free' ),
+			'%PRODUCT_AMOUNT_NET%' => __( "Net amount of product purchased", 'wp-full-stripe-free' ),
+			'%PLAN_NAME%' => __( "Name of the subscription plan", 'wp-full-stripe-free' ),
+			'%PLAN_QUANTITY%' => __( "The number of subscription plans purchased", 'wp-full-stripe-free' ),
+			'%PLAN_AMOUNT%' => __( "Gross amount of the subscription plan", 'wp-full-stripe-free' ),
+			'%PLAN_AMOUNT_TOTAL%' => __( "Gross subscription amount (= PLAN_AMOUNT × PLAN_QUANTITY)", 'wp-full-stripe-free' ),
+			'%PLAN_AMOUNT_GROSS%' => __( "Gross amount of the subscription plan", 'wp-full-stripe-free' ),
+			'%PLAN_AMOUNT_GROSS_TOTAL%' => __( "Gross subscription amount (= PLAN_AMOUNT_GROSS × PLAN_QUANTITY)", 'wp-full-stripe-free' ),
+			'%PLAN_AMOUNT_NET%' => __( "Net amount of the subscription plan", 'wp-full-stripe-free' ),
+			'%PLAN_AMOUNT_NET_TOTAL%' => __( "Net subscription amount (= PLAN_AMOUNT_NET × PLAN_QUANTITY)", 'wp-full-stripe-free' ),
+			'%PLAN_AMOUNT_VAT%' => __( "VAT amount of the subscription plan", 'wp-full-stripe-free' ),
+			'%PLAN_AMOUNT_VAT_TOTAL%' => __( "VAT amount of the subscription (= PLAN_AMOUNT_VAT × PLAN_QUANTITY)", 'wp-full-stripe-free' ),
+			'%PLAN_FUTURE_AMOUNT_NET%' => __( "Net amount of the subscription plan after trial", 'wp-full-stripe-free' ),
+			'%PLAN_FUTURE_AMOUNT_VAT%' => __( "VAT amount of the subscription plan after trial", 'wp-full-stripe-free' ),
+			'%PLAN_FUTURE_AMOUNT_GROSS%' => __( "Gross amount of the subscription plan after trial", 'wp-full-stripe-free' ),
+			'%SETUP_FEE%' => __( "Gross setup fee of the subscription plan", 'wp-full-stripe-free' ),
+			'%SETUP_FEE_TOTAL%' => __( "Gross setup fee (= SETUP_FEE × PLAN_QUANTITY)", 'wp-full-stripe-free' ),
+			'%SETUP_FEE_GROSS%' => __( "Gross setup fee of the subscription plan", 'wp-full-stripe-free' ),
+			'%SETUP_FEE_GROSS_TOTAL%' => __( "Gross setup fee (= SETUP_FEE × PLAN_QUANTITY)", 'wp-full-stripe-free' ),
+			'%SETUP_FEE_NET%' => __( "Net setup fee of the subscription plan", 'wp-full-stripe-free' ),
+			'%SETUP_FEE_NET_TOTAL%' => __( "Net setup fee (= SETUP_FEE_NET × PLAN_QUANTITY)", 'wp-full-stripe-free' ),
+			'%SETUP_FEE_VAT%' => __( "VAT amount of the subscription plan’s setup fee", 'wp-full-stripe-free' ),
+			'%SETUP_FEE_VAT_TOTAL%' => __( "VAT amount of the subscription’s setup fee (= SETUP_FEE_VAT × PLAN_QUANTITY)", 'wp-full-stripe-free' ),
+			'%INVOICE_URL%' => __( "Link to the downloadable PDF invoice of the payment", 'wp-full-stripe-free' ),
+			'%INVOICE_NUMBER%' => __( "Invoice number of the payment", 'wp-full-stripe-free' ),
+			'%RECEIPT_URL%' => __( "Link to the downloadable PDF receipt of the payment", 'wp-full-stripe-free' ),
+			'%BILLING_NAME%' => __( "Billing name", 'wp-full-stripe-free' ),
+			'%ADDRESS1%' => __( "Billing address line 1", 'wp-full-stripe-free' ),
+			'%ADDRESS2%' => __( "Billing address line 2", 'wp-full-stripe-free' ),
+			'%CITY%' => __( "Billing address city", 'wp-full-stripe-free' ),
+			'%STATE%' => __( "Billing address state", 'wp-full-stripe-free' ),
+			'%ZIP%' => __( "Billing address zip (or postal) code", 'wp-full-stripe-free' ),
+			'%COUNTRY%' => __( "Billing address country", 'wp-full-stripe-free' ),
+			'%COUNTRY_CODE%' => __( "ISO code of the billing address country", 'wp-full-stripe-free' ),
+			'%SHIPPING_NAME%' => __( "Shipping name", 'wp-full-stripe-free' ),
+			'%SHIPPING_ADDRESS1%' => __( "Shipping address line 1", 'wp-full-stripe-free' ),
+			'%SHIPPING_ADDRESS2%' => __( "Shipping address line 2", 'wp-full-stripe-free' ),
+			'%SHIPPING_CITY%' => __( "Shipping address city", 'wp-full-stripe-free' ),
+			'%SHIPPING_STATE%' => __( "Shipping address state", 'wp-full-stripe-free' ),
+			'%SHIPPING_ZIP%' => __( "Shipping address zip (or postal) code", 'wp-full-stripe-free' ),
+			'%SHIPPING_COUNTRY%' => __( "Shipping address country", 'wp-full-stripe-free' ),
+			'%SHIPPING_COUNTRY_CODE%' => __( "ISO code of the shipping address country", 'wp-full-stripe-free' ),
+			'%COUPON_CODE%' => __( "Coupon code redeemed on the form", 'wp-full-stripe-free' ),
+			'%DONATION_FREQUENCY%' => __( "Donation frequency (one-time, daily, weekly, monthly, or annual)", 'wp-full-stripe-free' ),
+			'%CUSTOMFIELD1%' => __( "Custom field 1 value", 'wp-full-stripe-free' ),
+			'%CARD_UPDATE_SECURITY_CODE%' => __( "Login code generated by the Customer Portal page", 'wp-full-stripe-free' ),
+			'%IP_ADDRESS%' => __( "Customer's IP address", 'wp-full-stripe-free' )
 		);
 
 		return $macros;

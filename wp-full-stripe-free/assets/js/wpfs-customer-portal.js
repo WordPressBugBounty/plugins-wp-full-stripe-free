@@ -1790,7 +1790,7 @@ jQuery.noConflict();
           "#wpfs-manage-subscriptions-container"
         );
         if (
-          wpfsEnterEmailAddressForm &&
+          $wpfsEnterEmailAddressForm &&
           $wpfsEnterEmailAddressForm.length > 0
         ) {
           scrollToElement($wpfsEnterEmailAddressForm);

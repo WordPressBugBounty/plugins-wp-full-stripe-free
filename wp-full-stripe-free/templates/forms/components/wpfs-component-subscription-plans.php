@@ -8,14 +8,14 @@ if ($view instanceof MM_WPFS_CheckoutSubscriptionFormView && 1 == $form->simpleB
 		<div class="wpfs-form-message wpfs-form-message--incorrect">
 			<div class="wpfs-form-message-title">
 				<?php /* translators: Banner title of not finding the plan assigned to the form */
-				esc_html_e('Invalid plan', 'wp-full-stripe'); ?>
+				esc_html_e('Invalid plan', 'wp-full-stripe-free'); ?>
 			</div>
 			<?php printf(
 				/* translators: Banner error message of not finding the plan assigned to the form
 				 * p1: Form name
 				 * p2: Plan name
 				 */
-				esc_html__('Checkout subscription form "%1$s": cannot find subscription plan "%2$s".', 'wp-full-stripe'),
+				esc_html__('Checkout subscription form "%1$s": cannot find subscription plan "%2$s".', 'wp-full-stripe-free'),
 				$view->getFormName(),
 				$view->getFirstPlanName()
 			); ?>
@@ -77,10 +77,10 @@ if ($view instanceof MM_WPFS_CheckoutSubscriptionFormView && 1 == $form->simpleB
 		<div class="wpfs-form-message wpfs-form-message--incorrect">
 			<div class="wpfs-form-message-title">
 				<?php /* translators: Banner title of internal error */
-				esc_html_e('Form configuration error', 'wp-full-stripe'); ?>
+				esc_html_e('Form configuration error', 'wp-full-stripe-free'); ?>
 			</div>
 			<?php /* Banner error message of not finding plans assigned to this form */
-			esc_html_e('Add at least one plan to this form!', 'wp-full-stripe'); ?>
+			esc_html_e('Add at least one plan to this form!', 'wp-full-stripe-free'); ?>
 		</div>
 		<?php
 	}

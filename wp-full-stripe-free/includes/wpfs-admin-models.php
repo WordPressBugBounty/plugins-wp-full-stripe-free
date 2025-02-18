@@ -206,6 +206,7 @@ class MM_WPFS_Admin_MyAccountModel implements MM_WPFS_Binder {
 	protected $updowngradeSubscriptions;
 	protected $showInvoices;
 	protected $scrollingPaneIntoView;
+	protected $useStripeCustomerPortal;
 
 	public function __construct( $loggerService ) {
 		$this->initLogger( $loggerService, MM_WPFS_LoggerService::MODULE_ADMIN );
@@ -255,6 +256,13 @@ class MM_WPFS_Admin_MyAccountModel implements MM_WPFS_Binder {
 		return $this->scrollingPaneIntoView;
 	}
 
+	/**
+	 * @return mixed
+	 */
+	public function useStripeCustomerPortal() {
+		return $this->useStripeCustomerPortal;
+	}
+
 	public function bind() {
 		return $this->bindByArray( $_POST );
 	}
@@ -268,6 +276,7 @@ class MM_WPFS_Admin_MyAccountModel implements MM_WPFS_Binder {
 		$this->updowngradeSubscriptions = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_CustomerPortalViewConstants::FIELD_MY_ACCOUNT_UPDOWNGRADE_SUBSCRIPTIONS, 0 );
 		$this->showInvoices = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_CustomerPortalViewConstants::FIELD_MY_ACCOUNT_SHOW_INVOICES, 0 );
 		$this->scrollingPaneIntoView = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_CustomerPortalViewConstants::FIELD_MY_ACCOUNT_SCROLLING_PANE_INTO_VIEW, 0 );
+		$this->useStripeCustomerPortal = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_CustomerPortalViewConstants::FIELD_MY_ACCOUNT_USE_STRIPE_CUSTOMER_PORTAL, 0 );
 
 		if ( isset( $this->__validator ) ) {
 			$this->__validator->validate( $bindingResult, $this );
@@ -283,7 +292,8 @@ class MM_WPFS_Admin_MyAccountModel implements MM_WPFS_Binder {
 			'whenToCancelSubscriptions' => $this->whenCancelSubscriptions,
 			'letCustomersUpdowngradeSubscriptions' => $this->updowngradeSubscriptions,
 			'showInvoicesToCustomers' => $this->showInvoices,
-			'scrollingPaneIntoView' => $this->scrollingPaneIntoView
+			'scrollingPaneIntoView' => $this->scrollingPaneIntoView,
+			'useStripeCustomerPortal' => $this->useStripeCustomerPortal
 		);
 
 		return $data;
@@ -814,6 +824,7 @@ abstract class MM_WPFS_Admin_FormModel implements MM_WPFS_Binder {
 	protected $makeCustomFieldsRequired;
 	protected $emailTemplatesHidden;
 	protected $emailTemplates;
+	protected $webhook;
 	protected $stripeElementsTheme;
 	protected $stripeElementsFont;
 	protected $formHash;
@@ -839,7 +850,7 @@ abstract class MM_WPFS_Admin_FormModel implements MM_WPFS_Binder {
 
 		$this->buttonLabel = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_BUTTON_LABEL,
 			/* translators: Default payment button text on one-time payment forms */
-			__( 'Pay', 'wp-full-stripe' ) );
+			__( 'Pay', 'wp-full-stripe-free' ) );
 
 		$this->redirectType = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_REDIRECT_TYPE, MM_WPFS::REDIRECT_TYPE_SHOW_CONFIRMATION_MESSAGE );
 		$this->redirectPageOrPostId = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_REDIRECT_PAGE_POST_ID );
@@ -847,6 +858,8 @@ abstract class MM_WPFS_Admin_FormModel implements MM_WPFS_Binder {
 
 		$this->customFields = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_CUSTOM_FIELDS );
 		$this->makeCustomFieldsRequired = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_MAKE_CUSTOM_FIELDS_REQUIRED, 0 );
+
+		$this->webhook = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_WEBHOOK );
 
 		$this->showTermsOfUse = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_SHOW_TERMS_OF_SERVICE, 0 );
 		$this->termsOfUseLabel = $this->getArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_TERMS_OF_SERVICE_LABEL );
@@ -885,6 +898,7 @@ abstract class MM_WPFS_Admin_FormModel implements MM_WPFS_Binder {
 			'showCurrencySignAtFirstPosition' => $this->localeCurrencySymbolAtFirstPosition,
 			'putWhitespaceBetweenCurrencyAndAmount' => $this->localePutSpaceBetweenSymbolAndAmount,
 			'emailTemplates' => $this->emailTemplates,
+			'webhook' => $this->webhook,
 			'stripeElementsTheme' => $this->stripeElementsTheme,
 			'stripeElementsFont' => $this->stripeElementsFont,
 			// Legacy fields
@@ -1029,6 +1043,13 @@ abstract class MM_WPFS_Admin_FormModel implements MM_WPFS_Binder {
 	/**
 	 * @return mixed
 	 */
+	public function getWebhook() {
+		return $this->webhook;
+	}
+
+	/**
+	 * @return mixed
+	 */
 	public function getFormHash() {
 		return $this->formHash;
 	}
@@ -1123,7 +1144,7 @@ trait MM_WPFS_Admin_CheckoutFormModel {
 	protected function bindCheckoutParams( $dataArray ) {
 		$this->openButtonLabel = $this->getSanitizedArrayParam( $dataArray, MM_WPFS_Admin_CheckoutFormViewConstants::FIELD_FORM_OPEN_BUTTON_LABEL,
 			/* translators: Default payment button text on one-time payment forms */
-			__( 'Pay', 'wp-full-stripe' ) );
+			__( 'Pay', 'wp-full-stripe-free' ) );
 
 		$this->checkoutFormLanguage = $this->getSanitizedArrayParam( $dataArray, MM_WPFS_Admin_CheckoutFormViewConstants::FIELD_FORM_CHECKOUT_LANGUAGE, MM_WPFS::PREFERRED_LANGUAGE_AUTO );
 
@@ -1530,6 +1551,8 @@ abstract class MM_WPFS_Admin_DonationFormModel extends MM_WPFS_Admin_FormModel i
 	protected $donationFrequencyAnnual;
 	protected $allowCustomDonationAmount;
 	protected $minimumDonationAmount;
+	protected $showDonationGoal;
+	protected $donationGoal;
 
 	public function __construct( $loggerService ) {
 		parent::__construct( $loggerService );
@@ -1551,6 +1574,8 @@ abstract class MM_WPFS_Admin_DonationFormModel extends MM_WPFS_Admin_FormModel i
 		$this->donationFrequencyWeekly = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_DonationFormViewConstants::FIELD_FORM_DONATION_FREQUENCY_WEEKLY, 0 );
 		$this->donationFrequencyMonthly = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_DonationFormViewConstants::FIELD_FORM_DONATION_FREQUENCY_MONTHLY, 0 );
 		$this->donationFrequencyAnnual = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_DonationFormViewConstants::FIELD_FORM_DONATION_FREQUENCY_ANNUAL, 0 );
+		$this->showDonationGoal   = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_DonationFormViewConstants::FIELD_FORM_SHOW_DONATION_GOAL, 0 );
+		$this->donationGoal       = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_DonationFormViewConstants::FIELD_FORM_DONATION_GOAL_HIDDEN );
 
 		$this->bindInvoiceParameters( $postData );
 
@@ -1571,7 +1596,9 @@ abstract class MM_WPFS_Admin_DonationFormModel extends MM_WPFS_Admin_FormModel i
 			'allowDailyRecurring' => $this->donationFrequencyDaily,
 			'allowWeeklyRecurring' => $this->donationFrequencyWeekly,
 			'allowMonthlyRecurring' => $this->donationFrequencyMonthly,
-			'allowAnnualRecurring' => $this->donationFrequencyAnnual
+			'allowAnnualRecurring' => $this->donationFrequencyAnnual,
+			'showDonationGoal' => $this->showDonationGoal,
+			'donationGoal' => $this->donationGoal,
 		);
 
 		return array_merge( $data,
@@ -1648,6 +1675,20 @@ abstract class MM_WPFS_Admin_DonationFormModel extends MM_WPFS_Admin_FormModel i
 	 */
 	public function getMinimumDonationAmount() {
 		return $this->minimumDonationAmount;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getShowDonationGoal() {
+		return $this->showDonationGoal;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getDonationGoal() {
+		return $this->donationGoal;
 	}
 }
 
@@ -2130,7 +2171,7 @@ class MM_WPFS_Admin_InlineDonationFormModel extends MM_WPFS_Admin_DonationFormMo
 		$inlineData = $this->getInlineDataArray();
 
 		$data = array(
-			'productDesc' => $this->defaultProductName,
+			'productDesc' => $this->defaultProductName
 		);
 
 		$data = array_merge( $data, $inlineData, $parentData );

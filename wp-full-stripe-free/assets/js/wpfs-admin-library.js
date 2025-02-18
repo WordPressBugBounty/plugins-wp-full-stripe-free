@@ -1349,9 +1349,14 @@ function initWpfsAdminLibrary($, ctx) {
       cache: false,
       dataType: "json",
       success: function (responseData) {
-        var currentUrl = window.location.href;
-        var urlWithoutQueryParams = currentUrl.split("&")[0];
-        window.location.href = urlWithoutQueryParams;
+        var currentUrl = new URL( window.location.href );
+        var stripeUrl = new URL( window.wpfsAdminSettings.connectionPage );
+
+        if ( currentUrl.searchParams.has( "onboarding" ) ) {
+          stripeUrl.searchParams.set( "onboarding", "true" );
+        }
+
+        ctx.setTimeoutToRedirect( stripeUrl.toString(), 0 );
       },
     });
   };

@@ -15,19 +15,19 @@
     </div>
     <div class="wpfs-coupon wpfs-coupon-redeemed-row" style="display: none;">
         <span class="wpfs-coupon-redeemed-label" data-wpfs-coupon-redeemed-label="<?php /* translators: Message displayed in place of a successfully applied coupon code */
-        esc_attr_e('Coupon code <strong>%s</strong> added.', 'wp-full-stripe'); ?>">Just text.</span>
+        esc_attr_e('Coupon code <strong>%s</strong> added.', 'wp-full-stripe-free'); ?>">Just text.</span>
         <a class="wpfs-btn wpfs-btn-link wpfs-btn-link--bold wpfs-coupon-remove-link" href="">
             <?php /* translators: Button label for removing a redeemed coupon code */
-            esc_html_e('Remove', 'wp-full-stripe'); ?>
+            esc_html_e('Remove', 'wp-full-stripe-free'); ?>
         </a>
     </div>
     <div class="wpfs-coupon wpfs-coupon--warning wpfs-coupon-wrong-redeemed-row" style="display: none;">
         <span class="wpfs-coupon-wrong-redeemed-label"
             data-wpfs-coupon-wrong-redeemed-label="<?php /* translators: Message displayed in place of an applied coupon code which does not apply to the product or service */
-            esc_attr_e('The coupon <strong>%s</strong> doesn\'t apply to <strong>%s</strong>, so the coupon won\'t be redeemed during payment. You can use it later for another payment.', 'wp-full-stripe'); ?>">&nbsp;</span>
+            esc_attr_e('The coupon <strong>%1$s</strong> doesn\'t apply to <strong>%2$s</strong>, so the coupon won\'t be redeemed during payment. You can use it later for another payment.', 'wp-full-stripe-free'); ?>">&nbsp;</span>
         <a class="wpfs-btn wpfs-btn-link wpfs-btn-link--bold wpfs-coupon-add-another-link" href="">
             <?php /* translators: Button label for adding another coupon code */
-            esc_html_e('Add another coupon', 'wp-full-stripe'); ?>
+            esc_html_e('Add another coupon', 'wp-full-stripe-free'); ?>
         </a>
     </div>
     <div class="wpfs-input-group wpfs-coupon-to-redeem-row">
@@ -36,7 +36,7 @@
         <div class="wpfs-input-group-append">
             <a class="wpfs-input-group-link wpfs-coupon-redeem-link" href=""><span>
                     <?php /* translators: Button label for redeeming a coupon */
-                    esc_html_e('Redeem', 'wp-full-stripe'); ?>
+                    esc_html_e('Redeem', 'wp-full-stripe-free'); ?>
                 </span></a>
         </div>
     </div>

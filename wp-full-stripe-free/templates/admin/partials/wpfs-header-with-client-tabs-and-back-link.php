@@ -12,6 +12,7 @@
             <div class="wpfs-page-header__title"><?php echo $pageTitle ?></div>
         </div>
         <div class="wpfs-page-header__actions">
+            <?php include('wpfs-header-block-preview.php'); ?>
             <?php include('wpfs-header-block-stripe-accounts.php'); ?>
             <?php include('wpfs-header-block-license-status.php'); ?>
             <?php include('wpfs-header-block-announcements.php'); ?>

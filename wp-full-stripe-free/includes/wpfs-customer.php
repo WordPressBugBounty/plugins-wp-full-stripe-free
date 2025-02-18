@@ -344,19 +344,19 @@ trait MM_WPFS_DonationTools_AddOn {
 
 		switch ( $frequency ) {
 			case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_DAILY:
-				$res = __( 'Daily donation (%s)' );
+				$res = __( 'Daily donation (%s)', 'wp-full-stripe-free' );
 				break;
 
 			case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_WEEKLY:
-				$res = __( 'Weekly donation (%s)' );
+				$res = __( 'Weekly donation (%s)', 'wp-full-stripe-free' );
 				break;
 
 			case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_MONTHLY:
-				$res = __( 'Monthly donation (%s)' );
+				$res = __( 'Monthly donation (%s)', 'wp-full-stripe-free' );
 				break;
 
 			case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_ANNUAL:
-				$res = __( 'Annual donation (%s)' );
+				$res = __( 'Annual donation (%s)', 'wp-full-stripe-free' );
 				break;
 		}
 
@@ -673,7 +673,7 @@ class MM_WPFS_Customer {
 			$this->logger->error( __FUNCTION__, 'Error handling the checkout session', $ex );
 
 			if ( isset( $popupFormSubmit ) ) {
-				$this->checkoutSubmissionService->updateSubmitEntryWithFailed( $popupFormSubmit, __( 'Internal Error', 'wp-full-stripe' ), MM_WPFS_Localization::translateLabel( $ex->getMessage() ) );
+				$this->checkoutSubmissionService->updateSubmitEntryWithFailed( $popupFormSubmit, __( 'Internal Error', 'wp-full-stripe-free' ), MM_WPFS_Localization::translateLabel( $ex->getMessage() ) );
 				wp_redirect( $popupFormSubmit->referrer );
 			} else {
 				status_header( 500 );
@@ -752,7 +752,7 @@ class MM_WPFS_Customer {
 							'success' => false,
 							'messageTitle' =>
 								/* translators: Banner title of an error returned from an extension point by a developer */
-								__( 'Internal Error', 'wp-full-stripe' ),
+								__( 'Internal Error', 'wp-full-stripe-free' ),
 							'message' => MM_WPFS_Localization::translateLabel(
 								'Currency not supported for payment method : ' . $paymentMethod ),
 							'exceptionMessage' => MM_WPFS_Localization::translateLabel(
@@ -792,7 +792,7 @@ class MM_WPFS_Customer {
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
-					__( 'Internal Error', 'wp-full-stripe' ),
+					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
 			);
@@ -830,7 +830,7 @@ class MM_WPFS_Customer {
 
 			$messageTitle = is_null( $ex->getTitle() ) ?
 				/* translators: Banner title of an error returned from an extension point by a developer */
-				__( 'Internal Error', 'wp-full-stripe' ) :
+				__( 'Internal Error', 'wp-full-stripe-free' ) :
 				$ex->getTitle();
 			$message = $ex->getMessage();
 			$return = array(
@@ -844,7 +844,7 @@ class MM_WPFS_Customer {
 
 			$messageTitle =
 				/* translators: Banner title of error returned by Stripe */
-				__( 'Stripe Error', 'wp-full-stripe' );
+				__( 'Stripe Error', 'wp-full-stripe-free' );
 			$message = $this->stripe->resolveErrorMessageByCode( $ex->getCode() );
 			if ( is_null( $message ) ) {
 				$message = MM_WPFS_Localization::translateLabel( $ex->getMessage() );
@@ -862,7 +862,7 @@ class MM_WPFS_Customer {
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
-					__( 'Internal Error', 'wp-full-stripe' ),
+					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
 			);
@@ -873,7 +873,7 @@ class MM_WPFS_Customer {
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
-					__( 'Internal Error', 'wp-full-stripe' ),
+					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $err->getMessage() ),
 				'exceptionMessage' => $err->getMessage()
 			);
@@ -903,7 +903,7 @@ class MM_WPFS_Customer {
 
 			$messageTitle = is_null( $ex->getTitle() ) ?
 				/* translators: Banner title of an error returned from an extension point by a developer */
-				__( 'Internal Error', 'wp-full-stripe' ) :
+				__( 'Internal Error', 'wp-full-stripe-free' ) :
 				$ex->getTitle();
 			$message = $ex->getMessage();
 			$return = array(
@@ -917,7 +917,7 @@ class MM_WPFS_Customer {
 
 			$messageTitle =
 				/* translators: Banner title of error returned by Stripe */
-				__( 'Stripe Error', 'wp-full-stripe' );
+				__( 'Stripe Error', 'wp-full-stripe-free' );
 			$message = $this->stripe->resolveErrorMessageByCode( $ex->getCode() );
 			if ( is_null( $message ) ) {
 				$message = MM_WPFS_Localization::translateLabel( $ex->getMessage() );
@@ -935,7 +935,7 @@ class MM_WPFS_Customer {
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
-					__( 'Internal Error', 'wp-full-stripe' ),
+					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
 			);
@@ -981,6 +981,7 @@ class MM_WPFS_Customer {
 		);
 
 		do_action( MM_WPFS::ACTION_NAME_AFTER_SAVE_CARD, $params );
+		do_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, $saveCardFormModel->getForm(), $params );
 	}
 
 	/**
@@ -1018,11 +1019,11 @@ class MM_WPFS_Customer {
 				$setupIntentResult->setSetupIntentClientSecret( $setupIntent->client_secret );
 				$setupIntentResult->setMessageTitle(
 					/* translators: Banner title of pending transaction requiring a second factor authentication (SCA/PSD2) */
-					__( 'Action required', 'wp-full-stripe' )
+					__( 'Action required', 'wp-full-stripe-free' )
 				);
 				$setupIntentResult->setMessage(
 					/* translators: Banner message of a pending card saving transaction requiring a second factor authentication (SCA/PSD2) */
-					__( 'Saving this card requires additional action before completion!', 'wp-full-stripe' )
+					__( 'Saving this card requires additional action before completion!', 'wp-full-stripe-free' )
 				);
 			} elseif ( \StripeWPFS\SetupIntent::STATUS_SUCCEEDED === $setupIntent->status ) {
 				$this->logger->debug( __FUNCTION__, 'SetupIntent succeeded.' );
@@ -1051,17 +1052,17 @@ class MM_WPFS_Customer {
 				$setupIntentResult->setSuccess( true );
 				$setupIntentResult->setMessageTitle(
 					/* translators: Banner title of successful transaction */
-					__( 'Success', 'wp-full-stripe' )
+					__( 'Success', 'wp-full-stripe-free' )
 				);
 				$setupIntentResult->setMessage(
 					/* translators: Banner message of saving card successfully */
-					__( 'Saving Card Successful!', 'wp-full-stripe' )
+					__( 'Saving Card Successful!', 'wp-full-stripe-free' )
 				);
 			} else {
 				$setupIntentResult->setSuccess( false );
 				$setupIntentResult->setMessageTitle(
 					/* translators: Banner title of failed transaction */
-					__( 'Failed', 'wp-full-stripe' )
+					__( 'Failed', 'wp-full-stripe-free' )
 				);
 				$setupIntentResult->setMessage(
 					// This is an internal error, no need to localize it
@@ -1449,6 +1450,7 @@ class MM_WPFS_Customer {
 		);
 
 		do_action( MM_WPFS::ACTION_NAME_AFTER_DONATION_CHARGE, $params );
+		do_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, $donationFormModel->getForm(), $params );
 	}
 
 	/**
@@ -1498,9 +1500,9 @@ class MM_WPFS_Customer {
 					$paymentIntentResult,
 					$paymentIntent,
 					/* translators: Banner title of pending transaction requiring a second factor authentication (SCA/PSD2) */
-					__( 'Action required', 'wp-full-stripe' ),
+					__( 'Action required', 'wp-full-stripe-free' ),
 					/* translators: Banner message of a one-time payment requiring a second factor authentication (SCA/PSD2) */
-					__( 'The donation needs additional action before completion!', 'wp-full-stripe' )
+					__( 'The donation needs additional action before completion!', 'wp-full-stripe-free' )
 				);
 			} else if ( $this->paymentIntentSucceeded( $paymentIntent ) ) {
 				$this->setInvoiceDataFromPaymentIntent( $paymentIntent, $transactionData );
@@ -1520,16 +1522,16 @@ class MM_WPFS_Customer {
 				$this->createPaymentIntentResultSuccess(
 					$paymentIntentResult,
 					/* translators: Banner title of successful transaction */
-					__( 'Success', 'wp-full-stripe' ),
+					__( 'Success', 'wp-full-stripe-free' ),
 					/* translators: Banner message of successful payment */
-					__( 'Donation Successful!', 'wp-full-stripe' )
+					__( 'Donation Successful!', 'wp-full-stripe-free' )
 				);
 
 			} else {
 				$this->createPaymentIntentResultFailed(
 					$paymentIntentResult,
 					/* translators: Banner title of failed transaction */
-					__( 'Failed', 'wp-full-stripe' ),
+					__( 'Failed', 'wp-full-stripe-free' ),
 					// This is an internal error, no need to localize it
 					sprintf( "Invalid PaymentIntent status '%s'.", $paymentIntent->status )
 				);
@@ -1538,7 +1540,7 @@ class MM_WPFS_Customer {
 			$this->createPaymentIntentResultFailed(
 				$paymentIntentResult,
 				/* translators: Banner title of failed transaction */
-				__( 'Failed', 'wp-full-stripe' ),
+				__( 'Failed', 'wp-full-stripe-free' ),
 				// This is an internal error, no need to localize it
 				"PaymentIntent was neither created nor retrieved."
 			);
@@ -1597,6 +1599,7 @@ class MM_WPFS_Customer {
 		);
 
 		do_action( MM_WPFS::ACTION_NAME_AFTER_PAYMENT_CHARGE, $params );
+		do_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, $paymentFormModel->getForm(), $params );
 	}
 
 	/**
@@ -1800,7 +1803,11 @@ class MM_WPFS_Customer {
 				} else {
 					$paymentIntent->metadata = $paymentFormModel->getMetadata();
 				}
-				$this->stripe->updatePaymentIntent( $paymentIntent );
+				$this->stripe->updatePaymentIntent(
+					$paymentIntent,
+					false,
+					MM_WPFS_Mailer::canSendPaymentStripeReceipt( $paymentFormModel->getForm() ) ? $paymentFormModel->getCardHolderEmail() : null
+				);
 
 				$paymentFormModel->setTransactionId( $paymentIntent->id );
 				$transactionData->setTransactionId( $paymentIntent->id );
@@ -1824,11 +1831,11 @@ class MM_WPFS_Customer {
 				$paymentIntentResult->setPaymentIntentClientSecret( $paymentIntent->client_secret );
 				$paymentIntentResult->setMessageTitle(
 					/* translators: Banner title of pending transaction requiring a second factor authentication (SCA/PSD2) */
-					__( 'Action required', 'wp-full-stripe' )
+					__( 'Action required', 'wp-full-stripe-free' )
 				);
 				$paymentIntentResult->setMessage(
 					/* translators: Banner message of a one-time payment requiring a second factor authentication (SCA/PSD2) */
-					__( 'The payment needs additional action before completion!', 'wp-full-stripe' )
+					__( 'The payment needs additional action before completion!', 'wp-full-stripe-free' )
 				);
 			} elseif (
 				\StripeWPFS\PaymentIntent::STATUS_SUCCEEDED === $paymentIntent->status
@@ -1849,17 +1856,17 @@ class MM_WPFS_Customer {
 				$paymentIntentResult->setSuccess( true );
 				$paymentIntentResult->setMessageTitle(
 					/* translators: Banner title of successful transaction */
-					__( 'Success', 'wp-full-stripe' )
+					__( 'Success', 'wp-full-stripe-free' )
 				);
 				$paymentIntentResult->setMessage(
 					/* translators: Banner message of successful payment */
-					__( 'Payment Successful!', 'wp-full-stripe' )
+					__( 'Payment Successful!', 'wp-full-stripe-free' )
 				);
 			} else {
 				$paymentIntentResult->setSuccess( false );
 				$paymentIntentResult->setMessageTitle(
 					/* translators: Banner title of failed transaction */
-					__( 'Failed', 'wp-full-stripe' )
+					__( 'Failed', 'wp-full-stripe-free' )
 				);
 				$paymentIntentResult->setMessage(
 					// This is an internal error, no need to localize it
@@ -1920,7 +1927,7 @@ class MM_WPFS_Customer {
 
 			$messageTitle = is_null( $ex->getTitle() ) ?
 				/* translators: Banner title of an error returned from an extension point by a developer */
-				__( 'Internal Error', 'wp-full-stripe' ) :
+				__( 'Internal Error', 'wp-full-stripe-free' ) :
 				$ex->getTitle();
 			$message = $ex->getMessage();
 			$return = array(
@@ -1934,7 +1941,7 @@ class MM_WPFS_Customer {
 
 			$messageTitle =
 				/* translators: Banner title of error returned by Stripe */
-				__( 'Stripe Error', 'wp-full-stripe' );
+				__( 'Stripe Error', 'wp-full-stripe-free' );
 			$message = $this->stripe->resolveErrorMessageByCode( $ex->getCode() );
 			if ( is_null( $message ) ) {
 				$message = MM_WPFS_Localization::translateLabel( $ex->getMessage() );
@@ -1952,7 +1959,7 @@ class MM_WPFS_Customer {
 				'success' => false,
 				'messageTitle' =>
 					/* Banner title of internal error */
-					__( 'Internal Error', 'wp-full-stripe' ),
+					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
 			);
@@ -2010,6 +2017,7 @@ class MM_WPFS_Customer {
 		);
 
 		do_action( MM_WPFS::ACTION_NAME_AFTER_SUBSCRIPTION_CHARGE, $params );
+		do_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, $subscriptionFormModel->getForm(), $params );
 	}
 
 	/**
@@ -2235,11 +2243,11 @@ class MM_WPFS_Customer {
 				$subscriptionResult->setPaymentIntentClientSecret( $paymentIntent->client_secret );
 				$subscriptionResult->setMessageTitle(
 					/* translators: Banner title of pending transaction requiring a second factor authentication (SCA/PSD2) */
-					__( 'Action required', 'wp-full-stripe' )
+					__( 'Action required', 'wp-full-stripe-free' )
 				);
 				$subscriptionResult->setMessage(
 					/* translators: Banner message of a one-time payment requiring a second factor authentication (SCA/PSD2) */
-					__( 'The payment needs additional action before completion!', 'wp-full-stripe' )
+					__( 'The payment needs additional action before completion!', 'wp-full-stripe-free' )
 				);
 			} elseif (
 				\StripeWPFS\PaymentIntent::STATUS_SUCCEEDED === $paymentIntent->status
@@ -2253,17 +2261,17 @@ class MM_WPFS_Customer {
 				$subscriptionResult->setSuccess( true );
 				$subscriptionResult->setMessageTitle(
 					/* translators: Banner title of successful transaction */
-					__( 'Success', 'wp-full-stripe' )
+					__( 'Success', 'wp-full-stripe-free' )
 				);
 				$subscriptionResult->setMessage(
 					/* translators: Banner message of successful payment */
-					__( 'Payment Successful!', 'wp-full-stripe' )
+					__( 'Payment Successful!', 'wp-full-stripe-free' )
 				);
 			} else {
 				$subscriptionResult->setSuccess( false );
 				$subscriptionResult->setMessageTitle(
 					/* translators: Banner title of failed transaction */
-					__( 'Failed', 'wp-full-stripe' )
+					__( 'Failed', 'wp-full-stripe-free' )
 				);
 				$subscriptionResult->setMessage(
 					// This is an internal error, no need to localize it
@@ -2282,11 +2290,11 @@ class MM_WPFS_Customer {
 				$subscriptionResult->setSetupIntentClientSecret( $setupIntent->client_secret );
 				$subscriptionResult->setMessageTitle(
 					/* translators: Banner title of pending transaction requiring a second factor authentication (SCA/PSD2) */
-					__( 'Action required', 'wp-full-stripe' )
+					__( 'Action required', 'wp-full-stripe-free' )
 				);
 				$subscriptionResult->setMessage(
 					/* translators: Banner message of a one-time payment requiring a second factor authentication (SCA/PSD2) */
-					__( 'The payment needs additional action before completion!', 'wp-full-stripe' )
+					__( 'The payment needs additional action before completion!', 'wp-full-stripe-free' )
 				);
 			} elseif (
 				\StripeWPFS\SetupIntent::STATUS_SUCCEEDED === $setupIntent->status
@@ -2298,17 +2306,17 @@ class MM_WPFS_Customer {
 				$subscriptionResult->setSuccess( true );
 				$subscriptionResult->setMessageTitle(
 					/* translators: Banner title of successful transaction */
-					__( 'Success', 'wp-full-stripe' )
+					__( 'Success', 'wp-full-stripe-free' )
 				);
 				$subscriptionResult->setMessage(
 					/* translators: Banner message of successful payment */
-					__( 'Payment Successful!', 'wp-full-stripe' )
+					__( 'Payment Successful!', 'wp-full-stripe-free' )
 				);
 			} else {
 				$subscriptionResult->setSuccess( false );
 				$subscriptionResult->setMessageTitle(
 					/* translators: Banner title of failed transaction */
-					__( 'Failed', 'wp-full-stripe' )
+					__( 'Failed', 'wp-full-stripe-free' )
 				);
 				$subscriptionResult->setMessage(
 					// This is an internal error, no need to localize it
@@ -2327,11 +2335,11 @@ class MM_WPFS_Customer {
 			$subscriptionResult->setSuccess( true );
 			$subscriptionResult->setMessageTitle(
 				/* translators: Banner title of successful transaction */
-				__( 'Success', 'wp-full-stripe' )
+				__( 'Success', 'wp-full-stripe-free' )
 			);
 			$subscriptionResult->setMessage(
 				/* translators: Banner message of successful payment */
-				__( 'Payment Successful!', 'wp-full-stripe' )
+				__( 'Payment Successful!', 'wp-full-stripe-free' )
 			);
 		}
 	}
@@ -2347,7 +2355,8 @@ class MM_WPFS_Customer {
 		$metadata = $subscriptionFormModel->getMetadata();
 		$metadata['webhookUrl'] = esc_attr( MM_WPFS_EventHandler::getWebhookEndpointURL( $this->staticContext ) );
 		$stripePaymentIntent->metadata = $metadata;
-		$this->stripe->updatePaymentIntent( $stripePaymentIntent );
+
+		$this->stripe->updatePaymentIntent( $stripePaymentIntent, false, MM_WPFS_Mailer::canSendSubscriptionStripeReceipt( $subscriptionFormModel->getForm() ) ? $subscriptionFormModel->getCardHolderEmail() : null );
 	}
 
 	/**
@@ -2404,7 +2413,7 @@ class MM_WPFS_Customer {
 
 			$messageTitle = is_null( $ex->getTitle() ) ?
 				/* translators: Banner title of an error returned from an extension point by a developer */
-				__( 'Internal Error', 'wp-full-stripe' ) :
+				__( 'Internal Error', 'wp-full-stripe-free' ) :
 				$ex->getTitle();
 			$message = $ex->getMessage();
 			$return = array(
@@ -2418,7 +2427,7 @@ class MM_WPFS_Customer {
 
 			$messageTitle =
 				/* translators: Banner title of error returned by Stripe */
-				__( 'Stripe Error', 'wp-full-stripe' );
+				__( 'Stripe Error', 'wp-full-stripe-free' );
 			$message = $this->stripe->resolveErrorMessageByCode( $ex->getCode() );
 			if ( is_null( $message ) ) {
 				$message = MM_WPFS_Localization::translateLabel( $ex->getMessage() );
@@ -2436,7 +2445,7 @@ class MM_WPFS_Customer {
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
-					__( 'Internal Error', 'wp-full-stripe' ),
+					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
 			);
@@ -2484,7 +2493,7 @@ class MM_WPFS_Customer {
 
 			$messageTitle = is_null( $ex->getTitle() ) ?
 				/* translators: Banner title of an error returned from an extension point by a developer */
-				__( 'Internal Error', 'wp-full-stripe' ) :
+				__( 'Internal Error', 'wp-full-stripe-free' ) :
 				$ex->getTitle();
 			$message = $ex->getMessage();
 			$return = array(
@@ -2498,7 +2507,7 @@ class MM_WPFS_Customer {
 
 			$messageTitle =
 				/* translators: Banner title of error returned by Stripe */
-				__( 'Stripe Error', 'wp-full-stripe' );
+				__( 'Stripe Error', 'wp-full-stripe-free' );
 			$message = $this->stripe->resolveErrorMessageByCode( $ex->getCode() );
 			if ( is_null( $message ) ) {
 				$message = MM_WPFS_Localization::translateLabel( $ex->getMessage() );
@@ -2516,7 +2525,7 @@ class MM_WPFS_Customer {
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
-					__( 'Internal Error', 'wp-full-stripe' ),
+					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
 			);
@@ -2582,7 +2591,7 @@ class MM_WPFS_Customer {
 
 			$messageTitle = is_null( $ex->getTitle() ) ?
 				/* translators: Banner title of an error returned from an extension point by a developer */
-				__( 'Internal Error', 'wp-full-stripe' ) :
+				__( 'Internal Error', 'wp-full-stripe-free' ) :
 				$ex->getTitle();
 			$message = $ex->getMessage();
 			$return = array(
@@ -2596,7 +2605,7 @@ class MM_WPFS_Customer {
 
 			$messageTitle =
 				/* translators: Banner title of error returned by Stripe */
-				__( 'Stripe Error', 'wp-full-stripe' );
+				__( 'Stripe Error', 'wp-full-stripe-free' );
 			$message = $this->stripe->resolveErrorMessageByCode( $ex->getCode() );
 			if ( is_null( $message ) ) {
 				$message = MM_WPFS_Localization::translateLabel( $ex->getMessage() );
@@ -2614,7 +2623,7 @@ class MM_WPFS_Customer {
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
-					__( 'Internal Error', 'wp-full-stripe' ),
+					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
 			);
@@ -2641,7 +2650,7 @@ class MM_WPFS_Customer {
 
 			$messageTitle = is_null( $ex->getTitle() ) ?
 				/* translators: Banner title of an error returned from an extension point by a developer */
-				__( 'Internal Error', 'wp-full-stripe' ) :
+				__( 'Internal Error', 'wp-full-stripe-free' ) :
 				$ex->getTitle();
 			$message = $ex->getMessage();
 			$return = array(
@@ -2655,7 +2664,7 @@ class MM_WPFS_Customer {
 
 			$messageTitle =
 				/* translators: Banner title of error returned by Stripe */
-				__( 'Stripe Error', 'wp-full-stripe' );
+				__( 'Stripe Error', 'wp-full-stripe-free' );
 			$message = $this->stripe->resolveErrorMessageByCode( $ex->getCode() );
 			if ( is_null( $message ) ) {
 				$message = MM_WPFS_Localization::translateLabel( $ex->getMessage() );
@@ -2673,7 +2682,7 @@ class MM_WPFS_Customer {
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
-					__( 'Internal Error', 'wp-full-stripe' ),
+					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
 			);
@@ -2684,7 +2693,7 @@ class MM_WPFS_Customer {
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
-					__( 'Internal Error', 'wp-full-stripe' ),
+					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $err->getMessage() ),
 				'exceptionMessage' => $err->getMessage()
 			);
@@ -2788,7 +2797,7 @@ class MM_WPFS_Customer {
 
 			$messageTitle = is_null( $ex->getTitle() ) ?
 				/* translators: Banner title of an error returned from an extension point by a developer */
-				__( 'Internal Error', 'wp-full-stripe' ) :
+				__( 'Internal Error', 'wp-full-stripe-free' ) :
 				$ex->getTitle();
 			$message = $ex->getMessage();
 			$return = array(
@@ -2802,7 +2811,7 @@ class MM_WPFS_Customer {
 
 			$messageTitle =
 				/* translators: Banner title of error returned by Stripe */
-				__( 'Stripe Error', 'wp-full-stripe' );
+				__( 'Stripe Error', 'wp-full-stripe-free' );
 			$message = $this->stripe->resolveErrorMessageByCode( $ex->getCode() );
 			if ( is_null( $message ) ) {
 				$message = MM_WPFS_Localization::translateLabel( $ex->getMessage() );
@@ -2820,7 +2829,7 @@ class MM_WPFS_Customer {
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
-					__( 'Internal Error', 'wp-full-stripe' ),
+					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
 			);
@@ -2831,7 +2840,7 @@ class MM_WPFS_Customer {
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
-					__( 'Internal Error', 'wp-full-stripe' ),
+					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $err->getMessage() ),
 				'exceptionMessage' => $err->getMessage()
 			);
@@ -2863,7 +2872,7 @@ class MM_WPFS_Customer {
 				$fieldName,
 				$fieldId,
 				/* translators: Banner message of expired coupon */
-				__( 'Please enter a coupon code', 'wp-full-stripe' )
+				__( 'Please enter a coupon code', 'wp-full-stripe-free' )
 			);
 
 			$return = MM_WPFS_Utils::generateReturnValueFromBindings( $bindingResult );
@@ -2875,7 +2884,7 @@ class MM_WPFS_Customer {
 					$fieldName,
 					$fieldId,
 					/* translators: Banner message of expired coupon */
-					__( 'This coupon has expired', 'wp-full-stripe' )
+					__( 'This coupon has expired', 'wp-full-stripe-free' )
 				);
 
 				$return = MM_WPFS_Utils::generateReturnValueFromBindings( $bindingResult );
@@ -2892,7 +2901,7 @@ class MM_WPFS_Customer {
 						$fieldName,
 						$fieldId,
 						/* translators: Banner message of a coupon that cannot be applied to the products of the form */
-						__( 'This coupon cannot be applied to these products', 'wp-full-stripe' )
+						__( 'This coupon cannot be applied to these products', 'wp-full-stripe-free' )
 					);
 
 					$return = MM_WPFS_Utils::generateReturnValueFromBindings( $bindingResult );
@@ -2901,7 +2910,7 @@ class MM_WPFS_Customer {
 						$fieldName,
 						$fieldId,
 						/* translators: Banner message of a coupon that cannot be applied to the products of the form */
-						__( 'This coupon cannot be applied to the selected product', 'wp-full-stripe' )
+						__( 'This coupon cannot be applied to the selected product', 'wp-full-stripe-free' )
 					);
 
 					$return = MM_WPFS_Utils::generateReturnValueFromBindings( $bindingResult );
@@ -2930,7 +2939,7 @@ class MM_WPFS_Customer {
 						$fieldName = MM_WPFS_FormView_InlineTaxAddOnConstants::FIELD_TAX_ID;
 						$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formHash );
 						$error =
-							__( 'Invalid tax id', 'wp-full-stripe' );
+							__( 'Invalid tax id', 'wp-full-stripe-free' );
 
 						$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 					} catch (Exception $ex) {
@@ -2948,10 +2957,10 @@ class MM_WPFS_Customer {
 						$return = array(
 							'msg_title' =>
 								/* translators: Banner title for messages related to applying a coupon */
-								__( 'Coupon redemption', 'wp-full-stripe' ),
+								__( 'Coupon redemption', 'wp-full-stripe-free' ),
 							'msg' =>
 								/* translators: Banner message of successfully applying a coupon */
-								__( 'The coupon has been applied successfully', 'wp-full-stripe' ),
+								__( 'The coupon has been applied successfully', 'wp-full-stripe-free' ),
 							'coupon' => array(
 								'id' => $coupon->id,
 								'name' => $couponCode,
@@ -3007,7 +3016,7 @@ class MM_WPFS_Customer {
 		} catch (Exception $e) {
 			$return = array(
 				'success' => false,
-				'msg' => __( 'There was an error updating the payment intent: ', 'wp-full-stripe' ) . $e->getMessage()
+				'msg' => __( 'There was an error updating the payment intent: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -3065,7 +3074,7 @@ class MM_WPFS_Customer {
 			$fieldName = MM_WPFS_FormView_InlineTaxAddOnConstants::FIELD_TAX_ID;
 			$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formHash );
 			$error =
-				__( 'Invalid tax id', 'wp-full-stripe' );
+				__( 'Invalid tax id', 'wp-full-stripe-free' );
 
 			$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 		} catch (Exception $ex) {
@@ -3093,7 +3102,7 @@ class MM_WPFS_Customer {
 		} catch (Exception $e) {
 			$return = array(
 				'success' => false,
-				'msg' => __( 'There was an error calculating product pricing: ', 'wp-full-stripe' ) . $e->getMessage()
+				'msg' => __( 'There was an error calculating product pricing: ', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 

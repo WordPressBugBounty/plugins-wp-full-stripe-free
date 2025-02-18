@@ -544,19 +544,19 @@ class MM_WPFS_Utils {
     public static function getDefaultPaymentStripeDescription() {
         return
             /* translators: Default transaction description for one-time payments */
-            __( 'Payment on form %FORM_NAME%', 'wp-full-stripe' );
+            __( 'Payment on form %FORM_NAME%', 'wp-full-stripe-free' );
     }
 
     public static function getDefaultSaveCardDescription() {
         return
             /* translators: Default transaction description for saved cards */
-            __( 'Card saved on form %FORM_NAME%', 'wp-full-stripe' );
+            __( 'Card saved on form %FORM_NAME%', 'wp-full-stripe-free' );
     }
 
     public static function getDefaultDonationDescription() {
         return
             /* translators: Default transaction description for donations */
-            __( 'Donation on form %FORM_NAME%', 'wp-full-stripe' );
+            __( 'Donation on form %FORM_NAME%', 'wp-full-stripe-free' );
     }
 
     public static function getDefaultTermsOfUseLabel() {
@@ -564,83 +564,83 @@ class MM_WPFS_Utils {
 
         return sprintf(
         /* translators: Default label for the Terms of Use checkbox */
-            __( "I accept the <a href='%s' target='_blank'>Terms of Use</a>" ), $defaultTermsOfUseURL );
+            __( "I accept the <a href='%s' target='_blank'>Terms of Use</a>", 'wp-full-stripe-free' ), $defaultTermsOfUseURL );
     }
 
     public static function getDefaultTermsOfUseNotCheckedErrorMessage() {
         return
             /* translators: Field validation error message when the Terms of use checkbox is not checked */
-            __( 'Please accept the Terms of Use', 'wp-full-stripe' );
+            __( 'Please accept the Terms of Use', 'wp-full-stripe-free' );
     }
 
     public static function getDefaultCouponInvalidErrorMessage() {
         return
             /* translators: Banner message of expired coupon */
-            __( 'This coupon has expired.', 'wp-full-stripe' );
+            __( 'This coupon has expired.', 'wp-full-stripe-free' );
     }
 
     public static function getDefaultCouponDoesNotApplyToErrorMessage() {
         return
             /* translators: Banner message of applied coupon */
-            __( 'The coupon doesn\'t apply to this service or product', 'wp-full-stripe' );
+            __( 'The coupon doesn\'t apply to this service or product', 'wp-full-stripe-free' );
     }
 
     public static function getDefaultInvalidCouponCurrencyErrorMessage() {
         return
             /* translators: Banner message of expired coupon */
-            __( 'This coupon has an invalid currency.', 'wp-full-stripe' );
+            __( 'This coupon has an invalid currency.', 'wp-full-stripe-free' );
     }
 
     public static function getDefaultPaymentButtonTitle() {
         return
             /* translators: Default payment button label on inline one-time payment forms */
-            __( 'Make payment', 'wp-full-stripe' );
+            __( 'Make payment', 'wp-full-stripe-free' );
     }
 
     public static function getDefaultSaveCardButtonTitle() {
         return
             /* translators: Default payment button label on inline save card forms */
-            __( 'Save card', 'wp-full-stripe' );
+            __( 'Save card', 'wp-full-stripe-free' );
     }
 
     public static function getDefaultPaymentOpenButtonTitle() {
         return
             /* translators: Default payment button label on checkout one-time payment forms */
-            __( 'Make payment', 'wp-full-stripe' );
+            __( 'Make payment', 'wp-full-stripe-free' );
     }
 
     public static function getDefaultSubscriptionButtonTitle() {
         return
             /* translators: Default subscription button label on inline subscription forms */
-            __( 'Subscribe', 'wp-full-stripe' );
+            __( 'Subscribe', 'wp-full-stripe-free' );
     }
 
     public static function getDefaultSubscriptionOpenButtonTitle() {
         return
             /* translators: Default subscription button label on checkout subscription forms */
-            __( 'Subscribe', 'wp-full-stripe' );
+            __( 'Subscribe', 'wp-full-stripe-free' );
     }
 
     public static function getDefaultDonationButtonTitle() {
         return
             /* translators: Default donation button label on inline donation forms */
-            __( 'Donate', 'wp-full-stripe' );
+            __( 'Donate', 'wp-full-stripe-free' );
     }
 
     public static function getDefaultDonationOpenButtonTitle() {
         return
             /* translators: Default donation button label on inline donation forms */
-            __( 'Donate', 'wp-full-stripe' );
+            __( 'Donate', 'wp-full-stripe-free' );
     }
 
     public static function getDefaultProductDescription() {
         /* translators: Placeholder product name for newly created one-time payment forms */
-        return __('My Product', 'wp-full-stripe');
+        return __('My Product', 'wp-full-stripe-free');
     }
 
     public static function getDefaultDonationProductDescription() {
         /* translators: Placeholder product name for newly created donation forms */
-        return __('My Donation', 'wp-full-stripe');
+        return __('My Donation', 'wp-full-stripe-free');
     }
 
     public static function getPaymentStatuses() {
@@ -944,13 +944,13 @@ class MM_WPFS_Utils {
                 'fieldErrors' => array(
                     'title' =>
                     /* translators: Banner title of a hidden field's validation error */
-                        __('Field validation error', 'wp-full-stripe'),
+                        __('Field validation error', 'wp-full-stripe-free'),
                     'errors' => $bindingResult->getFieldErrors()
                 ),
                 'globalErrors' => array(
                     'title' =>
                     /* translators: Banner title of a validation error which is not field specific */
-                        __('Form error', 'wp-full-stripe'),
+                        __('Form error', 'wp-full-stripe-free'),
                     'errors' => $bindingResult->getGlobalErrors()
                 )
             )
@@ -1029,5 +1029,11 @@ class MM_WPFS_Utils {
 
     public static function boolToString($boolVal): string {
         return $boolVal ? 'true' : 'false';
+    }
+
+    public static function isTestMode(): bool {
+		$options = new MM_WPFS_Options();
+        $apiMode = $options->get( MM_WPFS_Options::OPTION_API_MODE );
+		return $apiMode === MM_WPFS::STRIPE_API_MODE_TEST;
     }
 }
