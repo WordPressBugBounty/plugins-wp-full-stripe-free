@@ -477,8 +477,13 @@ class MM_WPFS_Stripe {
 				'quantity' => $ctx->stripePlanQuantity,
 			)
 		);
+
 		if ( ! $ctx->isStripeTax ) {
 			$subscriptionItemsParams[0]['tax_rates'] = $options->taxRateIds;
+		}
+
+		if ( isset( $ctx->feeRecoveryLineItem ) && ! empty( $ctx->feeRecoveryLineItem ) ) {
+			$subscriptionItemsParams[] = $ctx->feeRecoveryLineItem;
 		}
 
 		$subscriptionData = array(
@@ -592,6 +597,9 @@ class MM_WPFS_Stripe {
 				'/customer?mode=live&accountId=' . $this->liveStripeAcountId . '&customerId=' . $customerId
 			);
 		} else {
+			if ( is_null( $this->stripe ) ) {
+				throw new WPFS_UserFriendlyException( 'Stripe client is not initialized' );
+			}
 			$customer = json_decode( $this->stripe->customers->retrieve( $customerId )->toJSON() );
 		}
 		return $customer;
@@ -713,7 +721,7 @@ class MM_WPFS_Stripe {
 	 * @return \StripeWPFS\Price
 	 * @throws \StripeWPFS\Exception\ApiErrorException
 	 */
-	function createRecurringDonationPlan( $id, $name, $currency, $interval, $intervalCount ) {
+	function createRecurringPlan( $id, $name, $currency, $interval, $intervalCount, $usageType = 'metered' ) {
 		$planData = array(
 			"currency" => $currency,
 			"unit_amount" => "1",
@@ -721,14 +729,17 @@ class MM_WPFS_Stripe {
 			"recurring" => array(
 				"interval" => $interval,
 				"interval_count" => $intervalCount,
-				"usage_type" => "metered",
-				"aggregate_usage" => "last_ever"
+				"usage_type" => $usageType,
 			),
 			"product_data" => array(
 				"name" => $name
 			),
 			"lookup_key" => $id,
 		);
+
+		if ( $usageType === 'metered' ) {
+			$planData["recurring"]["aggregate_usage"] = "last_ever";
+		}
 
 		$plan = null;
 		if ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) {
@@ -750,6 +761,63 @@ class MM_WPFS_Stripe {
 		return $plan;
 	}
 
+	/**
+	 * Create Stripe Product for One Time & Subscription
+	 * 
+	 * @param $name
+	 * @param $currency
+	 * @param $price
+	 * @param $interval
+	 * 
+	 * @return \StripeWPFS\Product
+	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 */
+	function createProduct( $name, $currency, $price, $interval = null ) {
+		$currency = sanitize_text_field( $currency );
+		$price    = intval( $price );
+		$name     = sanitize_text_field( $name );
+		$interval = sanitize_text_field( $interval );
+
+		if ( ! in_array( $interval, [ 'day', 'week', 'month', 'year' ] ) ) {
+			$interval = null;
+		}
+
+		$productData = array(
+			'currency'     => $currency,
+			'unit_amount'  => $price,
+			'product_data' => array(
+				'name' => $name
+			),
+		);
+
+		if ( ! is_null( $interval ) ) {
+			$productData['recurring'] = array(
+				'interval' => $interval,
+			);
+		}
+
+		$product = null;
+		if ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) {
+			$product = $this->remoteRequest(
+				'post',
+				'/price?mode=test&accountId=' . $this->testStripeAcountId,
+				$productData
+			);
+		} elseif ( $this->apiMode === 'live' && $this->usingWpLivePlatform ) {
+			$product = $this->remoteRequest(
+				'post',
+				'/price?mode=live&accountId=' . $this->liveStripeAcountId,
+				$productData
+			);
+		} else {
+			if ( is_null( $this->stripe ) ) {
+				throw new WPFS_UserFriendlyException( 'Stripe client is not initialized' );
+			}
+			$product = json_decode( $this->stripe->prices->create( $productData )->toJSON() );
+		}
+
+		return $product;
+	}
 
 	/**
 	 * @param $planId
@@ -789,7 +857,7 @@ class MM_WPFS_Stripe {
 	 * @throws \StripeWPFS\Exception\ApiErrorException
 	 * @throws WPFS_UserFriendlyException
 	 */
-	public function retrieveDonationPlansWithLookupKey( $planId ) {
+	public function retrievePlansWithLookupKey( $planId ) {
 		$prices = null;
 		if ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) {
 			$prices = $this->remoteRequest(
@@ -839,6 +907,9 @@ class MM_WPFS_Stripe {
 					);
 					$customers = array_merge( $customers, $customer_collection->data );
 				} else {
+					if ( is_null( $this->stripe ) ) {
+						throw new WPFS_UserFriendlyException( 'Stripe client is not initialized' );
+					}
 					$customer_collection = $this->stripe->customers->all( $params );
 					$customers = array_merge( $customers, $customer_collection->data );
 				}
@@ -1062,6 +1133,9 @@ class MM_WPFS_Stripe {
 				);
 				$taxRates = array_merge( $taxRates, $taxRateCollection->data );
 			} else {
+				if ( is_null( $this->stripe ) ) {
+					throw new WPFS_UserFriendlyException( 'Stripe client is not initialized' );
+				}
 				$taxRateCollection = json_decode( $this->stripe->taxRates->all( $params )->toJSON() );
 				$taxRates = array_merge( $taxRates, $taxRateCollection->data );
 			}
@@ -3031,6 +3105,9 @@ class MM_WPFS_Stripe {
 				'/invoice/finalize?mode=live&accountId=' . $this->liveStripeAcountId . '&invoiceId=' . $stripeInvoiceId
 			);
 		} else {
+			if ( is_null( $this->stripe ) ) {
+				throw new WPFS_UserFriendlyException( 'Stripe client is not initialized' );
+			}
 			$invoice = json_decode( $this->stripe->invoices->finalizeInvoice( $stripeInvoiceId )->toJSON() );
 		}
 		return $invoice;
@@ -3055,6 +3132,9 @@ class MM_WPFS_Stripe {
 				$invoiceParams
 			);
 		} else {
+			if ( is_null( $this->stripe ) ) {
+				throw new WPFS_UserFriendlyException( 'Stripe client is not initialized' );
+			}
 			$invoice = json_decode( $this->stripe->invoices->upcoming( $invoiceParams )->toJSON() );
 		}
 		return $invoice;
@@ -3251,5 +3331,32 @@ class MM_WPFS_Stripe {
 			$taxIds = json_decode( $this->stripe->customers->allTaxIds( $stripeCustomerId, [] )->toJSON() );
 		}
 		return $taxIds;
+	}
+
+	/**
+	 * Retrieves the customer's name from Stripe and caches it using a transient.
+	 *
+	 * @param string $stripeCustomerId The ID of the Stripe customer.
+	 * @return string The customer's full name or the customer ID if an error occurs.
+	 */
+	public function getCustomerName( $stripeCustomerId ) {
+		$transient_key = 'wpfs_stripe_customer_name_' . $stripeCustomerId;
+		$customer_name = get_transient( $transient_key );
+
+		if ( false === $customer_name ) {
+			try {
+				$customer = $this->retrieveCustomer( $stripeCustomerId );
+				if ( isset( $customer->name ) && ! empty( $customer->name ) ) {
+					$customer_name = $customer->name;
+					set_transient( $transient_key, $customer_name, WEEK_IN_SECONDS );
+				} else {
+					$customer_name = $stripeCustomerId;
+				}
+			} catch ( Exception $e ) {
+				$customer_name = $stripeCustomerId;
+			}
+		}
+
+		return $customer_name;
 	}
 }

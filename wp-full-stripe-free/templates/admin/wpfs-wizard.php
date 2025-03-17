@@ -82,13 +82,13 @@
 
                     <div class="wpfs-actions">
                         <a href="<?php echo MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_CREATE_FORM ); ?>" class="wpfs-btn wpfs-btn-primary wpfs-next"><?php _e( 'Create Payment Form', 'wp-full-stripe-free' ); ?></a>
-                        <a href="<?php echo MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS ); ?>" class="wpfs-btn wpfs-btn-secondary"><?php _e( 'Return to Dashboard', 'wp-full-stripe-free' ); ?></a>
+                        <a href="<?php echo MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_FORMS ); ?>" class="wpfs-btn wpfs-btn-secondary"><?php _e( 'Return to Dashboard', 'wp-full-stripe-free' ); ?></a>
                     </div>
                 </div>
             </div>
 
             <div class="wpfs-footer">
-                <a href="<?php echo MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS ); ?>" class="wpfs-btn wpfs-btn-secondary"><?php _e( 'Close and exit the Setup Wizard', 'wp-full-stripe-free' ); ?></a>
+                <a href="<?php echo MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_FORMS ); ?>" class="wpfs-btn wpfs-btn-secondary"><?php _e( 'Close and exit the Setup Wizard', 'wp-full-stripe-free' ); ?></a>
             </div>
         </div>
     </div>

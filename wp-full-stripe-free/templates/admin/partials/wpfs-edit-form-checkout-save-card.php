@@ -57,6 +57,18 @@
                     <div class="wpfs-form-block__title"><?php esc_html_e( 'Custom fields', 'wp-full-stripe-free'); ?></div>
                     <?php include( 'wpfs-form-component-custom-fields.php' ); ?>
                 </div>
+                <div class="wpfs-form-block">
+                    <div class="wpfs-form-block__title"><?php esc_html_e( 'Security', 'wp-full-stripe-free'); ?></div>
+                    <div class="wpfs-form-help">
+                        <?php 
+                            echo sprintf(
+                                __( 'You can enable reCaptcha in the %1$sWP Full Pay settings%2$s.', 'wp-full-stripe-free' ),
+                                '<a target="_blank" href="' . MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS_SECURITY ) . '">',
+                                '</a>'
+                            ); 
+                        ?>
+                    </div>
+                </div>
                 <?php include( 'wpfs-form-component-action-buttons.php' ); ?>
             </div>
         </div>

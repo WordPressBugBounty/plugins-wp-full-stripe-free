@@ -24,6 +24,7 @@
 
 <script type="text/template" id="wpfs-modal-preview-form">
     <div class="wpfs-dialog-scrollable">
+        <p class="wpfs-inline-message wpfs-inline-message--info"><?php _e( 'If you don\'t see your changes, save the form to update the preview.', 'wp-full-stripe-free' ); ?></p>
         <p class="wpfs-dialog-content-text"><iframe src="<%= previewUrl %>" width="100%" height="600px" style="border:none;"></iframe></p>
     </div>
 </script>

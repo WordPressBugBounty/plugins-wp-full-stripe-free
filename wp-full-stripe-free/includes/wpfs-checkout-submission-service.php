@@ -1054,6 +1054,11 @@ class MM_WPFS_CheckoutSessionBuilder_Donation extends MM_WPFS_CheckoutSessionBui
 	public function build() {
 		$sessionData = parent::build();
 
+		$amount = $this->formModel->getAmount();
+		$currency = $this->formModel->getForm()->currency;
+		$recoveryFee = $this->formModel->getFeeRecoveryAccepted();
+		$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $this->formModel->getForm() );
+
 		$this->buildPhoneNumber( $sessionData );
 
 		$sessionData['mode'] = 'payment';
@@ -1085,6 +1090,21 @@ class MM_WPFS_CheckoutSessionBuilder_Donation extends MM_WPFS_CheckoutSessionBui
 		);
 
 		$sessionData['line_items'] = array( $lineItem );
+
+		if ( $recoveryFee && ! empty( $recoveryFeeData ) ) {
+			$recoveryFeeLineItem = array(
+				'price_data' => array(
+					'currency' => $currency,
+					'product_data' => array(
+						'name' => __( 'Transaction Fee', 'wp-full-stripe-free' ),
+					),
+					'unit_amount' => MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] ),
+				),
+				'quantity' => 1
+			);
+
+			array_push( $sessionData['line_items'], $recoveryFeeLineItem );
+		}
 
 		return $sessionData;
 	}
@@ -1173,6 +1193,11 @@ class MM_WPFS_CheckoutSessionBuilder_OneTimePayment extends MM_WPFS_CheckoutSess
 		);
 		$sessionData['customer_creation'] = 'always'; // always capture a customer. we need it post payment for internal logic
 
+		$amount = $this->formModel->getAmount();
+		$currency = $this->formModel->getForm()->currency;
+		$recoveryFee = $this->formModel->getFeeRecoveryAccepted();
+		$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $this->formModel->getForm() );
+
 		$lineItem = [];
 		if ( ! is_null( $this->formModel->getPriceId() ) ) {
 			$lineItem = array(
@@ -1182,7 +1207,7 @@ class MM_WPFS_CheckoutSessionBuilder_OneTimePayment extends MM_WPFS_CheckoutSess
 		} else {
 			$lineItem = array(
 				'price_data' => array(
-					'currency' => $this->formModel->getForm()->currency,
+					'currency' => $currency,
 					'product_data' => array(
 						'name' => $this->formModel->getProductName()
 					),
@@ -1203,6 +1228,21 @@ class MM_WPFS_CheckoutSessionBuilder_OneTimePayment extends MM_WPFS_CheckoutSess
 
 		$this->updateLineItemWithTax( $lineItem );
 		$sessionData['line_items'] = array( $lineItem );
+
+		if ( $recoveryFee && ! empty( $recoveryFeeData ) ) {
+			$recoveryFeeLineItem = array(
+				'price_data' => array(
+					'currency' => $currency,
+					'product_data' => array(
+						'name' => __( 'Transaction Fee', 'wp-full-stripe-free' ),
+					),
+					'unit_amount' => MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] ),
+				),
+				'quantity' => 1
+			);
+
+			array_push( $sessionData['line_items'], $recoveryFeeLineItem );
+		}
 
 		return $sessionData;
 	}
@@ -1230,6 +1270,8 @@ class MM_WPFS_CheckoutSessionBuilder_Subscription extends MM_WPFS_CheckoutSessio
 			unset( $sessionData['customer_creation'] );
 			// customer creation is implicit for subscriptions and wil cause an error if included
 		}
+		$recoveryFee = $this->formModel->getFeeRecoveryAccepted();
+		$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $this->formModel->getForm() );
 
 		$subscriptionData = [];
 		$lineItems = array();
@@ -1282,6 +1324,30 @@ class MM_WPFS_CheckoutSessionBuilder_Subscription extends MM_WPFS_CheckoutSessio
 			'line_items' => $lineItems,
 			'subscription_data' => $subscriptionData,
 		] );
+
+		if ( $recoveryFee && ! empty( $recoveryFeeData ) ) {
+			$amount = $this->formModel->getStripePlan()->unit_amount * $this->formModel->getStripePlanQuantity();
+			$currency = $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY ];
+
+			$recoveryFeeLineItem = array(
+				'price_data' => array(
+					'currency' => $currency,
+					'product_data' => array(
+						'name' => __( 'Transaction Fee', 'wp-full-stripe-free' ),
+					),
+					'unit_amount' => MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] ),
+				),
+				'quantity' => 1
+			);
+
+			if ( isset( $this->formModel->getStripePlan()->recurring ) ) {
+				$recoveryFeeLineItem['price_data']['recurring'] = array(
+					'interval' => $this->formModel->getStripePlan()->recurring->interval
+				);
+			}
+
+			array_push( $sessionData['line_items'], $recoveryFeeLineItem );
+		}
 
 		return $sessionData;
 	}

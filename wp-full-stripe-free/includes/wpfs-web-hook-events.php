@@ -992,6 +992,58 @@ class MM_WPFS_InvoicePaymentSucceeded extends MM_WPFS_InvoiceEventProcessor
 				}
 			}
 		}
+
+		$this->addRecord( $event );
+	}
+
+	protected function addRecord( $event ) {
+		$event  = $event->data->object;
+
+		if ( 'paid' !== $event->status || is_null( $event->payment_intent ) ) {
+			return;
+		}
+
+		// We aren't sure if its a donation or subscription, so we must check both.
+		$data = $this->db->getDonationByStripeSubscriptionId( $event->subscription );
+
+		if ( ! $data ) {
+			$data = $this->db->getSubscriptionByStripeSubscriptionId( $event->subscription );
+			$form = $this->getSubscriptionFormBySubscriber( $data );
+			$data->formType = MM_WPFS_Utils::getFormType( $form );
+		}
+
+		if ( ! $data ) {
+			return;
+		}
+
+		$report = $this->db->getReportByPaymentIntentID( $event->payment_intent );
+
+		if ( $report ) {
+			$this->db->updateReport( $report->id, array(
+				'updated_at'            => date( 'Y-m-d H:i:s', time() ),
+				'currency'              => $event->currency ?? null,
+				'amount'                => $event->amount_paid ?? null,
+				'formId'                => $data->formId ?? null,
+				'formType'              => $data->formType ?? null,
+				'stripeCustomerID'      => $event->customer ?? null,
+				'status'                => 'succeeded',
+				'mode'				    => $event->livemode ? 'live' : 'test',
+			) );
+		} else {
+			$this->db->addReport( array(
+				'created_at'            => date( 'Y-m-d H:i:s', $event->created ),
+				'updated_at'            => date( 'Y-m-d H:i:s', $event->created ),
+				'currency'              => $event->currency ?? null,
+				'amount'                => $event->amount_paid ?? null,
+				'formId'                => $data->formId ?? null,
+				'formType'              => $data->formType ?? null,
+				'stripePaymentIntentID' => $event->payment_intent ?? null,
+				'stripeCustomerID'      => $event->customer ?? null,
+				'stripeSubscriptionID'  => $event->subscription ?? null,
+				'status'                => 'succeeded',
+				'mode'				    => $event->livemode ? 'live' : 'test',
+			) );
+		}
 	}
 }
 
@@ -1284,6 +1336,16 @@ class MM_WPFS_ChargeRefunded extends MM_WPFS_EventProcessor
 		$charge = $this->getDataObject($event);
 		if (!is_null($charge)) {
 			$this->updatePaymentStatus($charge);
+
+			$status = $this->db->getPaymentStatus( $charge );
+			$report = $this->db->getReportByPaymentIntentID( $charge->payment_intent );
+
+			if ( $report ) {
+				$this->db->updateReport( $report->id, array(
+					'updated_at'            => date( 'Y-m-d H:i:s', time() ),
+					'status'                => $status,
+				) );
+			}
 		}
 	}
 }
@@ -1313,6 +1375,7 @@ class MM_WPFS_ChargeSucceeded extends MM_WPFS_EventProcessor
 
 class MM_WPFS_ChargeUpdated extends MM_WPFS_EventProcessor
 {
+	use MM_WPFS_ChargeEventUtils;
 
 	public function __construct(MM_WPFS_Database $db, MM_WPFS_Mailer $mailer, MM_WPFS_LoggerService $loggerService)
 	{
@@ -1326,7 +1389,10 @@ class MM_WPFS_ChargeUpdated extends MM_WPFS_EventProcessor
 
 	protected function processEvent($event, MM_WPFS_LiveModeAwareEventProcessorContext $context)
 	{
-		// tnagy charge description or metadata updated, nothing to do here
+		$charge = $this->getDataObject($event);
+		if (!is_null($charge)) {
+			$this->updatePaymentStatus($charge);
+		}
 	}
 }
 

@@ -58,6 +58,7 @@ class MM_WPFS_CreateSubscriptionContext {
 	public $discountType;
 	public $productName;
 	public $isStripeTax;
+	public $feeRecoveryLineItem;
 }
 
 abstract class MM_WPFS_OneTimeInvoiceContextCreator {
@@ -260,14 +261,19 @@ class MM_WPFS_CustomerContextCreator_DonationForm extends MM_WPFS_CustomerContex
 }
 
 class MM_WPFS_SubscriptionContextCreator {
+	use MM_WPFS_DonationTools_AddOn;
+
 	/** @var MM_WPFS_Public_SubscriptionFormModel */
 	protected $formModel;
 	/** @var MM_WPFS_SubscriptionTransactionData */
 	protected $transactionData;
+	/** @var MM_WPFS_Stripe */
+	protected $stripe;
 
-	public function __construct( $formModel, $transactionData ) {
+	public function __construct( $formModel, $transactionData, $stripe ) {
 		$this->formModel = $formModel;
 		$this->transactionData = $transactionData;
+		$this->stripe = $stripe;
 	}
 
 	public function getContext() {
@@ -289,7 +295,106 @@ class MM_WPFS_SubscriptionContextCreator {
 		$result->productName = $transactionData->getProductName();
 		$result->isStripeTax = ( $this->formModel->getForm()->vatRateType === MM_WPFS::FIELD_VALUE_TAX_RATE_STRIPE_TAX );
 
+
+		$recoveryFee = $this->formModel->getFeeRecoveryAccepted();
+		$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $this->formModel->getForm() );
+
+		if ( $recoveryFee && ! empty( $recoveryFeeData ) ) {
+			$amount = $this->formModel->getStripePlan()->unit_amount * $this->formModel->getStripePlanQuantity();
+			$currency = $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY ];
+			$plan = $this->createSubscriptionForRecoveryFee( $currency, $this->formModel->getStripePlan()->recurring->interval );
+			$quantity = MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] );
+
+			$recoveryFeeLineItem = array(
+				'price' => $plan->id,
+				'quantity' => $quantity,
+			);
+			
+			$result->feeRecoveryLineItem = $recoveryFeeLineItem;
+		}
+
 		return $result;
+	}
+
+	/**
+	 * @param $formModel MM_WPFS_Public_SubscriptionFormModel
+	 * @param $transactionData MM_WPFS_SubscriptionTransactionData
+	 *
+	 * @return \StripeWPFS\Plan
+	 * @throws Exception
+	 */
+	protected function createSubscriptionForRecoveryFee( $currency, $frequency ) {
+		$plan = $this->createOrRetrieveSubscriptionPlan( $currency, $frequency );
+		return $plan;
+	}
+
+	/**
+	 * @param $currency string
+	 * @param $frequency string
+	 *
+	 * @return \StripeWPFS\Plan
+	 * @throws Exception
+	 */
+	protected function createOrRetrieveSubscriptionPlan( $currency, $frequency ) {
+		$planId = $this->constructSubscriptionPlanID( $currency, $frequency );
+
+		$plan = $this->retrieveDonationPlan( $planId );
+
+		if ( is_null( $plan ) ) {
+			$plan = $this->createSubscriptionPlan( $planId, $currency, $frequency );
+		}
+
+		return $plan;
+	}
+
+	/**
+	 * @param $currency string
+	 * @param $frequency string
+	 *
+	 * @return string
+	 */
+	protected function constructSubscriptionPlanID( $currency, $frequency ) {
+		return MM_WPFS::SUBSCRIPTION_PLAN_ID_PREFIX . ucfirst( $currency ) . ucfirst( $frequency );
+	}
+
+	/**
+	 * @param $planID string
+	 * @param $currency string
+	 * @param $donationFrequency string
+	 *
+	 * @return \StripeWPFS\Plan
+	 * @throws Exception
+	 */
+	protected function createSubscriptionPlan( $planID, $currency, $frequency ) {
+		$planName = sprintf( $this->localizeSubscriptionPlanName( $frequency ), strtoupper( $currency ) );
+		$plan = $this->stripe->createRecurringPlan( $planID, $planName, $currency, $frequency, 1, 'licensed' );
+
+		return $plan;
+	}
+
+	protected function localizeSubscriptionPlanName( $frequency ) {
+		$res = "";
+
+		switch ( $frequency ) {
+			case MM_WPFS_SubscriptionFormViewConstants::FIELD_VALUE_SUBSCRIPTION_FREQUENCY_DAILY:
+				$res = __( 'Daily transaction fee (%s)', 'wp-full-stripe-free' );
+				break;
+
+			case MM_WPFS_SubscriptionFormViewConstants::FIELD_VALUE_SUBSCRIPTION_FREQUENCY_WEEKLY:
+				$res = __( 'Weekly transaction fee (%s)', 'wp-full-stripe-free' );
+				break;
+
+			case MM_WPFS_SubscriptionFormViewConstants::FIELD_VALUE_SUBSCRIPTION_FREQUENCY_MONTHLY:
+				$res = __( 'Monthly transaction fee (%s)', 'wp-full-stripe-free' );
+				break;
+
+			case MM_WPFS_SubscriptionFormViewConstants::FIELD_VALUE_SUBSCRIPTION_FREQUENCY_ANNUAL:
+				$res = __( 'Annual transaction fee (%s)', 'wp-full-stripe-free' );
+				break;
+		}
+
+		return $res;
+
 	}
 }
 
@@ -404,7 +509,7 @@ trait MM_WPFS_DonationTools_AddOn {
 	protected function createDonationPlan( $planID, $currency, $donationFrequency ) {
 		$planName = sprintf( $this->localizeDonationPlanName( $donationFrequency ), strtoupper( $currency ) );
 		$interval = $this->translateFrequencyToInterval( $donationFrequency );
-		$plan = $this->stripe->createRecurringDonationPlan( $planID, $planName, $currency, $interval, 1 );
+		$plan = $this->stripe->createRecurringPlan( $planID, $planName, $currency, $interval, 1 );
 
 		return $plan;
 	}
@@ -416,7 +521,7 @@ trait MM_WPFS_DonationTools_AddOn {
 	 */
 	protected function retrieveDonationPlan( $planId ) {
 		$plan = null;
-		$plans = $this->stripe->retrieveDonationPlansWithLookupKey( $planId );
+		$plans = $this->stripe->retrievePlansWithLookupKey( $planId );
 		if ( count( $plans->data ) > 0 ) {
 			$plan = $plans->data[0];
 		}
@@ -451,7 +556,15 @@ trait MM_WPFS_DonationTools_AddOn {
 		$plan = $this->createOrRetrieveDonationPlan( $donationFormModel->getForm()->currency, $donationFormModel->getDonationFrequency() );
 		$subscription = $this->stripe->subscribeCustomerToPlan( $donationFormModel->getStripeCustomer()->id, $plan->id );
 
-		$this->stripe->createUsageRecordForSubscription( $subscription, $donationFormModel->getAmount() );
+		$amount = $donationFormModel->getAmount();
+		$recoveryFee = $donationFormModel->getFeeRecoveryAccepted();
+		$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $donationFormModel->getForm() );
+
+		if ( $recoveryFee && ! empty( $recoveryFeeData ) ) {
+			$amount = $amount + MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] );
+		}
+
+		$this->stripe->createUsageRecordForSubscription( $subscription, $amount );
 
 		return $subscription;
 	}
@@ -700,7 +813,7 @@ class MM_WPFS_Customer {
 
 	protected function createSubscriptionContext( $formModel, $transactionData ) {
 		if ( $formModel instanceof MM_WPFS_Public_SubscriptionFormModel ) {
-			return ( new MM_WPFS_SubscriptionContextCreator( $formModel, $transactionData ) )->getContext();
+			return ( new MM_WPFS_SubscriptionContextCreator( $formModel, $transactionData, $this->stripe ) )->getContext();
 		} else {
 			throw new Exception( __CLASS__ . '::' . __FUNCTION__ . '(): form model type not supported.' );
 		}
@@ -1345,11 +1458,21 @@ class MM_WPFS_Customer {
 		} else {
 			$metadata = $donationFormModel->getMetadata();
 			$metadata['webhookUrl'] = esc_attr( MM_WPFS_EventHandler::getWebhookEndpointURL( $this->staticContext ) );
+
+			$amount = $donationFormModel->getAmount();
+			$currency = $donationFormModel->getForm()->currency;
+			$recoveryFee = $donationFormModel->getFeeRecoveryAccepted();
+			$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $donationFormModel->getForm() );
+
+			if ( $recoveryFee && ! empty( $recoveryFeeData ) ) {
+				$amount = $amount + MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] );
+			}
+
 			$paymentIntent = $this->stripe->createPaymentIntent(
 				$donationFormModel->getStripePaymentMethodId(),
 				$donationFormModel->getStripeCustomer()->id,
-				$donationFormModel->getForm()->currency,
-				$donationFormModel->getAmount(),
+				$currency,
+				$amount,
 				true,
 				$donationDescription,
 				$metadata,
@@ -2715,7 +2838,6 @@ class MM_WPFS_Customer {
 			$paymentFormModel->setStripePaymentIntent( $paymentIntent );
 		}
 
-
 		// save the draft transaction
 		$latest_charge = new stdClass();
 		$latest_charge->paid = false;
@@ -2724,6 +2846,17 @@ class MM_WPFS_Customer {
 		$latest_charge->failure_code = null;
 		$latest_charge->failure_message = null;
 		$latest_charge->status = "pending";
+
+		$amount = $paymentFormModel->getAmount();
+		$currency = $paymentFormModel->getForm()->currency;
+		$recoveryFee = $paymentFormModel->getFeeRecoveryAccepted();
+		$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $paymentFormModel->getForm() );
+
+		if ( $recoveryFee && ! empty( $recoveryFeeData ) ) {
+			$paymentIntent->amount = $amount + MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] );
+			$this->stripe->updatePaymentIntent( $paymentIntent, true );
+		}
+
 		$this->db->insertOrUpdatePayment( $paymentFormModel, $transactionData, $latest_charge );
 		// just return if everything is fine
 		return array(

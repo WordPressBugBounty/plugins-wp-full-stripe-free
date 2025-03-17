@@ -113,6 +113,7 @@ class MM_WPFS_Database {
         termsOfUseLabel VARCHAR(1024) DEFAULT NULL,
         termsOfUseNotCheckedErrorMessage VARCHAR(256) DEFAULT NULL,
         preferredLanguage VARCHAR(16),
+        inheritLocale TINYINT(1) DEFAULT '1',
         decimalSeparator VARCHAR(32) NOT NULL,
         showCurrencySymbolInsteadOfCode TINYINT(1) DEFAULT '1',
         showCurrencySignAtFirstPosition TINYINT(1) DEFAULT '1',
@@ -121,6 +122,11 @@ class MM_WPFS_Database {
 		webhook TEXT,
         stripeElementsTheme VARCHAR(32) NOT NULL DEFAULT 'stripe',
         stripeElementsFont VARCHAR(32),
+		feeRecovery VARCHAR(32) default 'inherit',
+		feeRecoveryOptIn TINYINT(1) DEFAULT '1',
+		feeRecoveryOptInMessage VARCHAR(1024) DEFAULT NULL,
+		feeRecoveryFeePercentage VARCHAR(32) default '2.9',
+		feeRecoveryFeeAdditionalAmount VARCHAR(32) default '0.30',
         PRIMARY KEY (paymentFormID)
         ) $charset_collate;";
 
@@ -178,6 +184,7 @@ class MM_WPFS_Database {
         billingCycleAnchorDay TINYINT(2) DEFAULT '0',
         prorateUntilAnchorDay TINYINT(1) DEFAULT '1',
         preferredLanguage VARCHAR(16),
+        inheritLocale TINYINT(1) DEFAULT '1',
         decimalSeparator VARCHAR(32) NOT NULL,
         showCurrencySymbolInsteadOfCode TINYINT(1) DEFAULT '1',
         showCurrencySignAtFirstPosition TINYINT(1) DEFAULT '1',
@@ -186,6 +193,12 @@ class MM_WPFS_Database {
 		webhook TEXT,
         stripeElementsTheme VARCHAR(32) NOT NULL DEFAULT 'stripe',
         stripeElementsFont VARCHAR(32),
+		feeRecovery VARCHAR(32) default 'inherit',
+		feeRecoveryOptIn TINYINT(1) DEFAULT '1',
+		feeRecoveryOptInMessage VARCHAR(1024) DEFAULT NULL,
+        feeRecoveryCurrency VARCHAR(3) default 'usd',
+		feeRecoveryFeePercentage VARCHAR(32) default '2.9',
+		feeRecoveryFeeAdditionalAmount VARCHAR(32) default '0.30',
         PRIMARY KEY (subscriptionFormID)
         ) $charset_collate;";
 
@@ -292,6 +305,7 @@ class MM_WPFS_Database {
         showTermsOfUse TINYINT(1) DEFAULT '0',
         termsOfUseLabel VARCHAR(1024) DEFAULT NULL,
         termsOfUseNotCheckedErrorMessage VARCHAR(256) DEFAULT NULL,
+        inheritLocale TINYINT(1) DEFAULT '1',
         decimalSeparator VARCHAR(32) NOT NULL,
         showCurrencySymbolInsteadOfCode TINYINT(1) DEFAULT '1',
         showCurrencySignAtFirstPosition TINYINT(1) DEFAULT '1',
@@ -299,6 +313,11 @@ class MM_WPFS_Database {
         emailTemplates TEXT,
 		webhook TEXT,
         collectPhoneNumber TINYINT(1) DEFAULT '0',
+		feeRecovery VARCHAR(32) default 'inherit',
+		feeRecoveryOptIn TINYINT(1) DEFAULT '1',
+		feeRecoveryOptInMessage VARCHAR(1024) DEFAULT NULL,
+		feeRecoveryFeePercentage VARCHAR(32) default '2.9',
+		feeRecoveryFeeAdditionalAmount VARCHAR(32) default '0.30',
         PRIMARY KEY (checkoutFormID)
         ) $charset_collate;";
 
@@ -360,6 +379,7 @@ class MM_WPFS_Database {
         allowMultipleSubscriptions TINYINT(1) DEFAULT '0',
         minimumQuantityOfSubscriptions INT(5) DEFAULT 0,
         maximumQuantityOfSubscriptions INT(5) DEFAULT 0,
+        inheritLocale TINYINT(1) DEFAULT '1',
         decimalSeparator VARCHAR(32) NOT NULL,
         showCurrencySymbolInsteadOfCode TINYINT(1) DEFAULT '1',
         showCurrencySignAtFirstPosition TINYINT(1) DEFAULT '1',
@@ -367,6 +387,12 @@ class MM_WPFS_Database {
 		webhook TEXT,
         emailTemplates TEXT,
         collectPhoneNumber TINYINT(1) DEFAULT '0',
+		feeRecovery VARCHAR(32) default 'inherit',
+		feeRecoveryOptIn TINYINT(1) DEFAULT '1',
+		feeRecoveryOptInMessage VARCHAR(1024) DEFAULT NULL,
+        feeRecoveryCurrency VARCHAR(3) default 'usd',
+		feeRecoveryFeePercentage VARCHAR(32) default '2.9',
+		feeRecoveryFeeAdditionalAmount VARCHAR(32) default '0.30',
         PRIMARY KEY (checkoutSubscriptionFormID)
         ) $charset_collate;";
 
@@ -580,6 +606,7 @@ class MM_WPFS_Database {
 		defaultBillingCountry VARCHAR(100),
         showShippingAddress TINYINT(1) DEFAULT '0',
         preferredLanguage VARCHAR(16),
+        inheritLocale TINYINT(1) DEFAULT '1',
         decimalSeparator VARCHAR(32),
         showCurrencySymbolInsteadOfCode TINYINT(1) DEFAULT '1',
         showCurrencySignAtFirstPosition TINYINT(1) DEFAULT '1',
@@ -601,6 +628,11 @@ class MM_WPFS_Database {
 		webhook TEXT,
         stripeElementsTheme VARCHAR(32) NOT NULL DEFAULT 'stripe',
         stripeElementsFont VARCHAR(32),
+		feeRecovery VARCHAR(32) default 'inherit',
+		feeRecoveryOptIn TINYINT(1) DEFAULT '1',
+		feeRecoveryOptInMessage VARCHAR(1024) DEFAULT NULL,
+		feeRecoveryFeePercentage VARCHAR(32) default '2.9',
+		feeRecoveryFeeAdditionalAmount VARCHAR(32) default '0.30',
         PRIMARY KEY (donationFormID)
         ) $charset_collate;";
 
@@ -635,6 +667,7 @@ class MM_WPFS_Database {
 		defaultBillingCountry VARCHAR(100),
         showShippingAddress TINYINT(1) DEFAULT '0',
         preferredLanguage VARCHAR(16),
+        inheritLocale TINYINT(1) DEFAULT '1',
         decimalSeparator VARCHAR(32),
         showCurrencySymbolInsteadOfCode TINYINT(1) DEFAULT '1',
         showCurrencySignAtFirstPosition TINYINT(1) DEFAULT '1',
@@ -655,8 +688,34 @@ class MM_WPFS_Database {
         emailTemplates TEXT,
 		webhook TEXT,
         collectPhoneNumber TINYINT(1) DEFAULT '0',
+		feeRecovery VARCHAR(32) default 'inherit',
+		feeRecoveryOptIn TINYINT(1) DEFAULT '1',
+		feeRecoveryOptInMessage VARCHAR(1024) DEFAULT NULL,
+		feeRecoveryFeePercentage VARCHAR(32) default '2.9',
+		feeRecoveryFeeAdditionalAmount VARCHAR(32) default '0.30',
         PRIMARY KEY (checkoutDonationFormID)
         ) $charset_collate;";
+
+		// database write/update
+		dbDelta( $sql );
+
+		$table = $wpdb->prefix . 'fullstripe_reports';
+
+		$sql = "CREATE TABLE " . $table . " (
+		id INT NOT NULL AUTO_INCREMENT,
+		created_at DATETIME NOT NULL,
+		updated_at DATETIME NOT NULL,
+		currency VARCHAR(3) NOT NULL,
+		amount INT NOT NULL,
+		formId INT,
+		formType VARCHAR(30),
+		stripeSubscriptionID VARCHAR(100),
+		stripePaymentIntentID VARCHAR(100),
+		stripeCustomerID VARCHAR(100),
+		status VARCHAR(32) NOT NULL,
+		mode VARCHAR(32) NOT NULL,
+		PRIMARY KEY (id)
+		) $charset_collate;";
 
 		// database write/update
 		dbDelta( $sql );
@@ -759,6 +818,37 @@ class MM_WPFS_Database {
 		$insertResult = $wpdb->insert( $wpdb->prefix . 'fullstripe_donations', apply_filters( 'fullstripe_insert_donation_data', $data ) );
 		self::handleDbError( $insertResult, __FUNCTION__ . '(): an error occurred during insert!' );
 
+		if ( ! isset( $lastCharge->payment_intent ) ) {
+			return $insertResult;
+		}
+
+		$report = $this->getReportByPaymentIntentID( $lastCharge->payment_intent );
+
+		if ( $report ) {
+			$this->updateReport( $report->id, array(
+				'updated_at'            => date( 'Y-m-d H:i:s', time() ),
+				'currency'              => $data['currency'] ?? null,
+				'amount'                => $data['amount'] ?? null,
+				'stripeCustomerID'      => $data['stripeCustomerID'] ?? null,
+				'status'                => $this->getPaymentStatus( $lastCharge ),
+				'mode'				    => $lastCharge->livemode ? 'live' : 'test',
+			) );
+		} else {
+			$this->addReport( array(
+				'created_at'            => date( 'Y-m-d H:i:s', $lastCharge->created ),
+				'updated_at'            => date( 'Y-m-d H:i:s', $lastCharge->created ),
+				'currency'              => $data['currency'] ?? null,
+				'amount'                => $data['amount'] ?? null,
+				'formId'                => $data['formId'] ?? null,
+				'formType'              => $data['formType'] ?? null,
+				'stripePaymentIntentID' => $data['stripePaymentIntentID'] ?? null,
+				'stripeCustomerID'      => $data['stripeCustomerID'] ?? null,
+				'stripeSubscriptionID'  => $data['stripeSubscriptionID'] ?? null,
+				'status'                => $this->getPaymentStatus( $lastCharge ),
+				'mode'				    => $lastCharge->livemode ? 'live' : 'test',
+			) );
+		}
+
 		return $insertResult;
 	}
 
@@ -830,6 +920,37 @@ class MM_WPFS_Database {
 		$insertResult = $wpdb->insert( $wpdb->prefix . 'fullstripe_donations', apply_filters( 'fullstripe_insert_checkout_donation_data', $data ) );
 		self::handleDbError( $insertResult, __FUNCTION__ . '(): an error occurred during insert!' );
 
+		if ( ! isset( $lastCharge->payment_intent ) ) {
+			return $insertResult;
+		}
+
+		$report = $this->getReportByPaymentIntentID( $lastCharge->payment_intent );
+
+		if ( $report ) {
+			$this->updateReport( $report->id, array(
+				'updated_at'            => date( 'Y-m-d H:i:s', time() ),
+				'currency'              => $data['currency'] ?? null,
+				'amount'                => $data['amount'] ?? null,
+				'stripeCustomerID'      => $data['stripeCustomerID'] ?? null,
+				'status'                => $this->getPaymentStatus( $lastCharge ),
+				'mode'				    => $lastCharge->livemode ? 'live' : 'test',
+			) );
+		} else {
+			$this->addReport( array(
+				'created_at'            => date( 'Y-m-d H:i:s', $lastCharge->created ),
+				'updated_at'            => date( 'Y-m-d H:i:s', $lastCharge->created ),
+				'currency'              => $data['currency'] ?? null,
+				'amount'                => $data['amount'] ?? null,
+				'formId'                => $data['formId'] ?? null,
+				'formType'              => $data['formType'] ?? null,
+				'stripePaymentIntentID' => $data['stripePaymentIntentID'] ?? null,
+				'stripeCustomerID'      => $data['stripeCustomerID'] ?? null,
+				'stripeSubscriptionID'  => $data['stripeSubscriptionID'] ?? null,
+				'status'                => $this->getPaymentStatus( $lastCharge ),
+				'mode'				    => $lastCharge->livemode ? 'live' : 'test',
+			) );
+		}
+
 		return $insertResult;
 	}
 
@@ -869,7 +990,7 @@ class MM_WPFS_Database {
 			'last_charge_status' => $lastCharge->status,
 			'currency' => $paymentIntent->currency,
 			'amount' => $paymentIntent->amount,
-			'fee' => ( isset( $paymentIntent->fee ) && ! is_null( $paymentIntent->fee ) ) ? $paymentIntent->fee : 0,
+			'fee' => ( isset( $paymentIntent->application_fee_amount ) && ! is_null( $paymentIntent->application_fee_amount ) ) ? $paymentIntent->application_fee_amount : 0,
 			'priceId' => $paymentFormModel->getPriceId(),
 			'coupon' => empty( $transactionData->getCouponCode() ) ? null : $transactionData->getCouponCode(),
 			'billingName' => $paymentFormModel->getBillingName(),
@@ -922,6 +1043,36 @@ class MM_WPFS_Database {
 			self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during insert!' );
 		}
 
+		if ( ! isset( $lastCharge->payment_intent ) ) {
+			return $result;
+		}
+
+		$report = $this->getReportByPaymentIntentID( $lastCharge->payment_intent );
+
+		if ( $report ) {
+			$this->updateReport( $report->id, array(
+				'updated_at'            => date( 'Y-m-d H:i:s', time() ),
+				'currency'              => $data['currency'] ?? null,
+				'amount'                => $data['amount'] ?? null,
+				'stripeCustomerID'      => $data['stripeCustomerID'] ?? null,
+				'status'                => $this->getPaymentStatus( $lastCharge ),
+				'mode'				    => $lastCharge->livemode ? 'live' : 'test',
+			) );
+		} else {
+			$this->addReport( array(
+				'created_at'            => date( 'Y-m-d H:i:s', $lastCharge->created ),
+				'updated_at'            => date( 'Y-m-d H:i:s', $lastCharge->created ),
+				'currency'              => $data['currency'] ?? null,
+				'amount'                => $data['amount'] ?? null,
+				'formId'                => $data['formId'] ?? null,
+				'formType'              => MM_WPFS_Utils::getFormType( $paymentFormModel->getForm() ),
+				'stripePaymentIntentID' => $data['eventID'] ?? null,
+				'stripeCustomerID'      => $data['stripeCustomerID'] ?? null,
+				'status'                => $this->getPaymentStatus( $lastCharge ),
+				'mode'				    => $lastCharge->livemode ? 'live' : 'test',
+			) );
+		}
+
 		return $result;
 	}
 
@@ -941,6 +1092,12 @@ class MM_WPFS_Database {
 		$billingAddress = $subscriptionFormModel->getBillingAddress( false );
 		$shippingAddress = $subscriptionFormModel->getShippingAddress( false );
 
+		$planId = isset( $stripeSubscription->plan ) ? $stripeSubscription->plan->id : null;
+
+		if ( $stripeSubscription->items->total_count > 1 && isset( $stripeSubscription->items->data[0]->plan ) ) {
+			$planId = $stripeSubscription->items->data[0]->plan->id;
+		}
+
 		$data = array(
 			'stripeCustomerID' => $stripeCustomer->id,
 			'stripeSubscriptionID' => $transactionData->getTransactionId(),
@@ -952,7 +1109,7 @@ class MM_WPFS_Database {
 			'status' => MM_WPFS::SUBSCRIBER_STATUS_INCOMPLETE,
 			'name' => $subscriptionFormModel->getCardHolderName(),
 			'email' => $stripeCustomer->email,
-			'planID' => $stripeSubscription->plan->id,
+			'planID' => $planId,
 			'quantity' => $stripeSubscription->quantity,
 			'coupon' => empty( $transactionData->getCouponCode() ) ? null : $transactionData->getCouponCode(),
 			'billingName' => $subscriptionFormModel->getBillingName(),
@@ -983,6 +1140,35 @@ class MM_WPFS_Database {
 		global $wpdb;
 		$insertResult = $wpdb->insert( $wpdb->prefix . 'fullstripe_subscribers', apply_filters( 'fullstripe_insert_subscriber_data', $data ) );
 		self::handleDbError( $insertResult, __FUNCTION__ . '(): an error occurred during insert!' );
+
+		if ( ! isset( $data['stripePaymentIntentID'] ) ) {
+			return $insertResult;
+		}
+
+		$report = $this->getReportByPaymentIntentID( $data['stripePaymentIntentID'] ?? null );
+
+		if ( $report ) {
+			$this->updateReport( $report->id, array(
+				'updated_at'            => date( 'Y-m-d H:i:s', time() ),
+				'formId'                => $data['formId'] ?? null,
+				'formType'              => MM_WPFS_Utils::getFormType( $subscriptionFormModel->getForm() ),
+				'stripeCustomerID'      => $data['stripeCustomerID'] ?? null,
+				'status'                => 'succeeded',
+				'mode'				    => $stripeSubscription->livemode ? 'live' : 'test',
+			) );
+		} else {
+			$this->addReport( array(
+				'created_at'            => date( 'Y-m-d H:i:s', $stripeSubscription->created ),
+				'updated_at'            => date( 'Y-m-d H:i:s', $stripeSubscription->created ),
+				'formId'                => $data['formId'] ?? null,
+				'formType'              => MM_WPFS_Utils::getFormType( $subscriptionFormModel->getForm() ),
+				'stripePaymentIntentID' => $data['stripePaymentIntentID'] ?? null,
+				'stripeCustomerID'      => $data['stripeCustomerID'] ?? null,
+				'stripeSubscriptionID'  => $data['stripeSubscriptionID'] ?? null,
+				'status'                => 'succeeded',
+				'mode'				    => $stripeSubscription->livemode ? 'live' : 'test',
+			) );
+		}
 
 		return $insertResult;
 	}
@@ -3228,4 +3414,447 @@ class MM_WPFS_Database {
 		self::handleDbError( $queryResult, __FUNCTION__ . '(): an error occurred during delete!' );
 	}
 
+	/**
+	 * Adds a new report to the database.
+	 *
+	 * @param array $data An associative array of data to insert into the report.
+	 * @return int|false The number of rows inserted, or false on error.
+	 */
+	public function addReport( $data ) {
+		global $wpdb;
+		$insertResult = $wpdb->insert( $wpdb->prefix . 'fullstripe_reports', $data );
+		self::handleDbError( $insertResult, __FUNCTION__ . '(): an error occurred during insert!' );
+
+		return $insertResult;
+	}
+
+	/**
+	 * Updates an existing report in the database.
+	 *
+	 * @param int $id The ID of the report to update.
+	 * @param array $data An associative array of data to update in the report.
+	 * @return int|false The number of rows updated, or false on error.
+	 */
+	public function updateReport( $id, $data ) {
+		global $wpdb;
+		$updateResult = $wpdb->update( $wpdb->prefix . 'fullstripe_reports', $data, array( 'id' => $id ) );
+		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
+
+		return $updateResult;
+	}
+
+	/**
+	 * Retrieves a report by payment intent from the database.
+	 *
+	 * @param string $paymentIntent The paymentIntent of the report to retrieve.
+	 * @return object|null The report object, or null if not found.
+	 */
+	public function getReportByPaymentIntentID( $paymentIntent ) {
+		global $wpdb;
+		$report = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}fullstripe_reports WHERE stripePaymentIntentID=%s", $paymentIntent ), OBJECT );
+		self::handleDbError( $report, __FUNCTION__ . '(): an error occurred during select!' );
+
+		return $report;
+	}
+
+	/**
+	 * Get payment status by charge.
+	 *
+	 * @param object $charge The charge object.
+	 * @return string The payment status.
+	 */
+	public function getPaymentStatus( $charge ) {
+		if ( $charge->status !== 'succeeded' ) {
+			return $charge->status;
+		}
+
+		if ( $charge->amount_refunded > 0 ) {
+			return ( $charge->amount_refunded < $charge->amount ) ? 'partially_refunded' : 'refunded';
+		}
+
+		return 'succeeded';
+	}
+
+	public function getFormNameByReport( $payment ) {
+		$id     = $payment->formId;
+		$type   = $payment->formType;
+		$method = 'get' . str_replace( '_', '', ucwords( $type, '_' ) ) . 'FormById';
+	
+		if ( ! method_exists( $this, $method ) ) {
+			return '-';
+		}
+	
+		return $this->$method( $id )->displayName;
+	}
+
+	public function getTotalDonationAmount( $currency = MM_WPFS::CURRENCY_USD, $period = MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_LAST_30_DAYS ) {
+		global $wpdb;
+
+		list( $periodStart, $periodEnd ) = array_values( self::getPeriod( $period ) );
+
+		$result = $wpdb->get_var( $wpdb->prepare(
+			"SELECT sum(amount) FROM {$wpdb->prefix}fullstripe_reports WHERE created_at >= %s AND created_at < %s AND currency=%s AND formType IN (%s, %s) AND status='succeeded' AND mode=%s;",
+			$periodStart,
+			$periodEnd,
+			$currency,
+			MM_WPFS::FORM_TYPE_INLINE_DONATION,
+			MM_WPFS::FORM_TYPE_CHECKOUT_DONATION,
+			MM_WPFS_Utils::getMode()
+		) );
+		self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during select!' );
+
+		$amount = MM_WPFS_Currencies::format_amount_with_currency( $currency, ( $result ? (int) $result : 0 ) );
+
+		return $amount;
+	}
+
+	public function getTotalNumberOfDonations( $currency = MM_WPFS::CURRENCY_USD, $period = MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_LAST_30_DAYS ) {
+		global $wpdb;
+
+		list( $periodStart, $periodEnd ) = array_values( self::getPeriod( $period ) );
+
+		$result = $wpdb->get_var( $wpdb->prepare(
+			"SELECT count(*) FROM {$wpdb->prefix}fullstripe_reports WHERE created_at >= %s AND created_at < %s AND currency=%s AND formType IN (%s, %s) AND status='succeeded' AND mode=%s;",
+			$periodStart,
+			$periodEnd,
+			$currency,
+			MM_WPFS::FORM_TYPE_INLINE_DONATION,
+			MM_WPFS::FORM_TYPE_CHECKOUT_DONATION,
+			MM_WPFS_Utils::getMode()
+		) );
+		self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during select!' );
+
+		return $result ? (int) $result : 0;
+	}
+
+	public function getAverageDonationAmount( $currency = MM_WPFS::CURRENCY_USD, $period = MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_LAST_30_DAYS ) {
+		global $wpdb;
+
+		list( $periodStart, $periodEnd ) = array_values( self::getPeriod( $period ) );
+
+		$result = $wpdb->get_var( $wpdb->prepare(
+			"SELECT avg(amount) FROM {$wpdb->prefix}fullstripe_reports WHERE created_at >= %s AND created_at < %s AND currency=%s AND formType IN (%s, %s) AND status='succeeded' AND mode=%s;",
+			$periodStart,
+			$periodEnd,
+			$currency,
+			MM_WPFS::FORM_TYPE_INLINE_DONATION,
+			MM_WPFS::FORM_TYPE_CHECKOUT_DONATION,
+			MM_WPFS_Utils::getMode()
+		) );
+		self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during select!' );
+
+		$amount = MM_WPFS_Currencies::format_amount_with_currency( $currency, ( $result ? (int) $result : 0 ) );
+
+		return $amount;
+	}
+
+	public function getDonations( $currency = MM_WPFS::CURRENCY_USD, $period = MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_LAST_30_DAYS, $number = 10 ) {
+		global $wpdb;
+
+		list( $periodStart, $periodEnd ) = array_values( self::getPeriod( $period ) );
+
+		$result = $wpdb->get_results( $wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}fullstripe_reports WHERE created_at >= %s AND created_at < %s AND currency=%s AND formType IN (%s, %s) AND status='succeeded' AND mode=%s ORDER BY created_at DESC LIMIT %d;",
+			$periodStart,
+			$periodEnd,
+			$currency,
+			MM_WPFS::FORM_TYPE_INLINE_DONATION,
+			MM_WPFS::FORM_TYPE_CHECKOUT_DONATION,
+			MM_WPFS_Utils::getMode(),
+			$number,
+		), OBJECT );
+		self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during select!' );
+
+		return $result;
+	}
+
+	public function getTopDoners( $currency = MM_WPFS::CURRENCY_USD, $period = MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_LAST_30_DAYS, $number = 10 ) {
+		global $wpdb;
+
+		list( $periodStart, $periodEnd ) = array_values( self::getPeriod( $period ) );
+
+		$result = $wpdb->get_results( $wpdb->prepare(
+			"SELECT stripeCustomerID, currency, sum(amount) as total, avg(amount) as average FROM {$wpdb->prefix}fullstripe_reports WHERE created_at >= %s AND created_at < %s AND currency=%s AND formType IN (%s, %s) AND status='succeeded' AND mode=%s GROUP BY stripeCustomerID ORDER BY total DESC LIMIT %d;",
+			$periodStart,
+			$periodEnd,
+			$currency,
+			MM_WPFS::FORM_TYPE_INLINE_DONATION,
+			MM_WPFS::FORM_TYPE_CHECKOUT_DONATION,
+			MM_WPFS_Utils::getMode(),
+			$number,
+		), OBJECT );
+
+		self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during select!' );
+
+		return $result;
+	}
+
+	public function getTotalRevenueAmount( $currency = MM_WPFS::CURRENCY_USD, $period = MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_LAST_30_DAYS ) {
+		global $wpdb;
+
+		list( $periodStart, $periodEnd ) = array_values( self::getPeriod( $period ) );
+
+		$result = $wpdb->get_var( $wpdb->prepare(
+			"SELECT sum(amount) FROM {$wpdb->prefix}fullstripe_reports WHERE created_at >= %s AND created_at < %s AND currency=%s AND formType IN (%s, %s, %s, %s) AND status='succeeded' AND mode=%s;",
+			$periodStart,
+			$periodEnd,
+			$currency,
+			MM_WPFS::FORM_TYPE_INLINE_PAYMENT,
+			MM_WPFS::FORM_TYPE_CHECKOUT_PAYMENT,
+			MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION,
+			MM_WPFS::FORM_TYPE_CHECKOUT_SUBSCRIPTION,
+			MM_WPFS_Utils::getMode()
+		) );
+		self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during select!' );
+
+		$amount = MM_WPFS_Currencies::format_amount_with_currency( $currency, ( $result ? (int) $result : 0 ) );
+
+		return $amount;
+	}
+
+	public function getAverageTransactionAmount( $currency = MM_WPFS::CURRENCY_USD, $period = MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_LAST_30_DAYS ) {
+		global $wpdb;
+
+		list( $periodStart, $periodEnd ) = array_values( self::getPeriod( $period ) );
+
+		$result = $wpdb->get_var( $wpdb->prepare(
+			"SELECT avg(amount) FROM {$wpdb->prefix}fullstripe_reports WHERE created_at >= %s AND created_at < %s AND currency=%s AND formType IN (%s, %s, %s, %s) AND status='succeeded' AND mode=%s;",
+			$periodStart,
+			$periodEnd,
+			$currency,
+			MM_WPFS::FORM_TYPE_INLINE_PAYMENT,
+			MM_WPFS::FORM_TYPE_CHECKOUT_PAYMENT,
+			MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION,
+			MM_WPFS::FORM_TYPE_CHECKOUT_SUBSCRIPTION,
+			MM_WPFS_Utils::getMode()
+		) );
+		self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during select!' );
+
+		$amount = MM_WPFS_Currencies::format_amount_with_currency( $currency, ( $result ? (int) $result : 0 ) );
+
+		return $amount;
+	}
+
+	public function getTotalNumberOfPayments( $currency = MM_WPFS::CURRENCY_USD, $period = MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_LAST_30_DAYS ) {
+		global $wpdb;
+
+		list( $periodStart, $periodEnd ) = array_values( self::getPeriod( $period ) );
+
+		$result = $wpdb->get_var( $wpdb->prepare(
+			"SELECT count(*) FROM {$wpdb->prefix}fullstripe_reports WHERE created_at >= %s AND created_at < %s AND currency=%s AND formType IN (%s, %s, %s, %s) AND status='succeeded' AND mode=%s;",
+			$periodStart,
+			$periodEnd,
+			$currency,
+			MM_WPFS::FORM_TYPE_INLINE_PAYMENT,
+			MM_WPFS::FORM_TYPE_CHECKOUT_PAYMENT,
+			MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION,
+			MM_WPFS::FORM_TYPE_CHECKOUT_SUBSCRIPTION,
+			MM_WPFS_Utils::getMode()
+		) );
+		self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during select!' );
+		return $result ? (int) $result : 0;
+	}
+
+	public function getTotalActiveSubscriptions( $currency = MM_WPFS::CURRENCY_USD, $period = MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_LAST_30_DAYS ) {
+		global $wpdb;
+
+		list( $periodStart, $periodEnd ) = array_values( self::getPeriod( $period ) );
+
+		$result = $wpdb->get_var( $wpdb->prepare(
+			"SELECT count(*) FROM {$wpdb->prefix}fullstripe_subscribers WHERE created >= %s AND created < %s AND status='running' AND livemode=%s;",
+			$periodStart,
+			$periodEnd,
+			MM_WPFS_Utils::isLiveMode() ? 1 : 0
+		) );
+		self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during select!' );
+
+		return $result ? (int) $result : 0;
+	}
+
+	public function getPayments( $currency = MM_WPFS::CURRENCY_USD, $period = MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_LAST_30_DAYS, $number = 10 ) {
+		global $wpdb;
+
+		list( $periodStart, $periodEnd ) = array_values( self::getPeriod( $period ) );
+
+		$result = $wpdb->get_results( $wpdb->prepare(
+			"SELECT * FROM {$wpdb->prefix}fullstripe_reports WHERE created_at >= %s AND created_at < %s AND currency=%s AND formType IN (%s, %s, %s, %s) AND status='succeeded' AND mode=%s ORDER BY created_at DESC LIMIT %d;",
+			$periodStart,
+			$periodEnd,
+			$currency,
+			MM_WPFS::FORM_TYPE_INLINE_PAYMENT,
+			MM_WPFS::FORM_TYPE_CHECKOUT_PAYMENT,
+			MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION,
+			MM_WPFS::FORM_TYPE_CHECKOUT_SUBSCRIPTION,
+			MM_WPFS_Utils::getMode(),
+			$number,
+		), OBJECT );
+		self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during select!' );
+
+		return $result;
+	}
+
+	public function getTopCustomers( $currency = MM_WPFS::CURRENCY_USD, $period = MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_LAST_30_DAYS, $number = 10 ) {
+		global $wpdb;
+
+		list( $periodStart, $periodEnd ) = array_values( self::getPeriod( $period ) );
+
+		$result = $wpdb->get_results( $wpdb->prepare(
+			"SELECT stripeCustomerID, currency, sum(amount) as total, avg(amount) as average FROM {$wpdb->prefix}fullstripe_reports WHERE created_at >= %s AND created_at < %s AND currency=%s AND formType IN (%s, %s, %s, %s) AND status='succeeded' AND mode=%s GROUP BY stripeCustomerID ORDER BY total DESC LIMIT %d;",
+			$periodStart,
+			$periodEnd,
+			$currency,
+			MM_WPFS::FORM_TYPE_INLINE_PAYMENT,
+			MM_WPFS::FORM_TYPE_CHECKOUT_PAYMENT,
+			MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION,
+			MM_WPFS::FORM_TYPE_CHECKOUT_SUBSCRIPTION,
+			MM_WPFS_Utils::getMode(),
+			$number,
+		), OBJECT );
+
+		self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during select!' );
+
+		return $result;
+	}
+
+	public function getRevenueAndSalesData( $currency = MM_WPFS::CURRENCY_USD, $period = MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_LAST_30_DAYS ) {
+		global $wpdb;
+
+		list( $periodStart, $periodEnd ) = array_values( self::getPeriod( $period ) );
+
+		$interval = new DateInterval('P1D');
+		$start = new DateTime($periodStart);
+		$end = new DateTime($periodEnd);
+		$end->add($interval);
+		$period = new DatePeriod($start, $interval, $end);
+
+		$dates = [];
+		foreach ($period as $date) {
+			$dates[$date->format('Y-m-d')] = (object) ['date' => $date->format('Y-m-d'), 'revenue' => 0, 'sales' => 0];
+		}
+		$revenueAndSalesData = $wpdb->get_results( $wpdb->prepare(
+			"SELECT DATE(created_at) as date, formId, formType, sum(amount) as revenue, count(*) as sales FROM {$wpdb->prefix}fullstripe_reports WHERE created_at >= %s AND created_at < %s AND currency=%s AND formType IN (%s, %s, %s, %s) AND status='succeeded' AND mode=%s GROUP BY date, formId, formType ORDER BY date ASC;",
+			$periodStart,
+			$periodEnd,
+			$currency,
+			MM_WPFS::FORM_TYPE_INLINE_PAYMENT,
+			MM_WPFS::FORM_TYPE_CHECKOUT_PAYMENT,
+			MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION,
+			MM_WPFS::FORM_TYPE_CHECKOUT_SUBSCRIPTION,
+			MM_WPFS_Utils::getMode()
+		), OBJECT );
+
+		self::handleDbError( $revenueAndSalesData, __FUNCTION__ . '(): an error occurred during select!' );
+
+		// Merge the results with the dates array
+		foreach ( $revenueAndSalesData as $data ) {
+			if ( ! isset( $dates[ $data->date ]->details ) ) {
+				$dates[ $data->date ]->details = [];
+			}
+			$dates[ $data->date ]->revenue += $data->revenue;
+			$dates[ $data->date ]->sales += $data->sales;
+			$dates[ $data->date ]->details[] = $data;
+		}
+
+		return array_values($dates);
+	}
+
+	public function getRefundsData( $currency = MM_WPFS::CURRENCY_USD, $period = MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_LAST_30_DAYS ) {
+		global $wpdb;
+
+		list( $periodStart, $periodEnd ) = array_values( self::getPeriod( $period ) );
+
+		$interval = new DateInterval('P1D');
+		$start = new DateTime($periodStart);
+		$end = new DateTime($periodEnd);
+		$end->add($interval);
+		$period = new DatePeriod($start, $interval, $end);
+
+		$dates = [];
+		foreach ($period as $date) {
+			$dates[$date->format('Y-m-d')] = (object) ['date' => $date->format('Y-m-d'), 'refunds' => 0, 'refund_count' => 0];
+		}
+
+		$refundsData = $wpdb->get_results( $wpdb->prepare(
+			"SELECT DATE(created_at) as date, sum(amount) as refunds, count(*) as refund_count FROM {$wpdb->prefix}fullstripe_reports WHERE created_at >= %s AND created_at < %s AND currency=%s AND formType IN (%s, %s, %s, %s) AND status='refunded' AND mode=%s GROUP BY date ORDER BY date ASC;",
+			$periodStart,
+			$periodEnd,
+			$currency,
+			MM_WPFS::FORM_TYPE_INLINE_PAYMENT,
+			MM_WPFS::FORM_TYPE_CHECKOUT_PAYMENT,
+			MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION,
+			MM_WPFS::FORM_TYPE_CHECKOUT_SUBSCRIPTION,
+			MM_WPFS_Utils::getMode()
+		), OBJECT );
+
+		self::handleDbError( $refundsData, __FUNCTION__ . '(): an error occurred during select!' );
+
+		// Merge the results with the dates array
+		foreach ($refundsData as $data) {
+			$dates[$data->date] = $data;
+		}
+
+		return array_values($dates);
+	}
+
+	public function getMostUsedCurrency() {
+		global $wpdb;
+
+		$result = $wpdb->get_var( $wpdb->prepare(
+			"SELECT currency FROM ( SELECT currency FROM {$wpdb->prefix}fullstripe_reports WHERE mode=%s ORDER BY created_at DESC LIMIT 50 ) as latest GROUP BY currency ORDER BY COUNT(*) DESC LIMIT 1", MM_WPFS_Utils::getMode()
+		) );
+
+		return $result ? $result : MM_WPFS::CURRENCY_USD;
+	}
+
+	public static function getPeriod( $period ) {
+		$start = null;
+		$end   = null;
+
+		if ( is_array( $period ) ) {
+			$start = date( 'Y-m-d 00:00:00', strtotime( $period['start'] ) );
+			$end   = date( 'Y-m-d 23:59:59', strtotime( $period['end'] ) );
+		
+			return [
+				'start' => $start,
+				'end'   => $end
+			];
+		}
+		
+		switch ( $period ) {
+			case MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_TODAY:
+				$start = date( 'Y-m-d 00:00:00', strtotime( 'today' ) );
+				$end   = date( 'Y-m-d 23:59:59', strtotime( 'today' ) );
+				break;
+				
+			case MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_YESTERDAY:
+				$start = date( 'Y-m-d 00:00:00', strtotime( 'yesterday' ) );
+				$end   = date( 'Y-m-d 23:59:59', strtotime( 'yesterday' ) );
+				break;
+				
+			case MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_LAST_7_DAYS:
+				$start = date( 'Y-m-d H:i:s', strtotime( '-7 days' ) );
+				$end   = date( 'Y-m-d H:i:s', strtotime( 'now' ) );
+				break;
+				
+			case MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_LAST_30_DAYS:
+				$start = date( 'Y-m-d H:i:s', strtotime( '-30 days' ) );
+				$end   = date( 'Y-m-d H:i:s', strtotime( 'now' ) );
+				break;
+				
+			case MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_THIS_MONTH:
+				$start = date( 'Y-m-01 00:00:00' );
+				$end   = date( 'Y-m-d 23:59:59', strtotime( 'last day of this month' ) );
+				break;
+				
+			case MM_WPFS_Admin_Menu::PARAM_VALUE_RANGE_LAST_MONTH:
+				$start = date( 'Y-m-01 00:00:00', strtotime( 'first day of last month' ) );
+				$end   = date( 'Y-m-t 23:59:59', strtotime( 'last day of last month' ) );
+				break;
+		}
+		
+		return [
+			'start' => $start,
+			'end'   => $end
+		];
+	}
 }

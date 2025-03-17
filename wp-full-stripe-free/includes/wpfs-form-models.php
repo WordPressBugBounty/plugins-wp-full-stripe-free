@@ -434,6 +434,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	const PARAM_WPFS_SHIPPING_ADDRESS_STATE_SELECT = 'wpfs-shipping-address-state-select';
 	const PARAM_WPFS_SHIPPING_ADDRESS_ZIP = 'wpfs-shipping-address-zip';
 	const PARAM_WPFS_SHIPPING_ADDRESS_COUNTRY = 'wpfs-shipping-address-country';
+	const PARAM_WPFS_FEE_RECOVERY_ACCEPTED = 'wpfs-fee-recovery-accepted';
 	const PARAM_WPFS_TERMS_OF_USE_ACCEPTED = 'wpfs-terms-of-use-accepted';
 	const PARAM_GOOGLE_RECAPTCHA_RESPONSE = 'g-recaptcha-response';
 	const PARAM_WPFS_NONCE = 'wpfs-nonce';
@@ -467,6 +468,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	protected $shippingAddressState;
 	protected $shippingAddressZip;
 	protected $shippingAddressCountry;
+	protected $feeRecoveryAccepted;
 	protected $termsOfUseAccepted;
 	protected $googleReCaptchaResponse;
 	protected $transactionId;
@@ -600,6 +602,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 		$this->shippingAddressLine2 = $this->getSanitizedArrayParam($postData, self::PARAM_WPFS_SHIPPING_ADDRESS_LINE_2);
 		$this->shippingAddressCity = $this->getSanitizedArrayParam($postData, self::PARAM_WPFS_SHIPPING_ADDRESS_CITY);
 		$this->shippingAddressZip = $this->getSanitizedArrayParam($postData, self::PARAM_WPFS_SHIPPING_ADDRESS_ZIP);
+		$this->feeRecoveryAccepted = $this->getSanitizedArrayParam($postData, self::PARAM_WPFS_FEE_RECOVERY_ACCEPTED, 0);
 		$this->termsOfUseAccepted = $this->getSanitizedArrayParam($postData, self::PARAM_WPFS_TERMS_OF_USE_ACCEPTED, 0);
 		$this->googleReCaptchaResponse = $this->getSanitizedArrayParam($postData, self::PARAM_GOOGLE_RECAPTCHA_RESPONSE);
 		$this->nonce = $this->getSanitizedArrayParam($postData, self::PARAM_WPFS_NONCE);
@@ -790,6 +793,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 			self::PARAM_WPFS_SHIPPING_ADDRESS_STATE => $this->shippingAddressState,
 			self::PARAM_WPFS_SHIPPING_ADDRESS_ZIP => $this->shippingAddressZip,
 			self::PARAM_WPFS_SHIPPING_ADDRESS_COUNTRY => $this->shippingAddressCountry,
+			self::PARAM_WPFS_FEE_RECOVERY_ACCEPTED => $this->feeRecoveryAccepted,
 			self::PARAM_WPFS_TERMS_OF_USE_ACCEPTED => $this->termsOfUseAccepted,
 			self::PARAM_GOOGLE_RECAPTCHA_RESPONSE => $this->googleReCaptchaResponse,
 			self::PARAM_WPFS_NONCE => $this->nonce,
@@ -1011,6 +1015,14 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	public function getShippingAddressCountry()
 	{
 		return $this->shippingAddressCountry;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getFeeRecoveryAccepted()
+	{
+		return $this->feeRecoveryAccepted;
 	}
 
 	/**
@@ -2109,8 +2121,13 @@ abstract class MM_WPFS_Public_PaymentFormModel extends MM_WPFS_Public_FormModel
 			$this->__priceId = $product->stripePriceId;
 			$this->__price = $product;
 		} elseif ($customAmount) {
-			$parsedAmount = MM_WPFS_Currencies::parseByForm($this->__form, $this->__form->currency, $this->customAmountUniqueValue);
-			$this->__amount = MM_WPFS_Utils::parse_amount($this->__form->currency, $parsedAmount);
+			$this->__amount = $this->customAmountUniqueValue;
+
+			if ( MM_WPFS_Utils::getFormType( $this->__form ) === MM_WPFS::FORM_TYPE_CHECKOUT_PAYMENT ) {
+				$this->__amount = MM_WPFS_Currencies::parseByForm($this->__form, $this->__form->currency, $this->__amount);
+			}
+			$this->__amount = MM_WPFS_Utils::parse_amount( $this->__form->currency, $this->__amount );
+
 			$this->__productName = isset($this->__form->productDesc) ? $this->__form->productDesc : MM_WPFS_Utils::getDefaultProductDescription();
 			$this->__priceId = null;
 			$this->__price = null;
@@ -2252,8 +2269,13 @@ abstract class MM_WPFS_Public_DonationFormModel extends MM_WPFS_Public_FormModel
 		}
 
 		if (1 == $this->__form->allowCustomDonationAmount && 'other' === $this->customAmountValue) {
-			$parsedAmount = MM_WPFS_Currencies::parseByForm($this->__form, $this->__form->currency, $this->customAmountUniqueValue);
-			$this->__amount = MM_WPFS_Utils::parse_amount($this->__form->currency, $parsedAmount);
+			$this->__amount = $this->customAmountUniqueValue;
+
+			if ( MM_WPFS_Utils::getFormType( $this->__form ) === MM_WPFS::FORM_TYPE_CHECKOUT_DONATION ) {
+				$this->__amount = MM_WPFS_Currencies::parseByForm($this->__form, $this->__form->currency, $this->__amount);
+			}
+
+			$this->__amount = MM_WPFS_Utils::parse_amount( $this->__form->currency, $this->__amount );
 		} else {
 			$donationAmounts = MM_WPFS_Utils::decodeJsonArray($this->__form->donationAmounts);
 			if (isset($this->customAmountIndex) && $this->customAmountIndex > self::INITIAL_CUSTOM_AMOUNT_INDEX && count($donationAmounts) > $this->customAmountIndex) {

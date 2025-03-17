@@ -95,6 +95,12 @@
                     <input class="wpfs-form-control wpfs-form-control--w240 js-copy-shortcode" type="text" value="<?php echo htmlspecialchars( $form->shortCode ); ?>" readonly>
                 </td>
                 <td class="wpfs-data-table__td wpfs-data-table__td--right wpfs-data-table__td--actions">
+                    <a class="wpfs-btn wpfs-btn-icon wpfs-btn-icon--20 js-tooltip" href="<?php echo esc_url( $form->editUrl );  ?>" data-tooltip-content="edit-tooltip-<?php echo $formIdx; ?>">
+                        <span class="wpfs-icon-edit"></span>
+                    </a>
+                    <div class="wpfs-tooltip-content" data-tooltip-id="edit-tooltip-<?php echo $formIdx; ?>">
+                        <div class="wpfs-info-tooltip"><?php _e( 'Edit Form', 'wp-full-stripe-free' ); ?></div>
+                    </div>
                     <a class="wpfs-btn wpfs-btn-icon wpfs-btn-icon--20 js-tooltip js-open-preview-popover" data-tooltip-content="preview-tooltip-<?php echo $formIdx; ?>" data-shortcode-value='<?php echo htmlspecialchars($form->shortCode); ?>'>
                         <span class="wpfs-icon-view"></span>
                     </a>

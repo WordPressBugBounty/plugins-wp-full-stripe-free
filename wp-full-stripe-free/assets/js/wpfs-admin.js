@@ -292,13 +292,14 @@ jQuery.noConflict();
     WPFS.InlineAutocomplete = function (options) {
       this.source = options.source;
       this.$input = $(options.selector);
+      this.$inputParent = this.$input.parent();
 
       if ($("." + options.containerClass).length !== 0) {
         $("." + options.containerClass).remove();
       }
       this.$autocomplete = $(
         '<div class="' + options.containerClass + '"/>'
-      ).insertAfter(this.$input);
+      ).insertAfter(this.$inputParent);
 
       this.bindInput = function () {
         var self = this;
@@ -327,6 +328,7 @@ jQuery.noConflict();
         this.$autocomplete.empty();
 
         var itemTemplate = this.$input
+          .parent()
           .parent()
           .find('script[type="text/template"]')
           .text();
@@ -1686,6 +1688,23 @@ jQuery.noConflict();
       $('input[name="wpfs-form-display-name"]').focus();
     }
 
+    function initFormLayoutHandler() {
+      function handleFormTypeChange() {
+        var $formTypeRadio = $('input[name="wpfs-form-type"]:checked');
+        var formType = $formTypeRadio.val();
+        if (formType === "save_card") {
+          $('input[name="wpfs-form-layout"][value="checkout"]').closest('.wpfs-form-block').hide();
+          $('input[name="wpfs-form-layout"][value="inline"]').prop("checked", true);
+        } else {
+          $('input[name="wpfs-form-layout"][value="checkout"]').closest('.wpfs-form-block').show();
+        }
+      }
+
+      handleFormTypeChange();
+
+      $('input[name="wpfs-form-type"]').on("change", handleFormTypeChange);
+    }
+
     function initEventHandlersOnTheCreateFormPage() {
       $("#wpfs-create-form").submit(function (e) {
         e.preventDefault();
@@ -1702,6 +1721,7 @@ jQuery.noConflict();
     WPFS.initCreateForm = function () {
       if (onCreateFormPage()) {
         initFocusOnTheCreateFormPage();
+        initFormLayoutHandler();
         initEventHandlersOnTheCreateFormPage();
       }
     };
@@ -2550,7 +2570,7 @@ jQuery.noConflict();
 
     function initStripePortalEffect() {
       var $useStripePortal = $('input[name="' + MY_ACCOUNT_USE_STRIPE_CUSTOMER_PORTAL + '"]');
-      var $stripePortalFormBlocks = $(".wpfs-form-block--can-be-disabled");
+      var $stripePortalFormBlocks = $(".wpfs-portal--can-be-disabled");
 
       function toggleStripePortalFormBlocks() {
         if ($useStripePortal.prop("checked")) {
@@ -2597,6 +2617,27 @@ jQuery.noConflict();
     WPFS.initSettingsWordpressDashboard = function () {
       if (onSettingsWordpressDashboard()) {
         initEventHandlersOnSettingsWordpressDashboard();
+
+        function toggleRecoveryFeeSettings() {
+          const isChecked = document.querySelector('input[name="wpfs-fee-recovery"]:checked').value;
+          const fields = document.querySelectorAll('.wpfs-fee-recovery--can-be-disabled');
+    
+          fields.forEach(field => {
+          if ( Number( isChecked ) ) {
+            field.style.pointerEvents = "auto";
+            field.style.opacity = "1";
+          } else {
+            field.style.pointerEvents = "none";
+            field.style.opacity = "0.5";
+          }
+          });
+        }
+
+        toggleRecoveryFeeSettings();
+
+        document.querySelectorAll('input[name="wpfs-fee-recovery"]').forEach((radio) => {
+          radio.addEventListener('change', toggleRecoveryFeeSettings);
+        });
       }
     };
 
@@ -3377,6 +3418,23 @@ jQuery.noConflict();
       });
     }
 
+    function initGlobalLocalEffect() {
+      var useGlobalLocale = $('input[name="wpfs-form-inherit-locale"]');
+      var formBlocks = $(".wpfs-locale--can-be-disabled");
+
+      function toggleLocalFields() {
+        if (useGlobalLocale.prop("checked")) {
+          formBlocks.hide();
+        } else {
+          formBlocks.show();
+        }
+      }
+
+      useGlobalLocale.on("change", toggleLocalFields);
+
+      toggleLocalFields();
+    };
+
     function onInlineSaveCardFormEdit() {
       return (
         $("div.wpfs-page-edit-inline-save-card-form") &&
@@ -3394,7 +3452,7 @@ jQuery.noConflict();
     function onCheckoutSaveCardFormEdit() {
       return (
         $("div.wpfs-page-edit-checkout-save-card-form") &&
-        $("div.wpfs-page-edit-inline-save-card-form").length > 0
+        $("div.wpfs-page-edit-checkout-save-card-form").length > 0
       );
     }
 
@@ -3695,6 +3753,37 @@ jQuery.noConflict();
         .val(minimumPaymentAmount);
     }
 
+    function initFeeRecovery() {
+      const toggleRecoveryFeeSettings = () => {
+        const isChecked = document.querySelector('input[name="wpfs-form-fee-recovery"]:checked').value;
+        const fields = document.querySelectorAll('.wpfs-fee-recovery--can-be-disabled');
+
+        fields.forEach( field => {
+          if ( 'customize' === isChecked ) {
+            field.style.pointerEvents = "auto";
+            field.style.opacity = "1";
+            field.style.display = "block";
+          } else {
+            field.style.display = "none";
+          }
+        } );
+      };
+
+      toggleRecoveryFeeSettings();
+
+      document.querySelectorAll('input[name="wpfs-form-fee-recovery"]').forEach((radio) => {
+        radio.addEventListener('change', toggleRecoveryFeeSettings);
+      });
+
+
+      $('select[name="wpfs-form-currency"]').on("comboboxchange", function () {
+        const currencyKey = getSelectedCurrencyCode();
+        const currencyPlaceholder = document.querySelector( '.wpfs-input-group-wpfs-form-fee-recovery-fee-additional-amount .wpfs-input-group-text' );
+        const currencySymbol = getCurrencySymbolByAdminSettings(currencyKey);
+        currencyPlaceholder.textContent = currencySymbol;
+      });
+    }
+
     function initEventHandlersOnInlineDonationFormEdit() {
       initEditFormTabs();
       initEditDonationFormAmounts();
@@ -3705,6 +3794,8 @@ jQuery.noConflict();
       initEditFormCustomFields();
       initEditFormEmailTemplates();
       initFormCssIdCopyToClipboard();
+      initFeeRecovery();
+      initGlobalLocalEffect();
       new WebhookFormManager( WPFS );
 
       $("#wpfs-save-inline-donation-form").submit(function (e) {
@@ -3744,6 +3835,8 @@ jQuery.noConflict();
       initEditFormCustomFields();
       initEditFormEmailTemplates();
       initFormCssIdCopyToClipboard();
+      initFeeRecovery();
+      initGlobalLocalEffect();
       new WebhookFormManager( WPFS );
 
       $("#wpfs-save-checkout-donation-form").submit(function (e) {
@@ -3989,18 +4082,28 @@ jQuery.noConflict();
       $(dialogSelector + " .js-add-product-step-1").show();
       $(dialogSelector + " .js-add-product-step-2").hide();
       $(dialogSelector + " .js-add-product-step-3").hide();
+      $(dialogSelector + " .js-add-product-step-4").hide();
     }
 
     function showAddProductDialogStep2(dialogSelector) {
       $(dialogSelector + " .js-add-product-step-1").hide();
       $(dialogSelector + " .js-add-product-step-2").show();
       $(dialogSelector + " .js-add-product-step-3").hide();
+      $(dialogSelector + " .js-add-product-step-4").hide();
     }
 
     function showAddProductDialogStep3(dialogSelector) {
       $(dialogSelector + " .js-add-product-step-1").hide();
       $(dialogSelector + " .js-add-product-step-2").hide();
       $(dialogSelector + " .js-add-product-step-3").show();
+      $(dialogSelector + " .js-add-product-step-4").hide();
+    }
+
+    function showAddProductDialogStep4(dialogSelector) {
+      $(dialogSelector + " .js-add-product-step-1").hide();
+      $(dialogSelector + " .js-add-product-step-2").hide();
+      $(dialogSelector + " .js-add-product-step-3").hide();
+      $(dialogSelector + " .js-add-product-step-4").show();
     }
 
     function initProductSelectorDialog(options) {
@@ -4073,6 +4176,8 @@ jQuery.noConflict();
     }
 
     function attachOnetimeSelectorEvents(ctx) {
+      clearInlineErrors( "#" + ctx.options.dialogId );
+
       $(ctx.options.addButtonSelector).on("click", function (e) {
         e.preventDefault();
 
@@ -4082,6 +4187,30 @@ jQuery.noConflict();
         addOnetimeProductsToCollection(formattedProducts);
 
         $("#" + ctx.options.dialogId).dialog("close");
+      });
+
+      $(ctx.options.addProductSelector).on("click", function (e) {
+        e.preventDefault();
+
+        showAddProductDialogStep4("#" + ctx.options.dialogId);
+      });
+
+      $(ctx.options.addCreateProductSelector).off("click").on("click", function (e) {
+        e.preventDefault();
+
+        if (
+          ctx.options.clientCallback !== undefined &&
+          ctx.options.clientCallback !== null
+        ) {
+          ctx.options.clientCallback( ctx, "#" + ctx.options.dialogId );
+        }
+      });
+
+      $('select[name="wpfs-form-currency"]').on("comboboxchange", function () {
+        const currencyKey = getSelectedCurrencyCode();
+        const currencyPlaceholder = document.querySelector( `.wpfs-create-product-label--${ctx.options.formType}-currency-placeholder` );
+        const currencySymbol = getCurrencySymbolByAdminSettings(currencyKey);
+        currencyPlaceholder.textContent = currencySymbol;
       });
     }
 
@@ -4157,8 +4286,79 @@ jQuery.noConflict();
         createSelectorProductsCallback: createOntimeSelectorProducts,
         attachEventsCallback: attachOnetimeSelectorEvents,
         addButtonSelector: ".js-add-onetime-products",
+        addProductSelector: ".js-create-new-product",
+        addCreateProductSelector: ".js-create-new-product-action",
+        formType: "createOnetimeProduct",
+        prepareData: prepareOnetimeProductData,
+        clientCallback: createNewProduct,
       };
       initProductSelectorDialog(addProductsOptions);
+    }
+
+    function prepareOnetimeProductData( ctx ) {
+      return {
+        name: $(`#wpfs-create-product-label--${ctx.options.formType}-name`).val(),
+        currency: getSelectedCurrencyCode(),
+        price: $(`#wpfs-create-product-label--${ctx.options.formType}-price`).val(),
+      };
+    }
+
+    function addInlineError( selector, message ) {
+      const errorHtml = `
+        <div class="wpfs-inline-message wpfs-inline-message--error">
+          <div class="wpfs-inline-message__inner">
+              <strong>${message}</strong>
+          </div>
+        </div>
+      `;
+
+      $( selector ).prepend( errorHtml );
+    }
+
+    function clearInlineErrors( selector ) {
+      $( selector ).find( ".wpfs-inline-message--error" ).remove();
+    }
+
+    function createNewProduct( ctx, dialogSelector ) {
+      clearInlineErrors( dialogSelector );
+      $( '.wpfs-button-loader' ).addClass( 'wpfs-btn-primary--loader' ).prop( 'disabled', true );
+
+      const data = ctx.options.prepareData( ctx );
+      const action = "wpfs-create-new-product";
+      const requestData = {
+        action,
+        nonce: wpfsAdminSettings.nonce,
+        data,
+      };
+
+      $.ajax({
+        type: "POST",
+        url: wpfsAdminSettings.ajaxUrl,
+        data: requestData,
+        cache: false,
+        dataType: "json",
+        success: function (responseData) {
+          if (responseData.success) {
+            ctx.options.fetchProductsCallback(ctx);
+            showAddProductDialogStep1("#" + ctx.options.dialogId);
+          } else {
+            addInlineError( `${ dialogSelector } .wpfs-dialog-scrollable`, responseData.msg );
+          }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          logError(
+            "wpfs-admin.createNewProduct()",
+            jqXHR,
+            textStatus,
+            errorThrown
+          );
+
+          addInlineError( `${ dialogSelector } .wpfs-dialog-scrollable`, errorThrown );
+        },
+        complete: function () {
+          $( '.wpfs-button-loader' ).removeClass( 'wpfs-btn-primary--loader' ).prop( 'disabled', false );
+        },
+      });
     }
 
     function initEditFormOneTimeProducts() {
@@ -4551,6 +4751,8 @@ jQuery.noConflict();
       initEditFormCustomFields();
       initEditFormEmailTemplates();
       initFormCssIdCopyToClipboard();
+      initFeeRecovery();
+      initGlobalLocalEffect();
       new WebhookFormManager( WPFS );
 
       $("#wpfs-save-inline-payment-form").submit(function (e) {
@@ -4592,6 +4794,8 @@ jQuery.noConflict();
       initEditFormCustomFields();
       initEditFormEmailTemplates();
       initFormCssIdCopyToClipboard();
+      initFeeRecovery();
+      initGlobalLocalEffect();
       new WebhookFormManager( WPFS );
 
       $("#wpfs-save-checkout-payment-form").submit(function (e) {
@@ -4909,6 +5113,8 @@ jQuery.noConflict();
     }
 
     function attachRecurringSelectorEvents(ctx) {
+      clearInlineErrors( "#" + ctx.options.dialogId );
+
       $(ctx.options.selectButtonSelector).on("click", function (e) {
         e.preventDefault();
 
@@ -4926,6 +5132,23 @@ jQuery.noConflict();
             ctx.options.attachPropertiesEventsCallback(ctx);
           }
           showAddProductDialogStep3("#" + ctx.options.dialogId);
+        }
+      });
+
+      $(ctx.options.addRecurringProductSelector).on("click", function (e) {
+        e.preventDefault();
+
+        showAddProductDialogStep4("#" + ctx.options.dialogId);
+      });
+
+      $(ctx.options.addCreateRecurringProductSelector).off("click").on("click", function (e) {
+        e.preventDefault();
+
+        if (
+          ctx.options.clientCallback !== undefined &&
+          ctx.options.clientCallback !== null
+        ) {
+          ctx.options.clientCallback( ctx, "#" + ctx.options.dialogId );
         }
       });
     }
@@ -5462,6 +5685,10 @@ jQuery.noConflict();
         attachPropertiesEventsCallback: attachPlanPropertiesEvents,
         selectButtonSelector: ".js-dialog-select-recurring-product",
         addButtonSelector: ".js-dialog-add-recurring-product",
+        addRecurringProductSelector: ".js-create-new-recurring-product",
+        addCreateRecurringProductSelector: ".js-create-new-recurring-product-action",
+        prepareData: prepareRecurringProductData,
+        clientCallback: createNewProduct,
         formType: "addPlanProperties",
         formLayout: formLayout,
         formFields: {
@@ -5486,6 +5713,16 @@ jQuery.noConflict();
         propertiesValidatorCallback: validatePlanPropertiesDialog,
       };
       initProductSelectorDialog(addProductsOptions);
+    }
+
+
+    function prepareRecurringProductData( ctx ) {
+      return {
+        name: $(`#wpfs-create-product-label--${ctx.options.formType}-name`).val(),
+        currency: $(`#wpfs-create-product-label--${ctx.options.formType}-currency`).val(),
+        price: $(`#wpfs-create-product-label--${ctx.options.formType}-price`).val(),
+        interval: $(`#wpfs-create-product-label--${ctx.options.formType}-interval`).val()
+      };
     }
 
     function initEditFormRecurringProducts(formLayout) {
@@ -5521,6 +5758,8 @@ jQuery.noConflict();
       initEditFormCustomFields();
       initEditFormEmailTemplates();
       initFormCssIdCopyToClipboard();
+      initFeeRecovery();
+      initGlobalLocalEffect();
       new WebhookFormManager( WPFS );
 
       $("#wpfs-save-inline-subscription-form").submit(function (e) {
@@ -5559,6 +5798,8 @@ jQuery.noConflict();
       initEditFormCustomFields();
       initEditFormEmailTemplates();
       initFormCssIdCopyToClipboard();
+      initFeeRecovery();
+      initGlobalLocalEffect();
       new WebhookFormManager( WPFS );
 
       $("#wpfs-save-checkout-subscription-form").submit(function (e) {
@@ -5722,6 +5963,83 @@ jQuery.noConflict();
       });
     };
 
+    function onReportsPage() {
+      return $("#wpfs-reports") && $("#wpfs-reports").length > 0;
+    }
+
+    function initReportsFilter() {
+      $("#wpfs-reports-filter").on("click", function (e) {
+        let isValid = true;
+        $('form[name="wpfs-filter-reports"] input[required]').each(function() {
+            if ($(this).val() === '' || !this.validity.valid) {
+              isValid = false;
+            }
+        });
+
+        if (isValid) {
+          $('form[name="wpfs-filter-reports"]').submit();
+        }
+      });
+    }
+
+    function toggleCustomDateFields( show ) {
+      const startDate = document.getElementById( 'wpfs-reports-filter-start-date' );
+      const endDate = document.getElementById( 'wpfs-reports-filter-end-date' );
+
+      if ( startDate ) {
+        startDate.parentElement.classList.toggle('wpfs-hidden', ! show );
+        startDate.required = show;
+      }
+
+      if ( endDate ) {
+        endDate.parentElement.classList.toggle( 'wpfs-hidden', ! show );
+        endDate.required = show;
+      }
+
+      if ( startDate && endDate ) {
+        if ( startDate.value ) {
+          endDate.min = startDate.value;
+        }
+        if ( endDate.value ) {
+          startDate.max = endDate.value;
+        }
+
+        startDate.addEventListener( 'change', function() {
+          endDate.min = startDate.value;
+        });
+
+        endDate.addEventListener( 'change', function() {
+          startDate.max = endDate.value;
+        });
+      }
+    }
+
+    function initCustomDate(){
+      if ( document.getElementById( 'wpfs-reports-filter-range' ) ) {
+        const dateRange = document.getElementById( 'wpfs-reports-filter-range' );
+
+        if ( dateRange.value === 'custom' ) {
+          toggleCustomDateFields( true );
+        }
+        
+        $( "#wpfs-reports-filter-range" ).on( "selectmenuchange", function ( e ) {
+          if ( e.target.value === 'custom' ) {
+            toggleCustomDateFields( true );
+          }
+          else {
+            toggleCustomDateFields( false );
+          }
+        });
+      }
+    }
+
+    WPFS.initReports = function () {
+      if( onReportsPage() ) {
+        initReportsFilter();
+        initCustomDate();
+      }
+    };
+
     $(function () {
       WPFS.InputGroup.init();
       WPFS.Selectmenu.init();
@@ -5757,6 +6075,7 @@ jQuery.noConflict();
       WPFS.initFormEdit();
       WPFS.initDemoMessage();
       WPFS.initOnboarding();
+      WPFS.initReports();
     });
   });
 })(jQuery);
@@ -5988,17 +6307,341 @@ class WebhookFormManager {
   }
 }
 
-const convertToCategory = ( number, scale = 1 ) => {
-	const normalizedNumber = Math.round( number / scale );
-	if ( 0 === normalizedNumber || 1 === normalizedNumber ) {
-		return 0;
-	} else if ( 1 < normalizedNumber && 8 > normalizedNumber ) {
-		return 7;
-	} else if ( 8 <= normalizedNumber && 31 > normalizedNumber ) {
-		return 30;
-	} else if ( 30 < normalizedNumber && 90 > normalizedNumber ) {
-		return 90;
-	} else if ( 90 < normalizedNumber ) {
-		return 91;
-	}
+/**
+ * Default chart styles for datasets
+ */
+const defaultChartStyles = {
+  primary: {
+    borderColor: '#4497f6',
+    backgroundColor: '#e7f2fe',
+    yAxisID: 'y',
+    tension: 0.2,
+    fill: true
+  },
+  secondary: {
+    borderColor: '#fd904c',
+    backgroundColor: '#fff8f3',
+    yAxisID: 'y1',
+    tension: 0.2,
+    fill: true
+  }
 };
+
+/**
+ * Creates a chart based on the provided configuration
+ * 
+ * @param {Object} config - The chart configuration object
+ * @param {string} config.canvasId - The ID of the canvas element
+ * @param {Array} config.sourceData - The data array to be used for the chart
+ * @param {Object[]} config.datasets - Array of dataset configurations
+ * @param {string} config.datasets[].label - Dataset label
+ * @param {string} config.datasets[].dataKey - Key for dataset values in sourceData
+ * @param {string} config.datasets[].axisID - The axis ID this dataset should use
+ * @param {Object} config.datasets[].styles - Visual styles for the dataset
+ * @param {string} config.datasets[].valueModifier - Optional function name to modify values (e.g., 'divideBy100')
+ * @param {Object} config.scales - Configuration for chart scales
+ * @param {boolean} config.useCurrency - Whether to use currency formatting
+ */
+function createChart( config ) {
+  // Check if the canvas element exists
+  const canvasElement = document.getElementById( config.canvasId );
+  if ( !canvasElement ) {
+    console.warn( `Canvas element with ID "${config.canvasId}" not found.` );
+    return;
+  }
+  
+  const labels = [];
+  const datasets = [];
+
+  if ( config.sourceData && config.sourceData.length ) {
+    // Extract labels (dates) from the source data
+    config.sourceData.forEach( data => {
+      labels.push( data.date );
+    } );
+
+    // Process each dataset configuration
+    config.datasets.forEach( datasetConfig => {
+      const datasetValues = [];
+      
+      config.sourceData.forEach( data => {
+        let value = data[datasetConfig.dataKey];
+        
+        // Apply any value modifiers
+        if ( datasetConfig.valueModifier === 'divideBy100' && value !== undefined ) {
+          value = value / 100;
+        }
+        
+        datasetValues.push( value );
+      } );
+      
+      // Create the dataset with merged default and custom styles
+      const dataset = {
+        label: datasetConfig.label,
+        data: datasetValues,
+        yAxisID: datasetConfig.axisID || 'y',
+        ...( datasetConfig.styles || (datasetConfig.axisID === 'y1' ? defaultChartStyles.secondary : defaultChartStyles.primary) )
+      };
+      
+      datasets.push( dataset );
+    } );
+  }
+
+  // Create the chart
+  const ctx = canvasElement.getContext( '2d' );
+  const chart = new Chart( ctx, {
+    type: config.type || 'line',
+    data: {
+      labels: labels,
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      interaction: {
+        mode: 'index',
+        intersect: false,
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function( context ) {
+              let label = context.dataset.label || '';
+              if ( label ) {
+                label += ': ';
+              }
+              
+              // Find the dataset configuration to determine if it uses currency
+              const datasetConfig = config.datasets[context.datasetIndex];
+              const usesCurrency = datasetConfig && datasetConfig.useCurrency;
+              
+              if ( usesCurrency ) {
+                label += window.wpfsCurrency + context.parsed.y.toLocaleString();
+              } else {
+                label += context.parsed.y;
+              }
+              return label;
+            }
+          }
+        }
+      },
+      scales: config.scales || {
+        x: {
+          title: {
+            display: true,
+            text: wpfsAdminL10n.date
+          }
+        },
+        y: {
+          type: 'linear',
+          display: true,
+          position: 'left',
+          title: {
+            display: true,
+            text: wpfsAdminL10n.primaryAxis
+          },
+          ticks: {
+            callback: function( value ) {
+              // Check if the primary dataset uses currency
+              const primaryDataset = config.datasets.find( d => d.axisID === 'y' );
+              return primaryDataset && primaryDataset.useCurrency 
+                ? window.wpfsCurrency + value.toLocaleString() 
+                : value;
+            }
+          }
+        },
+        y1: {
+          type: 'linear',
+          display: true,
+          position: 'right',
+          title: {
+            display: true,
+            text: wpfsAdminL10n.secondaryAxis
+          },
+          grid: {
+            drawOnChartArea: false
+          }
+        }
+      }
+    }
+  } );
+
+  chartInstances[config.canvasId] = chart;
+
+  return chart;
+}
+
+/**
+ * Initialize the revenue chart
+ */
+function initRevenueChart() {
+  const revenueChartConfig = {
+    canvasId: 'wpfs-revenue-chart',
+    sourceData: window.wpfsRevenueData,
+    datasets: [
+      {
+        label: wpfsAdminL10n.revenue,
+        dataKey: 'revenue',
+        axisID: 'y',
+        valueModifier: 'divideBy100',
+        useCurrency: true
+      },
+      {
+        label: wpfsAdminL10n.sales,
+        dataKey: 'sales',
+        axisID: 'y1'
+      }
+    ],
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: wpfsAdminL10n.date
+        }
+      },
+      y: {
+        type: 'linear',
+        display: true,
+        position: 'left',
+        title: {
+          display: true,
+          text: wpfsAdminL10n.revenue
+        },
+        ticks: {
+          callback: function( value ) {
+            return window.wpfsCurrency + value.toLocaleString();
+          }
+        }
+      },
+      y1: {
+        type: 'linear',
+        display: true,
+        position: 'right',
+        title: {
+          display: true,
+          text: wpfsAdminL10n.sales
+        },
+        grid: {
+          drawOnChartArea: false
+        }
+      }
+    }
+  };
+  
+  createChart( revenueChartConfig );
+}
+
+/**
+ * Initialize the refunds chart
+ */
+function initRefundsChart() {
+  const refundsChartConfig = {
+    canvasId: 'wpfs-refunds-chart',
+    sourceData: window.wpfsRefundsData,
+    datasets: [
+      {
+        label: wpfsAdminL10n.refundedAmount,
+        dataKey: 'refunds',
+        axisID: 'y',
+        valueModifier: 'divideBy100',
+        useCurrency: true
+      },
+      {
+        label: wpfsAdminL10n.refunds,
+        dataKey: 'refund_count',
+        axisID: 'y1'
+      }
+    ],
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: wpfsAdminL10n.date
+        }
+      },
+      y: {
+        type: 'linear',
+        display: true,
+        position: 'left',
+        title: {
+          display: true,
+          text: wpfsAdminL10n.refundedAmount
+        },
+        ticks: {
+          callback: function( value ) {
+            return window.wpfsCurrency + value.toLocaleString();
+          }
+        }
+      },
+      y1: {
+        type: 'linear',
+        display: true,
+        position: 'right',
+        title: {
+          display: true,
+          text: wpfsAdminL10n.refunds
+        },
+        grid: {
+          drawOnChartArea: false
+        }
+      }
+    }
+  };
+  
+  createChart( refundsChartConfig );
+}
+
+/**
+ * Initialize charts when the DOM is fully loaded
+ */
+
+const chartInstances = {};
+function initCharts() {
+  // Only initialize charts if the window.wpfsRevenueData or window.wpfsRefundsData exist
+  if ( window.wpfsRevenueData ) {
+    initRevenueChart();
+
+    const revenueChartSelect = document.getElementById( 'wpfs-reports-form-select' );
+    if ( revenueChartSelect ) {
+      revenueChartSelect.addEventListener( 'change', function() {
+        const selectedValue = revenueChartSelect.value;
+
+        let data = JSON.parse( JSON.stringify( window.wpfsRevenueData ) );
+
+        if ( selectedValue !== 'all' ) {
+          const [ formId, formType ] = selectedValue.split( '-' );
+
+          data.map( ( item ) => {
+            if ( ! item.details ) {
+              return item;
+            }
+            const form = item.details.filter( ( detail ) => detail['formId'] === formId && detail['formType'] === formType );
+
+            if ( form.length ) {
+              item.revenue = form[0].revenue;
+              item.sales = form[0].sales;
+            } else {
+              item.revenue = 0;
+              item.sales = 0;
+            }
+
+            return item;
+          } );
+        }
+
+        const chart = chartInstances['wpfs-revenue-chart'];
+
+        chart.data.labels = data.map( ( item ) => item.date );
+        chart.data.datasets[0].data = data.map( ( item ) => item.revenue );
+        chart.data.datasets[1].data = data.map( ( item ) => item.sales );
+
+        chart.update();
+      } );
+    }
+  }
+  
+  if ( window.wpfsRefundsData ) {
+    initRefundsChart();
+  }
+}
+
+// Initialize charts when the DOM is fully loaded
+document.addEventListener( 'DOMContentLoaded', initCharts );

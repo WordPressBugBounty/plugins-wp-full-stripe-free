@@ -8,6 +8,19 @@
     <input id="<?php $view->action()->id(); ?>" name="<?php $view->action()->name(); ?>" value="<?php $view->action()->value(); ?>" <?php $view->action()->attributes(); ?>>
     <div class="wpfs-form__cols">
         <div class="wpfs-form__col">
+            <div class="wpfs-form-group" id="seller-seat-country">
+                <label for="<?php $view->defaultBillingCountry()->id(); ?>" class="wpfs-form-label"><?php $view->defaultBillingCountry()->label(); ?></label>
+                <div class="wpfs-ui wpfs-form-select">
+                    <?php
+                    $defaultBillingCountry = ( ! isset( $formsOptions->defaultBillingCountry ) || is_null( $formsOptions->defaultBillingCountry ) ) ? MM_WPFS::DEFAULT_BILLING_COUNTRY_INITIAL_VALUE : $formsOptions->defaultBillingCountry;
+                    ?>
+                    <select id="<?php $view->defaultBillingCountry()->id(); ?>" name="<?php $view->defaultBillingCountry()->name(); ?>" <?php $view->defaultBillingCountry()->attributes(); ?>>
+                        <?php foreach ( MM_WPFS_Countries::getAvailableCountries() as $countryKey => $countryObject ) { ?>
+                            <option value="<?php echo $countryKey; ?>" <?php echo $countryKey === $defaultBillingCountry ? 'selected': ''; ?>><?php echo MM_WPFS_Admin::translateLabelAdmin($countryObject['name']); ?></option>
+                        <?php } ?>
+                    </select>
+                </div>
+            </div>
             <div class="wpfs-form-block">
                 <div class="wpfs-form-group">
                     <label class="wpfs-form-label"><?php esc_html_e( 'Prefill form fields', 'wp-full-stripe-free' ); ?></label>

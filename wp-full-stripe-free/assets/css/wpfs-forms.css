@@ -901,6 +901,18 @@ button.wpfs-btn-primary:disabled:not(:hover):not(:active):not(.has-text-color), 
   position: relative;
   margin-bottom: 24px;
 }
+.wpfs-form-check.wpfs-form-fee-recovery {
+  background: #fff;
+  color: #000;
+  padding: 12px;
+  box-shadow: 0px 0px 1px #156ccc;
+}
+.wpfs-form-check.wpfs-form-fee-recovery .wpfs-form-label {
+  margin: 0;
+}
+.wpfs-form-fee-recovery .wpfs-form-check-input + .wpfs-form-check-label::before {
+  border: 1px solid #000;
+}
 .wpfs-form-check-input[type=checkbox], .wpfs-form-check-input[type=radio] {
   position: absolute;
   top: 0;

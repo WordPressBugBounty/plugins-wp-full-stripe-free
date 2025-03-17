@@ -116,6 +116,7 @@ class MM_WPFS_Admin {
 		// actions for in-form ajax requests
 		add_action( 'wp_ajax_wpfs-get-onetime-products', array( $this, 'getOnetimeProducts' ) );
 		add_action( 'wp_ajax_wpfs-get-recurring-products', array( $this, 'getRecurringProducts' ) );
+		add_action( 'wp_ajax_wpfs-create-new-product', array( $this, 'createProduct' ) );
 		add_action( 'wp_ajax_wpfs-get-tax-rates', array( $this, 'getTaxRates' ) );
 		add_action( 'wp_ajax_wpfs-send-test-email', array( $this, 'sendTestEmail' ) );
 
@@ -152,15 +153,9 @@ class MM_WPFS_Admin {
 	public static function wpfp_config_notice() {
 		$options = new MM_WPFS_Options();
 
-		$wpfp_options = $options->getSeveral( [ 
-			MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID,
-			MM_WPFS_Options::OPTION_TEST_ACCOUNT_ID,
-			MM_WPFS_Options::OPTION_API_TEST_SECRET_KEY,
-			MM_WPFS_Options::OPTION_API_TEST_PUBLISHABLE_KEY,
-			MM_WPFS_Options::OPTION_STRIPE_CONNECT_NOTICE
-		] );
-
-		if ( ! empty( array_filter( $wpfp_options ) ) ) {
+		if ( $options->get( MM_WPFS_Options::OPTION_STRIPE_CONNECT_NOTICE ) ||
+			 ( MM_WPFS_Utils::isTestMode() && ( MM_WPFS_Utils::isConnectedToTest() || MM_WPFS_Utils::isConnectedToApiTest() ) ) ||
+			 ( MM_WPFS_Utils::isLiveMode() && MM_WPFS_Utils::isConnectedToLive() ) ) {
 			return;
 		}
 
@@ -227,6 +222,7 @@ class MM_WPFS_Admin {
 	 * @return void
 	 */
 	public static function enqueue_inline_script() {
+		$mode = MM_WPFS_Utils::isLiveMode() ? 'live' : 'test';
 		?>
 		<script>
 			window.document.addEventListener( 'DOMContentLoaded', () => {
@@ -245,7 +241,7 @@ class MM_WPFS_Admin {
 							body: new URLSearchParams( {
 								action: 'wpfs-create-stripe-connect-account',
 								current_page_url: '<?php echo esc_url( admin_url( 'admin.php?page=wpfs-settings-stripe' ) ); ?>',
-								mode: 'test',
+								mode: '<?php echo $mode; ?>',
 								nonce: '<?php echo esc_attr( wp_create_nonce( 'wp-full-stripe-admin-nonce' ) ); ?>'
 							} )
 						} )
@@ -870,7 +866,7 @@ class MM_WPFS_Admin {
 	 * @param $model MM_WPFS_Admin_CheckoutDonationFormModel
 	 */
 	protected function updateCheckoutDonationFormEmailTemplates( &$model ) {
-		$form = $this->db->getInlineDonationFormById( $model->getId() );
+		$form = $this->db->getCheckoutDonationFormById( $model->getId() );
 
 		$this->updateFormEmailTemplates( MM_WPFS::FORM_TYPE_CHECKOUT_DONATION, $form->emailTemplates, $model );
 	}
@@ -2464,12 +2460,14 @@ class MM_WPFS_Admin {
 				MM_WPFS_Options::OPTION_TEST_ACCOUNT_ID => null,
 				MM_WPFS_Options::OPTION_USE_WP_TEST_PLATFORM => null,
 				MM_WPFS_Options::OPTION_TEST_ACCOUNT_STATUS => null,
+				MM_WPFS_Options::OPTION_STRIPE_CONNECT_NOTICE => null
 			] );
 		} else if ( $mode == 'live' ) {
 			$this->options->setSeveral( [ 
 				MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID => null,
 				MM_WPFS_Options::OPTION_USE_WP_LIVE_PLATFORM => null,
 				MM_WPFS_Options::OPTION_LIVE_ACCOUNT_STATUS => null,
+				MM_WPFS_Options::OPTION_STRIPE_CONNECT_NOTICE => null
 			] );
 		}
 
@@ -2551,7 +2549,13 @@ class MM_WPFS_Admin {
 			MM_WPFS_Options::OPTION_DECIMAL_SEPARATOR_SYMBOL => $wpDashboardModel->getDecimalSeparator(),
 			MM_WPFS_Options::OPTION_SHOW_CURRENCY_SYMBOL_INSTEAD_OF_CODE => $wpDashboardModel->getUseSymbolNotCode(),
 			MM_WPFS_Options::OPTION_SHOW_CURRENCY_SIGN_AT_FIRST_POSITION => $wpDashboardModel->getCurrencySymbolAtFirstPosition(),
-			MM_WPFS_Options::OPTION_PUT_WHITESPACE_BETWEEN_CURRENCY_AND_AMOUNT => $wpDashboardModel->getPutSpaceBetweenSymbolAndAmount()
+			MM_WPFS_Options::OPTION_PUT_WHITESPACE_BETWEEN_CURRENCY_AND_AMOUNT => $wpDashboardModel->getPutSpaceBetweenSymbolAndAmount(),
+			MM_WPFS_Options::OPTION_FEE_RECOVERY => $wpDashboardModel->getFeeRecovery(),
+			MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN => $wpDashboardModel->getFeeRecoveryOptIn(),
+			MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE => $wpDashboardModel->getFeeRecoveryOptInMessage(),
+			MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY => $wpDashboardModel->getFeeRecoveryCurrency(),
+			MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE => $wpDashboardModel->getFeeRecoveryFeePercentage(),
+			MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT => $wpDashboardModel->getFeeRecoveryFeeAdditionalAmount(),
 		] );
 	}
 
@@ -2914,7 +2918,8 @@ class MM_WPFS_Admin {
 	protected function saveFormsOptionsSettings( $formsOptionsModel ) {
 		$this->options->setSeveral( [ 
 			MM_WPFS_Options::OPTION_FILL_IN_EMAIL_FOR_LOGGED_IN_USERS => $formsOptionsModel->getFillInEmail(),
-			MM_WPFS_Options::OPTION_SET_FORM_FIELDS_VIA_URL_PARAMETERS => $formsOptionsModel->getSetFormFieldsViaUrlParameters()
+			MM_WPFS_Options::OPTION_SET_FORM_FIELDS_VIA_URL_PARAMETERS => $formsOptionsModel->getSetFormFieldsViaUrlParameters(),
+			MM_WPFS_Options::OPTION_DEFAULT_BILLING_COUNTRY => $formsOptionsModel->getDefaultBillingCountry(),
 		] );
 	}
 
@@ -3219,6 +3224,42 @@ class MM_WPFS_Admin {
 		return $result;
 	}
 
+	public function createProduct() {
+		// check for nonce and return 400 error if not valid
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
+			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
+			wp_send_json_error( array( 'msg' => 'Invalid nonce in ' . __FUNCTION__ ), 400 );
+		}
+
+		if ( ! isset( $_POST['data'] ) || ! is_array( $_POST['data'] ) ) {
+			wp_send_json_error( array( 'msg' => 'Invalid data provided.' ) );
+		}
+
+		$data = json_decode( rawurldecode( stripslashes( json_encode( $_POST['data'] ) ) ) );
+
+		$requiredFields = [
+			'name' => __( 'Product name is required.', 'wp-full-stripe-free' ),
+			'currency' => __( 'Currency is required.', 'wp-full-stripe-free' ),
+			'price' => __( 'Price is required and must be a number.', 'wp-full-stripe-free' )
+		];
+
+		foreach ( $requiredFields as $field => $errorMessage ) {
+			if ( empty( $data->$field ) || ( $field === 'price' && ! is_numeric( $data->$field ) ) ) {
+				wp_send_json_error( array( 'msg' => $errorMessage ) );
+			}
+		}
+
+		try {
+			$data->price = $data->price * 100;
+			$this->stripe->createProduct( ...array_values( (array) $data ) );
+
+			wp_send_json_success( array( 'msg' => __( 'Product created.', 'wp-full-stripe-free' ) ) );
+		} catch (Exception $ex) {
+			$this->logger->error( __FUNCTION__, 'Error creating product', $ex );
+			wp_send_json_error( array( 'msg' => __( 'There was an error in creating the product: ', 'wp-full-stripe-free' ) . $ex->getMessage() ) );
+		}
+	}
+
 	public function getRecurringProducts() {
 		try {
 			$recurringProducts = $this->getRecurringProductsForSelector();
@@ -3498,21 +3539,49 @@ class MM_WPFS_Admin {
 	 * Add admin bar notice for test mode.
 	 */
 	public function adminBarNotice( $menu ) {
-		if ( ! MM_WPFS_Utils::isTestMode() || ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
+		$is_test = MM_WPFS_Utils::isTestMode();
+
 		$menu->add_menu(
 			array(
-				'id'     => 'wpfs-test-notice',
-				'href'   => MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE ),
+				'id'     => 'wpfs-menu-notice',
 				'parent' => 'top-secondary',
-				'title'  => __( 'WP Full Pay: Test Mode', 'wp-full-stripe-free' ),
+				'title'  => __( 'WP Full Pay', 'wp-full-stripe-free' ) . ( $is_test ? ': ' . __( 'Test Mode', 'wp-full-stripe-free' ) : '' ),
 				'meta'   => array(
-					'class' => 'wpfs-test-mode',
+					'class' => $is_test ? 'wpfs-test-mode' : '',
 				),
+				'href'   => MM_WPFS_Admin_Menu::getAdminUrlBySlug( $is_test ? MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE : MM_WPFS_Admin_Menu::SLUG_SETTINGS ),
 			)
 		);
+
+		$submenus = array(
+			'wpfs-menu-forms' => array(
+				'title' => __( 'Payment Forms', 'wp-full-stripe-free' ),
+				'href'  => MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_FORMS ),
+			),
+			'wpfs-menu-transactions' => array(
+				'title' => __( 'Transactions', 'wp-full-stripe-free' ),
+				'href'  => MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS ),
+			),
+			'wpfs-menu-settings' => array(
+				'title' => __( 'Settings', 'wp-full-stripe-free' ),
+				'href'  => MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS ),
+			),
+		);
+
+		foreach ( $submenus as $id => $submenu ) {
+			$menu->add_menu(
+				array(
+					'parent' => 'wpfs-menu-notice',
+					'id'     => $id,
+					'title'  => $submenu['title'],
+					'href'   => $submenu['href'],
+				)
+			);
+		}
 	}
 
 	/**
@@ -3528,11 +3597,6 @@ class MM_WPFS_Admin {
 			#wpadminbar .wpfs-test-mode > .ab-item {
 				color: #fff;
 				background-color: #568ee8;
-			}
-
-			#wpadminbar .wpfs-test-mode:hover > .ab-item, #wpadminbar .wpfs-test-mode:hover > .ab-item {
-				background-color: #74a2ec !important;
-				color: #fff !important;
 			}
 		</style>
 		<?php
@@ -4067,6 +4131,7 @@ class MM_WPFS_Admin_CreateFormFactory {
 		$form['allowMonthlyRecurring'] = 1;
 		$form['allowAnnualRecurring'] = 1;
 		$form['stripeDescription'] = MM_WPFS_Utils::getDefaultDonationDescription();
+		$form['productDesc'] = MM_WPFS_Utils::getDefaultDonationProductDescription();
 		$form['buttonTitle'] = MM_WPFS_Utils::getDefaultDonationButtonTitle();
 		$form['preferredLanguage'] = self::PREFERRED_LANGUAGE_AUTO;
 		$form['decimalSeparator'] = self::DECIMAL_SEPARATOR_DOT;

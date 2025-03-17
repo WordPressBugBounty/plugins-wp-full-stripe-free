@@ -22,6 +22,7 @@ class MM_WPFS_Admin_Menu {
 	const SLUG_TRANSACTIONS = 'wpfs-transactions';
 	const SLUG_CREATE_FORM = 'wpfs-create-form';
 	const SLUG_EDIT_FORM = 'wpfs-edit-form';
+	const SLUG_REPORTS = 'wpfs-reports';
 	const SLUG_SETTINGS = 'wpfs-settings';
 	const SLUG_SETTINGS_STRIPE = 'wpfs-settings-stripe';
 	const SLUG_SETTINGS_FORMS = 'wpfs-settings-forms';
@@ -50,6 +51,10 @@ class MM_WPFS_Admin_Menu {
 	const PARAM_NAME_ORDER_BY = 'orderby';
 	const PARAM_NAME_ORDER = 'order';
 	const PARAM_NAME_FORM = 'form';
+	const PARAM_NAME_REPORTS_FILTER = 'wpfs-reports-filter-range';
+	const PARAM_NAME_REPORTS_START_DATE = 'wpfs-reports-filter-start-date';
+	const PARAM_NAME_REPORTS_END_DATE = 'wpfs-reports-filter-end-date';
+	const PARAM_NAME_REPORTS_CURRENCY = 'wpfs-reports-filter-currency';
 
 	const PARAM_VALUE_API_MODE_ALL = 'all';
 	const PARAM_VALUE_API_MODE_TEST = 'test';
@@ -70,6 +75,13 @@ class MM_WPFS_Admin_Menu {
 	const PARAM_VALUE_TAB_TAX = 'tax';
 	const PARAM_VALUE_TAB_FORM_LAYOUT = 'form-layout';
 	const PARAM_VALUE_TAB_EMAIL_NOTIFICATIONS = 'email-notifications';
+	const PARAM_VALUE_RANGE_TODAY = 'today';
+	const PARAM_VALUE_RANGE_YESTERDAY = 'yesterday';
+	const PARAM_VALUE_RANGE_LAST_7_DAYS = 'last_7_days';
+	const PARAM_VALUE_RANGE_LAST_30_DAYS = 'last_30_days';
+	const PARAM_VALUE_RANGE_THIS_MONTH = 'this_month';
+	const PARAM_VALUE_RANGE_LAST_MONTH = 'last_month';
+	const PARAM_VALUE_RANGE_CUSTOM = 'custom';
 
 	const COOKIE_NAME_TAB_ID = 'wpfsTabId';
 
@@ -244,6 +256,17 @@ class MM_WPFS_Admin_Menu {
 		$submenu_slug = self::SLUG_CREATE_FORM;
 		$submenu_function = array( $this, 'fullstripe_create_form' );
 		$menu_hook = add_submenu_page( self::SLUG_FORMS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
+		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
+
+		$submenu_page_title =
+			/* translators: Browser page title of "Settings" page in WordPress admin */
+			__( 'Full Pay - Reports', 'wp-full-stripe-free' );
+		$submenu_title =
+			/* translators: Submenu title of the "Settings" page in WordPress admin */
+			__( 'Reports', 'wp-full-stripe-free' );
+		$submenu_slug = self::SLUG_REPORTS;
+		$submenu_function = array( $this, 'fullstripe_reports' );
+		$menu_hook = add_submenu_page( $menu_slug, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
 		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
 
 		$submenu_page_title =
@@ -543,7 +566,11 @@ class MM_WPFS_Admin_Menu {
 		}, 10, 2);
 
 		$screen = get_current_screen();
-		
+
+		if ( $screen->base === 'full-pay_page_wpfs-reports' ) {
+			wp_enqueue_script( 'charts-js', MM_WPFS_Assets::scripts( 'chartsjs.min.js' ), [], MM_WPFS::VERSION );
+		}
+	
 		$page_slug = 'transactions';
 		if ( 'full-pay_page_wpfs-forms' === $screen->base ) {
 			$page_slug = 'forms';
@@ -893,6 +920,7 @@ class MM_WPFS_Admin_Menu {
 			/* translators: Link label which takes back to the "Settings" page  */
 			__( 'Back to Settings', 'wp-full-stripe-free' );
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
+		$data = $this->prepareSettingsData();
 
 		$wpfp_options = $this->options->getSeveral( [ 
 			MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID,
@@ -952,6 +980,8 @@ class MM_WPFS_Admin_Menu {
 		$view = new MM_WPFS_Admin_SecurityView();
 		$securityData = $this->getSecurityData();
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
+		$pageSlug = MM_WPFS_Admin_Menu::SLUG_SETTINGS_SECURITY;
+		$data = $this->prepareSettingsData();
 
 		/** @noinspection PhpIncludeInspection */
 		include MM_WPFS_Assets::templates( 'admin/wpfs-settings-security.php' );
@@ -999,6 +1029,8 @@ class MM_WPFS_Admin_Menu {
 		$view = new MM_WPFS_Admin_CustomerPortalView();
 		$myAccountData = $this->getCustomerPortalData();
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
+		$pageSlug = MM_WPFS_Admin_Menu::SLUG_SETTINGS_CUSTOMER_PORTAL;
+		$data = $this->prepareSettingsData();
 
 		/** @noinspection PhpIncludeInspection */
 		include MM_WPFS_Assets::templates( 'admin/wpfs-settings-my-account.php' );
@@ -1013,9 +1045,21 @@ class MM_WPFS_Admin_Menu {
 			MM_WPFS_Options::OPTION_DECIMAL_SEPARATOR_SYMBOL,
 			MM_WPFS_Options::OPTION_SHOW_CURRENCY_SYMBOL_INSTEAD_OF_CODE,
 			MM_WPFS_Options::OPTION_SHOW_CURRENCY_SIGN_AT_FIRST_POSITION,
-			MM_WPFS_Options::OPTION_PUT_WHITESPACE_BETWEEN_CURRENCY_AND_AMOUNT
+			MM_WPFS_Options::OPTION_PUT_WHITESPACE_BETWEEN_CURRENCY_AND_AMOUNT,
+			MM_WPFS_Options::OPTION_FEE_RECOVERY,
+			MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN,
+			MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE,
+			MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY,
+			MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE,
+			MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT,
 		] );
 
+		$result->feeRecovery = $options[ MM_WPFS_Options::OPTION_FEE_RECOVERY ];
+		$result->feeRecoveryOptIn = $options[ MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN ];
+		$result->feeRecoveryOptInMessage = $options[ MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE ];
+		$result->feeRecoveryCurrency = $options[ MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY ];
+		$result->feeRecoveryFeePercentage = $options[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ];
+		$result->feeRecoveryFeeAdditionalAmount = $options[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ];
 		$result->decimalSeparator = $options[ MM_WPFS_Options::OPTION_DECIMAL_SEPARATOR_SYMBOL ];
 		$result->useSymbolNotCode = $options[ MM_WPFS_Options::OPTION_SHOW_CURRENCY_SYMBOL_INSTEAD_OF_CODE ];
 		$result->currencySymbolAtFirstPosition = $options[ MM_WPFS_Options::OPTION_SHOW_CURRENCY_SIGN_AT_FIRST_POSITION ];
@@ -1031,7 +1075,7 @@ class MM_WPFS_Admin_Menu {
 
 		$pageTitle =
 			/* translators: Page title of the "WordPress dashboard settings" page in WordPress admin  */
-			__( 'WordPress dashboard settings', 'wp-full-stripe-free' );
+			__( 'Currency & Fee Recovery', 'wp-full-stripe-free' );
 		$stripeStatus = $this->getStripeStatus();
 		$backLinkUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS );
 		$backLinkLabel =
@@ -1039,7 +1083,9 @@ class MM_WPFS_Admin_Menu {
 			__( 'Back to Settings', 'wp-full-stripe-free' );
 		$view = new MM_WPFS_Admin_WordpressDashboardView();
 		$wpDashboardData = $this->getWordpressDasboardData();
+		$pageSlug = MM_WPFS_Admin_Menu::SLUG_SETTINGS_WORDPRESS_DASHBOARD;
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
+		$data = $this->prepareSettingsData();
 
 		/** @noinspection PhpIncludeInspection */
 		include MM_WPFS_Assets::templates( 'admin/wpfs-settings-wp-dashboard.php' );
@@ -1068,7 +1114,7 @@ class MM_WPFS_Admin_Menu {
 
 		$pageTitle =
 			/* translators: Page title of the Error logging" settings page in WordPress admin  */
-			__( 'Error logging', 'wp-full-stripe-free' );
+			__( 'Error Logging', 'wp-full-stripe-free' );
 		$stripeStatus = $this->getStripeStatus();
 		$backLinkUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS );
 		$pluginsUrl = MM_WPFS_Admin_Menu::getPluginsUrl();
@@ -1077,7 +1123,9 @@ class MM_WPFS_Admin_Menu {
 		$backLinkLabel =
 			/* translators: Link label which takes back to the "Settings" page  */
 			__( 'Back to Settings', 'wp-full-stripe-free' );
+		$pageSlug = MM_WPFS_Admin_Menu::SLUG_SETTINGS_LOGS;
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
+		$data = $this->prepareSettingsData();
 
 		$levelView = new MM_WPFS_Admin_LogLevel_View();
 		$emptyView = new MM_WPFS_Admin_LogEmpty_View();
@@ -1103,7 +1151,9 @@ class MM_WPFS_Admin_Menu {
 		$backLinkLabel =
 			/* translators: Link label which takes back to the "Settings" page  */
 			__( 'Back to Settings', 'wp-full-stripe-free' );
+		$pageSlug = MM_WPFS_Admin_Menu::SLUG_SETTINGS_LICENSE;
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
+		$data = $this->prepareSettingsData();
 
 		/** @noinspection PhpIncludeInspection */
 		include MM_WPFS_Assets::templates( 'admin/wpfs-settings-license.php' );
@@ -1112,8 +1162,224 @@ class MM_WPFS_Admin_Menu {
 	/**
 	 * @return StdClass
 	 */
+	protected function prepareReportsData( $currencyFilter, $rangeFilter ) {
+		$result = new \StdClass;
+		$forms  = $this->db->getAllForms();
+
+		$payment_forms = array_filter( $forms, function ( $form ) {
+			return $form->type === MM_WPFS::FORM_TYPE_PAYMENT || $form->type === MM_WPFS::FORM_TYPE_SUBSCRIPTION;
+		} );
+
+		$donation_forms = array_filter( $forms, function ( $form ) {
+			return $form->type === MM_WPFS::FORM_TYPE_DONATION;
+		} );
+
+		$result->payment_forms        = $payment_forms;
+		$result->donation_forms       = $donation_forms;
+		$result->total_donations      = $this->db->getTotalDonationAmount( $currencyFilter, $rangeFilter );
+		$result->average_donation     = $this->db->getAverageDonationAmount( $currencyFilter, $rangeFilter );
+		$result->donations_count      = $this->db->getTotalNumberOfDonations( $currencyFilter, $rangeFilter );
+		$result->total_revenue        = $this->db->getTotalRevenueAmount( $currencyFilter, $rangeFilter );
+		$result->average_transaction  = $this->db->getAverageTransactionAmount( $currencyFilter, $rangeFilter );
+		$result->total_transactions   = $this->db->getTotalNumberOfPayments( $currencyFilter, $rangeFilter );
+		$result->active_subscriptions = $this->db->getTotalActiveSubscriptions( $currencyFilter, $rangeFilter );
+		$result->donations            = $this->db->getDonations( $currencyFilter, $rangeFilter );
+		$result->top_donors           = $this->db->getTopDoners( $currencyFilter, $rangeFilter );
+		$result->payments             = $this->db->getPayments( $currencyFilter, $rangeFilter );
+		$result->top_customers        = $this->db->getTopCustomers( $currencyFilter, $rangeFilter );
+		$result->revenue_data         = $this->db->getRevenueAndSalesData( $currencyFilter, $rangeFilter );
+		$result->refunds_data         = $this->db->getRefundsData( $currencyFilter, $rangeFilter );
+		$result->first_view           = (int) $result->donations_count > 1 ? 'donations' : 'payments';
+
+		return $result;
+	}
+
+	function fullstripe_reports() {
+		if ( ! current_user_can( $this->capability ) ) {
+			wp_die( 'You do not have sufficient permissions to access this page.' );
+		}
+
+		$pageTitle =
+			/* translators: Page title of the "Settings" page in WordPress admin  */
+			__( 'Reports', 'wp-full-stripe-free' );
+		$stripeStatus = $this->getStripeStatus();
+		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
+		$pageUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_REPORTS );
+
+		if ( ! MM_WPFS_Utils::isConnected() ) {
+			/** @noinspection PhpIncludeInspection */
+			include MM_WPFS_Assets::templates( 'admin/wpfs-forms-connect.php' );
+			return;
+		}
+
+		$rangeFilter = array_key_exists( self::PARAM_NAME_REPORTS_FILTER, $_POST ) ? $_POST[ self::PARAM_NAME_REPORTS_FILTER ] : self::PARAM_VALUE_RANGE_LAST_30_DAYS;
+		$currencyFilter = array_key_exists( self::PARAM_NAME_REPORTS_CURRENCY, $_POST ) ? $_POST[ self::PARAM_NAME_REPORTS_CURRENCY ] : $this->db->getMostUsedCurrency();
+		$startDate = array_key_exists( self::PARAM_NAME_REPORTS_START_DATE, $_POST ) ? $_POST[ self::PARAM_NAME_REPORTS_START_DATE ] : null;
+		$endDate = array_key_exists( self::PARAM_NAME_REPORTS_END_DATE, $_POST ) ? $_POST[ self::PARAM_NAME_REPORTS_END_DATE ] : null;
+
+		$options = $this->options->getSeveral( [ 
+			MM_WPFS_Options::OPTION_LAST_WEBHOOK_EVENT_LIVE,
+			MM_WPFS_Options::OPTION_LAST_WEBHOOK_EVENT_TEST
+		] );
+
+		$lastWebhookEvent = isset( $options[ MM_WPFS_Options::OPTION_LAST_WEBHOOK_EVENT_TEST ] ) ? $options[ MM_WPFS_Options::OPTION_LAST_WEBHOOK_EVENT_TEST ] : null;
+
+		if ( MM_WPFS_Utils::isLiveMode() ) {
+			$lastWebhookEvent = isset( $options[ MM_WPFS_Options::OPTION_LAST_WEBHOOK_EVENT_LIVE ] ) ? $options[ MM_WPFS_Options::OPTION_LAST_WEBHOOK_EVENT_LIVE ] : null;
+		}
+
+		if ( $rangeFilter === self::PARAM_VALUE_RANGE_CUSTOM ) {
+			$range = array(
+				'start' => $startDate,
+				'end'   => $endDate
+			);
+		} else {
+			$range = $rangeFilter;
+		}
+
+		$data = $this->prepareReportsData( $currencyFilter, $range );
+
+		// Check if both payment and donation forms count is zero.
+		$noForms = count( $data->payment_forms ) === 0 && count( $data->donation_forms ) === 0;
+
+		if ( $noForms ) {
+			$createButtonLabel =
+				/* translators: Button label of the "Add form" button  */
+				__( 'Add form', 'wp-full-stripe-free' );
+			$createButtonUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_CREATE_FORM );
+			include MM_WPFS_Assets::templates( 'admin/wpfs-forms-empty.php' );
+			return;
+		}
+
+		$db = $this->db;
+		$stripe = $this->stripe;
+		$currencies = MM_WPFS_Currencies::getAvailableCurrencies();
+
+		/** @noinspection PhpIncludeInspection */
+		include MM_WPFS_Assets::templates( 'admin/wpfs-reports.php' );
+	}
+
+	/**
+	 * @return StdClass
+	 */
 	protected function prepareSettingsData() {
 		$result = new \StdClass;
+
+		$testStatus = $this->getTestAccountStatus();
+
+		$liveStatus = $this->getLiveAccountStatus();
+
+		$disabledLive = $liveStatus === MM_WPFS_Options::OPTION_ACCOUNT_STATUS_COMPLETE || $liveStatus === MM_WPFS_Options::OPTION_ACCOUNT_STATUS_ENABLED ? false : true;
+		$disabledTest = $testStatus === MM_WPFS_Options::OPTION_ACCOUNT_STATUS_COMPLETE || $testStatus === MM_WPFS_Options::OPTION_ACCOUNT_STATUS_ENABLED ? false : true;
+		$disabled = $disabledLive && $disabledTest ? true : false;
+		$isNewFlow = false;
+		if ($this->options->get(MM_WPFS_Options::OPTION_USE_WP_LIVE_PLATFORM) == true || $this->options->get(MM_WPFS_Options::OPTION_USE_WP_TEST_PLATFORM) == true) {
+			$isNewFlow = true;
+		}
+		$disabled = $disabled && $isNewFlow;
+
+		$settingsItems = array(
+			array(
+				'slug' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE,
+				'cssClasses' => 'wpfs-illu-stripe',
+				'url' => $this->getAdminUrlBySlugAndParams(MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE, [MM_WPFS_Admin_Menu::PARAM_NAME_TAB => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_CONNECTION]),
+				'title' => __('Stripe Account', 'wp-full-stripe-free'),
+				'description' => __('Configure your Stripe API keys, and set up webhooks', 'wp-full-stripe-free'),
+				'group' => array(
+					'slug' => 'payments',
+					'title' => __('Payment Setup', 'wp-full-stripe-free'),
+				),
+				'disabled' => false,
+			),
+			array(
+				'slug' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_FORMS,
+				'cssClasses' => 'wpfs-illu-form',
+				'url' => $this->getAdminUrlBySlugAndParams(MM_WPFS_Admin_Menu::SLUG_SETTINGS_FORMS, [MM_WPFS_Admin_Menu::PARAM_NAME_TAB => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS]),
+				'title' => __('Forms', 'wp-full-stripe-free'),
+				'description' => __('Set global settings & styles for your payment forms', 'wp-full-stripe-free'),
+				'group' => array(
+					'slug' => 'payments',
+					'title' => __('Payment Setup', 'wp-full-stripe-free'),
+				),
+				'disabled' => $disabled,
+			),
+			array(
+				'slug' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_EMAIL_NOTIFICATIONS,
+				'cssClasses' => 'wpfs-illu-email',
+				'url' => $this->getAdminUrlBySlugAndParams(MM_WPFS_Admin_Menu::SLUG_SETTINGS_EMAIL_NOTIFICATIONS, [MM_WPFS_Admin_Menu::PARAM_NAME_TAB => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS]),
+				'title' => __('Email Notifications', 'wp-full-stripe-free'),
+				'description' => __('Customize and align your e-mails to your brand', 'wp-full-stripe-free'),
+				'group' => array(
+					'slug' => 'customer_experience',
+					'title' => __('Customer Experience', 'wp-full-stripe-free'),
+				),
+				'disabled' => $disabled,
+			),
+			array(
+				'slug' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_CUSTOMER_PORTAL,
+				'cssClasses' => 'wpfs-illu-customer-portal',
+				'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_CUSTOMER_PORTAL),
+				'title' => __('Customer Portal', 'wp-full-stripe-free'),
+				'description' => __('Configure how your customers can manage their cards, subscriptions, and invoices', 'wp-full-stripe-free'),
+				'group' => array(
+					'slug' => 'customer_experience',
+					'title' => __('Customer Experience', 'wp-full-stripe-free'),
+				),
+				'disabled' => $disabled,
+			),
+			array(
+				'slug' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_SECURITY,
+				'cssClasses' => 'wpfs-illu-security',
+				'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_SECURITY),
+				'title' => __('Security', 'wp-full-stripe-free'),
+				'description' => __('Keep your payment forms secure', 'wp-full-stripe-free'),
+				'group' => array(
+					'slug' => 'configuration',
+					'title' => __('Configuration', 'wp-full-stripe-free'),
+				),
+				'disabled' => $disabled,
+			),
+			array(
+				'slug' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_WORDPRESS_DASHBOARD,
+				'cssClasses' => 'wpfs-illu-credit-card',
+				'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_WORDPRESS_DASHBOARD),
+				'title' => __('Currency & Fee Recovery', 'wp-full-stripe-free'),
+				'description' => __('Set your currency format & fee recovery preferences', 'wp-full-stripe-free'),
+				'group' => array(
+					'slug' => 'configuration',
+					'title' => __('Configuration', 'wp-full-stripe-free'),
+				),
+				'disabled' => $disabled,
+			),
+			array(
+				'slug' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_LOGS,
+				'cssClasses' => 'wpfs-illu-logs',
+				'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_LOGS),
+				'title' => __('Error Logging', 'wp-full-stripe-free'),
+				'description' => __('Help the developers debug plugin issues', 'wp-full-stripe-free'),
+				'group' => array(
+					'slug' => 'configuration',
+					'title' => __('Configuration', 'wp-full-stripe-free'),
+				),
+				'disabled' => false,
+			),
+			array(
+				'slug' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_LICENSE,
+				'cssClasses' => 'wpfs-illu-lock',
+				'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_LICENSE),
+				'title' => __('License', 'wp-full-stripe-free'),
+				'description' => __('Enter or manage your license key to enable unlimited transactions without fees.', 'wp-full-stripe-free'),
+				'group' => array(
+					'slug' => 'configuration',
+					'title' => __('Configuration', 'wp-full-stripe-free'),
+				),
+				'disabled' => false,
+			),
+		);
+
+		$result->settingsItems = $settingsItems;
+		$result->disabled = $disabled;
+
 		return $result;
 	}
 
@@ -1727,6 +1993,7 @@ class MM_WPFS_Admin_Menu {
 			__( 'Back to Settings', 'wp-full-stripe-free' );
 		$stripeStatus = $this->getStripeStatus();
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
+		$data = $this->prepareSettingsData();
 
 		$tabs = array();
 		array_push( $tabs, $lookupTabs[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS ] );
@@ -1775,11 +2042,13 @@ class MM_WPFS_Admin_Menu {
 		$result = new \stdClass;
 		$options = $this->options->getSeveral( [ 
 			MM_WPFS_Options::OPTION_FILL_IN_EMAIL_FOR_LOGGED_IN_USERS,
-			MM_WPFS_Options::OPTION_SET_FORM_FIELDS_VIA_URL_PARAMETERS
+			MM_WPFS_Options::OPTION_SET_FORM_FIELDS_VIA_URL_PARAMETERS,
+			MM_WPFS_Options::OPTION_DEFAULT_BILLING_COUNTRY
 		] );
 
 		$result->fillInEmailForUsers = $options[ MM_WPFS_Options::OPTION_FILL_IN_EMAIL_FOR_LOGGED_IN_USERS ];
 		$result->setFormFieldsViaUrlParameters = $options[ MM_WPFS_Options::OPTION_SET_FORM_FIELDS_VIA_URL_PARAMETERS ];
+		$result->defaultBillingCountry = $options[ MM_WPFS_Options::OPTION_DEFAULT_BILLING_COUNTRY ];
 
 		return $result;
 	}
@@ -1816,6 +2085,7 @@ class MM_WPFS_Admin_Menu {
 			__( 'Back to Settings', 'wp-full-stripe-free' );
 		$stripeStatus = $this->getStripeStatus();
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
+		$data = $this->prepareSettingsData();
 
 		$tabs = array();
 		array_push( $tabs, $lookupTabs[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS ] );
@@ -1832,13 +2102,6 @@ class MM_WPFS_Admin_Menu {
 		$textFilter = array_key_exists( self::PARAM_NAME_FORM_TEXT_FILTER, $_POST ) ? $_POST[ self::PARAM_NAME_FORM_TEXT_FILTER ] : null;
 		$modeFilter = array_key_exists( self::PARAM_NAME_FORM_MODE_FILTER, $_POST ) ? $_POST[ self::PARAM_NAME_FORM_MODE_FILTER ] : self::PARAM_VALUE_API_MODE_ALL;
 
-		$connected = $this->options->getSeveral( [ 
-			MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID,
-			MM_WPFS_Options::OPTION_TEST_ACCOUNT_ID,
-			MM_WPFS_Options::OPTION_API_TEST_SECRET_KEY,
-			MM_WPFS_Options::OPTION_API_TEST_PUBLISHABLE_KEY
-		] );
-
 		$pageTitle =
 			/* translators: Page title of the "Manage forms" page  */
 			__( 'Manage forms', 'wp-full-stripe-free' );
@@ -1852,7 +2115,7 @@ class MM_WPFS_Admin_Menu {
 		$allForms = $this->getForms();
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
 
-		if ( empty( array_filter( $connected ) ) ) {
+		if ( ! MM_WPFS_Utils::isConnected() ) {
 			/** @noinspection PhpIncludeInspection */
 			include MM_WPFS_Assets::templates( 'admin/wpfs-forms-connect.php' );
 			return;
@@ -2650,6 +2913,9 @@ class MM_WPFS_AdminScriptLocalizerFactory {
 			case MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS:
 				return new MM_WPFS_TransactionsLocalizer( $options, $tab );
 
+			case MM_WPFS_Admin_Menu::SLUG_REPORTS:
+				return new MM_WPFS_ReportsLocalizer( $options, $tab );
+
 			default:
 				return new MM_WPFS_DefaultLocalizer( $options, $tab );
 		}
@@ -3255,6 +3521,35 @@ class MM_WPFS_TransactionsLocalizer extends MM_WPFS_AdminScriptLocalizer {
 				 * p1: Identifier of the saved card to be deleted
 				 */
 				__( "Are you sure you'd like to delete saved card '%s' from the WordPress database?", 'wp-full-stripe-free' ),
+		)
+		);
+	}
+}
+
+class MM_WPFS_ReportsLocalizer extends MM_WPFS_AdminScriptLocalizer {
+	public function localizeScripts() {
+		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', array(
+			'date' =>
+				/* translators: Label for the date axis */
+				__( 'Date', 'wp-full-stripe-free' ),
+			'primaryAxis' =>
+				/* translators: Label for the primary axis */
+				__( 'Primary axis', 'wp-full-stripe-free' ),
+			'secondaryAxis' =>
+				/* translators: Label for the secondary axis */
+				__( 'Secondary axis', 'wp-full-stripe-free' ),
+			'revenue' =>
+				/* translators: Label for the revenue axis */
+				__( 'Revenue', 'wp-full-stripe-free' ),
+			'sales' =>
+				/* translators: Label for the sales axis */
+				__( 'Sales', 'wp-full-stripe-free' ),
+			'refundedAmount' =>
+				/* translators: Label for the refunded amount axis */
+				__( 'Refunded Amount', 'wp-full-stripe-free' ),
+			'refunds' =>
+				/* translators: Label for the refunds axis */
+				__( 'Refunds', 'wp-full-stripe-free' ),
 		)
 		);
 	}

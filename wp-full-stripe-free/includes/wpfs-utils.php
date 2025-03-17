@@ -643,6 +643,12 @@ class MM_WPFS_Utils {
         return __('My Donation', 'wp-full-stripe-free');
     }
 
+    public static function getDefaultFeeRecoveryMessage() {
+        return
+            /* translators: Default message for fee recovery */
+            __( 'I\'d like to cover the transaction fees of {{fee_amount}}.', 'wp-full-stripe-free' );
+    }
+
     public static function getPaymentStatuses() {
         return array(
             MM_WPFS::PAYMENT_STATUS_FAILED,
@@ -1032,8 +1038,112 @@ class MM_WPFS_Utils {
     }
 
     public static function isTestMode(): bool {
-		$options = new MM_WPFS_Options();
+		    $options = new MM_WPFS_Options();
         $apiMode = $options->get( MM_WPFS_Options::OPTION_API_MODE );
-		return $apiMode === MM_WPFS::STRIPE_API_MODE_TEST;
+		    return $apiMode === MM_WPFS::STRIPE_API_MODE_TEST;
+    }
+
+    public static function isLiveMode(): bool {
+        $options = new MM_WPFS_Options();
+        $apiMode = $options->get( MM_WPFS_Options::OPTION_API_MODE );
+        return $apiMode === MM_WPFS::STRIPE_API_MODE_LIVE;
+    }
+
+    public static function isConnected(): bool {
+        return self::isConnectedToLive() || self::isConnectedToTest() || self::isConnectedToApiTest();
+    }
+
+    public static function isConnectedToLive(): bool {
+        $options = new MM_WPFS_Options();
+        $liveAccountId = $options->get( MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID );
+        return ! empty( $liveAccountId );
+    }
+
+    public static function isConnectedToTest(): bool {
+        $options = new MM_WPFS_Options();
+        $testAccountId = $options->get( MM_WPFS_Options::OPTION_TEST_ACCOUNT_ID );
+        return ! empty( $testAccountId );
+    }
+
+    public static function isConnectedToApiTest(): bool {
+        $options = new MM_WPFS_Options();
+        $apiTestSecretKey = $options->get( MM_WPFS_Options::OPTION_API_TEST_SECRET_KEY );
+        $apiTestPublishableKey = $options->get( MM_WPFS_Options::OPTION_API_TEST_PUBLISHABLE_KEY );
+        return ! empty( $apiTestSecretKey ) && ! empty( $apiTestPublishableKey ) && $apiTestSecretKey !== 'YOUR_TEST_SECRET_KEY' && $apiTestPublishableKey !== 'YOUR_TEST_PUBLISHABLE_KEY';
+    }
+
+    public static function getMode(): string {
+        return self::isLiveMode() ? MM_WPFS::STRIPE_API_MODE_LIVE : MM_WPFS::STRIPE_API_MODE_TEST;
+    }
+
+    /**
+     * Check if the form has fee recovery enabled.
+     *
+     * @param $form
+     *
+     * @return bool
+     */
+    public static function hasFeeRecovery( $form ): bool {
+        if ( ! isset( $form->feeRecovery ) ) {
+            return false;
+        }
+
+        if ( $form->feeRecovery === MM_WPFS::FEE_RECOVERY_DISABLE ) {
+            return false;
+        }
+
+		$options = new MM_WPFS_Options();
+        $feeRecovery = $options->get( MM_WPFS_Options::OPTION_FEE_RECOVERY );
+
+        return $feeRecovery;
+    }
+
+    /**
+     * Get the fee recovery data for a form.
+     *
+     * @param $form
+     *
+     * @return array
+     */
+    public static function getFeeRecoveryData( $form ): array {
+        if ( ! self::hasFeeRecovery( $form ) ) {
+            return array();
+        }
+
+        $options = new MM_WPFS_Options();
+
+        if ( $form->feeRecovery === MM_WPFS::FEE_RECOVERY_INHERIT ) {
+            $feeRecovery = $options->getSeveral( [ 
+                MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN,
+                MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE,
+                MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY,
+                MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE,
+                MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT,
+			] );
+
+            return $feeRecovery;
+        }
+
+        return array(
+            MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN => $form->feeRecoveryOptIn,
+            MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE => $form->feeRecoveryOptInMessage,
+            MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY => isset( $form->feeRecoveryCurrency ) ? $form->feeRecoveryCurrency : $options->get( MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY ),
+            MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE => $form->feeRecoveryFeePercentage,
+            MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT => $form->feeRecoveryFeeAdditionalAmount
+        );
+    }
+
+    /**
+     * Calculate the fee recovery amount based on the original amount, the percentage fee and the fixed fee.
+     *
+     * @param $amountInCents
+     * @param $percentageFee
+     * @param $fixedFeeInCents
+     *
+     * @return int
+     */
+    public static function calculateRecoveryFee( $amountInCents, $percentageFee, $fixedFeeInCents ) {
+        $originalAmountInCents = ( $amountInCents + $fixedFeeInCents ) / ( 1 - $percentageFee / 100 );
+        return round( $originalAmountInCents - $amountInCents );
     }
 }

@@ -8,81 +8,7 @@ $mode = isset($_GET['mode']) ? sanitize_text_field($_GET['mode']) : null;
         <?php include('partials/wpfs-header.php'); ?>
         <?php include('partials/wpfs-announcement.php'); ?>
 
-        <?php
-        $settingsItems = array();
-
-        $testStatus = $this->getTestAccountStatus();
-
-        $liveStatus = $this->getLiveAccountStatus();
-
-        $disabledLive = $liveStatus === MM_WPFS_Options::OPTION_ACCOUNT_STATUS_COMPLETE || $liveStatus === MM_WPFS_Options::OPTION_ACCOUNT_STATUS_ENABLED ? false : true;
-        $disabledTest = $testStatus === MM_WPFS_Options::OPTION_ACCOUNT_STATUS_COMPLETE || $testStatus === MM_WPFS_Options::OPTION_ACCOUNT_STATUS_ENABLED ? false : true;
-        $disabled = $disabledLive && $disabledTest ? true : false;
-        $isNewFlow = false;
-        if ($this->options->get(MM_WPFS_Options::OPTION_USE_WP_LIVE_PLATFORM) == true || $this->options->get(MM_WPFS_Options::OPTION_USE_WP_TEST_PLATFORM) == true) {
-            $isNewFlow = true;
-        }
-        $disabled = $disabled && $isNewFlow;
-
-        array_push($settingsItems, array(
-            'cssClasses' => 'wpfs-illu-stripe',
-            'url' => $this->getAdminUrlBySlugAndParams(MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE, [MM_WPFS_Admin_Menu::PARAM_NAME_TAB => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_CONNECTION]),
-            'title' => __('Stripe account', 'wp-full-stripe-free'),
-            'description' => __('Configure your Stripe API keys, and set up webhooks', 'wp-full-stripe-free'),
-            'disabled' => false
-        ));
-        array_push($settingsItems, array(
-            'cssClasses' => 'wpfs-illu-form',
-            'url' => $this->getAdminUrlBySlugAndParams(MM_WPFS_Admin_Menu::SLUG_SETTINGS_FORMS, [MM_WPFS_Admin_Menu::PARAM_NAME_TAB => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS]),
-            'title' => __('Forms', 'wp-full-stripe-free'),
-            'description' => __('Set global settings & styles for your payment forms', 'wp-full-stripe-free'),
-            'disabled' => $disabled
-        ));
-        array_push($settingsItems, array(
-            'cssClasses' => 'wpfs-illu-email',
-            'url' => $this->getAdminUrlBySlugAndParams(MM_WPFS_Admin_Menu::SLUG_SETTINGS_EMAIL_NOTIFICATIONS, [MM_WPFS_Admin_Menu::PARAM_NAME_TAB => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS]),
-            'title' => __('Email notifications', 'wp-full-stripe-free'),
-            'description' => __('Customize and align your e-mails to your brand', 'wp-full-stripe-free'),
-            'disabled' => $disabled
-        ));
-        array_push($settingsItems, array(
-            'cssClasses' => 'wpfs-illu-security',
-            'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_SECURITY),
-            'title' => __('Security', 'wp-full-stripe-free'),
-            'description' => __('Keep your payment forms secure', 'wp-full-stripe-free'),
-            'disabled' => $disabled
-        ));
-        array_push($settingsItems, array(
-            'cssClasses' => 'wpfs-illu-customer-portal',
-            'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_CUSTOMER_PORTAL),
-            'title' => __('Customer portal', 'wp-full-stripe-free'),
-            'description' => __('Configure how your customers can manage their cards, subscriptions, and invoices', 'wp-full-stripe-free'),
-            'disabled' => $disabled
-        ));
-        array_push($settingsItems, array(
-            'cssClasses' => 'wpfs-illu-wp',
-            'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_WORDPRESS_DASHBOARD),
-            'title' => __('WordPress dashboard', 'wp-full-stripe-free'),
-            'description' => __('Set your currency format preferences', 'wp-full-stripe-free'),
-            'disabled' => $disabled
-        ));
-        array_push($settingsItems, array(
-            'cssClasses' => 'wpfs-illu-logs',
-            'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_LOGS),
-            'title' => __('Error logging', 'wp-full-stripe-free'),
-            'description' => __('Help the developers debug plugin issues', 'wp-full-stripe-free'),
-            'disabled' => false
-        ));
-        array_push($settingsItems, array(
-            'cssClasses' => 'wpfs-illu-lock',
-            'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_LICENSE),
-            'title' => __('License', 'wp-full-stripe-free'),
-            'description' => __('Enter or manage your license key to enable unlimited transactions without fees.', 'wp-full-stripe-free'),
-            'disabled' => false
-        ));
-        ?>
-
-        <?php if ($disabled): ?>
+        <?php if ($data->disabled): ?>
             <div class="wpfs-announcement">
                 <?php esc_html_e('Settings are disabled until you have connected your Stripe account.', 'wp-full-stripe-free'); ?><br />
                 Follow <a
@@ -90,34 +16,45 @@ $mode = isset($_GET['mode']) ? sanitize_text_field($_GET['mode']) : null;
                     guide</a> for step-by-step instructions.
             </div>
         <?php endif; ?>
-        <div class="wpfs-list wpfs-list--hub">
-            <?php foreach ($settingsItems as $item) { ?>
-                <?php if ($item['disabled']) { ?>
-                    <div class="wpfs-list__item" style="opacity: 0.5; cursor: not-allowed;">
-                        <div class="<?php echo $item['cssClasses']; ?> wpfs-list__icon"></div>
-                        <div class="wpfs-list__text">
-                            <div class="wpfs-list__title">
-                                <?php echo $item['title']; ?>
-                            </div>
-                            <div class="wpfs-list__desc">
-                                <?php echo $item['description']; ?>
-                            </div>
-                        </div>
+        <div class="wpfs-grid">
+            <?php
+            $currentGroup = '';
+            foreach ($data->settingsItems as $item) {
+            if ($currentGroup !== $item['group']['slug']) {
+                if ($currentGroup !== '') {
+                echo '</div></div>';
+                }
+                $currentGroup = $item['group']['slug'];
+                echo '<div class="wpfs-grid-container" id="group-' . $currentGroup . '"><h2>' . $item['group']['title'] . '</h2><div class="wpfs-grid-items">';
+            }
+            ?>
+            <?php if ($item['disabled']) { ?>
+                <div class="wpfs-list__item" style="opacity: 0.5; cursor: not-allowed;">
+                <div class="<?php echo $item['cssClasses']; ?> wpfs-list__icon"></div>
+                <div class="wpfs-list__text">
+                    <div class="wpfs-list__title">
+                    <?php echo $item['title']; ?>
                     </div>
-                <?php } else { ?>
-                    <a class="wpfs-list__item" href="<?php echo $item['url']; ?>">
-                        <div class="<?php echo $item['cssClasses']; ?> wpfs-list__icon"></div>
-                        <div class="wpfs-list__text">
-                            <div class="wpfs-list__title">
-                                <?php echo $item['title']; ?>
-                            </div>
-                            <div class="wpfs-list__desc">
-                                <?php echo $item['description']; ?>
-                            </div>
-                        </div>
-                    </a>
-                <?php } ?>
+                    <div class="wpfs-list__desc">
+                    <?php echo $item['description']; ?>
+                    </div>
+                </div>
+                </div>
+            <?php } else { ?>
+                <a class="wpfs-list__item" href="<?php echo $item['url']; ?>">
+                <div class="<?php echo $item['cssClasses']; ?> wpfs-list__icon"></div>
+                <div class="wpfs-list__text">
+                    <div class="wpfs-list__title">
+                    <?php echo $item['title']; ?>
+                    </div>
+                    <div class="wpfs-list__desc">
+                    <?php echo $item['description']; ?>
+                    </div>
+                </div>
+                </a>
             <?php } ?>
+            <?php } ?>
+            </div></div>
         </div>
 
         <?php include('partials/wpfs-settings-test-data.php'); ?>

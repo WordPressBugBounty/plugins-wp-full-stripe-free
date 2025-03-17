@@ -3,6 +3,15 @@
 /** @var stdClass $popupFormSubmit */
 /** @var $view */
 /** @var $form */
+
+$recovery_data = MM_WPFS_Utils::getFeeRecoveryData( $form );
+$is_opt_in = true;
+
+if ( isset( $recovery_data[ MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN ] ) ) {
+    $is_opt_in = $recovery_data[ MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN ];
+}
+
+$defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form->defaultBillingCountry ) ? $form->defaultBillingCountry : $this->options->get( MM_WPFS_Options::OPTION_DEFAULT_BILLING_COUNTRY );
 ?>
 <form <?php $view->formAttributes(); ?>>
     <?php if (isset($popupFormSubmit) && $popupFormSubmit->formHash === $view->getFormHash()): ?>
@@ -105,7 +114,7 @@
                 </div>
                 <?php if ($form->vatRateType === MM_WPFS::FIELD_VALUE_TAX_RATE_DYNAMIC) { ?>
                     <div class="wpfs-form-group" id="wpfs-tax-state-row"
-                        style="<?php echo $form->defaultBillingCountry == 'US' ? '' : 'display: none;' ?>">
+                        style="<?php echo $defaultBillingCountry == 'US' ? '' : 'display: none;' ?>">
                         <label class="wpfs-form-label" for="<?php $view->taxState()->id(); ?>">
                             <?php $view->taxState()->label(); ?>
                         </label>
@@ -216,6 +225,16 @@
 
             <div  id="<?php $view->card()->id(); ?>" data-toggle="card"
                   data-wpfs-form-id="<?php $view->_formName(); ?>"></div>
+        </div>
+    <?php endif; ?>
+
+    <?php if ( MM_WPFS_Utils::hasFeeRecovery( $form ) && ! $view instanceof MM_WPFS_InlineSaveCardFormView ): ?>
+        <div class="wpfs-form-check wpfs-form-fee-recovery">
+            <input type="<?php echo $is_opt_in ? 'checkbox' : 'hidden'; ?>" class="wpfs-form-check-input" id="<?php $view->feeRecoveryAccepted()->id(); ?>"
+                name="<?php $view->feeRecoveryAccepted()->name(); ?>" value="1">
+            <label class="<?php echo $is_opt_in ? 'wpfs-form-check-label' : 'wpfs-form-label'; ?>" for="<?php $view->feeRecoveryAccepted()->id(); ?>">
+                <?php $view->feeRecoveryAccepted()->label(); ?>
+            </label>
         </div>
     <?php endif; ?>
 

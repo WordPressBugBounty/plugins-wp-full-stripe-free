@@ -1093,10 +1093,10 @@ class MM_WPFS_Currencies {
 		}
 		$currencyFormat = self::createCurrencyFormat(
 			$currency,
-			$form->decimalSeparator,
-			1 == $form->showCurrencySymbolInsteadOfCode ? true : false,
-			1 == $form->showCurrencySignAtFirstPosition ? true : false,
-			1 == $form->putWhitespaceBetweenCurrencyAndAmount ? true : false
+			self::getLocaleSetting( $form, 'decimalSeparator' ),
+			1 == self::getLocaleSetting( $form, 'showCurrencySymbolInsteadOfCode' ) ? true : false,
+			1 == self::getLocaleSetting( $form, 'showCurrencySignAtFirstPosition' ) ? true : false,
+			1 == self::getLocaleSetting( $form, 'putWhitespaceBetweenCurrencyAndAmount' ) ? true : false
 		);
 
 		return $currencyFormat;
@@ -1217,6 +1217,32 @@ class MM_WPFS_Currencies {
 		return $currencyFormat->parse( $amount );
 	}
 
+	/**
+	 * Get Locale Setting
+	 * 
+	 * @param $form
+	 * @param $setting
+	 */
+	public static function getLocaleSetting( $form, $setting ) {
+		if ( ! isset( $form->inheritLocale ) || (int) $form->inheritLocale !== 1 ) {
+			return $form->$setting;
+		}
+
+		$options = new MM_WPFS_Options();
+		
+		switch ( $setting ) {
+			case 'decimalSeparator':
+				return $options->get( MM_WPFS_Options::OPTION_DECIMAL_SEPARATOR_SYMBOL );
+			case 'showCurrencySymbolInsteadOfCode':
+				return $options->get( MM_WPFS_Options::OPTION_SHOW_CURRENCY_SYMBOL_INSTEAD_OF_CODE );
+			case 'showCurrencySignAtFirstPosition':
+				return $options->get( MM_WPFS_Options::OPTION_SHOW_CURRENCY_SIGN_AT_FIRST_POSITION );
+			case 'putWhitespaceBetweenCurrencyAndAmount':
+				return $options->get( MM_WPFS_Options::OPTION_PUT_WHITESPACE_BETWEEN_CURRENCY_AND_AMOUNT );
+			default:
+				return $form->$setting;
+		}
+	}
 }
 
 class MM_WPFS_Currency {

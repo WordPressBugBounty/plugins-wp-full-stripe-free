@@ -170,7 +170,7 @@ class MM_WPFS_Admin_MyAccountValidator extends MM_WPFS_Validator {
         if ( false === array_search( $formModelObject->useStripeCustomerPortal(), $yesNoValues ) ) {
             $error =
                 /* translators: Validation error message displayed if it's not selected whether the Stripe Customer Portal is enabled or disabled */
-                __( 'Please select if the Stripe Customer Portal should be enabled', 'wp-full-stripe-free' );
+                __( 'Please select if the Stripe Customer Portal should be enabled.', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }
@@ -309,6 +309,14 @@ class MM_WPFS_Admin_FormsOptionsValidator extends MM_WPFS_Validator {
      */
     public function validate( $bindingResult, $formModelObject ) {
         $yesNoValues = array( '0', '1' );
+        $countries = MM_WPFS_Countries::getAvailableCountries();
+
+        if ( ! array_key_exists( $formModelObject->getDefaultBillingCountry(), $countries ) ) {
+            $error =
+                /* translators: Validation error message when the default billing country is not selected */
+                __( 'Please select the default billing country', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+        }
 
         if ( false === array_search( $formModelObject->getFillInEmail(), $yesNoValues ) ) {
             $error =
@@ -380,6 +388,54 @@ class MM_WPFS_Admin_WordpressDashboardValidator extends MM_WPFS_Validator {
             $error =
                 __( 'Please select whether space should be inserted between the currency symbol and amount', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
+        }
+
+        if ( false === array_search( $formModelObject->getFeeRecovery(), $yesNoValues ) ) {
+            $error =
+                __( 'Please select if the Fee Recovery should be enabled.', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+        }
+
+        if ( false === array_search( $formModelObject->getFeeRecoveryOptIn(), $yesNoValues ) ) {
+            $error =
+                __( 'Please select if the Fee Opt-in method.', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+        }
+
+        if ( $formModelObject->getFeeRecovery() !== '0' && empty( $formModelObject->getFeeRecoveryOptInMessage() )) {
+            $error =
+            __( 'Please enter the Fee Opt-in message.', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+        }
+
+        if ( $formModelObject->getFeeRecovery() !== '0' && empty( $formModelObject->getFeeRecoveryCurrency() )) {
+            $error =
+            __( 'Please enter the Fee Recovery Currency.', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+        }
+
+        if ( $formModelObject->getFeeRecovery() !== '0' ) {
+            if ( empty( $formModelObject->getFeeRecoveryFeePercentage() )) {
+            $error =
+                __( 'Please enter the Fee Recovery Fee Percentage.', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+            } elseif ( !is_numeric( $formModelObject->getFeeRecoveryFeePercentage() )) {
+            $error =
+                __( 'The Fee Recovery Fee Percentage must be a number.', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+            }
+        }
+
+        if ( $formModelObject->getFeeRecovery() !== '0' ) {
+            if ( empty( $formModelObject->getFeeRecoveryFeeAdditionalAmount() )) {
+            $error =
+                __( 'Please enter the Fee Recovery Fee Additional Amount.', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+            } elseif ( !is_numeric( $formModelObject->getFeeRecoveryFeeAdditionalAmount() ) ) {
+            $error =
+                __( 'The Fee Recovery Fee Additional Amount must be a number.', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+            }
         }
     }
 }
@@ -518,6 +574,12 @@ abstract class MM_WPFS_Admin_FormValidator extends MM_WPFS_Validator {
             MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_COMMA
         );
 
+        if ( false === array_search( $formModel->getInheritLocale(), $yesNoValues ) ) {
+            $error =
+                __( 'Please select whether the form should inherit global locale settings (General tab)', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+        }
+
         if ( false === array_search( $formModel->getLocaleDecimalSeparator(), $decimalSeparatorValues ) ) {
             $error =
                 __( 'Please select the decimal separator (General tab)', 'wp-full-stripe-free' );
@@ -624,6 +686,61 @@ abstract class MM_WPFS_Admin_FormValidator extends MM_WPFS_Validator {
 
     /**
      * @param MM_WPFS_BindingResult $bindingResult
+     * @param MM_WPFS_Admin_MyAccountModel $formModelObject
+     */
+    public function validateFeeRecovery( $bindingResult, $formModelObject ) {
+        $yesNoValues = array( '0', '1' );
+        $feeRecoveryValues = array(
+            MM_WPFS::FEE_RECOVERY_INHERIT,
+            MM_WPFS::FEE_RECOVERY_CUSTOMIZE,
+            MM_WPFS::FEE_RECOVERY_DISABLE
+        );
+
+        if ( false === array_search( $formModelObject->getFeeRecovery(), $feeRecoveryValues ) ) {
+            $error =
+                __( 'Please select if the Fee Recovery should be enabled.', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+        }
+
+        if ( false === array_search( $formModelObject->getFeeRecoveryOptIn(), $yesNoValues ) ) {
+            $error =
+                __( 'Please select if the Fee Opt-in method.', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+        }
+
+        if ( $formModelObject->getFeeRecovery() === MM_WPFS::FEE_RECOVERY_CUSTOMIZE && empty( $formModelObject->getFeeRecoveryOptInMessage() )) {
+            $error =
+            __( 'Please enter the Fee Opt-in message.', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+        }
+
+        if ( $formModelObject->getFeeRecovery() === MM_WPFS::FEE_RECOVERY_CUSTOMIZE ) {
+            if ( empty( $formModelObject->getFeeRecoveryFeePercentage() )) {
+            $error =
+                __( 'Please enter the Fee Recovery Fee Percentage.', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+            } elseif ( !is_numeric( $formModelObject->getFeeRecoveryFeePercentage() )) {
+            $error =
+                __( 'The Fee Recovery Fee Percentage must be a number.', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+            }
+        }
+
+        if ( $formModelObject->getFeeRecovery() === MM_WPFS::FEE_RECOVERY_CUSTOMIZE ) {
+            if ( empty( $formModelObject->getFeeRecoveryFeeAdditionalAmount() )) {
+            $error =
+                __( 'Please enter the Fee Recovery Fee Additional Amount.', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+            } elseif ( !is_numeric( $formModelObject->getFeeRecoveryFeeAdditionalAmount() ) ) {
+            $error =
+                __( 'The Fee Recovery Fee Additional Amount must be a number.', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+            }
+        }
+    }
+
+    /**
+     * @param MM_WPFS_BindingResult $bindingResult
      * @param MM_WPFS_Binder $formModel
      */
     public function validate( $bindingResult, $formModel ) {
@@ -633,6 +750,7 @@ abstract class MM_WPFS_Admin_FormValidator extends MM_WPFS_Validator {
         $this->validateLocaleSettings( $bindingResult, $formModel );
         $this->validateTermsOfUse( $bindingResult, $formModel );
         $this->validateWebhook( $bindingResult, $formModel );
+        $this->validateFeeRecovery( $bindingResult, $formModel );
     }
 }
 
@@ -1103,7 +1221,7 @@ abstract class MM_WPFS_Admin_PaymentFormValidator extends MM_WPFS_Admin_FormVali
         if ( $formModel->getPaymentType() === MM_WPFS::PAYMENT_TYPE_LIST_OF_AMOUNTS && $formModel->getAllowCustomPaymentAmount() == 1 ) {
             $minimumProductAmount = $this->getMinimumProductAmount( $formModel );
 
-            if ( count( $formModel->getOnetimeProducts() ) > 0 && $minimumProductAmount <= $formModel->getMinimumPaymentAmount() ) {
+            if ( count( $formModel->getOnetimeProducts() ) > 0 && $minimumProductAmount < $formModel->getMinimumPaymentAmount() ) {
                 $fieldName = MM_WPFS_Admin_PaymentFormViewConstants::FIELD_FORM_MINIMUM_PAYMENT_AMOUNT;
                 $fieldId   = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModel->getFormHash() );
 
@@ -1282,6 +1400,7 @@ abstract class MM_WPFS_Admin_SubscriptionFormValidator extends MM_WPFS_Admin_For
         $this->validateMinMaxSubscriptionQuantity( $bindingResult, $formModel );
         $this->validatePlanSelectorStyle( $bindingResult, $formModel );
         $this->validateShowCouponField( $bindingResult, $formModel );
+        $this->validateFeeRecoveryFields( $bindingResult, $formModel );
     }
 
     /**
@@ -1371,6 +1490,17 @@ abstract class MM_WPFS_Admin_SubscriptionFormValidator extends MM_WPFS_Admin_For
         if ( false === array_search( $formModel->getShowCouponField(), $yesNoValues ) ) {
             $error =
                 __( 'Please select whether the coupon field should be displayed (Layout tab)', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+        }
+    }
+
+    /**
+     * @param MM_WPFS_BindingResult $bindingResult
+     * @param $formModel MM_WPFS_Binder|MM_WPFS_Admin_SubscriptionFormModel
+     */
+    protected function validateFeeRecoveryFields( $bindingResult, $formModel ) {
+        if ( $formModel->getFeeRecovery() === MM_WPFS::FEE_RECOVERY_CUSTOMIZE && empty( $formModel->getFeeRecoveryCurrency() )) {
+            $error = __( 'Please enter the Fee Recovery Currency.', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }

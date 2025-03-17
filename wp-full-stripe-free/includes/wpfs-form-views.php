@@ -186,6 +186,7 @@ interface MM_WPFS_FormViewConstants {
 	const FIELD_CUSTOM_INPUT = 'wpfs-custom-input';
 	const FIELD_COUPON = 'wpfs-coupon';
 	const FIELD_TERMS_OF_USE_ACCEPTED = 'wpfs-terms-of-use-accepted';
+	const FIELD_FEE_RECOVERY_ACCEPTED = 'wpfs-fee-recovery-accepted';
 	const FIELD_GOOGLE_RECAPTCHA_RESPONSE = 'g-recaptcha-response';
 	const FIELD_NONCE = 'wpfs-nonce';
 
@@ -246,6 +247,11 @@ interface MM_WPFS_SubscriptionFormViewConstants {
 
 	const FIELD_ACTION_VALUE_INLINE_SUBSCRIPTION_CHARGE = 'wp_full_stripe_inline_subscription_charge';
 	const FIELD_ACTION_VALUE_POPUP_SUBSCRIPTION_CHARGE = 'wp_full_stripe_popup_subscription_charge';
+
+	const FIELD_VALUE_SUBSCRIPTION_FREQUENCY_DAILY = "day";
+	const FIELD_VALUE_SUBSCRIPTION_FREQUENCY_WEEKLY = "week";
+	const FIELD_VALUE_SUBSCRIPTION_FREQUENCY_MONTHLY = "month";
+	const FIELD_VALUE_SUBSCRIPTION_FREQUENCY_ANNUAL = "year";
 }
 
 interface MM_WPFS_InlineFormViewConstants {
@@ -924,6 +930,8 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 	/** @var array */
 	protected $customInputs;
 	/** @var MM_WPFS_Control */
+	protected $feeRecoveryAccepted;
+	/** @var MM_WPFS_Control */
 	protected $termsOfUseAccepted;
 	/** @var MM_WPFS_Control */
 	protected $submitButton;
@@ -988,6 +996,31 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 			null
 		);
 		$this->customInputs = array();
+		$feeRecovery = MM_WPFS_Utils::getFeeRecoveryData( $this->form );
+		$feeRecoveryLabel = '';
+
+		$currency = isset( $this->form->currency ) ? $this->form->currency : 'usd';
+
+		if ( isset( $feeRecovery[ MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE ] ) && isset( $feeRecovery[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ] ) && isset( $feeRecovery[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] ) ) {
+			$feeRecoveryLabel = $feeRecovery[ MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE ];
+
+			if ( $this instanceof MM_WPFS_CheckoutSubscriptionFormView || $this instanceof MM_WPFS_InlineSubscriptionFormView ) {
+				$currency = $feeRecovery[ MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY ];
+			}
+
+
+			$currencyArray = MM_WPFS_Currencies::getCurrencyFor( $currency );
+			$isZeroDecimal = (int) $currencyArray['zeroDecimalSupport'] === 1;
+			$recoveryAmount =  $isZeroDecimal ? $feeRecovery[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] : $feeRecovery[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] * 100;
+
+			$feeRecoveryLabel = str_replace(
+				'{{fee_amount}}',
+				MM_WPFS_Currencies::format_amount_with_currency( $currency, $recoveryAmount, true ) . ' + ' . $feeRecovery[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ] . '%',
+				$feeRecoveryLabel
+			);
+		}
+
+		$this->feeRecoveryAccepted = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FEE_RECOVERY_ACCEPTED, null, null, $feeRecoveryLabel, null );
 		$this->termsOfUseAccepted = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_TERMS_OF_USE_ACCEPTED, null, null, $this->form->termsOfUseLabel, null );
 		$this->submitButton = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_FormViewConstants::BUTTON_SUBMIT, null, $this->getSubmitButtonCaptionForForm( $form ), null, null );
 
@@ -1012,6 +1045,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				'type' => 'hidden'
 			)
 		);
+		$this->feeRecoveryAccepted->setLabelEscape( MM_WPFS_Control::ESCAPE_TYPE_NONE );
 		$this->termsOfUseAccepted->setLabelEscape( MM_WPFS_Control::ESCAPE_TYPE_NONE );
 
 		$this->prepareCustomInputs();
@@ -1071,10 +1105,10 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 		}
 		$attributes[ self::ATTR_DATA_WPFS_SHOW_TERMS_OF_USE ] = $this->form->showTermsOfUse;
 		$attributes[ self::ATTR_DATA_WPFS_TERMS_OF_USE_NOT_CHECKED_ERROR_MESSAGE ] = $this->form->termsOfUseNotCheckedErrorMessage;
-		$attributes[ self::ATTR_DATA_WPFS_DECIMAL_SEPARATOR ] = $this->form->decimalSeparator;
-		$attributes[ self::ATTR_DATA_WPFS_SHOW_CURRENCY_SYMBOL_INSTEAD_OF_CODE ] = $this->form->showCurrencySymbolInsteadOfCode;
-		$attributes[ self::ATTR_DATA_WPFS_SHOW_CURRENCY_SIGN_AT_FIRST_POSITION ] = $this->form->showCurrencySignAtFirstPosition;
-		$attributes[ self::ATTR_DATA_WPFS_PUT_WHITESPACE_BETWEEN_CURRENCY_AND_AMOUNT ] = $this->form->putWhitespaceBetweenCurrencyAndAmount;
+		$attributes[ self::ATTR_DATA_WPFS_DECIMAL_SEPARATOR ] = MM_WPFS_Currencies::getLocaleSetting( $this->form, 'decimalSeparator' );
+		$attributes[ self::ATTR_DATA_WPFS_SHOW_CURRENCY_SYMBOL_INSTEAD_OF_CODE ] = MM_WPFS_Currencies::getLocaleSetting( $this->form, 'showCurrencySymbolInsteadOfCode' );
+		$attributes[ self::ATTR_DATA_WPFS_SHOW_CURRENCY_SIGN_AT_FIRST_POSITION ] = MM_WPFS_Currencies::getLocaleSetting( $this->form, 'showCurrencySignAtFirstPosition' );
+		$attributes[ self::ATTR_DATA_WPFS_PUT_WHITESPACE_BETWEEN_CURRENCY_AND_AMOUNT ] = MM_WPFS_Currencies::getLocaleSetting( $this->form, 'putWhitespaceBetweenCurrencyAndAmount' );
 		if ( isset( $this->form->stripeElementsTheme ) ) {
 			$attributes[ self::ATTR_DATA_WPFS_ELEMENTS_THEME ] = $this->form->stripeElementsTheme;
 		}
@@ -1314,9 +1348,24 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 		return $stateOptions;
 	}
 
+	/**
+	 * Get Default Billing Country
+	 * 
+	 * @return string
+	 */
+	protected function inheritDefaultCountry() {
+		if ( isset( $this->form->defaultBillingCountry ) && ! empty( $this->form->defaultBillingCountry ) ) {
+			return $this->form->defaultBillingCountry;
+		}
+
+		$options = new MM_WPFS_Options();
+		
+		return $options->get( MM_WPFS_Options::OPTION_DEFAULT_BILLING_COUNTRY );
+	}
+
 	protected function prepareAddresses() {
-		$this->defaultBillingCountry = $this->form->defaultBillingCountry;
-		$this->defaultShippingCountry = $this->form->defaultBillingCountry;
+		$this->defaultBillingCountry = $this->inheritDefaultCountry();
+		$this->defaultShippingCountry = $this->inheritDefaultCountry();
 
 		if ( $this->showAddressSwitcher() ) {
 			$this->sameBillingAndShippingAddress = MM_WPFS_ControlUtils::createControl(
@@ -1629,6 +1678,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 			self::FIELD_CUSTOM_INPUT => MM_WPFS_ControlUtils::customInput( self::FIELD_CUSTOM_INPUT ),
 			self::FIELD_COUPON => MM_WPFS_ControlUtils::inputGroup( self::FIELD_COUPON ),
 			self::FIELD_TERMS_OF_USE_ACCEPTED => MM_WPFS_ControlUtils::checkbox( self::FIELD_TERMS_OF_USE_ACCEPTED ),
+			self::FIELD_FEE_RECOVERY_ACCEPTED => MM_WPFS_ControlUtils::checkbox( self::FIELD_FEE_RECOVERY_ACCEPTED ),
 			self::FIELD_GOOGLE_RECAPTCHA_RESPONSE => MM_WPFS_ControlUtils::captcha( self::FIELD_GOOGLE_RECAPTCHA_RESPONSE ),
 			self::FIELD_NONCE => MM_WPFS_ControlUtils::inputHidden( self::FIELD_NONCE )
 		);
@@ -1717,6 +1767,13 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 	 */
 	public function coupon() {
 		return $this->coupon;
+	}
+
+	/**
+	 * @return MM_WPFS_Control
+	 */
+	public function feeRecoveryAccepted() {
+		return $this->feeRecoveryAccepted;
 	}
 
 	/**
@@ -2021,10 +2078,6 @@ abstract class MM_WPFS_SubscriptionFormView extends MM_WPFS_FormView implements 
 
 		if ( ! $stripe instanceof MM_WPFS_Stripe ) {
 			throw new Exception( 'Stripe must be an instance of MM_WPFS_Stripe' );
-		}
-
-		if ( ! isset( $stripe->stripe ) ) {
-			throw new Exception( 'Invalid API Key provided' );
 		}
 
 		$this->stripe = $stripe;
@@ -2360,7 +2413,7 @@ abstract class MM_WPFS_SubscriptionFormView extends MM_WPFS_FormView implements 
 
 trait MM_WPFS_FormView_PricingAddOn {
 	protected function getDefaultCountry() {
-		return empty( $this->form->defaultBillingCountry ) ? MM_WPFS::COUNTRY_CODE_UNITED_STATES : $this->form->defaultBillingCountry;
+		return $this->inheritDefaultCountry();
 	}
 
 	/**
@@ -3073,7 +3126,7 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 	}
 
 	public function _currencySign() {
-		if ( 1 == $this->form->showCurrencySymbolInsteadOfCode ) {
+		if ( 1 == MM_WPFS_Currencies::getLocaleSetting( $this->form, 'showCurrencySymbolInsteadOfCode' ) ) {
 			$this->_currencySymbol();
 		} else {
 			$this->_currencyCode();
@@ -3089,7 +3142,7 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 	}
 
 	public function showCurrencySignAtFirstPosition() {
-		return 1 == $this->form->showCurrencySignAtFirstPosition;
+		return 1 == MM_WPFS_Currencies::getLocaleSetting( $this->form, 'showCurrencySignAtFirstPosition' );
 	}
 
 	/**
@@ -3580,7 +3633,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 	}
 
 	public function _currencySign() {
-		if ( 1 == $this->form->showCurrencySymbolInsteadOfCode ) {
+		if ( 1 == MM_WPFS_Currencies::getLocaleSetting( $this->form, 'showCurrencySymbolInsteadOfCode' ) ) {
 			$this->_currencySymbol();
 		} else {
 			$this->_currencyCode();
@@ -3596,7 +3649,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 	}
 
 	public function showCurrencySignAtFirstPosition() {
-		return 1 == $this->form->showCurrencySignAtFirstPosition;
+		return 1 == MM_WPFS_Currencies::getLocaleSetting( $this->form, 'showCurrencySignAtFirstPosition' );
 	}
 
 	/**

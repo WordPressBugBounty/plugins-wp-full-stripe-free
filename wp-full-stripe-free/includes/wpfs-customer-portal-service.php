@@ -256,7 +256,12 @@ class MM_WPFS_CustomerPortalService
             $isDonationPlan = strpos($subscription->plan->id, MM_WPFS::DONATION_PLAN_ID_PREFIX) === 0;
         }
         if (!$isDonationPlan) {
-            $isDonationPlan = strpos($subscription->items->data[0]->price->lookup_key, MM_WPFS::DONATION_PLAN_ID_PREFIX) === 0;
+            foreach ($subscription->items->data as $item) {
+                if (isset($item->price->lookup_key) && strpos($item->price->lookup_key, MM_WPFS::DONATION_PLAN_ID_PREFIX) === 0) {
+                    $isDonationPlan = true;
+                    break;
+                }
+            }
         }
 
         return $isDonationPlan;
@@ -408,6 +413,21 @@ class MM_WPFS_CustomerPortalService
 
     public function renderShortCode($attributes)
     {
+		if ( ! MM_WPFS_Utils::isConnected() ) {
+			$content = '';
+
+			if ( current_user_can( 'administrator' ) ) {
+				$content = sprintf(
+					__( '%1$sYou are not connected to Stripe. Please connect to Stripe %2$sin the plugin settings%3$s.%4$s', 'wp-full-stripe-free' ),
+					'<p>',
+					'<a href="' . MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE ) . '">',
+					'</a>',
+					'</p>'
+				);
+			}
+
+			return $content;
+		}
 
         $session = null;
         $should_not_redirect = ! ( is_admin() || is_search() || defined('REST_REQUEST') && REST_REQUEST ); // Not redirecting in admin, search pages, or REST requests.

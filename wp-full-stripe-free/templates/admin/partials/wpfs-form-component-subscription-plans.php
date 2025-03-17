@@ -52,7 +52,10 @@
 
     <div class="wpfs-dialog-scrollable js-add-product-step-2">
         <div class="wpfs-form-group">
-            <input class="wpfs-form-control js-stripe-product-autocomplete" type="text" placeholder="<?php esc_html_e( 'Search plans...', 'wp-full-stripe-free'); ?>">
+            <div class="wpfs-dialog-actions">
+                <input class="wpfs-form-control wpfs-w-35 js-stripe-product-autocomplete" type="text" placeholder="<?php esc_html_e( 'Search plans...', 'wp-full-stripe-free'); ?>">
+                <button class="wpfs-btn wpfs-btn-primary js-create-new-recurring-product"><?php esc_html_e( 'Create new', 'wp-full-stripe-free'); ?></button>
+            </div>
             <script type="text/template">
                 <div class="wpfs-form-check wpfs-stripe-product-autocomplete__item">
                     <input type="radio" class="wpfs-form-check-input" id="stripe-plan-autocomplete-{value}" value="{value}" name="plan">
@@ -74,6 +77,39 @@
     <div class="wpfs-dialog-content-actions js-add-product-step-3">
         <button class="wpfs-btn wpfs-btn-primary js-dialog-add-recurring-product"><?php esc_html_e( 'Add plan', 'wp-full-stripe-free'); ?></button>
         <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php esc_html_e( 'Discard', 'wp-full-stripe-free'); ?></button>
+    </div>
+    <div class="js-add-product-step-4">
+        <div class="wpfs-dialog-scrollable">
+            <div class="wpfs-form-group">
+                <label for="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_RECURRING_PRODUCT; ?>-name" class="wpfs-form-label"><?php esc_html_e('Product Name', 'wp-full-stripe-free'); ?></label>
+                <input id="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_RECURRING_PRODUCT; ?>-name" class="wpfs-form-control" type="text" name="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_RECURRING_PRODUCT; ?>-name">
+            </div>
+            <div class="wpfs-form-group">
+                <label for="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_RECURRING_PRODUCT; ?>-currency" class="wpfs-form-label"><?php esc_html_e('Currency', 'wp-full-stripe-free'); ?></label>
+                <select id="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_RECURRING_PRODUCT; ?>-currency" class="wpfs-form-control mx-none" name="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_RECURRING_PRODUCT; ?>-currency">
+                    <?php foreach ( MM_WPFS_Currencies::getAvailableCurrencies() as $key => $currency ) : ?>
+                        <option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $currency['code'] ); ?> (<?php echo esc_html( $currency['symbol'] ); ?>)</option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="wpfs-form-group">
+                <label for="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_RECURRING_PRODUCT; ?>-price" class="wpfs-form-label"><?php esc_html_e('Produce Price', 'wp-full-stripe-free'); ?></label>
+                <input id="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_RECURRING_PRODUCT; ?>-price" class="wpfs-form-control" type="text" name="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_RECURRING_PRODUCT; ?>-price">
+            </div>
+            <div class="wpfs-form-group">
+                <label for="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_RECURRING_PRODUCT; ?>-interval" class="wpfs-form-label"><?php esc_html_e('Interval', 'wp-full-stripe-free'); ?></label>
+                <select id="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_RECURRING_PRODUCT; ?>-interval" class="wpfs-form-control mx-none" name="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_RECURRING_PRODUCT; ?>-interval">
+                    <option value="day"><?php esc_html_e('Day', 'wp-full-stripe-free'); ?></option>
+                    <option value="week"><?php esc_html_e('Week', 'wp-full-stripe-free'); ?></option>
+                    <option value="month"><?php esc_html_e('Month', 'wp-full-stripe-free'); ?></option>
+                    <option value="year"><?php esc_html_e('Year', 'wp-full-stripe-free'); ?></option>
+                </select>
+            </div>
+        </div>
+        <div class="wpfs-dialog-content-actions">
+            <button class="wpfs-btn wpfs-btn-primary wpfs-button-loader js-create-new-recurring-product-action" type="submit"><?php esc_html_e('Create Product', 'wp-full-stripe-free'); ?></button>
+            <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php esc_html_e( 'Discard', 'wp-full-stripe-free'); ?></button>
+        </div>
     </div>
 </div>
 <script type="text/template" id="wpfs-add-recurring-product-properties-template">

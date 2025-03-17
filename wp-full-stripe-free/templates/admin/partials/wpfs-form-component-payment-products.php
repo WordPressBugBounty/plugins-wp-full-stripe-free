@@ -53,7 +53,10 @@
 
     <div class="wpfs-dialog-scrollable js-add-product-step-2">
         <div class="wpfs-form-group">
-            <input class="wpfs-form-control js-stripe-product-autocomplete" type="text" placeholder="<?php esc_html_e( 'Search one-time products...', 'wp-full-stripe-free'); ?>">
+            <div class="wpfs-dialog-actions">
+                <input class="wpfs-form-control wpfs-w-35 js-stripe-product-autocomplete" type="text" placeholder="<?php esc_html_e( 'Search one-time products...', 'wp-full-stripe-free'); ?>">
+                <button class="wpfs-btn wpfs-btn-primary js-create-new-product"><?php esc_html_e( 'Create new', 'wp-full-stripe-free'); ?></button>
+            </div>
             <script type="text/template">
                 <div class="wpfs-form-check wpfs-stripe-product-autocomplete__item">
                     <input type="checkbox" class="wpfs-form-check-input" id="stripe-product-autocomplete-{value}" value="{value}">
@@ -68,6 +71,27 @@
     <div class="wpfs-dialog-content-actions js-add-product-step-2">
         <button class="wpfs-btn wpfs-btn-primary js-add-onetime-products"><?php esc_html_e( 'Add products', 'wp-full-stripe-free'); ?></button>
         <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php esc_html_e( 'Discard', 'wp-full-stripe-free'); ?></button>
+    </div>
+    <div class="js-add-product-step-4">
+        <div class="wpfs-dialog-scrollable">
+            <div class="wpfs-form-group">
+                <label for="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-name" class="wpfs-form-label"><?php esc_html_e('Product Name', 'wp-full-stripe-free'); ?></label>
+                <input id="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-name" class="wpfs-form-control" type="text" name="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-name">
+            </div>
+            <div class="wpfs-form-group">
+                <label for="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-price" class="wpfs-form-label"><?php esc_html_e('Produce Price', 'wp-full-stripe-free'); ?></label>
+                <div class="wpfs-input-group">
+                    <div class="wpfs-input-group-prepend">
+                        <span class="wpfs-input-group-text wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-currency-placeholder">$</span>
+                    </div>
+                    <input id="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-price" class="wpfs-input-group-form-control" type="text" name="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-price">
+                </div>
+            </div>
+        </div>
+        <div class="wpfs-dialog-content-actions">
+            <button class="wpfs-btn wpfs-btn-primary wpfs-button-loader js-create-new-product-action" type="submit"><?php esc_html_e('Create Product', 'wp-full-stripe-free'); ?></button>
+            <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php esc_html_e( 'Discard', 'wp-full-stripe-free'); ?></button>
+        </div>
     </div>
 </div>
 

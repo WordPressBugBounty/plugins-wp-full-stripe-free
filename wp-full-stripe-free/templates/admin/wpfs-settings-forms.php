@@ -11,31 +11,39 @@ if ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS ) {
 ?>
 <div class="wrap">
     <div class="wpfs-page <?php echo $pageStyle; ?>">
-        <?php include('partials/wpfs-header-with-tabs-and-back-link.php'); ?>
+        <?php include('partials/wpfs-header-with-back-link.php'); ?>
         <?php include('partials/wpfs-announcement.php'); ?>
 
-        <?php
-        $pageUrl = add_query_arg(
-            array(
-                'page' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_FORMS,
-                'tab'  => $tabId
-            ),
-            admin_url( 'admin.php' )
-        );
+        <div class="wpfs-page-settings-container">
+            <?php include('partials/wpfs-settings-sidebar.php'); ?>
 
-        if ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS ) {
-            $formsOptions = $this->getFormsOptionsData();
-            $view = new MM_WPFS_Admin_FormsOptionsView();
+            <div>
+                <?php include('partials/wpfs-header-block-tabs.php'); ?>
 
-            include('partials/wpfs-settings-forms-options.php');
-        } elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE ) {
-            $formsAppearance = $this->getFormsAppearanceData();
-            $view = new MM_WPFS_Admin_FormsAppearanceView();
+                <?php
+                $pageUrl = add_query_arg(
+                    array(
+                        'page' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_FORMS,
+                        'tab'  => $tabId
+                    ),
+                    admin_url( 'admin.php' )
+                );
 
-            include('partials/wpfs-settings-forms-appearance.php');
-        }
-        ?>
-        <div id="wpfs-success-message-container"></div>
+                if ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS ) {
+                    $formsOptions = $this->getFormsOptionsData();
+                    $view = new MM_WPFS_Admin_FormsOptionsView();
+
+                    include('partials/wpfs-settings-forms-options.php');
+                } elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE ) {
+                    $formsAppearance = $this->getFormsAppearanceData();
+                    $view = new MM_WPFS_Admin_FormsAppearanceView();
+
+                    include('partials/wpfs-settings-forms-appearance.php');
+                }
+                ?>
+                <div id="wpfs-success-message-container"></div>
+            </div>
+        </div>
     </div>
     <script type="text/template" id="wpfs-success-message">
         <div class="wpfs-floating-message__inner">

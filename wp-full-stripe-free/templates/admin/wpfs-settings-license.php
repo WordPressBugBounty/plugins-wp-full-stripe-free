@@ -6,6 +6,9 @@
         <?php include('partials/wpfs-header-with-back-link.php'); ?>
         <?php include('partials/wpfs-announcement.php'); ?>
 
+        <div class="wpfs-page-settings-container">
+            <?php include('partials/wpfs-settings-sidebar.php'); ?>
+
             <div class="wpfs-form__cols">
                 <div class="wpfs-form__col">
                     <div class="wpfs-form-block">
@@ -82,7 +85,8 @@
                     </div>
                 <?php endif; ?>
             </div>
-        <div id="wpfs-success-message-container"></div>
+            <div id="wpfs-success-message-container"></div>
+        </div>
     </div>
     <div id="wpfs-dialog-container"></div>
     <?php include( 'partials/wpfs-demo-mode.php' ); ?>

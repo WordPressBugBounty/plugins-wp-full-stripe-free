@@ -61,7 +61,14 @@ class MM_WPFS_Options {
 	const OPTION_WEBHOOK_TOKEN = 'webhook_token';
 	const OPTION_CUSTOM_INPUT_FIELD_MAX_COUNT = 'custom_input_field_max_count';
 	const OPTION_SET_FORM_FIELDS_VIA_URL_PARAMETERS = 'set_form_fields_via_url_parameters';
+	const OPTION_DEFAULT_BILLING_COUNTRY = 'default_billing_country';
 	const OPTION_STRIPE_CONNECT_NOTICE = 'connect_notice';
+	const OPTION_FEE_RECOVERY = 'fee_recovery';
+	const OPTION_FEE_RECOVERY_OPT_IN = 'fee_recovery_opt_in';
+	const OPTION_FEE_RECOVERY_OPT_IN_MESSAGE = 'fee_recovery_opt_in_message';
+	const OPTION_FEE_RECOVERY_CURRENCY = 'fee_recovery_currency';
+	const OPTION_FEE_RECOVERY_FEE_PERCENTAGE = 'fee_recovery_fee_percentage';
+	const OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT = 'fee_recovery_fee_additional_amount';
 
 	public function __construct() {
 	}

@@ -36,6 +36,22 @@ class MM_WPFS_ThankYou {
     }
 
     function thankYouShortCode($attributes, $content = null ) {
+		if ( ! MM_WPFS_Utils::isConnected() ) {
+			$content = '';
+
+			if ( current_user_can( 'administrator' ) ) {
+				$content = sprintf(
+					__( '%1$sYou are not connected to Stripe. Please connect to Stripe %2$sin the plugin settings%3$s.%4$s', 'wp-full-stripe-free' ),
+					'<p>',
+					'<a href="' . MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE ) . '">',
+					'</a>',
+					'</p>'
+				);
+			}
+
+			return $content;
+		}
+
         $transactionDataKey = isset( $_REQUEST[ MM_WPFS_TransactionDataService::REQUEST_PARAM_NAME_WPFS_TRANSACTION_DATA_KEY ] ) ? $_REQUEST[ MM_WPFS_TransactionDataService::REQUEST_PARAM_NAME_WPFS_TRANSACTION_DATA_KEY ] : null;
         $transactionData    = $this->transactionDataService->retrieve( $transactionDataKey );
 
@@ -47,6 +63,22 @@ class MM_WPFS_ThankYou {
     }
 
     function thankYouDefaultShortCode($attributes, $content = null ) {
+		if ( ! MM_WPFS_Utils::isConnected() ) {
+			$content = '';
+
+			if ( current_user_can( 'administrator' ) ) {
+				$content = sprintf(
+					__( '%1$sYou are not connected to Stripe. Please connect to Stripe %2$sin the plugin settings%3$s.%4$s', 'wp-full-stripe-free' ),
+					'<p>',
+					'<a href="' . MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE ) . '">',
+					'</a>',
+					'</p>'
+				);
+			}
+
+			return $content;
+		}
+
         if ( isset( $_REQUEST[self::PARAM_NAME_TRANSACTION_DATA] ) ) {
             return '';
         } else {
@@ -55,6 +87,22 @@ class MM_WPFS_ThankYou {
     }
 
     function thankYouSuccessShortCode($attributes, $content = null ) {
+		if ( ! MM_WPFS_Utils::isConnected() ) {
+			$content = '';
+
+			if ( current_user_can( 'administrator' ) ) {
+				$content = sprintf(
+					__( '%1$sYou are not connected to Stripe. Please connect to Stripe %2$sin the plugin settings%3$s.%4$s', 'wp-full-stripe-free' ),
+					'<p>',
+					'<a href="' . MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE ) . '">',
+					'</a>',
+					'</p>'
+				);
+			}
+
+			return $content;
+		}
+
         if ( isset( $_REQUEST[self::PARAM_NAME_TRANSACTION_DATA] ) ) {
             $transactionData = $_REQUEST[self::PARAM_NAME_TRANSACTION_DATA];
         } else {

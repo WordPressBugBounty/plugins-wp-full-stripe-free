@@ -78,8 +78,9 @@ jQuery.noConflict();
     } catch (err) {
       var $form = $("form.wpfs-form:first");
       var message = vsprintf(
-        wpfsFormSettings.l10n.application_errors
-          .stripe_instantiation_error_message,
+        Boolean( wpfsFormSettings.isAdmin ) ?
+          ( Boolean( wpfsFormSettings.isConnected ) ? wpfsFormSettings.l10n.application_errors.stripe_instantiation_error_message : wpfsFormSettings.l10n.application_errors.not_connected_to_stripe ) :
+          wpfsFormSettings.l10n.generic_error,
         [err.message]
       );
       showErrorGlobalMessage(
@@ -1564,7 +1565,7 @@ jQuery.noConflict();
         result = parseCurrencyAmount(
           formatter.parse(customAmountValue),
           zeroDecimalSupport,
-          true
+          false
         );
       }
 

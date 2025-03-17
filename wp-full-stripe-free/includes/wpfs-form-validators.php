@@ -522,6 +522,9 @@ class MM_WPFS_PaymentFormValidator extends MM_WPFS_FormValidator {
 			if ( $this->validateCustomAmount( $formModelObject ) ) {
 				$fieldName = $formModelObject::PARAM_WPFS_CUSTOM_AMOUNT_UNIQUE;
 				$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
+				$currency = $formModelObject->getForm()->currency;
+				$currencyArray = MM_WPFS_Currencies::getCurrencyFor( $currency );
+				$isZeroDecimal = (int) $currencyArray['zeroDecimalSupport'] === 1;
 				if ( empty( $formModelObject->getAmount() ) ) {
 					$error =
 						/* translators: Form field validation error message when custom amount is empty */
@@ -536,6 +539,11 @@ class MM_WPFS_PaymentFormValidator extends MM_WPFS_FormValidator {
 					$error =
 						/* translators: Form field validation error message when custom amount is less than the minimum payment amount */
 						sprintf( __( 'The minimum payment amount is %s', 'wp-full-stripe-free' ), MM_WPFS_Currencies::formatByForm( $formModelObject->getForm(), $formModelObject->getForm()->currency, $formModelObject->getForm()->minimumPaymentAmount, false, true ) );
+					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
+				} elseif ( $isZeroDecimal && filter_var($formModelObject->getAmount(), FILTER_VALIDATE_INT) === false ) {
+					$error =
+						/* translators: Form field validation error message when custom amount is not a number */
+						__( 'Please enter a valid amount, use only digits without a decimal separator', 'wp-full-stripe-free' );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				}
 			}
@@ -681,6 +689,9 @@ class MM_WPFS_DonationFormValidator extends MM_WPFS_FormValidator {
 			if ( $this->validateCustomAmount( $formModelObject ) ) {
 				$fieldName = $formModelObject::PARAM_WPFS_CUSTOM_AMOUNT_UNIQUE;
 				$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
+				$currency = $formModelObject->getForm()->currency;
+				$currencyArray = MM_WPFS_Currencies::getCurrencyFor( $currency );
+				$isZeroDecimal = (int) $currencyArray['zeroDecimalSupport'] === 1;
 				if ( empty( $formModelObject->getAmount() ) ) {
 					$error =
 						/* translators: Form field validation error message when custom amount is empty */
@@ -696,6 +707,11 @@ class MM_WPFS_DonationFormValidator extends MM_WPFS_FormValidator {
 					$error = sprintf(
 						/* translators: Form field validation error message when custom amount is lower than the minimum donation amount */
 						__( 'The minimum donation amount is %s.', 'wp-full-stripe-free' ), $minimumAmount );
+					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
+				} elseif ( $isZeroDecimal && filter_var($formModelObject->getAmount(), FILTER_VALIDATE_INT) === false ) {
+					$error =
+						/* translators: Form field validation error message when custom amount is not a number */
+						__( 'Please enter a valid amount, use only digits without a decimal separator', 'wp-full-stripe-free' );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				}
 			}

@@ -1,8 +1,10 @@
 <?php
-    /** @var $view MM_WPFS_Admin_PaymentFormView|MM_WPFS_Admin_SubscriptionFormView|MM_WPFS_Admin_DonationFormView|MM_WPFS_Admin_SaveCardFormView */
-    /** @var $form */
-    /** @var $data */
-
+/** @var $view MM_WPFS_Admin_PaymentFormView|MM_WPFS_Admin_SubscriptionFormView|MM_WPFS_Admin_DonationFormView|MM_WPFS_Admin_SaveCardFormView */
+/** @var $form */
+/** @var $data */
+if ( is_null( $form->defaultBillingCountry ) || empty( $form->defaultBillingCountry ) ) {
+    return;
+}
 ?>
 <div class="wpfs-form-group" id="seller-seat-country">
     <label for="<?php $view->defaultBillingCountry()->id(); ?>" class="wpfs-form-label"><?php $view->defaultBillingCountry()->label(); ?></label>

@@ -10,7 +10,7 @@ https://themeisle.com
 */
 
 class MM_WPFS {
-	const VERSION = '8.1.0';
+	const VERSION = '8.2.0';
 	const REQUEST_PARAM_NAME_WPFS_RENDERED_FORMS = 'wpfs_rendered_forms';
 
 	const HANDLE_WP_FULL_STRIPE_JS = 'wp-full-stripe-js';
@@ -54,6 +54,7 @@ class MM_WPFS {
 	const FORM_TYPE_ADMIN_CONFIGURE_FORMS_OPTIONS = 'configureFormsOptions';
 	const FORM_TYPE_ADMIN_CONFIGURE_FORMS_APPEARANCE = 'configureFormsAppearance';
 	const FORM_TYPE_ADMIN_CONFIGURE_WP_DASHBOARD = 'configureWpDashboard';
+	const FORM_TYPE_ADMIN_CONFIGURE_FEE_RECOVERY = 'configurefeeRecovery';
 	const FORM_TYPE_ADMIN_CONFIGURE_LOGGING = 'configureLogging';
 	const FORM_TYPE_ADMIN_EMPTY_LOG = 'emptyLog';
 
@@ -62,6 +63,8 @@ class MM_WPFS {
 	const FORM_TYPE_ADMIN_INLINE_DONATION_FORM = 'inlineDonationForm';
 	const FORM_TYPE_ADMIN_CHECKOUT_DONATION_FORM = 'checkoutDonationForm';
 	const FORM_TYPE_ADMIN_ADD_CUSTOM_FIELD = 'addCustomField';
+	const FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT = 'createOnetimeProduct';
+	const FORM_TYPE_ADMIN_CREATE_RECURRING_PRODUCT = 'addPlanProperties';
 	const FORM_TYPE_ADMIN_ADD_SUGGESTED_DONATION_AMOUNT = 'addSuggestedDonationAmount';
 	const FORM_TYPE_ADMIN_INLINE_PAYMENT_FORM = 'inlinePaymentForm';
 	const FORM_TYPE_ADMIN_CHECKOUT_PAYMENT_FORM = 'checkoutPaymentForm';
@@ -221,6 +224,7 @@ class MM_WPFS {
 	const HTTP_PARAM_NAME_AMOUNT = 'wpfsAmount';
 
 	const DONATION_PLAN_ID_PREFIX = "wpfsDonationPlan";
+	const SUBSCRIPTION_PLAN_ID_PREFIX = "wpfsSubscriptionPlan";
 
 	const EMAIL_TEMPLATE_ID_PAYMENT_RECEIPT = 'paymentMade';
 	const EMAIL_TEMPLATE_ID_PAYMENT_RECEIPT_STRIPE = 'paymentMadeStripe';
@@ -254,6 +258,10 @@ class MM_WPFS {
 	const DISCOUNT_TYPE_COUPON = 'coupon';
 
 	const ONBOARDING_WIZARD_OPTION_NAME = 'fullstripe_onboarding_wizard';
+
+	const FEE_RECOVERY_INHERIT = 'inherit';
+	const FEE_RECOVERY_CUSTOMIZE = 'customize';
+	const FEE_RECOVERY_DISABLE = 'disable';
 
 	public static $instance;
 
@@ -449,6 +457,7 @@ class MM_WPFS {
 			MM_WPFS_Options::OPTION_LOG_TO_WEB_SERVER => 0,
 			MM_WPFS_Options::OPTION_CATCH_UNCAUGHT_ERRORS => 0,
 			MM_WPFS_Options::OPTION_SET_FORM_FIELDS_VIA_URL_PARAMETERS => 0,
+			MM_WPFS_Options::OPTION_DEFAULT_BILLING_COUNTRY => MM_WPFS::DEFAULT_BILLING_COUNTRY_INITIAL_VALUE,
 			MM_WPFS_Options::OPTION_USE_WP_TEST_PLATFORM => '0',
 			MM_WPFS_Options::OPTION_USE_WP_LIVE_PLATFORM => '0',
 			MM_WPFS_Options::OPTION_TEST_ACCOUNT_ID => null,
@@ -456,6 +465,12 @@ class MM_WPFS {
 			MM_WPFS_Options::OPTION_LIVE_ACCOUNT_STATUS => null,
 			MM_WPFS_Options::OPTION_TEST_ACCOUNT_STATUS => null,
 			MM_WPFS_Options::OPTION_CONNECT_MODE => 'prod',
+			MM_WPFS_Options::OPTION_FEE_RECOVERY => '0',
+			MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN => '1',
+			MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE => MM_WPFS_Utils::getDefaultFeeRecoveryMessage(),
+			MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY => 'usd',
+			MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE => '2.9',
+			MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT => '0.30',
 		];
 
 		$this->options->setNonExistentSeveral( $updateSet );
@@ -643,6 +658,22 @@ class MM_WPFS {
 	 * @return mixed|void
 	 */
 	function fullstripe_form( $atts ) {
+		if ( ! MM_WPFS_Utils::isConnected() ) {
+			$content = '';
+
+			if ( current_user_can( 'administrator' ) ) {
+				$content = sprintf(
+					__( '%1$sYou are not connected to Stripe. Please connect to Stripe %2$sin the plugin settings%3$s.%4$s', 'wp-full-stripe-free' ),
+					'<p>',
+					'<a href="' . MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE ) . '">',
+					'</a>',
+					'</p>'
+				);
+			}
+
+			return $content;
+		}
+
 		$content = '';
 		ob_start();
 
@@ -661,6 +692,10 @@ class MM_WPFS {
 			$formName = str_replace( [ "\u{201c}", "\u{201d}" ], '', $formName );
 			$formType = MM_WPFS_Shortcode::normalizeShortCodeFormType( $formType );
 			$form = $this->getFormByTypeAndName( $formType, $formName );
+
+			if ( is_null( $form ) ) {
+				throw new WPFS_UserFriendlyException( 'Form does not exist.' );
+			}
 
 			$fieldConfiguration = $this->getFormFieldConfiguration( $_GET, $formType, $formName );
 
@@ -826,6 +861,10 @@ class MM_WPFS {
 	 * Register and enqueue WPFS scripts
 	 */
 	public function fullstripe_load_js() {
+		if ( ! MM_WPFS_Utils::isConnected() ) {
+			return;
+		}
+
 		$source = add_query_arg(
 			array(
 				'render' => 'explicit'
@@ -967,7 +1006,8 @@ class MM_WPFS {
 					/* translators: Error message when instantiating the Stripe object
 					 * p1: the message of the exception thrown
 					 */
-					'stripe_instantiation_error_message' => __( "Cannot initialize Stripe: %s", 'wp-full-stripe-free' )
+					'stripe_instantiation_error_message' => __( "Cannot initialize Stripe: %s", 'wp-full-stripe-free' ),
+					'not_connected_to_stripe' => __( 'You are not connected to Stripe. Please connect to Stripe in the plugin settings.', 'wp-full-stripe-free' ),
 				),
 				'product_pricing' => array(
 					/* translators: Default tax label */
@@ -982,8 +1022,11 @@ class MM_WPFS {
 					'tax_label_inclusive' => __( '%s (inclusive)', 'wp-full-stripe-free' ),
 					/* translators: Tax line item label, no decoration (no percentage, not inclusive) */
 					'tax_label' => '%s',
-				)
-			)
+				),
+				'generic_error' => __( 'An error occurred. Please contact the website administrator.', 'wp-full-stripe-free' ),
+			),
+			'isAdmin' => current_user_can( 'administrator' ),
+			'isConnected' => MM_WPFS_Utils::isConnected()
 		);
 
 		$apiMode = $this->options->get( MM_WPFS_Options::OPTION_API_MODE );

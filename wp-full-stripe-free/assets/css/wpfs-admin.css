@@ -1131,6 +1131,9 @@ a.wpfs-btn-icon--20 {
 .wpfs-form__col.wpfs-form__col__third {
   width: 66%;
 }
+[class*="wpfs-page-settings-"] .wpfs-form__col {
+  width: 50%;
+}
 .wpfs-form-block {
   margin-bottom: 32px;
 }
@@ -1310,6 +1313,10 @@ span.wpfs-form-control {
     -webkit-box-shadow 0.3s ease;
   outline: none;
   resize: none;
+}
+input[type="date"].wpfs-form-control{
+  width: 156px !important;
+  margin-right: 16px;
 }
 input[type="checkbox"].wpfs-form-control--error,
 input[type="color"].wpfs-form-control--error,
@@ -4490,6 +4497,53 @@ textarea.wpfs-form-control::placeholder {
   margin-bottom: 8px;
 }
 
+.wpfs-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 32px;
+  padding: 0 1.5rem;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.wpfs-grid-container {
+  border-top: 1px solid #e5e7eb;
+}
+
+.wpfs-grid-container:first-of-type {
+  border-top: none;
+}
+
+.wpfs-grid-items {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.wpfs-grid-items .wpfs-list__item {
+  border: 1px solid #e5e7eb;
+  border-radius: .5rem;
+}
+
+.wpfs-grid-items .wpfs-list__item::after {
+  display: none;
+}
+
+.wpfs-page-settings-container {
+  display: grid;
+  grid-template-columns: 1fr 5fr;
+}
+
+.wpfs-page-settings-container .wpfs-page-tabs {
+  margin: 0 52px 24px 52px;
+  border-bottom: 1px solid #c5c6cd;
+}
+
+.wpfs-page-settings-container .wpfs-page-tabs .wpfs-page-tabs__item {
+  padding-bottom: 0.75rem;
+}
+
 .wpfs-dialog-new-feature {
   padding: 0 32px 32px;
 }
@@ -4505,7 +4559,14 @@ textarea.wpfs-form-control::placeholder {
 .wpfs-dialog-new-feature__carousel {
   margin-bottom: 32px;
 }
-
+.wpfs-dialog-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.wpfs-dialog-actions input[type="text"].wpfs-form-control {
+  width: 280px !important;
+}
 .wpfs-dialog-demo {
   width: 640px;
 }
@@ -5591,4 +5652,171 @@ input[type="email"].wpfs-input {
 
 .wpfs-gap {
   gap: 12px;
+}
+
+.wpfs-page-reports .wpfs-form-group,
+.wpfs-page-reports .wpfs-form-group:last-of-type {
+  margin-bottom: 0;
+}
+
+.wpfs-page-reports .wpfs-page-controls {
+  -webkit-box-align: flex-end;
+  -ms-flex-align: flex-end;
+  align-items: flex-end;
+}
+
+.wpfs-page-reports__content {
+  padding: 32px;
+  border-top: 1px solid #ced0d7;
+  border-bottom: 1px solid #ced0d7;
+}
+    
+.wpfs-report-card {
+  background-color: #f4f7fe;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  padding: 24px;
+  margin-bottom: 24px;
+  width: 100%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.wpfs-report-card-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.wpfs-report-card-controls .wpfs-report-card-title {
+  margin-bottom: 0;
+}
+
+.wpfs-report-card-title {
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: #64748b;
+  margin: 0 0 12px 0;
+  letter-spacing: 0.5px;
+}
+
+.wpfs-report-card-value {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0
+}
+
+.wpfs-report-card canvas {
+  background-color: #fff;
+  border: 1px solid rgb(229 231 235);
+  padding: 12px;
+}
+
+.wpfs-report-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.wpfs-report-cards.wpfs-report-cards-third {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+    
+.wpfs-report-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.wpfs-report-table th {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.wpfs-report-table th:last-child {
+  text-align: right;
+}
+
+.wpfs-report-table td {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #334155;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.wpfs-report-table td:last-child {
+  text-align: right;
+  font-weight: 500;
+}
+
+.wpfs-report-table td.empty {
+  text-align: center;
+  color: #64748b;
+}
+
+.wpfs-hidden {
+  display: none;
+}
+
+.wpfs-page-settings-sidebar {
+  border-right: 1px solid #c5c6cd;
+  min-width: 250px;
+}
+
+.wpfs-page-settings-sidebar h3 {
+  font-size: .75rem;
+  line-height: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0.5rem 1rem;
+  margin: 0;
+  cursor: default;
+}
+
+.wpfs-page-settings-sidebar__icon {
+  width: 20px;
+  height: 20px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  margin-right: .5rem;
+}
+
+.wpfs-page-settings-sidebar__item {
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #2c3149;
+  border-left: 4px solid transparent;
+}
+
+.wpfs-page-settings-sidebar__item:hover {
+  background: #f9fafb;
+}
+
+.wpfs-page-settings-sidebar__item:focus {
+  box-shadow: none;
+}
+
+.wpfs-page-settings-sidebar__item.active {
+  border-left-color: #568ee8;
+}
+
+.wpfs-page-settings-sidebar-group {
+  margin-bottom: 1rem;
+}
+
+.wpfs-page-settings-sidebar-group:last-of-type {
+  margin-bottom: 0;
+}
+
+.mx-none {
+  max-width: none !important;
 }

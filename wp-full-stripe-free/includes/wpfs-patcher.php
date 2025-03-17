@@ -80,7 +80,6 @@ class MM_WPFS_Patcher {
 		$set_initial_plan_selector_style_for_subscription_forms       = new MM_WPFS_SetInitialPlanSelectorStyleForSubscriptionForms( $loggerService );
 		$convert_preferred_language_for_popup_forms                   = new MM_WPFS_ConvertPreferredLanguageForPopupForms( $loggerService );
 		$set_initial_product_name_for_checkout_forms                  = new MM_WPFS_SetInitialProductNameForCheckoutForms( $loggerService );
-		$set_initial_default_billing_country_for_inline_payment_forms = new MM_WPFS_SetInitialDefaultBillingCountryForInlinePaymentForms( $loggerService );
 		$set_initial_quantities_for_subscription_forms                = new MM_WPFS_SetInitialQuantitiesForSubscriptionForms( $loggerService );
 		$set_initial_decimal_separator_for_forms                      = new MM_WPFS_SetInitialDecimalSeparatorForForms( $loggerService );
         $set_donation_form_email_receipt                              = new MM_WPFS_SetDonationFormEmailReceipt( $loggerService );
@@ -117,7 +116,6 @@ class MM_WPFS_Patcher {
 			$set_initial_plan_selector_style_for_subscription_forms->getId()       => $set_initial_plan_selector_style_for_subscription_forms,
 			$convert_preferred_language_for_popup_forms->getId()                   => $convert_preferred_language_for_popup_forms,
 			$set_initial_product_name_for_checkout_forms->getId()                  => $set_initial_product_name_for_checkout_forms,
-			$set_initial_default_billing_country_for_inline_payment_forms->getId() => $set_initial_default_billing_country_for_inline_payment_forms,
 			$set_initial_quantities_for_subscription_forms->getId()                => $set_initial_quantities_for_subscription_forms,
 			$set_initial_decimal_separator_for_forms->getId()                      => $set_initial_decimal_separator_for_forms,
             $set_donation_form_email_receipt->getId()                              => $set_donation_form_email_receipt,
@@ -1001,44 +999,6 @@ class MM_WPFS_SetInitialQuantitiesForSubscriptionForms extends MM_WPFS_Patch {
 		}
 	}
 
-}
-
-class MM_WPFS_SetInitialDefaultBillingCountryForInlinePaymentForms extends MM_WPFS_Patch {
-
-	/**
-	 * MM_WPFS_SetInitialDefaultBillingCountryForInlinePaymentForms constructor.
-	 */
-	public function __construct( $loggerService ) {
-        parent::__construct( $loggerService );
-
-		$this->id             = 'set_initial_default_billing_country_for_inline_payment_forms';
-		$this->plugin_version = '5.1.0';
-		$this->description    = 'A patch for setting initial value for default billing country on inline payment forms. JIRA reference: WPFS-1014';
-		$this->repeatable     = true;
-	}
-
-	public function apply() {
-		$this->set_default_billing_country();
-
-		return true;
-	}
-
-	private function set_default_billing_country() {
-		global $wpdb;
-
-		$payment_form_update_result = $wpdb->update(
-			"{$wpdb->prefix}fullstripe_payment_forms",
-			array( 'defaultBillingCountry' => MM_WPFS::DEFAULT_BILLING_COUNTRY_INITIAL_VALUE ),
-			array( 'defaultBillingCountry' => '' )
-		);
-
-		if ( $payment_form_update_result === false ) {
-			return false;
-		} else {
-			return $payment_form_update_result;
-		}
-
-	}
 }
 
 class MM_WPFS_SetInitialProductNameForCheckoutForms extends MM_WPFS_Patch {
