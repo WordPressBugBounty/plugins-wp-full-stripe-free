@@ -993,7 +993,12 @@ class MM_WPFS_Stripe {
 	 * @throws WPFS_UserFriendlyException
 	 */
 	public function getTestAccount( $accountId ) {
-		return $this->remoteRequest( 'get', '/account?mode=test&accountId=' . $accountId );
+		try {
+			return $this->remoteRequest( 'get', '/account?mode=test&accountId=' . $accountId );
+		} catch ( Exception $ex ) {
+			$this->logger->error( __FUNCTION__, 'Error while getting test account', $ex );
+			throw new WPFS_UserFriendlyException( 'Error while getting test account: ' . $ex->getMessage() );
+		}
 	}
 
 	/**
@@ -1001,7 +1006,12 @@ class MM_WPFS_Stripe {
 	 * @throws WPFS_UserFriendlyException
 	 */
 	public function getLiveAccount( $accountId ) {
-		return $this->remoteRequest( 'get', '/account?mode=live&accountId=' . $accountId );
+		try {
+			return $this->remoteRequest( 'get', '/account?mode=live&accountId=' . $accountId );
+		} catch ( Exception $ex ) {
+			$this->logger->error( __FUNCTION__, 'Error while getting live account', $ex );
+			throw new WPFS_UserFriendlyException( 'Error while getting live account: ' . $ex->getMessage() );
+		}
 	}
 
 	/**

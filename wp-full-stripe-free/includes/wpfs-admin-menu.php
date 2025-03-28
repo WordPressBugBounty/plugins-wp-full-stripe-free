@@ -1473,7 +1473,12 @@ class MM_WPFS_Admin_Menu {
 	public function getLiveAccountStatus() {
 		$accountId = $this->options->get( MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID );
 		if ( isset( $accountId ) && $accountId !== '' ) {
-			$account = $this->stripe->getLiveAccount( $accountId );
+			$account = null;
+			try {
+				$account = $this->stripe->getLiveAccount( $accountId );
+			} catch ( Exception $ex ) {
+				return null;
+			}
 			return $this->determineAccountStatus( $account, 'live' );
 		} else {
 			return null;
@@ -1486,7 +1491,12 @@ class MM_WPFS_Admin_Menu {
 	public function getTestAccountStatus() {
 		$accountId = $this->options->get( MM_WPFS_Options::OPTION_TEST_ACCOUNT_ID );
 		if ( isset( $accountId ) && $accountId !== '' ) {
-			$account = $this->stripe->getTestAccount( $accountId );
+			$account = null;
+			try {
+				$account = $this->stripe->getTestAccount( $accountId );
+			} catch ( Exception $ex ) {
+				return null;
+			}
 			return $this->determineAccountStatus( $account, 'test' );
 		} else {
 			return null;
