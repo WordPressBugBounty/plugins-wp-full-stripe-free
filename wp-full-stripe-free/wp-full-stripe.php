@@ -5,7 +5,7 @@ Plugin Name: WP Full Pay
 Plugin URI: https://paymentsplugin.com
 Description: Use WP Full Pay to accept Stripe payments on your WordPress. Prebuilt forms to accept payments, donations and subscriptions. 
 Author: Themeisle
-Version: 8.2.1
+Version: 8.2.2
 Author URI: https://themeisle.com
 Text Domain: wp-full-stripe-free
 Domain Path: /languages
@@ -129,9 +129,7 @@ if ( $wpfsDiagCheck ) {
         return [
             'location'         => 'wpfs-transactions',
             'logo'             => MM_WPFS_Assets::images( 'wpfs-logo.svg' ),
-            'has_upgrade_menu' => ! WPFS_License::is_active(),
-            'upgrade_link'     => tsdk_utmify( 'https://paymentsplugin.com/pricing/' ,'admin-menu'),
-            'upgrade_text'     => __( 'Get Pro Version', 'wp-full-stripe-free' ),
+            'has_upgrade_menu' => false
         ];
     } );
 

@@ -24,6 +24,7 @@ class MM_WPFS_Admin_Menu {
 	const SLUG_EDIT_FORM = 'wpfs-edit-form';
 	const SLUG_REPORTS = 'wpfs-reports';
 	const SLUG_SETTINGS = 'wpfs-settings';
+	const SLUG_UPGRADE_PRO = 'wpfs-upgrade-pro';
 	const SLUG_SETTINGS_STRIPE = 'wpfs-settings-stripe';
 	const SLUG_SETTINGS_FORMS = 'wpfs-settings-forms';
 	const SLUG_SETTINGS_CUSTOMER_PORTAL = 'wpfs-settings-customer-portal';

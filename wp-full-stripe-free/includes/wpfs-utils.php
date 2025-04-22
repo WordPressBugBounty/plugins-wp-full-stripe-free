@@ -643,11 +643,15 @@ class MM_WPFS_Utils {
         return __('My Donation', 'wp-full-stripe-free');
     }
 
-    public static function getDefaultFeeRecoveryMessage() {
+    public static function getFeeRecoveryMessagePlaceholder() {
         return
             /* translators: Default message for fee recovery */
             __( 'I\'d like to cover the transaction fees of {{fee_amount}}.', 'wp-full-stripe-free' );
     }
+
+	public static function getDefaultFeeRecoveryMessage() {
+		return 'I\'d like to cover the transaction fees of {{fee_amount}}.';
+	}
 
     public static function getPaymentStatuses() {
         return array(

@@ -10,7 +10,7 @@ https://themeisle.com
 */
 
 class MM_WPFS {
-	const VERSION = '8.2.1';
+	const VERSION = '8.2.2';
 	const REQUEST_PARAM_NAME_WPFS_RENDERED_FORMS = 'wpfs_rendered_forms';
 
 	const HANDLE_WP_FULL_STRIPE_JS = 'wp-full-stripe-js';
@@ -23,6 +23,7 @@ class MM_WPFS {
 	const HANDLE_STYLE_WPFS_FORMS = 'wpfs-forms-css';
 	const HANDLE_GOOGLE_RECAPTCHA_V_2 = 'google-recaptcha-v2';
 	const SOURCE_GOOGLE_RECAPTCHA_V2_API_JS = 'https://www.google.com/recaptcha/api.js';
+	const PRICING_URL = 'https://paymentsplugin.com/pricing/';
 
 	// Generic form types
 	const FORM_TYPE_PAYMENT = 'payment';
@@ -357,6 +358,7 @@ class MM_WPFS {
 		include 'wpfs-view-template-utils.php';
 		include 'wpfs-recaptcha.php';
 		include 'wpfs-shortcode.php';
+		include 'wpfs-pro-pricing.php';
 
 		do_action( 'fullstripe_includes_action' );
 	}
@@ -387,6 +389,8 @@ class MM_WPFS {
 		$this->checkoutSubmissionService = new MM_WPFS_CheckoutSubmissionService( $this->loggerService );
 		$this->thankYou = new MM_WPFS_ThankYou( $this->loggerService );
 		new MM_WPFS_Block();
+
+		(new WPFS_Pro_Pricing())->init();
 
 		do_action( 'fullstripe_setup_action' );
 	}

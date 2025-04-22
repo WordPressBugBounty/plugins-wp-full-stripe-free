@@ -1607,7 +1607,7 @@ class MM_WPFS_Admin_WordpressDashboardView extends MM_WPFS_AdminView {
         $this->feeRecoveryOptInMessage->setAttributes( array(
             'type'        => 'text',
             'class'       => 'wpfs-form-control',
-            'placeholder' => MM_WPFS_Utils::getDefaultFeeRecoveryMessage()
+            'placeholder' => MM_WPFS_Utils::getFeeRecoveryMessagePlaceholder()
         ));
 
         $this->feeRecoveryCurrency = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_CURRENCY, null, null,
@@ -2796,7 +2796,7 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
         $this->feeRecoveryOptInMessage->setAttributes( array(
             'type'      => 'text',
             'class'     => 'wpfs-form-control',
-            'placeholder' => MM_WPFS_Utils::getDefaultFeeRecoveryMessage()
+            'placeholder' => MM_WPFS_Utils::getFeeRecoveryMessagePlaceholder()
         ));
 
         $this->feeRecoveryFeePercentage = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_FEE_RECOVERY_FEE_PERCENTAGE, null, null,
