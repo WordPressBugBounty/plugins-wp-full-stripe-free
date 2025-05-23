@@ -1,8 +1,8 @@
 <?php return array(
     'root' => array(
         'name' => 'codeinwp/wp-full-stripe',
-        'pretty_version' => '8.2.2',
-        'version' => '8.2.2.0',
+        'pretty_version' => '8.2.3',
+        'version' => '8.2.3.0',
         'reference' => null,
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
@@ -11,17 +11,17 @@
     ),
     'versions' => array(
         'codeinwp/themeisle-sdk' => array(
-            'pretty_version' => '3.3.44',
-            'version' => '3.3.44.0',
-            'reference' => 'fed444b52ebf1f689ec2434df177926bf8f238c4',
+            'pretty_version' => '3.3.46',
+            'version' => '3.3.46.0',
+            'reference' => 'af2e7360bbe3af6a1bd2c3779fc33b7765104461',
             'type' => 'library',
             'install_path' => __DIR__ . '/../codeinwp/themeisle-sdk',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
         'codeinwp/wp-full-stripe' => array(
-            'pretty_version' => '8.2.2',
-            'version' => '8.2.2.0',
+            'pretty_version' => '8.2.3',
+            'version' => '8.2.3.0',
             'reference' => null,
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',

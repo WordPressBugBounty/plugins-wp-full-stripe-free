@@ -133,6 +133,24 @@ class WPFS_License {
 	}
 
 	/**
+	 * Get the license price ID.
+	 * 
+	 * @return int
+	 */
+	public static function get_price_id() {
+		$license = self::get_data();
+		if ( false === $license ) {
+			return -1;
+		}
+
+		if ( ! isset( $license->price_id ) ) {
+			return -1;
+		}
+
+		return $license->price_id;
+	}
+
+	/**
 	 * Get User ID.
 	 * 
 	 * @return int

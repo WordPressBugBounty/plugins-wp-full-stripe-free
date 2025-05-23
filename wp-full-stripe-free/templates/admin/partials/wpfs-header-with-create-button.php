@@ -4,6 +4,7 @@
 /** @var $createButtonLabel */
 ?>
 <div class="wpfs-page-header">
+    <div id="tsdk_banner"></div>
     <div class="wpfs-page-header__headline-with-actions">
         <div class="wpfs-page-header__headline">
             <div class="wpfs-page-header__title"><?php echo $pageTitle; ?></div>

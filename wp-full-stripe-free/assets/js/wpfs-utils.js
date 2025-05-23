@@ -17,12 +17,11 @@ var wpfsDebugLog = false;
  * @param zeroDecimalSupport
  */
 function formatCurrencyAmount(amount, zeroDecimalSupport) {
-    var theAmount = parseInt(amount);
+    var theAmount = parseFloat(amount);
     if (!isNaN(theAmount)) {
         if (zeroDecimalSupport == true) {
             return theAmount.toFixed(0);
         } else {
-            theAmount = theAmount / 100;
             return theAmount.toFixed(2);
         }
     }
@@ -32,7 +31,8 @@ function formatCurrencyAmount(amount, zeroDecimalSupport) {
 function parseCurrencyAmount(amount, zeroDecimalSupport, returnSmallestCommonCurrencyUnit) {
     var theAmount;
     if (zeroDecimalSupport == true) {
-        theAmount = parseInt(amount);
+        theAmount = parseFloat(amount);
+        theAmount = parseInt(theAmount.toFixed(0));
     } else {
         theAmount = parseFloat(amount);
         theAmount = parseFloat(theAmount.toFixed(2));

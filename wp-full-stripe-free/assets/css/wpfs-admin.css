@@ -5820,3 +5820,7 @@ input[type="email"].wpfs-input {
 .mx-none {
   max-width: none !important;
 }
+
+div.notice.themeisle-sale {
+  margin-top: 10px;
+}
