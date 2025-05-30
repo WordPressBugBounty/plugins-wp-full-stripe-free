@@ -10,7 +10,7 @@ https://themeisle.com
 */
 
 class MM_WPFS {
-	const VERSION = '8.2.3';
+	const VERSION = '8.2.4';
 	const REQUEST_PARAM_NAME_WPFS_RENDERED_FORMS = 'wpfs_rendered_forms';
 
 	const HANDLE_WP_FULL_STRIPE_JS = 'wp-full-stripe-js';
@@ -358,7 +358,6 @@ class MM_WPFS {
 		include 'wpfs-view-template-utils.php';
 		include 'wpfs-recaptcha.php';
 		include 'wpfs-shortcode.php';
-		include 'wpfs-pro-pricing.php';
 
 		do_action( 'fullstripe_includes_action' );
 	}
@@ -390,7 +389,6 @@ class MM_WPFS {
 		$this->thankYou = new MM_WPFS_ThankYou( $this->loggerService );
 		new MM_WPFS_Block();
 
-		(new WPFS_Pro_Pricing())->init();
 
 		do_action( 'fullstripe_setup_action' );
 	}
