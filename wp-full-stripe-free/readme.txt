@@ -4,7 +4,7 @@ Tags: stripe payments, credit card payments, donation form, stripe checkout, str
 Requires at least: 5.3
 Requires PHP: 7.4
 Tested up to: 6.8
-Stable tag: 8.2.4
+Stable tag: 8.2.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -168,7 +168,7 @@ WP Full Pay [offers knowledge](https://docs.themeisle.com/collection/2079-wp-ful
 1. Uninstall any previous version of the plugin (No data will be lost)
 1. Download this plugin.
 1. Login to your WordPress admin.
-1. Click on the plugins tab.
+1. Click on Plugins in the menu.
 1. Click the Add New button.
 1. Click the Upload button.
 1. Click "Install Now", then Activate, then head to the new menu item on the left labeled "Full Pay" and "Settings".
@@ -282,6 +282,13 @@ WP Full Pay fully supports Strong Customer Authentication (SCA) requirements for
 == Screenshots ==
 
 == Changelog ==
+
+#####   Version 8.2.5 (2025-06-13)
+
+Updated strings for improved clarity and correctness.
+
+
+
 
 #####   Version 8.2.4 (2025-05-30)
 

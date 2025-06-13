@@ -596,7 +596,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a save card form is saved */
-					__( 'There was an error saving the save card form: ', 'wp-full-stripe-free' ) . $e->getMessage()
+					__( 'There was an error saving the save card form:', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -648,7 +648,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a payment form is saved */
-					__( 'There was an error saving the payment form: ', 'wp-full-stripe-free' ) . $e->getMessage()
+					__( 'There was an error saving the payment form:', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 
@@ -700,7 +700,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a payment form is saved */
-					__( 'There was an error saving the payment form: ', 'wp-full-stripe-free' ) . $e->getMessage()
+					__( 'There was an error saving the payment form:', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 		header( "Content-Type: application/json" );
@@ -946,7 +946,7 @@ class MM_WPFS_Admin {
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a save card form is saved */
-					__( 'There was an error saving the save card form: ', 'wp-full-stripe-free' ) . $e->getMessage()
+					__( 'There was an error saving the save card form:', 'wp-full-stripe-free' ) . $e->getMessage()
 			);
 		}
 

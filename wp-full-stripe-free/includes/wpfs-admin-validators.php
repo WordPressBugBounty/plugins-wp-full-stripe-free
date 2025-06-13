@@ -398,7 +398,7 @@ class MM_WPFS_Admin_WordpressDashboardValidator extends MM_WPFS_Validator {
 
         if ( false === array_search( $formModelObject->getFeeRecoveryOptIn(), $yesNoValues ) ) {
             $error =
-                __( 'Please select if the Fee Opt-in method.', 'wp-full-stripe-free' );
+                __( 'Please select the Fee Opt-in method.', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
@@ -417,11 +417,11 @@ class MM_WPFS_Admin_WordpressDashboardValidator extends MM_WPFS_Validator {
         if ( $formModelObject->getFeeRecovery() !== '0' ) {
             if ( empty( $formModelObject->getFeeRecoveryFeePercentage() )) {
             $error =
-                __( 'Please enter the Fee Recovery Fee Percentage.', 'wp-full-stripe-free' );
+                __( 'Please enter the Fee Recovery percentage.', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
             } elseif ( !is_numeric( $formModelObject->getFeeRecoveryFeePercentage() )) {
             $error =
-                __( 'The Fee Recovery Fee Percentage must be a number.', 'wp-full-stripe-free' );
+                __( 'Please enter a numeric value for the Fee Recovery percentage.', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
             }
         }
@@ -704,7 +704,7 @@ abstract class MM_WPFS_Admin_FormValidator extends MM_WPFS_Validator {
 
         if ( false === array_search( $formModelObject->getFeeRecoveryOptIn(), $yesNoValues ) ) {
             $error =
-                __( 'Please select if the Fee Opt-in method.', 'wp-full-stripe-free' );
+                __( 'Please select the Fee Opt-in method.', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
 
@@ -717,11 +717,11 @@ abstract class MM_WPFS_Admin_FormValidator extends MM_WPFS_Validator {
         if ( $formModelObject->getFeeRecovery() === MM_WPFS::FEE_RECOVERY_CUSTOMIZE ) {
             if ( empty( $formModelObject->getFeeRecoveryFeePercentage() )) {
             $error =
-                __( 'Please enter the Fee Recovery Fee Percentage.', 'wp-full-stripe-free' );
+                __( 'Please enter the Fee Recovery percentage.', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
             } elseif ( !is_numeric( $formModelObject->getFeeRecoveryFeePercentage() )) {
             $error =
-                __( 'The Fee Recovery Fee Percentage must be a number.', 'wp-full-stripe-free' );
+                __( 'Please enter a numeric value for the Fee Recovery percentage.', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
             }
         }
@@ -729,11 +729,11 @@ abstract class MM_WPFS_Admin_FormValidator extends MM_WPFS_Validator {
         if ( $formModelObject->getFeeRecovery() === MM_WPFS::FEE_RECOVERY_CUSTOMIZE ) {
             if ( empty( $formModelObject->getFeeRecoveryFeeAdditionalAmount() )) {
             $error =
-                __( 'Please enter the Fee Recovery Fee Additional Amount.', 'wp-full-stripe-free' );
+                __( 'Please enter a valid additional fee amount for the Fee Recovery.', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
             } elseif ( !is_numeric( $formModelObject->getFeeRecoveryFeeAdditionalAmount() ) ) {
             $error =
-                __( 'The Fee Recovery Fee Additional Amount must be a number.', 'wp-full-stripe-free' );
+                __( 'Please enter a valid number for the additional fee used in Fee Recovery.', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
             }
         }

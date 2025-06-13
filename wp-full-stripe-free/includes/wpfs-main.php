@@ -10,7 +10,7 @@ https://themeisle.com
 */
 
 class MM_WPFS {
-	const VERSION = '8.2.4';
+	const VERSION = '8.2.5';
 	const REQUEST_PARAM_NAME_WPFS_RENDERED_FORMS = 'wpfs_rendered_forms';
 
 	const HANDLE_WP_FULL_STRIPE_JS = 'wp-full-stripe-js';

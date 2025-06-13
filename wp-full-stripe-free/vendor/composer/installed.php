@@ -1,8 +1,8 @@
 <?php return array(
     'root' => array(
         'name' => 'codeinwp/wp-full-stripe',
-        'pretty_version' => '8.2.4',
-        'version' => '8.2.4.0',
+        'pretty_version' => '8.2.5',
+        'version' => '8.2.5.0',
         'reference' => null,
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
@@ -20,8 +20,8 @@
             'dev_requirement' => false,
         ),
         'codeinwp/wp-full-stripe' => array(
-            'pretty_version' => '8.2.4',
-            'version' => '8.2.4.0',
+            'pretty_version' => '8.2.5',
+            'version' => '8.2.5.0',
             'reference' => null,
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
