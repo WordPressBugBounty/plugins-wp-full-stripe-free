@@ -57,8 +57,12 @@ abstract class WPFS_Transactions_Table extends WPFS_List_Table {
 	 * @return array
 	 */
 	protected function getOrderParameters(): array {
-		$orderBy = ! empty( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_ORDER_BY ] ) ? trim( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_ORDER_BY ] ) : 'created';
+		$orderBy = ! empty( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_ORDER_BY ] ) ? trim( sanitize_sql_orderby( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_ORDER_BY ] ) ) : 'created';
 		$order = ! empty( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_ORDER ] ) ? trim( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_ORDER ] ) : 'desc';
+
+		if ( ! in_array( $order, array( 'desc', 'asc' ), true ) ) {
+			$order = 'desc';
+		}
 
 		return array( $orderBy, $order );
 	}
