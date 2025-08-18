@@ -10,7 +10,7 @@ https://themeisle.com
 */
 
 class MM_WPFS {
-	const VERSION = '8.2.6';
+	const VERSION = '8.3.0';
 	const REQUEST_PARAM_NAME_WPFS_RENDERED_FORMS = 'wpfs_rendered_forms';
 
 	const HANDLE_WP_FULL_STRIPE_JS = 'wp-full-stripe-js';
@@ -208,8 +208,8 @@ class MM_WPFS {
 	const STRIPE_OBJECT_ID_PREFIX_PAYMENT_INTENT = 'pi_';
 	const STRIPE_OBJECT_ID_PREFIX_CHARGE = 'ch_';
 	const PAYMENT_OBJECT_TYPE_UNKNOWN = 'Unknown';
-	const PAYMENT_OBJECT_TYPE_STRIPE_PAYMENT_INTENT = '\StripeWPFS\PaymentIntent';
-	const PAYMENT_OBJECT_TYPE_STRIPE_CHARGE = '\StripeWPFS\Charge';
+	const PAYMENT_OBJECT_TYPE_STRIPE_PAYMENT_INTENT = '\StripeWPFS\Stripe\PaymentIntent';
+	const PAYMENT_OBJECT_TYPE_STRIPE_CHARGE = '\StripeWPFS\Stripe\Charge';
 
 	const SUBSCRIBER_STATUS_CANCELLED = 'cancelled';
 	const SUBSCRIBER_STATUS_RUNNING = 'running';
@@ -224,7 +224,7 @@ class MM_WPFS {
 	const HTTP_PARAM_NAME_PLAN = 'wpfsPlan';
 	const HTTP_PARAM_NAME_AMOUNT = 'wpfsAmount';
 
-	const DONATION_PLAN_ID_PREFIX = "wpfsDonationPlan";
+	const DONATION_PLAN_ID_PREFIX = "wpfsDonationPlanV2";
 	const SUBSCRIPTION_PLAN_ID_PREFIX = "wpfsSubscriptionPlan";
 
 	const EMAIL_TEMPLATE_ID_PAYMENT_RECEIPT = 'paymentMade';
@@ -395,8 +395,8 @@ class MM_WPFS {
 
 	protected function setupErrorHandlers() {
 		if ( boolval( $this->options->get( MM_WPFS_Options::OPTION_CATCH_UNCAUGHT_ERRORS ) ) ) {
-			set_error_handler( array( $this, 'handleError' ), E_ALL | E_STRICT );
-			set_exception_handler( array( $this, 'handleException' ) );
+			set_error_handler( [ $this, 'handleError' ], E_ALL | E_STRICT );
+			set_exception_handler( [ $this, 'handleException' ] );
 			ini_set( 'display_errors', 0 );
 		}
 	}
@@ -432,7 +432,7 @@ class MM_WPFS {
 			MM_WPFS_Options::OPTION_RECEIPT_EMAIL_TYPE => MM_WPFS_Options::OPTION_VALUE_RECEIPT_EMAIL_PLUGIN,
 			MM_WPFS_Options::OPTION_EMAIL_TEMPLATES => json_encode( MM_WPFS_Mailer::getDefaultEmailTemplates() ),
 			MM_WPFS_Options::OPTION_EMAIL_NOTIFICATION_SENDER_ADDRESS => get_bloginfo( 'admin_email' ),
-			MM_WPFS_Options::OPTION_EMAIL_NOTIFICATION_BCC_ADDRESSES => json_encode( array() ),
+			MM_WPFS_Options::OPTION_EMAIL_NOTIFICATION_BCC_ADDRESSES => json_encode( [] ),
 			MM_WPFS_Options::OPTION_FILL_IN_EMAIL_FOR_LOGGED_IN_USERS => '1',
 			MM_WPFS_Options::OPTION_WEBHOOK_TOKEN => $this->createWebhookToken(),
 			MM_WPFS_Options::OPTION_CUSTOM_INPUT_FIELD_MAX_COUNT => MM_WPFS::DEFAULT_CUSTOM_INPUT_FIELD_MAX_COUNT,
@@ -511,7 +511,7 @@ class MM_WPFS {
 		if ( $network_wide ) {
 			MM_WPFS_Utils::log( "setup_db() - Activating network-wide" );
 			if ( function_exists( 'get_sites' ) && function_exists( 'get_current_network_id' ) ) {
-				$site_ids = get_sites( array( 'fields' => 'ids', 'network_id' => get_current_network_id() ) );
+				$site_ids = get_sites( [ 'fields' => 'ids', 'network_id' => get_current_network_id() ] );
 			} else {
 				$site_ids = MM_WPFS_Database::get_site_ids();
 			}
@@ -534,18 +534,18 @@ class MM_WPFS {
 
 	function hooks() {
 
-		add_filter( 'plugin_action_links', array( $this, 'plugin_action_links' ), 10, 2 );
-		add_filter( MM_WPFS::FILTER_NAME_FORM_FIELD_CONFIGURATION, array( $this, 'loggedInEmailConfiguration' ), 5, 2 );
-		add_filter( MM_WPFS::FILTER_NAME_FORM_FIELD_CONFIGURATION, array( $this, 'enableAllFormFields' ), 9, 2 );
+		add_filter( 'plugin_action_links', [ $this, 'plugin_action_links' ], 10, 2 );
+		add_filter( MM_WPFS::FILTER_NAME_FORM_FIELD_CONFIGURATION, [ $this, 'loggedInEmailConfiguration' ], 5, 2 );
+		add_filter( MM_WPFS::FILTER_NAME_FORM_FIELD_CONFIGURATION, [ $this, 'enableAllFormFields' ], 9, 2 );
 
-		add_action( 'fullstripe_update_email_template_defaults', array( $this, 'updateEmailTemplateDefaults' ), 10, 0 );
-		add_action( 'wp_head', array( $this, 'fullstripe_wp_head' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'fullstripe_enqueue_scripts_and_styles' ) );
-		add_action( 'init', array( $this, 'init_user_version' ) );
+		add_action( 'fullstripe_update_email_template_defaults', [ $this, 'updateEmailTemplateDefaults' ], 10, 0 );
+		add_action( 'wp_head', [ $this, 'fullstripe_wp_head' ] );
+		add_action( 'wp_enqueue_scripts', [ $this, 'fullstripe_enqueue_scripts_and_styles' ] );
+		add_action( 'init', [ $this, 'init_user_version' ] );
 
-		add_shortcode( self::SHORTCODE_FULLSTRIPE_FORM, array( $this, 'fullstripe_form' ) );
+		add_shortcode( self::SHORTCODE_FULLSTRIPE_FORM, [ $this, 'fullstripe_form' ] );
 
-		add_filter( 'script_loader_tag', array( $this, 'addAsyncDeferAttributes' ), 10, 2 );
+		add_filter( 'script_loader_tag', [ $this, 'addAsyncDeferAttributes' ], 10, 2 );
 
 		do_action( 'fullstripe_main_hooks_action' );
 	}
@@ -851,7 +851,7 @@ class MM_WPFS {
 		if ( $this->includeDefaultStyles ) {
 
 			wp_register_style( self::HANDLE_STYLE_WPFS_VARIABLES, MM_WPFS_Assets::css( 'wpfs-variables.css' ), null, MM_WPFS::VERSION );
-			wp_register_style( self::HANDLE_STYLE_WPFS_FORMS, MM_WPFS_Assets::css( 'wpfs-forms.css' ), array( self::HANDLE_STYLE_WPFS_VARIABLES ), MM_WPFS::VERSION );
+			wp_register_style( self::HANDLE_STYLE_WPFS_FORMS, MM_WPFS_Assets::css( 'wpfs-forms.css' ), [ self::HANDLE_STYLE_WPFS_VARIABLES ], MM_WPFS::VERSION );
 
 			wp_enqueue_style( self::HANDLE_STYLE_WPFS_FORMS );
 		}
@@ -868,14 +868,14 @@ class MM_WPFS {
 		}
 
 		$source = add_query_arg(
-			array(
+			[
 				'render' => 'explicit'
-			),
+			],
 			self::SOURCE_GOOGLE_RECAPTCHA_V2_API_JS
 		);
 		wp_register_script( self::HANDLE_GOOGLE_RECAPTCHA_V_2, $source, null, MM_WPFS::VERSION, true /* in footer */ );
 		wp_register_script( self::HANDLE_SPRINTF_JS, MM_WPFS_Assets::scripts( 'sprintf.min.js' ), null, MM_WPFS::VERSION );
-		wp_register_script( self::HANDLE_STRIPE_JS_V_3, 'https://js.stripe.com/v3/', array( 'jquery' ) );
+		wp_register_script( self::HANDLE_STRIPE_JS_V_3, 'https://js.stripe.com/v3/', [ 'jquery' ] );
 		wp_register_script( self::HANDLE_WP_FULL_STRIPE_UTILS_JS, MM_WPFS_Assets::scripts( 'wpfs-utils.js' ), null, MM_WPFS::VERSION );
 
 		wp_enqueue_script( self::HANDLE_SPRINTF_JS );
@@ -885,7 +885,7 @@ class MM_WPFS {
 			MM_WPFS_ReCaptcha::getSecureInlineForms( $this->staticContext )
 			|| MM_WPFS_ReCaptcha::getSecureCheckoutForms( $this->staticContext )
 		) {
-			$dependencies = array(
+			$dependencies = [
 				'jquery',
 				'jquery-ui-core',
 				'jquery-ui-selectmenu',
@@ -896,9 +896,9 @@ class MM_WPFS {
 				self::HANDLE_WP_FULL_STRIPE_UTILS_JS,
 				self::HANDLE_STRIPE_JS_V_3,
 				self::HANDLE_GOOGLE_RECAPTCHA_V_2
-			);
+			];
 		} else {
-			$dependencies = array(
+			$dependencies = [
 				'jquery',
 				'jquery-ui-core',
 				'jquery-ui-selectmenu',
@@ -908,7 +908,7 @@ class MM_WPFS {
 				self::HANDLE_SPRINTF_JS,
 				self::HANDLE_WP_FULL_STRIPE_UTILS_JS,
 				self::HANDLE_STRIPE_JS_V_3
-			);
+			];
 		}
 		wp_enqueue_script( self::HANDLE_WP_FULL_STRIPE_JS, MM_WPFS_Assets::scripts( 'wpfs.js' ), $dependencies, MM_WPFS::VERSION );
 
@@ -916,10 +916,10 @@ class MM_WPFS {
 	}
 
 	function fullstripe_set_common_js_variables() {
-		$wpfsFormOptions = array(
+		$wpfsFormOptions = [
 			self::JS_VARIABLE_AJAX_URL => admin_url( 'admin-ajax.php' ),
 			self::JS_VARIABLE_GOOGLE_RECAPTCHA_SITE_KEY => MM_WPFS_ReCaptcha::getSiteKey( $this->staticContext ),
-			self::JS_VARIABLE_FORM_FIELDS => array(
+			self::JS_VARIABLE_FORM_FIELDS => [
 				'inlinePayment' => MM_WPFS_InlinePaymentFormView::getFields(),
 				'inlineSaveCard' => MM_WPFS_InlineSaveCardFormView::getFields(),
 				'inlineSubscription' => MM_WPFS_InlineSubscriptionFormView::getFields(),
@@ -928,9 +928,9 @@ class MM_WPFS {
 				'checkoutSaveCard' => MM_WPFS_CheckoutSaveCardFormView::getFields(),
 				'checkoutSubscription' => MM_WPFS_CheckoutSubscriptionFormView::getFields(),
 				'checkoutDonation' => MM_WPFS_CheckoutDonationFormView::getFields(),
-			),
-			self::JS_VARIABLE_L10N => array(
-				'validation_errors' => array(
+			],
+			self::JS_VARIABLE_L10N => [
+				'validation_errors' => [
 					'internal_error' =>
 						/* translators: Banner message of internal error when no error message is returned by the application */
 						__( 'An internal error occurred.', 'wp-full-stripe-free' ),
@@ -951,8 +951,8 @@ class MM_WPFS {
 					'invalid_payment_amount_title' =>
 						/* translators: Banner title when the payment amount cannot be determined (the form has been tampered with) */
 						__( 'Invalid payment amount', 'wp-full-stripe-free' )
-				),
-				'stripe_errors' => array(
+				],
+				'stripe_errors' => [
 					MM_WPFS_Stripe::INVALID_NUMBER_ERROR => $this->stripe->resolveErrorMessageByCode( MM_WPFS_Stripe::INVALID_NUMBER_ERROR ),
 					MM_WPFS_Stripe::INVALID_NUMBER_ERROR_EXP_MONTH => $this->stripe->resolveErrorMessageByCode( MM_WPFS_Stripe::INVALID_NUMBER_ERROR_EXP_MONTH ),
 					MM_WPFS_Stripe::INVALID_NUMBER_ERROR_EXP_YEAR => $this->stripe->resolveErrorMessageByCode( MM_WPFS_Stripe::INVALID_NUMBER_ERROR_EXP_YEAR ),
@@ -968,8 +968,8 @@ class MM_WPFS {
 					MM_WPFS_Stripe::PROCESSING_ERROR => $this->stripe->resolveErrorMessageByCode( MM_WPFS_Stripe::PROCESSING_ERROR ),
 					MM_WPFS_Stripe::MISSING_PAYMENT_INFORMATION => $this->stripe->resolveErrorMessageByCode( MM_WPFS_Stripe::MISSING_PAYMENT_INFORMATION ),
 					MM_WPFS_Stripe::COULD_NOT_FIND_PAYMENT_INFORMATION => $this->stripe->resolveErrorMessageByCode( MM_WPFS_Stripe::COULD_NOT_FIND_PAYMENT_INFORMATION )
-				),
-				'subscription_charge_interval_templates' => array(
+				],
+				'subscription_charge_interval_templates' => [
 					'daily' => __( 'Subscription will be charged every day.', 'wp-full-stripe-free' ),
 					'weekly' => __( 'Subscription will be charged every week.', 'wp-full-stripe-free' ),
 					'monthly' => __( 'Subscription will be charged every month.', 'wp-full-stripe-free' ),
@@ -986,8 +986,8 @@ class MM_WPFS {
 					'x_times_y_weeks' => __( 'Subscription will be charged every %1$d weeks, for %2$d occasions.', 'wp-full-stripe-free' ),
 					'x_times_y_months' => __( 'Subscription will be charged every %1$d months, for %2$d occasions.', 'wp-full-stripe-free' ),
 					'x_times_y_years' => __( 'Subscription will be charged every %1$d years, for %2$d occasions.', 'wp-full-stripe-free' ),
-				),
-				'subscription_pricing_templates' => array(
+				],
+				'subscription_pricing_templates' => [
 					'daily' => __( '%1$s / day', 'wp-full-stripe-free' ),
 					'weekly' => __( '%1$s / week', 'wp-full-stripe-free' ),
 					'monthly' => __( '%1$s / month', 'wp-full-stripe-free' ),
@@ -996,13 +996,13 @@ class MM_WPFS {
 					'x_weeks' => __( '%1$s / %2$d weeks', 'wp-full-stripe-free' ),
 					'x_months' => __( '%1$s / %2$d months', 'wp-full-stripe-free' ),
 					'x_years' => __( '%1$s / %2$d years', 'wp-full-stripe-free' ),
-				),
-				'products' => array(
+				],
+				'products' => [
 					'default_product_name' => __( 'My product', 'wp-full-stripe-free' ),
 					'other_amount_label' => __( 'Other amount', 'wp-full-stripe-free' ),
 					'the_selected_product_label' => __( 'The selected product', 'wp-full-stripe-free' ),
-				),
-				'application_errors' => array(
+				],
+				'application_errors' => [
 					/* translators: Banner title of application error when instantiating the Stripe object */
 					'stripe_instantiation_error_title' => __( 'Stripe error', 'wp-full-stripe-free' ),
 					/* translators: Error message when instantiating the Stripe object
@@ -1010,8 +1010,8 @@ class MM_WPFS {
 					 */
 					'stripe_instantiation_error_message' => __( "Cannot initialize Stripe: %s", 'wp-full-stripe-free' ),
 					'not_connected_to_stripe' => __( 'You are not connected to Stripe. Please connect to Stripe in the plugin settings.', 'wp-full-stripe-free' ),
-				),
-				'product_pricing' => array(
+				],
+				'product_pricing' => [
 					/* translators: Default tax label */
 					'default_tax_label' => __( 'Tax', 'wp-full-stripe-free' ),
 					/* translators: Default label of coupon line items */
@@ -1024,12 +1024,12 @@ class MM_WPFS {
 					'tax_label_inclusive' => __( '%s (inclusive)', 'wp-full-stripe-free' ),
 					/* translators: Tax line item label, no decoration (no percentage, not inclusive) */
 					'tax_label' => '%s',
-				),
+				],
 				'generic_error' => __( 'An error occurred. Please contact the website administrator.', 'wp-full-stripe-free' ),
-			),
+			],
 			'isAdmin' => current_user_can( 'administrator' ),
 			'isConnected' => MM_WPFS_Utils::isConnected()
-		);
+		];
 
 		$apiMode = $this->options->get( MM_WPFS_Options::OPTION_API_MODE );
 		$isTestMode = $apiMode === MM_WPFS::STRIPE_API_MODE_TEST;
@@ -1149,7 +1149,7 @@ class MM_WPFS {
 	 * @return array
 	 */
 	private function getProductsByForm( $form ): array {
-		$result = array();
+		$result = [];
 
 		if ( isset( $form->decoratedProducts ) ) {
 			$result = MM_WPFS_Utils::decodeJsonArray( $form->decoratedProducts );
@@ -1203,7 +1203,7 @@ class MM_WPFS {
 	}
 
 	private function retrievePriceIdsProductIdsAssociativeArray( $priceIds ) {
-		$result = array();
+		$result = [];
 
 		foreach ( $priceIds as $priceId ) {
 			try {

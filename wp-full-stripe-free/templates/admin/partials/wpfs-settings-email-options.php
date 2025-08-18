@@ -39,7 +39,7 @@
                     </div>
                 </div>
                 <?php
-                    $bccAddresses = array_diff( $emailOptions->bccEmails, array( $emailOptions->adminEmail ));
+                    $bccAddresses = array_diff( $emailOptions->bccEmails, [ $emailOptions->adminEmail ]);
                 ?>
                 <div class="wpfs-tags-input-wrapper js-tags-input">
                 <?php foreach ( $bccAddresses as $bccAddress  ) { ?>

@@ -74,7 +74,7 @@ class MM_WPFS_PrivateAPI_v1 {
      *
      * @return string
      */
-    static public function getAdminUrlBySlugAndParams( $slug, $params = array() ) : string {
+    static public function getAdminUrlBySlugAndParams( $slug, $params = [] ) : string {
         return MM_WPFS_Admin_Menu::getAdminUrlBySlugAndParams( $slug, $params );
     }
 
@@ -252,7 +252,7 @@ class MM_WPFS_API_v1 {
 
     /**
      * @param $apiMode
-     * @return \StripeWPFS\StripeClient
+     * @return \StripeWPFS\Stripe\StripeClient
      * @throws Exception
      */
     public static function getStripeClient( $apiMode = self::STRIPE_API_MODE_CURRENT ) {
@@ -278,8 +278,8 @@ class MM_WPFS_API_v1 {
 
     /**
      * @param $subscriptionId string
-     * @return \StripeWPFS\Subscription
-     * @throws \StripeWPFS\Exception\ApiErrorException
+     * @return \StripeWPFS\Stripe\Subscription
+     * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
      */
     public static function getStripeSubscription($subscriptionId ) {
         return self::getInstance()->stripe->retrieveSubscription($subscriptionId );
@@ -288,8 +288,8 @@ class MM_WPFS_API_v1 {
     /**
      * @param $subscriptionId
      * @param $params
-     * @return \StripeWPFS\Subscription
-     * @throws \StripeWPFS\Exception\ApiErrorException
+     * @return \StripeWPFS\Stripe\Subscription
+     * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
      */
     public static function getStripeSubscriptionWithParams( $subscriptionId, $params ) {
         return self::getInstance()->stripe->retrieveSubscriptionWithParams( $subscriptionId, $params );
@@ -297,7 +297,7 @@ class MM_WPFS_API_v1 {
 
     /**
      * @param $customerId
-     * @return \StripeWPFS\Customer
+     * @return \StripeWPFS\Stripe\Customer
      */
     public static function getStripeCustomer( $customerId ) {
         return self::getInstance()->stripe->retrieveCustomer( $customerId );
@@ -306,7 +306,7 @@ class MM_WPFS_API_v1 {
     /**
      * @param $customerId
      * @param $params
-     * @return \StripeWPFS\Customer
+     * @return \StripeWPFS\Stripe\Customer
      */
     public static function getStripeCustomerWithParams( $customerId, $params ) {
         return self::getInstance()->stripe->retrieveCustomerWithParams( $customerId, $params );
@@ -314,8 +314,8 @@ class MM_WPFS_API_v1 {
 
     /**
      * @param $params
-     * @return \StripeWPFS\Collection
-     * @throws \StripeWPFS\Exception\ApiErrorException
+     * @return \StripeWPFS\Stripe\Collection
+     * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
      */
     public static function getStripeCustomersWithParams( $params )  {
         return self::getInstance()->stripe->getCustomersWithParams( $params );
@@ -323,7 +323,7 @@ class MM_WPFS_API_v1 {
 
     /**
      * @param $planId
-     * @return \StripeWPFS\Price|null
+     * @return \StripeWPFS\Stripe\Price|null
      */
     public static function getStripePlan( $planId ) {
         return self::getInstance()->stripe->retrievePlan( $planId );
@@ -334,7 +334,7 @@ class MM_WPFS_API_v1 {
      * @param $stripeSubscriptionId
      * @param $stripePlanId
      *
-     * @throws \StripeWPFS\Exception\ApiErrorException
+     * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
      */
     public static function changeSubscriptionPlan( $stripeCustomerId, $stripeSubscriptionId, $stripePlanId ) {
         $success = self::getInstance()->stripe->updateSubscriptionPlanAndQuantity( $stripeCustomerId, $stripeSubscriptionId, $stripePlanId );
@@ -347,7 +347,7 @@ class MM_WPFS_API_v1 {
      * @param $stripeCustomerId
      * @param $stripeSubscriptionId
      * @return bool
-     * @throws \StripeWPFS\Exception\ApiErrorException
+     * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
      */
     public static function cancelSubscription( $stripeCustomerId, $stripeSubscriptionId ) {
         return self::getInstance()->stripe->cancelSubscription(
@@ -496,7 +496,7 @@ class WPFS_API_v2 extends MM_WPFS_API_v1 {
     /**
      * @param $stripeSubscriptionId
      * @return bool
-     * @throws \StripeWPFS\Exception\ApiErrorException
+     * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
      */
     public static function cancelSubscriptionById( $stripeSubscriptionId ) {
         return self::getInstance()->stripe->cancelSubscription(

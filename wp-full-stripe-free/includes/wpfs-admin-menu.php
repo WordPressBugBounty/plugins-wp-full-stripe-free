@@ -100,13 +100,13 @@ class MM_WPFS_Admin_Menu {
 		$this->initActionHooks();
 		$this->initDemoMode();
 
-		add_filter( 'themeisle_sdk_blackfriday_data', array( $this, 'add_black_friday_data' ) );
+		add_filter( 'themeisle_sdk_blackfriday_data', [ $this, 'add_black_friday_data' ] );
 	}
 
 	private function initActionHooks() {
-		add_action( 'admin_init', array( $this, 'admin_init' ) );
-		add_action( 'admin_menu', array( $this, 'menu_pages' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_global_css' ) );
+		add_action( 'admin_init', [ $this, 'admin_init' ] );
+		add_action( 'admin_menu', [ $this, 'menu_pages' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_global_css' ] );
 	}
 
 	private function initDemoMode() {
@@ -123,10 +123,10 @@ class MM_WPFS_Admin_Menu {
 		$savedProducts = MM_WPFS_Utils::decodeJsonArray( $form->decoratedProducts );
 		$priceIds = MM_WPFS_Pricing::extractPriceIdsFromProductsStatic( $savedProducts );
 
-		$products = array();
-		$productsLookup = array();
+		$products = [];
+		$productsLookup = [];
 
-		$stripePrices = array();
+		$stripePrices = [];
 		try {
 			$stripePrices = $this->stripe->getOnetimePrices();
 		} catch (Exception $ex) {
@@ -134,12 +134,12 @@ class MM_WPFS_Admin_Menu {
 		}
 		foreach ( $stripePrices as $stripePrice ) {
 			if ( array_search( $stripePrice->id, $priceIds ) !== false ) {
-				$productsLookup[ $stripePrice->id ] = array(
+				$productsLookup[ $stripePrice->id ] = [
 					'name' => $stripePrice->product->name,
 					'price' => $stripePrice->unit_amount,
 					'currency' => $stripePrice->currency,
 					'stripePriceId' => $stripePrice->id
-				);
+				];
 			}
 		}
 
@@ -157,16 +157,16 @@ class MM_WPFS_Admin_Menu {
 	 * @return array
 	 */
 	protected function prepareTaxRates( $form ) {
-		$savedTaxRates = array();
+		$savedTaxRates = [];
 		if ( ! is_null( $form->vatRates ) ) {
 			$savedTaxRates = json_decode( $form->vatRates );
 		}
 		$taxRateIds = MM_WPFS_Pricing::extractTaxRateIdsStatic( $savedTaxRates );
 
-		$taxRates = array();
-		$taxRatesLookup = array();
+		$taxRates = [];
+		$taxRatesLookup = [];
 
-		$stripeTaxRates = array();
+		$stripeTaxRates = [];
 		try {
 			$stripeTaxRates = $this->stripe->getTaxRates();
 		} catch (Exception $ex) {
@@ -174,7 +174,7 @@ class MM_WPFS_Admin_Menu {
 		}
 		foreach ( $stripeTaxRates as $stripeTaxRate ) {
 			if ( array_search( $stripeTaxRate->id, $taxRateIds ) !== false ) {
-				$taxRatesLookup[ $stripeTaxRate->id ] = array(
+				$taxRatesLookup[ $stripeTaxRate->id ] = [
 					'displayName' => $stripeTaxRate->display_name,
 					'inclusive' => $stripeTaxRate->inclusive,
 					'country' => $stripeTaxRate->country,
@@ -184,7 +184,7 @@ class MM_WPFS_Admin_Menu {
 					'percentage' => $stripeTaxRate->percentage,
 					'jurisdiction' => $stripeTaxRate->jurisdiction,
 					'taxRateId' => $stripeTaxRate->id
-				);
+				];
 			}
 		}
 
@@ -211,7 +211,7 @@ class MM_WPFS_Admin_Menu {
 		wp_register_style( 'fullstripe-admin-revamped-css-extra', MM_WPFS_Assets::css( 'wpfs-admin-extra.css' ), [], MM_WPFS::VERSION );
 		wp_register_style( 'fullstripe-slick-css', MM_WPFS_Assets::css( 'slick.css' ), [], MM_WPFS::VERSION );
 
-		add_filter( 'admin_body_class', array( $this, 'wpfs_admin_body_class' ) );
+		add_filter( 'admin_body_class', [ $this, 'wpfs_admin_body_class' ] );
 	}
 
 	function menu_pages() {
@@ -224,7 +224,7 @@ class MM_WPFS_Admin_Menu {
 			__( 'Full Pay', 'wp-full-stripe-free' );
 		$menu_slug = self::SLUG_TRANSACTIONS;
 		$capability = $this->capability;
-		$function = array( $this, 'fullstripe_transactions' );
+		$function = [ $this, 'fullstripe_transactions' ];
 		$menu_icon = MM_WPFS_Assets::images( 'wpfs-admin-icon.svg' );
 		add_menu_page( $page_title, $menu_title, $capability, $menu_slug, $function, $menu_icon );
 
@@ -233,10 +233,10 @@ class MM_WPFS_Admin_Menu {
 			/* translators: Submenu title of the "Transactions" page in WordPress admin */
 			__( 'Transactions', 'wp-full-stripe-free' );
 		$menu_hook = add_submenu_page( $menu_slug, $page_title, $sub_menu_title, $capability, $menu_slug, $function );
-		add_action( 'admin_print_scripts-' . $menu_hook, array(
+		add_action( 'admin_print_scripts-' . $menu_hook, [
 			$this,
 			'fullstripe_admin_scripts'
-		) ); //this ensures script/styles only loaded for this plugin admin pages
+		] ); //this ensures script/styles only loaded for this plugin admin pages
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "Manage forms" page in WordPress admin */
@@ -246,9 +246,9 @@ class MM_WPFS_Admin_Menu {
 			__( 'Payment Forms', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_FORMS;
 
-		$submenu_function = array( $this, 'fullstripe_forms' );
+		$submenu_function = [ $this, 'fullstripe_forms' ];
 		$menu_hook = add_submenu_page( $menu_slug, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
-		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
+		add_action( 'admin_print_scripts-' . $menu_hook, [ $this, 'fullstripe_admin_scripts' ] );
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "Create form" page in WordPress admin */
@@ -257,9 +257,9 @@ class MM_WPFS_Admin_Menu {
 			/* translators: Submenu title of the "Create form" page in WordPress admin */
 			__( 'Create form', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_CREATE_FORM;
-		$submenu_function = array( $this, 'fullstripe_create_form' );
+		$submenu_function = [ $this, 'fullstripe_create_form' ];
 		$menu_hook = add_submenu_page( self::SLUG_FORMS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
-		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
+		add_action( 'admin_print_scripts-' . $menu_hook, [ $this, 'fullstripe_admin_scripts' ] );
 
 		$submenu_page_title =
 			/* translators: Browser page title of "Settings" page in WordPress admin */
@@ -268,9 +268,9 @@ class MM_WPFS_Admin_Menu {
 			/* translators: Submenu title of the "Settings" page in WordPress admin */
 			__( 'Reports', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_REPORTS;
-		$submenu_function = array( $this, 'fullstripe_reports' );
+		$submenu_function = [ $this, 'fullstripe_reports' ];
 		$menu_hook = add_submenu_page( $menu_slug, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
-		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
+		add_action( 'admin_print_scripts-' . $menu_hook, [ $this, 'fullstripe_admin_scripts' ] );
 
 		$submenu_page_title =
 			/* translators: Browser page title of "Settings" page in WordPress admin */
@@ -279,9 +279,9 @@ class MM_WPFS_Admin_Menu {
 			/* translators: Submenu title of the "Settings" page in WordPress admin */
 			__( 'Settings', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_SETTINGS;
-		$submenu_function = array( $this, 'fullstripe_settings' );
+		$submenu_function = [ $this, 'fullstripe_settings' ];
 		$menu_hook = add_submenu_page( $menu_slug, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
-		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
+		add_action( 'admin_print_scripts-' . $menu_hook, [ $this, 'fullstripe_admin_scripts' ] );
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "Configure Stripe account" page in WordPress admin */
@@ -290,9 +290,9 @@ class MM_WPFS_Admin_Menu {
 			/* translators: Submenu title of the "Configure Stripe account" page in WordPress admin */
 			__( 'Stripe account', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_SETTINGS_STRIPE;
-		$submenu_function = array( $this, 'fullstripe_settings_stripe' );
+		$submenu_function = [ $this, 'fullstripe_settings_stripe' ];
 		$menu_hook = add_submenu_page( self::SLUG_SETTINGS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
-		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
+		add_action( 'admin_print_scripts-' . $menu_hook, [ $this, 'fullstripe_admin_scripts' ] );
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "Customize forms" page in WordPress admin */
@@ -301,9 +301,9 @@ class MM_WPFS_Admin_Menu {
 			/* translators: Submenu title of the "Customize forms" page in WordPress admin */
 			__( 'Forms', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_SETTINGS_FORMS;
-		$submenu_function = array( $this, 'fullstripe_settings_forms' );
+		$submenu_function = [ $this, 'fullstripe_settings_forms' ];
 		$menu_hook = add_submenu_page( self::SLUG_SETTINGS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
-		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
+		add_action( 'admin_print_scripts-' . $menu_hook, [ $this, 'fullstripe_admin_scripts' ] );
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "Email notifications" page in WordPress admin */
@@ -312,9 +312,9 @@ class MM_WPFS_Admin_Menu {
 			/* translators: Submenu title of the "Email notifications" page in WordPress admin */
 			__( 'Email notifications', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_SETTINGS_EMAIL_NOTIFICATIONS;
-		$submenu_function = array( $this, 'fullstripe_settings_email' );
+		$submenu_function = [ $this, 'fullstripe_settings_email' ];
 		$menu_hook = add_submenu_page( self::SLUG_SETTINGS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
-		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
+		add_action( 'admin_print_scripts-' . $menu_hook, [ $this, 'fullstripe_admin_scripts' ] );
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "Security settings" page in WordPress admin */
@@ -323,9 +323,9 @@ class MM_WPFS_Admin_Menu {
 			/* translators: Submenu title of the "Security settings" page in WordPress admin */
 			__( 'Security', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_SETTINGS_SECURITY;
-		$submenu_function = array( $this, 'fullstripe_settings_security' );
+		$submenu_function = [ $this, 'fullstripe_settings_security' ];
 		$menu_hook = add_submenu_page( self::SLUG_SETTINGS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
-		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
+		add_action( 'admin_print_scripts-' . $menu_hook, [ $this, 'fullstripe_admin_scripts' ] );
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "Customer portal" page in WordPress admin */
@@ -334,9 +334,9 @@ class MM_WPFS_Admin_Menu {
 			/* translators: Submenu title of the "Customer portal" page in WordPress admin */
 			__( 'Customer portal', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_SETTINGS_CUSTOMER_PORTAL;
-		$submenu_function = array( $this, 'fullstripe_settings_my_account' );
+		$submenu_function = [ $this, 'fullstripe_settings_my_account' ];
 		$menu_hook = add_submenu_page( self::SLUG_SETTINGS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
-		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
+		add_action( 'admin_print_scripts-' . $menu_hook, [ $this, 'fullstripe_admin_scripts' ] );
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "WordPress dashboard settings" page in WordPress admin */
@@ -345,9 +345,9 @@ class MM_WPFS_Admin_Menu {
 			/* translators: Submenu title of the "WordPress dashboard settings" page in WordPress admin */
 			__( 'WordPress dashboard', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_SETTINGS_WORDPRESS_DASHBOARD;
-		$submenu_function = array( $this, 'fullstripe_settings_wp_dashboard' );
+		$submenu_function = [ $this, 'fullstripe_settings_wp_dashboard' ];
 		$menu_hook = add_submenu_page( self::SLUG_SETTINGS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
-		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
+		add_action( 'admin_print_scripts-' . $menu_hook, [ $this, 'fullstripe_admin_scripts' ] );
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "Error logging" settings page in WordPress admin */
@@ -356,9 +356,9 @@ class MM_WPFS_Admin_Menu {
 			/* translators: Submenu title of the "Error logging" settings page in WordPress admin */
 			__( 'Error logging', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_SETTINGS_LOGS;
-		$submenu_function = array( $this, 'fullstripe_settings_logs' );
+		$submenu_function = [ $this, 'fullstripe_settings_logs' ];
 		$menu_hook = add_submenu_page( self::SLUG_SETTINGS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
-		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
+		add_action( 'admin_print_scripts-' . $menu_hook, [ $this, 'fullstripe_admin_scripts' ] );
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "License" settings page in WordPress admin */
@@ -367,9 +367,9 @@ class MM_WPFS_Admin_Menu {
 			/* translators: Submenu title of the "License" settings page in WordPress admin */
 			__( 'License', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_SETTINGS_LICENSE;
-		$submenu_function = array( $this, 'fullstripe_settings_license' );
+		$submenu_function = [ $this, 'fullstripe_settings_license' ];
 		$menu_hook = add_submenu_page( self::SLUG_SETTINGS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
-		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
+		add_action( 'admin_print_scripts-' . $menu_hook, [ $this, 'fullstripe_admin_scripts' ] );
 
 		$submenu_page_title =
 			/* translators: Browser page title of the "Edit form" page in WordPress admin */
@@ -378,9 +378,9 @@ class MM_WPFS_Admin_Menu {
 			/* translators: Submenu title of the "Edit form" page in WordPress admin */
 			__( 'Edit form', 'wp-full-stripe-free' );
 		$submenu_slug = self::SLUG_EDIT_FORM;
-		$submenu_function = array( $this, 'fullstripe_edit_form' );
+		$submenu_function = [ $this, 'fullstripe_edit_form' ];
 		$menu_hook = add_submenu_page( self::SLUG_FORMS, $submenu_page_title, $submenu_title, $capability, $submenu_slug, $submenu_function );
-		add_action( 'admin_print_scripts-' . $menu_hook, array( $this, 'fullstripe_admin_scripts' ) );
+		add_action( 'admin_print_scripts-' . $menu_hook, [ $this, 'fullstripe_admin_scripts' ] );
 
 		do_action( 'fullstripe_admin_menus', $menu_slug );
 	}
@@ -394,13 +394,13 @@ class MM_WPFS_Admin_Menu {
 		] );
 
 		// todo: refactor magic strings
-		$result = array(
+		$result = [
 			'customInputFieldCount' => MM_WPFS::getCustomFieldMaxCount( $this->staticContext ),
 			'currencyDecimalSeparatorSymbol' => $options[ MM_WPFS_Options::OPTION_DECIMAL_SEPARATOR_SYMBOL ],
 			'currencyShowSymbolInsteadOfCode' => $options[ MM_WPFS_Options::OPTION_SHOW_CURRENCY_SYMBOL_INSTEAD_OF_CODE ],
 			'currencyShowIdentifierOnLeft' => $options[ MM_WPFS_Options::OPTION_SHOW_CURRENCY_SIGN_AT_FIRST_POSITION ],
 			'currencyPutSpaceBetweenCurrencyAndAmount' => $options[ MM_WPFS_Options::OPTION_PUT_WHITESPACE_BETWEEN_CURRENCY_AND_AMOUNT ]
-		);
+		];
 
 		return $result;
 	}
@@ -411,22 +411,22 @@ class MM_WPFS_Admin_Menu {
 	public static function createMacroData() {
 		$data = new \StdClass;
 
-		$data->templateIds = apply_filters( 'fullstripe_email_template_ids', array(
+		$data->templateIds = apply_filters( 'fullstripe_email_template_ids', [
 			MM_WPFS::EMAIL_TEMPLATE_ID_PAYMENT_RECEIPT,
 			MM_WPFS::EMAIL_TEMPLATE_ID_CARD_SAVED,
 			MM_WPFS::EMAIL_TEMPLATE_ID_SUBSCRIPTION_RECEIPT,
 			MM_WPFS::EMAIL_TEMPLATE_ID_SUBSCRIPTION_ENDED,
 			MM_WPFS::EMAIL_TEMPLATE_ID_DONATION_RECEIPT,
 			MM_WPFS::EMAIL_TEMPLATE_ID_CUSTOMER_PORTAL_SECURITY_CODE
-		) );
-		$data->macroLists = apply_filters( 'fullstripe_email_template_macros', array(
+		] );
+		$data->macroLists = apply_filters( 'fullstripe_email_template_macros', [
 			MM_WPFS::EMAIL_TEMPLATE_ID_PAYMENT_RECEIPT => MM_WPFS_OneTimePaymentMacroReplacer::getMacroKeys(),
 			MM_WPFS::EMAIL_TEMPLATE_ID_CARD_SAVED => MM_WPFS_SaveCardMacroReplacer::getMacroKeys(),
 			MM_WPFS::EMAIL_TEMPLATE_ID_SUBSCRIPTION_RECEIPT => MM_WPFS_SubscriptionMacroReplacer::getMacroKeys(),
 			MM_WPFS::EMAIL_TEMPLATE_ID_SUBSCRIPTION_ENDED => MM_WPFS_SubscriptionMacroReplacer::getMacroKeys(),
 			MM_WPFS::EMAIL_TEMPLATE_ID_DONATION_RECEIPT => MM_WPFS_DonationMacroReplacer::getMacroKeys(),
 			MM_WPFS::EMAIL_TEMPLATE_ID_CUSTOMER_PORTAL_SECURITY_CODE => MM_WPFS_MyAccountLoginMacroReplacer::getMacroKeys()
-		) );
+		] );
 		$data->descriptions = apply_filters(
 			'fullstripe_macro_descriptions',
 			MacroHelperTools::getMacroDescriptions()
@@ -515,7 +515,7 @@ class MM_WPFS_Admin_Menu {
 		$localizer = MM_WPFS_AdminScriptLocalizerFactory::createLocalizer( $this->options, $page, $tab );
 		$localizer->enqueueScripts();
 
-		$dependencies = array(
+		$dependencies = [
 			'sprintf-js',
 			'wp-full-stripe-utils-js',
 			'underscore',
@@ -530,15 +530,15 @@ class MM_WPFS_Admin_Menu {
 			'jquery-ui-button',
 			'jquery-ui-tooltip',
 			'jquery-ui-sortable'
-		);
+		];
 
 		array_push( $dependencies, apply_filters( 'themeisle_sdk_dependency_script_handler', 'survey' ) );
 
 		wp_enqueue_script( 'wp-full-stripe-admin-library-js', MM_WPFS_Assets::scripts( 'wpfs-admin-library.js' ), $dependencies, MM_WPFS::VERSION );
 
-		$dependencies = array(
+		$dependencies = [
 			'wp-full-stripe-admin-library-js',
-		);
+		];
 		$dependencies = array_merge( $localizer->getScriptDependencies(), $dependencies );
 		wp_enqueue_script( 'wp-full-stripe-admin-js', MM_WPFS_Assets::scripts( 'wpfs-admin.js' ), $dependencies, MM_WPFS::VERSION );
 
@@ -547,7 +547,7 @@ class MM_WPFS_Admin_Menu {
 		$site_id      = $this->generateSiteID( get_site_url() );
 		$stripe_mode  = $this->options->get( MM_WPFS_Options::OPTION_API_MODE );
 
-		$wpfsAdminSettings = array(
+		$wpfsAdminSettings = [
 			'rootUrl'            => get_site_url(),
 			'ajaxUrl'            => admin_url( 'admin-ajax.php' ),
 			'nonce'              => wp_create_nonce( 'wp-full-stripe-admin-nonce' ),
@@ -559,7 +559,7 @@ class MM_WPFS_Admin_Menu {
 			'connected'          => ($stripe_mode === MM_WPFS::STRIPE_API_MODE_TEST) ? $this->options->get( MM_WPFS_Options::OPTION_TEST_ACCOUNT_ID ) !== null : $this->options->get( MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID ) !== null,
 			'transactions'       => $this->getTransactionCount(),
 			'connectionPage'     => MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS_STRIPE )
-		);
+		];
 
 		$wpfsAdminSettings = array_merge( $wpfsAdminSettings, $localizer->getSettingsOptions() );
 		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminSettings', $wpfsAdminSettings );
@@ -718,7 +718,7 @@ class MM_WPFS_Admin_Menu {
 			}
 		}
 
-		return array( $cssStyle, $title, $description );
+		return [ $cssStyle, $title, $description ];
 	}
 
 	protected function getStripeAccountData() {
@@ -863,20 +863,20 @@ class MM_WPFS_Admin_Menu {
 	 * @return array[]
 	 */
 	private function prepareStripeSettingsLookupTabIds() {
-		$lookupTabs = array(
-			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_CONNECTION => array(
+		$lookupTabs = [
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_CONNECTION => [
 				'title' =>
 					/* translators: "Connection" tab of the "Stripe settings" page  */
 					__( 'Connection', 'wp-full-stripe-free' ),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_CONNECTION
-			),
-			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_WEBHOOK => array(
+			],
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_WEBHOOK => [
 				'title' =>
 					/* translators: "Webhooks" tab of the "Form settings" page  */
 					__( 'Webhooks', 'wp-full-stripe-free' ),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_WEBHOOK
-			)
-		);
+			]
+		];
 
 		return $lookupTabs;
 	}
@@ -930,7 +930,7 @@ class MM_WPFS_Admin_Menu {
 			MM_WPFS_Options::OPTION_TEST_ACCOUNT_ID
 		] );
 
-		$tabs = array();
+		$tabs = [];
 		array_push( $tabs, $lookupTabs[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_CONNECTION ] );
 
 		if ( ! empty( array_filter( $wpfp_options ) ) ) {
@@ -1232,10 +1232,10 @@ class MM_WPFS_Admin_Menu {
 		}
 
 		if ( $rangeFilter === self::PARAM_VALUE_RANGE_CUSTOM ) {
-			$range = array(
+			$range = [
 				'start' => $startDate,
 				'end'   => $endDate
-			);
+			];
 		} else {
 			$range = $rangeFilter;
 		}
@@ -1281,104 +1281,104 @@ class MM_WPFS_Admin_Menu {
 		}
 		$disabled = $disabled && $isNewFlow;
 
-		$settingsItems = array(
-			array(
+		$settingsItems = [
+			[
 				'slug' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE,
 				'cssClasses' => 'wpfs-illu-stripe',
 				'url' => $this->getAdminUrlBySlugAndParams(MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE, [MM_WPFS_Admin_Menu::PARAM_NAME_TAB => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_CONNECTION]),
 				'title' => __('Stripe Account', 'wp-full-stripe-free'),
 				'description' => __('Configure your Stripe API keys, and set up webhooks', 'wp-full-stripe-free'),
-				'group' => array(
+				'group' => [
 					'slug' => 'payments',
 					'title' => __('Payment Setup', 'wp-full-stripe-free'),
-				),
+				],
 				'disabled' => false,
-			),
-			array(
+			],
+			[
 				'slug' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_FORMS,
 				'cssClasses' => 'wpfs-illu-form',
 				'url' => $this->getAdminUrlBySlugAndParams(MM_WPFS_Admin_Menu::SLUG_SETTINGS_FORMS, [MM_WPFS_Admin_Menu::PARAM_NAME_TAB => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS]),
 				'title' => __('Forms', 'wp-full-stripe-free'),
 				'description' => __('Set global settings & styles for your payment forms', 'wp-full-stripe-free'),
-				'group' => array(
+				'group' => [
 					'slug' => 'payments',
 					'title' => __('Payment Setup', 'wp-full-stripe-free'),
-				),
+				],
 				'disabled' => $disabled,
-			),
-			array(
+			],
+			[
 				'slug' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_EMAIL_NOTIFICATIONS,
 				'cssClasses' => 'wpfs-illu-email',
 				'url' => $this->getAdminUrlBySlugAndParams(MM_WPFS_Admin_Menu::SLUG_SETTINGS_EMAIL_NOTIFICATIONS, [MM_WPFS_Admin_Menu::PARAM_NAME_TAB => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS]),
 				'title' => __('Email Notifications', 'wp-full-stripe-free'),
 				'description' => __('Customize and align your e-mails to your brand', 'wp-full-stripe-free'),
-				'group' => array(
+				'group' => [
 					'slug' => 'customer_experience',
 					'title' => __('Customer Experience', 'wp-full-stripe-free'),
-				),
+				],
 				'disabled' => $disabled,
-			),
-			array(
+			],
+			[
 				'slug' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_CUSTOMER_PORTAL,
 				'cssClasses' => 'wpfs-illu-customer-portal',
 				'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_CUSTOMER_PORTAL),
 				'title' => __('Customer Portal', 'wp-full-stripe-free'),
 				'description' => __('Configure how your customers can manage their cards, subscriptions, and invoices', 'wp-full-stripe-free'),
-				'group' => array(
+				'group' => [
 					'slug' => 'customer_experience',
 					'title' => __('Customer Experience', 'wp-full-stripe-free'),
-				),
+				],
 				'disabled' => $disabled,
-			),
-			array(
+			],
+			[
 				'slug' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_SECURITY,
 				'cssClasses' => 'wpfs-illu-security',
 				'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_SECURITY),
 				'title' => __('Security', 'wp-full-stripe-free'),
 				'description' => __('Keep your payment forms secure', 'wp-full-stripe-free'),
-				'group' => array(
+				'group' => [
 					'slug' => 'configuration',
 					'title' => __('Configuration', 'wp-full-stripe-free'),
-				),
+				],
 				'disabled' => $disabled,
-			),
-			array(
+			],
+			[
 				'slug' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_WORDPRESS_DASHBOARD,
 				'cssClasses' => 'wpfs-illu-credit-card',
 				'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_WORDPRESS_DASHBOARD),
 				'title' => __('Currency & Fee Recovery', 'wp-full-stripe-free'),
 				'description' => __('Set your currency format & fee recovery preferences', 'wp-full-stripe-free'),
-				'group' => array(
+				'group' => [
 					'slug' => 'configuration',
 					'title' => __('Configuration', 'wp-full-stripe-free'),
-				),
+				],
 				'disabled' => $disabled,
-			),
-			array(
+			],
+			[
 				'slug' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_LOGS,
 				'cssClasses' => 'wpfs-illu-logs',
 				'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_LOGS),
 				'title' => __('Error Logging', 'wp-full-stripe-free'),
 				'description' => __('Help the developers debug plugin issues', 'wp-full-stripe-free'),
-				'group' => array(
+				'group' => [
 					'slug' => 'configuration',
 					'title' => __('Configuration', 'wp-full-stripe-free'),
-				),
+				],
 				'disabled' => false,
-			),
-			array(
+			],
+			[
 				'slug' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_LICENSE,
 				'cssClasses' => 'wpfs-illu-lock',
 				'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_LICENSE),
 				'title' => __('License', 'wp-full-stripe-free'),
 				'description' => __('Enter or manage your license key to enable unlimited transactions without fees.', 'wp-full-stripe-free'),
-				'group' => array(
+				'group' => [
 					'slug' => 'configuration',
 					'title' => __('Configuration', 'wp-full-stripe-free'),
-				),
+				],
 				'disabled' => false,
-			),
-		);
+			],
+		];
 
 		$result->settingsItems = $settingsItems;
 		$result->disabled = $disabled;
@@ -1444,11 +1444,11 @@ class MM_WPFS_Admin_Menu {
 	 *
 	 * @return string
 	 */
-	public static function getAdminUrlBySlugAndParams( $slug, $params = array() ): string {
+	public static function getAdminUrlBySlugAndParams( $slug, $params = [] ): string {
 		$allParams = array_merge(
-			array(
+			[
 				'page' => $slug
-			),
+			],
 			$params
 		);
 
@@ -1659,7 +1659,7 @@ class MM_WPFS_Admin_Menu {
 	 * @return array
 	 */
 	private function filterFormList( $allForms, $textFilter, $modeFilter ) {
-		$forms = array();
+		$forms = [];
 
 		if ( empty( $textFilter ) && $modeFilter === self::PARAM_VALUE_API_MODE_ALL ) {
 			$forms = $allForms;
@@ -1714,12 +1714,12 @@ class MM_WPFS_Admin_Menu {
 	 * @return array
 	 */
 	protected function getTransactionCounts() {
-		$transactions = array(
+		$transactions = [
 			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS => $this->db->getNumberOfPaymentsByMethod( MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS ),
 			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS => $this->db->getNumberOfPaymentsByMethod( MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS ),
 			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS => $this->db->getNumberOfPaymentsByMethod( MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS ),
 			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS => $this->db->getNumberOfPaymentsByMethod( MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS )
-		);
+		];
 
 		return $transactions;
 	}
@@ -1755,40 +1755,40 @@ class MM_WPFS_Admin_Menu {
 	private function prepareTransactionLookupTabIds() {
 		$transactions = $this->getTransactionCounts();
 
-		$lookupTabs = array(
-			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS => array(
+		$lookupTabs = [
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS => [
 				'title' => sprintf(
 					/* translators: %s is the number of payments */
 					__( 'One-time payments %s', 'wp-full-stripe-free' ),
 					$transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS ] > 0 ? '<span class="wpfs-tag wpfs-tag--outline">' . ( $transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS ] > 100 ? '100+' : $transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS ] ) . '</span>' : '',
 				),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS
-			),
-			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS => array(
+			],
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS => [
 				'title' => sprintf(
 					/* translators: %s is the number of payments */
 					__( 'Subscriptions %s', 'wp-full-stripe-free' ),
 					$transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS ] > 0 ? '<span class="wpfs-tag wpfs-tag--outline">' . ( $transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS ] > 100 ? '100+' : $transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS ] ) . '</span>' : '',
 				),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS
-			),
-			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS => array(
+			],
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS => [
 				'title' => sprintf(
 					/* translators: %s is the number of payments */
 					__( 'Donations %s', 'wp-full-stripe-free' ),
 					$transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS ] > 0 ? '<span class="wpfs-tag wpfs-tag--outline">' . ( $transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS ] > 100 ? '100+' : $transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS ] ) . '</span>' : '',
 				),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS
-			),
-			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS => array(
+			],
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS => [
 				'title' => sprintf(
 					/* translators: %s is the number of payments */
 					__( 'Saved cards %s', 'wp-full-stripe-free' ),
 					$transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS ] > 0 ? '<span class="wpfs-tag wpfs-tag--outline">' . ( $transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS ] > 100 ? '100+' : $transactions[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS ] ) . '</span>' : '',
 				),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS
-			)
-		);
+			]
+		];
 
 		return $lookupTabs;
 	}
@@ -1853,7 +1853,7 @@ class MM_WPFS_Admin_Menu {
 			}
 		}
 
-		return array( $transactionCount, $formCount, $transactionTable );
+		return [ $transactionCount, $formCount, $transactionTable ];
 	}
 
 	function fullstripe_transactions() {
@@ -1874,7 +1874,7 @@ class MM_WPFS_Admin_Menu {
 			__( 'Add form', 'wp-full-stripe-free' );
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
 
-		$tabs = array();
+		$tabs = [];
 		array_push( $tabs, $lookupTabs[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS ] );
 		array_push( $tabs, $lookupTabs[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS ] );
 		array_push( $tabs, $lookupTabs[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS ] );
@@ -1889,20 +1889,20 @@ class MM_WPFS_Admin_Menu {
 	 * @return array[]
 	 */
 	private function prepareEmailSettingsLookupTabIds() {
-		$lookupTabs = array(
-			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS => array(
+		$lookupTabs = [
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS => [
 				'title' =>
 					/* translators: The "Options" tab of the "Email settings" page  */
 					__( 'Options', 'wp-full-stripe-free' ),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS
-			),
-			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_TEMPLATES => array(
+			],
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_TEMPLATES => [
 				'title' =>
 					/* translators: The "Templates" tab of the "Email settings" page  */
 					__( 'Templates', 'wp-full-stripe-free' ),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_TEMPLATES
-			)
-		);
+			]
+		];
 
 		return $lookupTabs;
 	}
@@ -1920,7 +1920,7 @@ class MM_WPFS_Admin_Menu {
 
 	protected function getEmailTemplatesData() {
 		$emailTemplatesData = new \stdClass;
-		$emailTemplates = array();
+		$emailTemplates = [];
 
 		$template = new \stdClass;
 		$template->id = MM_WPFS::EMAIL_TEMPLATE_ID_PAYMENT_RECEIPT;
@@ -2008,7 +2008,7 @@ class MM_WPFS_Admin_Menu {
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
 		$data = $this->prepareSettingsData();
 
-		$tabs = array();
+		$tabs = [];
 		array_push( $tabs, $lookupTabs[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS ] );
 		array_push( $tabs, $lookupTabs[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_TEMPLATES ] );
 
@@ -2019,20 +2019,20 @@ class MM_WPFS_Admin_Menu {
 	 * @return array[]
 	 */
 	private function prepareFormsSettingsLookupTabIds() {
-		$lookupTabs = array(
-			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS => array(
+		$lookupTabs = [
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS => [
 				'title' =>
 					/* translators: "Options" tab of the "Form settings" page  */
 					__( 'Options', 'wp-full-stripe-free' ),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS
-			),
-			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE => array(
+			],
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE => [
 				'title' =>
 					/* translators: "Appearance" tab of the "Form settings" page  */
 					__( 'Appearance', 'wp-full-stripe-free' ),
 				'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE
-			)
-		);
+			]
+		];
 
 		return $lookupTabs;
 	}
@@ -2100,7 +2100,7 @@ class MM_WPFS_Admin_Menu {
 		$help = $this->helpService->getContextSensitiveHelp( $_REQUEST );
 		$data = $this->prepareSettingsData();
 
-		$tabs = array();
+		$tabs = [];
 		array_push( $tabs, $lookupTabs[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS ] );
 		array_push( $tabs, $lookupTabs[ MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE ] );
 
@@ -2217,7 +2217,7 @@ class MM_WPFS_Admin_Menu {
 	protected function prepareEmailTemplates( $formType, $form ) {
 		$templates = MM_WPFS_Mailer::extractEmailTemplates( $this->staticContext, $formType, $form->emailTemplates );
 		$templateDescriptors = MM_WPFS_Mailer::getEmailTemplateDescriptors( $formType );
-		$templateResult = array();
+		$templateResult = [];
 
 		foreach ( $templateDescriptors as $descriptor ) {
 			$result = $descriptor;
@@ -2344,7 +2344,7 @@ class MM_WPFS_Admin_Menu {
 	 * @return array
 	 */
 	protected function createProductsLookup( $products ) {
-		$productsLookup = array();
+		$productsLookup = [];
 
 		foreach ( $products as $product ) {
 			$productsLookup[ $product->stripePriceId ] = $product;
@@ -2362,10 +2362,10 @@ class MM_WPFS_Admin_Menu {
 		$priceIds = MM_WPFS_Pricing::extractPriceIdsFromProductsStatic( $savedProducts );
 		$savedProductsLookup = $this->createProductsLookup( $savedProducts );
 
-		$products = array();
-		$productsLookup = array();
+		$products = [];
+		$productsLookup = [];
 
-		$stripePrices = array();
+		$stripePrices = [];
 		try {
 			$stripePrices = $this->stripe->getRecurringPrices();
 		} catch (Exception $ex) {
@@ -2525,9 +2525,9 @@ class MM_WPFS_Admin_Menu {
 			$install_category = 91;
 		}
 
-		$data = array(
+		$data = [
 			'environmentId' => 'cm67ylr58000cky030t6vaa9b',
-			'attributes'    => array(
+			'attributes'    => [
 				'install_days_number' => $install_days_number,
 				'days_since_install'  => $install_category,
 				'has_pro'             => $dash_data['has_pro'],
@@ -2535,8 +2535,8 @@ class MM_WPFS_Admin_Menu {
 				'stripe_connect'      => boolval( $dash_data['connected'] ) ? 'yes' : 'no',
 				'stripe_mode'         => $dash_data['mode'],
 				'stripe_transactions' => intval( $dash_data['transactions'] )
-			)
-		);
+			]
+		];
 
 		$license_key = WPFS_License::get_key();
 		if ( ! empty( $license_key) ) {
@@ -2574,10 +2574,10 @@ class MM_WPFS_Admin_Menu {
 		}
 		
 		$product_label = sprintf( '<strong>%s</strong>', $product_label );
-		$url_params    = array(
+		$url_params    = [
 			'utm_term' => $is_pro ? 'plan-' . $plan : 'free',
 			'lkey'     => ! empty( $license ) ? $license : false,
-		);
+		];
 		
 		$config['message']  = sprintf( $message_template, '<strong>', $discount, '</strong>', $product_label );
 		$config['sale_url'] = add_query_arg(
@@ -2721,69 +2721,69 @@ abstract class MM_WPFS_FormTabCreator {
 	abstract public function getTabs(): array;
 
 	protected function generalTab( &$tabs ) {
-		array_push( $tabs, array(
+		array_push( $tabs, [
 			'title' =>
 				/* translators: Label of the "General" tab on "Edit form" pages */
 				__( 'General', 'wp-full-stripe-free' ),
 			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_GENERAL
-		)
+		]
 		);
 	}
 
 	protected function paymentTab( &$tabs ) {
-		array_push( $tabs, array(
+		array_push( $tabs, [
 			'title' =>
 				/* translators: Label of the "Payment" tab on "Edit form" pages */
 				__( 'Payment', 'wp-full-stripe-free' ),
 			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENT
-		)
+		]
 		);
 	}
 
 	protected function appearanceTab( &$tabs ) {
-		array_push( $tabs, array(
+		array_push( $tabs, [
 			'title' =>
 				/* translators: Label of the "Appearance" tab on "Edit form" pages */
 				__( 'Appearance', 'wp-full-stripe-free' ),
 			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE
-		)
+		]
 		);
 	}
 
 	protected function formFieldsTab( &$tabs ) {
-		array_push( $tabs, array(
+		array_push( $tabs, [
 			'title' =>
 				/* translators: Label of the "Form fields" tab on "Edit form" pages */
 				__( 'Form fields', 'wp-full-stripe-free' ),
 			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_FORM_LAYOUT
-		)
+		]
 		);
 	}
 
 	protected function emailNotificationsTab( &$tabs ) {
-		array_push( $tabs, array(
+		array_push( $tabs, [
 			'title' =>
 				/* translators: Label of the "Email notifications" tab on "Edit form" pages */
 				__( 'Email notifications', 'wp-full-stripe-free' ),
 			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_EMAIL_NOTIFICATIONS
-		)
+		]
 		);
 	}
 
 	protected function webhookTab( &$tabs ) {
-		array_push( $tabs, array(
+		array_push( $tabs, [
 			'title' =>
 				/* translators: Label of the "Webhooks" tab on "Edit form" pages */
 				__( 'Webhook', 'wp-full-stripe-free' ),
 			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_WEBHOOK
-		)
+		]
 		);
 	}
 }
 
 class MM_WPFS_InlineSaveCardFormTabCreator extends MM_WPFS_FormTabCreator {
 	public function getTabs(): array {
-		$tabs = array();
+		$tabs = [];
 
 		$this->generalTab( $tabs );
 		$this->paymentTab( $tabs );
@@ -2798,7 +2798,7 @@ class MM_WPFS_InlineSaveCardFormTabCreator extends MM_WPFS_FormTabCreator {
 
 class MM_WPFS_CheckoutSaveCardFormTabCreator extends MM_WPFS_FormTabCreator {
 	public function getTabs(): array {
-		$tabs = array();
+		$tabs = [];
 
 		$this->generalTab( $tabs );
 		$this->paymentTab( $tabs );
@@ -2813,7 +2813,7 @@ class MM_WPFS_CheckoutSaveCardFormTabCreator extends MM_WPFS_FormTabCreator {
 
 class MM_WPFS_InlineDonationFormTabCreator extends MM_WPFS_FormTabCreator {
 	public function getTabs(): array {
-		$tabs = array();
+		$tabs = [];
 
 		$this->generalTab( $tabs );
 		$this->paymentTab( $tabs );
@@ -2828,7 +2828,7 @@ class MM_WPFS_InlineDonationFormTabCreator extends MM_WPFS_FormTabCreator {
 
 class MM_WPFS_CheckoutDonationFormTabCreator extends MM_WPFS_FormTabCreator {
 	public function getTabs(): array {
-		$tabs = array();
+		$tabs = [];
 
 		$this->generalTab( $tabs );
 		$this->paymentTab( $tabs );
@@ -2843,12 +2843,12 @@ class MM_WPFS_CheckoutDonationFormTabCreator extends MM_WPFS_FormTabCreator {
 
 trait MM_WPFS_TaxAwareFormTabCreator {
 	protected function taxTab( &$tabs ) {
-		array_push( $tabs, array(
+		array_push( $tabs, [
 			'title' =>
 				/* translators: Label of the "Tax" tab on "Edit form" pages */
 				__( 'Tax', 'wp-full-stripe-free' ),
 			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_TAX
-		)
+		]
 		);
 	}
 }
@@ -2857,7 +2857,7 @@ class MM_WPFS_InlinePaymentFormTabCreator extends MM_WPFS_FormTabCreator {
 	use MM_WPFS_TaxAwareFormTabCreator;
 
 	public function getTabs(): array {
-		$tabs = array();
+		$tabs = [];
 
 		$this->generalTab( $tabs );
 		$this->paymentTab( $tabs );
@@ -2875,7 +2875,7 @@ class MM_WPFS_CheckoutPaymentFormTabCreator extends MM_WPFS_FormTabCreator {
 	use MM_WPFS_TaxAwareFormTabCreator;
 
 	public function getTabs(): array {
-		$tabs = array();
+		$tabs = [];
 
 		$this->generalTab( $tabs );
 		$this->paymentTab( $tabs );
@@ -2893,7 +2893,7 @@ class MM_WPFS_InlineSubscriptionFormTabCreator extends MM_WPFS_FormTabCreator {
 	use MM_WPFS_TaxAwareFormTabCreator;
 
 	public function getTabs(): array {
-		$tabs = array();
+		$tabs = [];
 
 		$this->generalTab( $tabs );
 		$this->paymentTab( $tabs );
@@ -2911,7 +2911,7 @@ class MM_WPFS_CheckoutSubscriptionFormTabCreator extends MM_WPFS_FormTabCreator 
 	use MM_WPFS_TaxAwareFormTabCreator;
 
 	public function getTabs(): array {
-		$tabs = array();
+		$tabs = [];
 
 		$this->generalTab( $tabs );
 		$this->paymentTab( $tabs );
@@ -2992,11 +2992,11 @@ abstract class MM_WPFS_AdminScriptLocalizer {
 	}
 
 	public function getSettingsOptions() {
-		return array();
+		return [];
 	}
 
 	public function getScriptDependencies() {
-		return array();
+		return [];
 	}
 
 	public function enqueueScripts() {
@@ -3014,15 +3014,15 @@ class MM_WPFS_DefaultLocalizer extends MM_WPFS_AdminScriptLocalizer {
 
 class MM_WPFS_SettingsStripeLocalizer extends MM_WPFS_AdminScriptLocalizer {
 	public function localizeScripts() {
-		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
+		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', [
 			MM_WPFS::FORM_TYPE_ADMIN_CONFIGURE_STRIPE_ACCOUNT => MM_WPFS_Admin_ConfigureStripeAccountView::getFields()
-		)
+		]
 		);
-		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', array(
+		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', [
 			'webhookUrlCopiedMessage' =>
 				/* translators: Banner message displayed when a webhook URL is copied to the clipboard */
 				__( 'Webhook URL copied to clipboard.', 'wp-full-stripe-free' )
-		)
+		]
 		);
 	}
 }
@@ -3033,20 +3033,20 @@ class MM_WPFS_SettingsFormsLocalizer extends MM_WPFS_AdminScriptLocalizer {
 			$this->tab === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS ||
 			$this->tab === null
 		) {
-			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
+			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', [
 				MM_WPFS::FORM_TYPE_ADMIN_CONFIGURE_FORMS_OPTIONS => MM_WPFS_Admin_FormsOptionsView::getFields()
-			)
+			]
 			);
 		} elseif ( $this->tab === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE ) {
-			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
+			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', [
 				MM_WPFS::FORM_TYPE_ADMIN_CONFIGURE_FORMS_APPEARANCE => MM_WPFS_Admin_FormsAppearanceView::getFields()
-			)
+			]
 			);
 		}
 	}
 
 	public function getSettingsOptions() {
-		$options = array();
+		$options = [];
 
 		if ( $this->tab === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE ) {
 			$options['aceEditorPath'] = MM_WPFS_Assets::scripts( 'ace/' );
@@ -3059,24 +3059,24 @@ class MM_WPFS_SettingsFormsLocalizer extends MM_WPFS_AdminScriptLocalizer {
 		if ( $this->tab === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE ) {
 			wp_enqueue_script( 'beautify-js-js', MM_WPFS_Assets::scripts( 'beautify/beautify.js' ), [], '1.3.13' );
 			wp_enqueue_script( 'beautify-css-js', MM_WPFS_Assets::scripts( 'beautify/beautify-css.js' ), [], '1.3.13' );
-			wp_enqueue_script( 'ace-js', MM_WPFS_Assets::scripts( 'ace/ace.js' ), array(
+			wp_enqueue_script( 'ace-js', MM_WPFS_Assets::scripts( 'ace/ace.js' ), [
 				'beautify-js-js',
 				'beautify-css-js',
-			), '1.4.12' );
-			wp_enqueue_script( 'ace-theme-js', MM_WPFS_Assets::scripts( 'ace/theme-solarized_dark.js' ), array(
+			], '1.4.12' );
+			wp_enqueue_script( 'ace-theme-js', MM_WPFS_Assets::scripts( 'ace/theme-solarized_dark.js' ), [
 				'ace-js'
-			), '1.4.12' );
+			], '1.4.12' );
 		}
 	}
 
 	public function getScriptDependencies() {
-		$dependencies = array();
+		$dependencies = [];
 
 		if ( $this->tab === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE ) {
-			$dependencies = array_merge( $dependencies, array(
+			$dependencies = array_merge( $dependencies, [
 				'ace-js',
 				'ace-theme-js'
-			)
+			]
 			);
 		}
 
@@ -3086,9 +3086,9 @@ class MM_WPFS_SettingsFormsLocalizer extends MM_WPFS_AdminScriptLocalizer {
 
 class MM_WPFS_SettingsCustomerPortalLocalizer extends MM_WPFS_AdminScriptLocalizer {
 	public function localizeScripts() {
-		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
+		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', [
 			MM_WPFS::FORM_TYPE_ADMIN_CONFIGURE_CUSTOMER_PORTAL => MM_WPFS_Admin_CustomerPortalView::getFields()
-		)
+		]
 		);
 	}
 }
@@ -3096,9 +3096,9 @@ class MM_WPFS_SettingsCustomerPortalLocalizer extends MM_WPFS_AdminScriptLocaliz
 
 class MM_WPFS_SettingsSecurityLocalizer extends MM_WPFS_AdminScriptLocalizer {
 	public function localizeScripts() {
-		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
+		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', [
 			MM_WPFS::FORM_TYPE_ADMIN_CONFIGURE_SECURITY => MM_WPFS_Admin_SecurityView::getFields()
-		)
+		]
 		);
 	}
 }
@@ -3109,16 +3109,16 @@ class MM_WPFS_SettingsEmailNotificationsLocalizer extends MM_WPFS_AdminScriptLoc
 			$this->tab === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS ||
 			$this->tab === null
 		) {
-			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
+			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', [
 				MM_WPFS::FORM_TYPE_ADMIN_CONFIGURE_EMAIL_OPTIONS => MM_WPFS_Admin_EmailOptionsView::getFields()
-			)
+			]
 			);
 		} elseif ( $this->tab === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_TEMPLATES ) {
-			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
+			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', [
 				MM_WPFS::FORM_TYPE_ADMIN_CONFIGURE_EMAIL_TEMPLATES => MM_WPFS_Admin_EmailTemplatesView::getFields()
-			)
+			]
 			);
-			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', array(
+			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', [
 				'resetTemplateTitle' =>
 					/* translators: Title of the 'Reset email template' dialog */
 					__( 'Reset email template', 'wp-full-stripe-free' ),
@@ -3134,13 +3134,13 @@ class MM_WPFS_SettingsEmailNotificationsLocalizer extends MM_WPFS_AdminScriptLoc
 				'emailAddressInvalidMessage' =>
 					/* translators: Error message displayed when an invalid email address is entered in the 'Send test email' dialog */
 					__( "Email address %s is invalid", 'wp-full-stripe-free' ),
-			)
+			]
 			);
 		}
 	}
 
 	public function getSettingsOptions() {
-		$result = array();
+		$result = [];
 
 		if ( $this->tab === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_TEMPLATES ) {
 			$options = $this->options->getSeveral( [ 
@@ -3159,39 +3159,39 @@ class MM_WPFS_SettingsEmailNotificationsLocalizer extends MM_WPFS_AdminScriptLoc
 
 class MM_WPFS_SettingsLogsLocalizer extends MM_WPFS_AdminScriptLocalizer {
 	public function localizeScripts() {
-		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
+		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', [
 			MM_WPFS::FORM_TYPE_ADMIN_CONFIGURE_LOGGING => MM_WPFS_Admin_LogLevel_View::getFields(),
 			MM_WPFS::FORM_TYPE_ADMIN_EMPTY_LOG => MM_WPFS_Admin_LogEmpty_View::getFields()
-		)
+		]
 		);
-		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', array(
+		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', [
 			'emptyLogTitle' =>
 				/* translators: Dialog title of the 'Empty log' dialog */
 				__( 'Empty log', 'wp-full-stripe-free' ),
 			'emptyLogConfirmationMessage' =>
 				/* translators: Confirmation message of the 'Empty log' dialog */
 				__( "Are you use you'd like to delete all log entries?", 'wp-full-stripe-free' ),
-		)
+		]
 		);
 	}
 }
 
 class MM_WPFS_SettingsLicenseLocalizer extends MM_WPFS_AdminScriptLocalizer {
 	public function localizeScripts() {
-		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', array(
+		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', [
 			'licenseError' =>
 				/* translators: Error message displayed when the license key is invalid */
 				__( 'License Error', 'wp-full-stripe-free' ),
-		)
+		]
 		);
 	}
 }
 
 class MM_WPFS_CreateFormLocalizer extends MM_WPFS_AdminScriptLocalizer {
 	public function localizeScripts() {
-		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
+		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', [
 			MM_WPFS::FORM_TYPE_ADMIN_CREATE_FORM => MM_WPFS_Admin_CreateFormView::getFields()
-		)
+		]
 		);
 	}
 }
@@ -3214,7 +3214,7 @@ class MM_WPFS_EditFormLocalizer extends MM_WPFS_AdminScriptLocalizer {
 	}
 
 	public function localizeScripts() {
-		$l10n = array(
+		$l10n = [
 			'formCssIdCopiedMessage' =>
 				/* translators: Banner message displayed when a CSS selector is copied to the clipboard */
 				__( 'Form CSS selector ID copied to clipboard', 'wp-full-stripe-free' ),
@@ -3363,22 +3363,22 @@ class MM_WPFS_EditFormLocalizer extends MM_WPFS_AdminScriptLocalizer {
 			'value' =>
 				/* translators: Label for the value field */
 				__( 'Value', 'wp-full-stripe-free' ),
-		);
+		];
 
 		if ( $this->formType === MM_WPFS::FORM_TYPE_INLINE_SAVE_CARD ) {
-			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
+			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', [
 				MM_WPFS::FORM_TYPE_ADMIN_INLINE_SAVE_CARD_FORM => MM_WPFS_Admin_InlineSaveCardFormView::getFields()
-			)
+			]
 			);
 		} elseif ( $this->formType === MM_WPFS::FORM_TYPE_CHECKOUT_SAVE_CARD ) {
-			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
+			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', [
 				MM_WPFS::FORM_TYPE_ADMIN_CHECKOUT_SAVE_CARD_FORM => MM_WPFS_Admin_CheckoutSaveCardFormView::getFields()
-			)
+			]
 			);
 		} elseif ( $this->formType === MM_WPFS::FORM_TYPE_INLINE_DONATION ) {
-			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
+			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', [
 				MM_WPFS::FORM_TYPE_ADMIN_INLINE_DONATION_FORM => MM_WPFS_Admin_InlineDonationFormView::getFields()
-			)
+			]
 			);
 
 			$l10n['addSuggestedDonationAmountTitle'] =
@@ -3402,9 +3402,9 @@ class MM_WPFS_EditFormLocalizer extends MM_WPFS_AdminScriptLocalizer {
 				 */
 				__( "Are you sure you'd like to delete donation amount '%s' ?", 'wp-full-stripe-free' );
 		} elseif ( $this->formType === MM_WPFS::FORM_TYPE_CHECKOUT_DONATION ) {
-			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
+			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', [
 				MM_WPFS::FORM_TYPE_ADMIN_CHECKOUT_DONATION_FORM => MM_WPFS_Admin_CheckoutDonationFormView::getFields()
-			)
+			]
 			);
 
 			$l10n['addSuggestedDonationAmountTitle'] =
@@ -3428,24 +3428,24 @@ class MM_WPFS_EditFormLocalizer extends MM_WPFS_AdminScriptLocalizer {
 				 */
 				__( "Are you sure you'd like to delete donation amount '%s' ?", 'wp-full-stripe-free' );
 		} elseif ( $this->formType === MM_WPFS::FORM_TYPE_INLINE_PAYMENT ) {
-			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
+			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', [
 				MM_WPFS::FORM_TYPE_ADMIN_INLINE_PAYMENT_FORM => MM_WPFS_Admin_InlinePaymentFormView::getFields()
-			)
+			]
 			);
 		} elseif ( $this->formType === MM_WPFS::FORM_TYPE_CHECKOUT_PAYMENT ) {
-			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
+			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', [
 				MM_WPFS::FORM_TYPE_ADMIN_CHECKOUT_PAYMENT_FORM => MM_WPFS_Admin_CheckoutPaymentFormView::getFields()
-			)
+			]
 			);
 		} elseif ( $this->formType === MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION ) {
-			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
+			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', [
 				MM_WPFS::FORM_TYPE_ADMIN_INLINE_SUBSCRIPTION_FORM => MM_WPFS_Admin_InlineSubscriptionFormView::getFields()
-			)
+			]
 			);
 		} elseif ( $this->formType === MM_WPFS::FORM_TYPE_CHECKOUT_SUBSCRIPTION ) {
-			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', array(
+			wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsFormFields', [
 				MM_WPFS::FORM_TYPE_ADMIN_CHECKOUT_SUBSCRIPTION_FORM => MM_WPFS_Admin_CheckoutSubscriptionFormView::getFields()
-			)
+			]
 			);
 		}
 
@@ -3453,7 +3453,7 @@ class MM_WPFS_EditFormLocalizer extends MM_WPFS_AdminScriptLocalizer {
 	}
 
 	public function getSettingsOptions() {
-		$options = array();
+		$options = [];
 
 		$options['macroDescriptions'] = MacroHelperTools::getMacroDescriptions();
 
@@ -3480,7 +3480,7 @@ class MM_WPFS_EditFormLocalizer extends MM_WPFS_AdminScriptLocalizer {
 
 class MM_WPFS_FormsLocalizer extends MM_WPFS_AdminScriptLocalizer {
 	public function localizeScripts() {
-		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', array(
+		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', [
 			'shortcodeCopiedMessage' =>
 				/* translators: Success banner message when a form shortcode is copied to the clipboard  */
 				__( 'Shortcode copied to clipboard.', 'wp-full-stripe-free' ),
@@ -3498,14 +3498,14 @@ class MM_WPFS_FormsLocalizer extends MM_WPFS_AdminScriptLocalizer {
 			'copyPostfix' =>
 				/* translators: This is the postfix add to name of a cloned form. TestForm -> TestFormCopy  */
 				__( 'Copy', 'wp-full-stripe-free' ),
-		)
+		]
 		);
 	}
 }
 
 class MM_WPFS_TransactionsLocalizer extends MM_WPFS_AdminScriptLocalizer {
 	public function localizeScripts() {
-		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', array(
+		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', [
 			'refundPaymentTitle' =>
 				/* translators: Title of the 'Refund payment' dialog  */
 				__( 'Refund payment', 'wp-full-stripe-free' ),
@@ -3578,14 +3578,14 @@ class MM_WPFS_TransactionsLocalizer extends MM_WPFS_AdminScriptLocalizer {
 				 * p1: Identifier of the saved card to be deleted
 				 */
 				__( "Are you sure you'd like to delete saved card '%s' from the WordPress database?", 'wp-full-stripe-free' ),
-		)
+		]
 		);
 	}
 }
 
 class MM_WPFS_ReportsLocalizer extends MM_WPFS_AdminScriptLocalizer {
 	public function localizeScripts() {
-		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', array(
+		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminL10n', [
 			'date' =>
 				/* translators: Label for the date axis */
 				__( 'Date', 'wp-full-stripe-free' ),
@@ -3607,7 +3607,7 @@ class MM_WPFS_ReportsLocalizer extends MM_WPFS_AdminScriptLocalizer {
 			'refunds' =>
 				/* translators: Label for the refunds axis */
 				__( 'Refunds', 'wp-full-stripe-free' ),
-		)
+		]
 		);
 	}
 }

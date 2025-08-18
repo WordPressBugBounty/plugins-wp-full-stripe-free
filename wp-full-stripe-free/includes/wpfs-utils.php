@@ -118,11 +118,11 @@ class MM_WPFS_Utils {
      */
     public static function createFormEditUrl( $slug, $id, $type ) {
         $editUrl = add_query_arg(
-            array(
+            [
                 'page' => $slug,
                 'form' => $id,
                 'type' => $type
-            ),
+            ],
             admin_url( "admin.php" )
         );
 
@@ -203,7 +203,7 @@ class MM_WPFS_Utils {
      * @return array
      */
     public static function prepareAddressData($line1, $line2, $city, $state, $countryName, $countryCode, $zip ) {
-        $addressData = array(
+        $addressData = [
             'line1'        => is_null( $line1 ) ? '' : $line1,
             'line2'        => is_null( $line2 ) ? '' : $line2,
             'city'         => is_null( $city ) ? '' : $city,
@@ -211,7 +211,7 @@ class MM_WPFS_Utils {
             'country'      => is_null( $countryName ) ? '' : $countryName,
             'country_code' => is_null( $countryCode ) ? '' : $countryCode,
             'zip'          => is_null( $zip ) ? '' : $zip
-        );
+        ];
 
         return $addressData;
     }
@@ -253,7 +253,7 @@ class MM_WPFS_Utils {
      * @return array
      */
     public static function prepare_stripe_shipping_hash( $shipping_name, $shipping_phone, $line1, $line2, $city, $state, $country_code, $postal_code ) {
-        $shipping_hash = array();
+        $shipping_hash = [];
 
         //-- The 'name' property is required. It must contain a non-empty value or be null
         $shipping_hash['name'] = ! empty( $shipping_name ) ? $shipping_name : null;
@@ -280,7 +280,7 @@ class MM_WPFS_Utils {
      * @return array
      */
     public static function prepare_stripe_address_hash( $line1, $line2, $city, $state, $country_code, $postal_code ) {
-        $address_hash = array();
+        $address_hash = [];
 
         //-- The 'line1' property is required
         if ( empty( $line1 ) ) {
@@ -367,12 +367,12 @@ class MM_WPFS_Utils {
             $taxValue   = $grossValue - $netValue;
         }
 
-        $result = array(
+        $result = [
             'net'        => $netValue,
             'taxPercent' => $taxPercent,
             'taxValue'   => $taxValue,
             'gross'      => $grossValue
-        );
+        ];
 
         return $result;
     }
@@ -383,7 +383,7 @@ class MM_WPFS_Utils {
      * @return array
      */
     public static function getStripePlanLookup($stripePlans ) {
-        $planIds = array();
+        $planIds = [];
 
         foreach ( $stripePlans as $stripePlan) {
             $planIds[ $stripePlan->id ] = $stripePlan;
@@ -399,8 +399,8 @@ class MM_WPFS_Utils {
      * @return array
      */
     public static function getSortedFormPlans( $stripePlans, $formPlans ) {
-        $plans = array();
-        $formPlanProperties = !is_null( $formPlans ) ? json_decode( $formPlans ) : array();
+        $plans = [];
+        $formPlanProperties = !is_null( $formPlans ) ? json_decode( $formPlans ) : [];
         $stripePlanLookup = self::getStripePlanLookup( $stripePlans );
 
         foreach ( $formPlanProperties as $formPlanProperty) {
@@ -448,7 +448,7 @@ class MM_WPFS_Utils {
      * @return array
      */
     public static function decodeCustomFieldLabels($encodedCustomInputs ) {
-        $customInputLabels = array();
+        $customInputLabels = [];
         if ( ! is_null( $encodedCustomInputs ) && !empty( $encodedCustomInputs ) ) {
             $customInputLabels = explode( '{{', $encodedCustomInputs );
         }
@@ -654,7 +654,7 @@ class MM_WPFS_Utils {
 	}
 
     public static function getPaymentStatuses() {
-        return array(
+        return [
             MM_WPFS::PAYMENT_STATUS_FAILED,
             MM_WPFS::PAYMENT_STATUS_RELEASED,
             MM_WPFS::PAYMENT_STATUS_REFUNDED,
@@ -662,16 +662,16 @@ class MM_WPFS_Utils {
             MM_WPFS::PAYMENT_STATUS_PAID,
             MM_WPFS::PAYMENT_STATUS_AUTHORIZED,
             MM_WPFS::PAYMENT_STATUS_PENDING
-        );
+        ];
     }
 
     public static function getSubscriptionStatuses() {
-        return array(
+        return [
             MM_WPFS::SUBSCRIBER_STATUS_INCOMPLETE,
             MM_WPFS::SUBSCRIBER_STATUS_RUNNING,
             MM_WPFS::SUBSCRIBER_STATUS_ENDED,
             MM_WPFS::SUBSCRIBER_STATUS_CANCELLED
-        );
+        ];
     }
 
     /**
@@ -752,7 +752,7 @@ class MM_WPFS_Utils {
                 $status = MM_WPFS::DONATION_STATUS_REFUNDED;
             }
         } else {
-            if ( $donation->subscriptionStatus === \StripeWPFS\Subscription::STATUS_ACTIVE ) {
+            if ( $donation->subscriptionStatus === \StripeWPFS\Stripe\Subscription::STATUS_ACTIVE ) {
                 $status = MM_WPFS::DONATION_STATUS_RUNNING;
             } else if ( $donation->subscriptionStatus === MM_WPFS::SUBSCRIBER_STATUS_CANCELLED &&
                 MM_WPFS::PAYMENT_STATUS_PAID === $oneTimeStatus ) {
@@ -928,7 +928,7 @@ class MM_WPFS_Utils {
     }
 
     public static function decodeJsonArray( $arr ) {
-        $res = array();
+        $res = [];
 
         if (!is_null($arr)) {
             $res = json_decode( $arr );
@@ -936,7 +936,7 @@ class MM_WPFS_Utils {
 
         if ( json_last_error() != JSON_ERROR_NONE ) {
             // todo: Log the json decode error
-            $res = array();
+            $res = [];
         }
 
         return $res;
@@ -948,23 +948,23 @@ class MM_WPFS_Utils {
      * @return array
      */
     public static function generateReturnValueFromBindings( $bindingResult ) {
-        return array(
+        return [
             'success' => false,
-            'bindingResult' => array(
-                'fieldErrors' => array(
+            'bindingResult' => [
+                'fieldErrors' => [
                     'title' =>
                     /* translators: Banner title of a hidden field's validation error */
                         __('Field validation error', 'wp-full-stripe-free'),
                     'errors' => $bindingResult->getFieldErrors()
-                ),
-                'globalErrors' => array(
+                ],
+                'globalErrors' => [
                     'title' =>
                     /* translators: Banner title of a validation error which is not field specific */
                         __('Form error', 'wp-full-stripe-free'),
                     'errors' => $bindingResult->getGlobalErrors()
-                )
-            )
-        );
+                ]
+            ]
+        ];
     }
 
     public static function determineCustomerName($cardHolderName, $businessName, $billingName) {
@@ -1111,7 +1111,7 @@ class MM_WPFS_Utils {
      */
     public static function getFeeRecoveryData( $form ): array {
         if ( ! self::hasFeeRecovery( $form ) ) {
-            return array();
+            return [];
         }
 
         $options = new MM_WPFS_Options();
@@ -1128,13 +1128,13 @@ class MM_WPFS_Utils {
             return $feeRecovery;
         }
 
-        return array(
+        return [
             MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN => $form->feeRecoveryOptIn,
             MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE => $form->feeRecoveryOptInMessage,
             MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY => isset( $form->feeRecoveryCurrency ) ? $form->feeRecoveryCurrency : $options->get( MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY ),
             MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE => $form->feeRecoveryFeePercentage,
             MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT => $form->feeRecoveryFeeAdditionalAmount
-        );
+        ];
     }
 
     /**

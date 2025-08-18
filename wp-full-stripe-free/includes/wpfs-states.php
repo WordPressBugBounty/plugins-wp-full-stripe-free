@@ -51,263 +51,263 @@ class MM_WPFS_States {
      * The codes are without country prefix. For example, “NY” for New York, United States.
      */
     public static function getAvailableStates() {
-        $states = array(
-            'AL' => array(
+        $states = [
+            'AL' => [
                 'code'      => 'AL',
                 'name'      => 'Alabama',
                 'category'  => 'state'
-            ),
-            'AK' => array(
+            ],
+            'AK' => [
                 'code'      => 'AK',
                 'name'      => 'Alaska',
                 'category'  => 'state'
-            ),
-            'AZ' => array(
+            ],
+            'AZ' => [
                 'code'      => 'AZ',
                 'name'      => 'Arizona',
                 'category'  => 'state'
-            ),
-            'AR' => array(
+            ],
+            'AR' => [
                 'code'      => 'AR',
                 'name'      => 'Arkansas',
                 'category'  => 'state'
-            ),
-            'CA' => array(
+            ],
+            'CA' => [
                 'code'      => 'CA',
                 'name'      => 'California',
                 'category'  => 'state'
-            ),
-            'CO' => array(
+            ],
+            'CO' => [
                 'code'      => 'CO',
                 'name'      => 'Colorado',
                 'category'  => 'state'
-            ),
-            'CT' => array(
+            ],
+            'CT' => [
                 'code'      => 'CT',
                 'name'      => 'Connecticut',
                 'category'  => 'state'
-            ),
-            'DC' => array(
+            ],
+            'DC' => [
                 'code'      => 'DC',
                 'name'      => 'Washinton DC',
                 'category'  => 'district'
-            ),
-            'DE' => array(
+            ],
+            'DE' => [
                 'code'      => 'DE',
                 'name'      => 'Delaware',
                 'category'  => 'state'
-            ),
-            'FL' => array(
+            ],
+            'FL' => [
                 'code'      => 'FL',
                 'name'      => 'Florida',
                 'category'  => 'state'
-            ),
-            'GA' => array(
+            ],
+            'GA' => [
                 'code'      => 'GA',
                 'name'      => 'Georgia',
                 'category'  => 'state'
-            ),
-            'HI' => array(
+            ],
+            'HI' => [
                 'code'      => 'HI',
                 'name'      => 'Hawai',
                 'category'  => 'state'
-            ),
-            'ID' => array(
+            ],
+            'ID' => [
                 'code'      => 'ID',
                 'name'      => 'Idaho',
                 'category'  => 'state'
-            ),
-            'IL' => array(
+            ],
+            'IL' => [
                 'code'      => 'IL',
                 'name'      => 'Illinois',
                 'category'  => 'state'
-            ),
-            'IN' => array(
+            ],
+            'IN' => [
                 'code'      => 'IN',
                 'name'      => 'Indiana',
                 'category'  => 'state'
-            ),
-            'IA' => array(
+            ],
+            'IA' => [
                 'code'      => 'IA',
                 'name'      => 'Iowa',
                 'category'  => 'state'
-            ),
-            'KS' => array(
+            ],
+            'KS' => [
                 'code'      => 'KS',
                 'name'      => 'Kansas',
                 'category'  => 'state'
-            ),
-            'KY' => array(
+            ],
+            'KY' => [
                 'code'      => 'KY',
                 'name'      => 'Kentucky',
                 'category'  => 'state'
-            ),
-            'LA' => array(
+            ],
+            'LA' => [
                 'code'      => 'LA',
                 'name'      => 'Louisiana',
                 'category'  => 'state'
-            ),
-            'ME' => array(
+            ],
+            'ME' => [
                 'code'      => 'ME',
                 'name'      => 'Maine',
                 'category'  => 'state'
-            ),
-            'MD' => array(
+            ],
+            'MD' => [
                 'code'      => 'MD',
                 'name'      => 'Maryland',
                 'category'  => 'state'
-            ),
-            'MA' => array(
+            ],
+            'MA' => [
                 'code'      => 'MA',
                 'name'      => 'Massachusetts',
                 'category'  => 'state'
-            ),
-            'MI' => array(
+            ],
+            'MI' => [
                 'code'      => 'MI',
                 'name'      => 'Michigan',
                 'category'  => 'state'
-            ),
-            'MN' => array(
+            ],
+            'MN' => [
                 'code'      => 'MN',
                 'name'      => 'Minnesota',
                 'category'  => 'state'
-            ),
-            'MS' => array(
+            ],
+            'MS' => [
                 'code'      => 'MS',
                 'name'      => 'Mississippi',
                 'category'  => 'state'
-            ),
-            'MO' => array(
+            ],
+            'MO' => [
                 'code'      => 'MO',
                 'name'      => 'Missouri',
                 'category'  => 'state'
-            ),
-            'MT' => array(
+            ],
+            'MT' => [
                 'code'      => 'MT',
                 'name'      => 'Montana',
                 'category'  => 'state'
-            ),
-            'NE' => array(
+            ],
+            'NE' => [
                 'code'      => 'NE',
                 'name'      => 'Nebraska',
                 'category'  => 'state'
-            ),
-            'NV' => array(
+            ],
+            'NV' => [
                 'code'      => 'NV',
                 'name'      => 'Nevada',
                 'category'  => 'state'
-            ),
-            'NH' => array(
+            ],
+            'NH' => [
                 'code'      => 'NH',
                 'name'      => 'New Hampshire',
                 'category'  => 'state'
-            ),
-            'NJ' => array(
+            ],
+            'NJ' => [
                 'code'      => 'NJ',
                 'name'      => 'New Jersey',
                 'category'  => 'state'
-            ),
-            'NM' => array(
+            ],
+            'NM' => [
                 'code'      => 'NM',
                 'name'      => 'New Mexico',
                 'category'  => 'state'
-            ),
-            'NY' => array(
+            ],
+            'NY' => [
                 'code'      => 'NY',
                 'name'      => 'New York',
                 'category'  => 'state'
-            ),
-            'NC' => array(
+            ],
+            'NC' => [
                 'code'      => 'NC',
                 'name'      => 'North Carolina',
                 'category'  => 'state'
-            ),
-            'ND' => array(
+            ],
+            'ND' => [
                 'code'      => 'ND',
                 'name'      => 'North Dakota',
                 'category'  => 'state'
-            ),
-            'OH' => array(
+            ],
+            'OH' => [
                 'code'      => 'OH',
                 'name'      => 'Ohio',
                 'category'  => 'state'
-            ),
-            'OK' => array(
+            ],
+            'OK' => [
                 'code'      => 'OK',
                 'name'      => 'Oklahoma',
                 'category'  => 'state'
-            ),
-            'OR' => array(
+            ],
+            'OR' => [
                 'code'      => 'OR',
                 'name'      => 'Oregon',
                 'category'  => 'state'
-            ),
-            'PA' => array(
+            ],
+            'PA' => [
                 'code'      => 'PA',
                 'name'      => 'Pennsylvania',
                 'category'  => 'state'
-            ),
-            'RI' => array(
+            ],
+            'RI' => [
                 'code'      => 'RI',
                 'name'      => 'Rhode Island',
                 'category'  => 'state'
-            ),
-            'SC' => array(
+            ],
+            'SC' => [
                 'code'      => 'SC',
                 'name'      => 'South Carolina',
                 'category'  => 'state'
-            ),
-            'SD' => array(
+            ],
+            'SD' => [
                 'code'      => 'SD',
                 'name'      => 'South Dakota',
                 'category'  => 'state'
-            ),
-            'TN' => array(
+            ],
+            'TN' => [
                 'code'      => 'TN',
                 'name'      => 'Tennessee',
                 'category'  => 'state'
-            ),
-            'TX' => array(
+            ],
+            'TX' => [
                 'code'      => 'TX',
                 'name'      => 'Texas',
                 'category'  => 'state'
-            ),
-            'UT' => array(
+            ],
+            'UT' => [
                 'code'      => 'UT',
                 'name'      => 'Utah',
                 'category'  => 'state'
-            ),
-            'VT' => array(
+            ],
+            'VT' => [
                 'code'      => 'VT',
                 'name'      => 'Vermont',
                 'category'  => 'state'
-            ),
-            'VA' => array(
+            ],
+            'VA' => [
                 'code'      => 'VA',
                 'name'      => 'Virginia',
                 'category'  => 'state'
-            ),
-            'WA' => array(
+            ],
+            'WA' => [
                 'code'      => 'WA',
                 'name'      => 'Washington',
                 'category'  => 'state'
-            ),
-            'WV' => array(
+            ],
+            'WV' => [
                 'code'      => 'WV',
                 'name'      => 'West Virginia',
                 'category'  => 'state'
-            ),
-            'WI' => array(
+            ],
+            'WI' => [
                 'code'      => 'WI',
                 'name'      => 'Wisconsin',
                 'category'  => 'state'
-            ),
-            'WY' => array(
+            ],
+            'WY' => [
                 'code'      => 'WY',
                 'name'      => 'Wyoming',
                 'category'  => 'state'
-            ),
-        );
+            ],
+        ];
 
         return $states;
     }

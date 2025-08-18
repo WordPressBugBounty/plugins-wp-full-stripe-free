@@ -26,7 +26,7 @@ class MM_WPFS_HelpService {
 	 *
 	 * @return MM_WPFS_ContextHelp
 	 */
-	public function getContextSensitiveHelp( $requestParameters = array() ) {
+	public function getContextSensitiveHelp( $requestParameters = [] ) {
 
 		$this->initRepository();
 		
@@ -48,8 +48,8 @@ class MM_WPFS_ContextHelp {
 	protected $page;
 	protected $section;
 
-	protected $relatedArticles = array();
-	protected $globalArticles = array();
+	protected $relatedArticles = [];
+	protected $globalArticles = [];
 
 	/**
 	 * MM_WPFS_ContextHelp constructor.
@@ -246,7 +246,7 @@ class MM_WPFS_HelpArticleVisualType {
 class MM_WPFS_HelpRepository {
     use MM_WPFS_Logger_AddOn;
 
-	private $data = array();
+	private $data = [];
 
     public function __construct( $loggerService ) {
         $this->initLogger( $loggerService, MM_WPFS_LoggerService::MODULE_ADMIN );
@@ -378,7 +378,7 @@ class MM_WPFS_HelpRepositoryFactory {
 	 * @return MM_WPFS_HelpArticle[]
 	 */
 	protected static function getDefaultRelatedArticlesArray( $page ) {
-		return array(
+		return [
 			self::createArticle(
 				__( 'Set up Stripe account', 'wp-full-stripe-free' ),
 				'/article/16-configuring-the-stripe-api-keys',
@@ -391,7 +391,7 @@ class MM_WPFS_HelpRepositoryFactory {
 				MM_WPFS_HelpArticleVisualType::bookmark(),
 				$page
 			)
-		);
+		];
 	}
 
 	/**
@@ -416,12 +416,12 @@ class MM_WPFS_HelpRepositoryFactory {
 	 */
 	protected static function buildArticleURL( $path, $utmContent ) {
 		$articleUrl = add_query_arg(
-			array(
+			[
 				'utm_source'   => 'plugin-wpfs',
 				'utm_medium'   => 'help',
 				'utm_campaign' => 'v' . MM_WPFS::VERSION,
 				'utm_content'  => $utmContent
-			),
+			],
 			self::HELP_ARTICLE_BASE_URL . $path
 		);
 
@@ -434,7 +434,7 @@ class MM_WPFS_HelpRepositoryFactory {
 	 * @return MM_WPFS_HelpArticle[]
 	 */
 	protected static function getDefaultGlobalArticlesArray( $page ) {
-		return array(
+		return [
 			self::createArticle(
 				__( 'Getting started guide', 'wp-full-stripe-free' ),
 				'/article/2115-installing-wp-full-pay',
@@ -453,7 +453,7 @@ class MM_WPFS_HelpRepositoryFactory {
 				MM_WPFS_HelpArticleVisualType::feedback(),
 				$page
 			)
-		);
+		];
 	}
 
 	/**
@@ -465,7 +465,7 @@ class MM_WPFS_HelpRepositoryFactory {
 
 		$contextHelp = new MM_WPFS_ContextHelp( $page, $section );
 
-		$relatedArticles = array(
+		$relatedArticles = [
             self::createArticle(
                 __( 'How to use shortcodes', 'wp-full-stripe-free' ),
                 '/article/27-how-to-use-form-shortcodes',
@@ -478,7 +478,7 @@ class MM_WPFS_HelpRepositoryFactory {
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
             ),
-        );
+        ];
 		$globalArticles  = self::getDefaultGlobalArticlesArray( $page );
 
 		$contextHelp->setRelatedArticles( $relatedArticles );
@@ -496,14 +496,14 @@ class MM_WPFS_HelpRepositoryFactory {
 
 		$contextHelp = new MM_WPFS_ContextHelp( $page, $section );
 
-        $relatedArticles = array(
+        $relatedArticles = [
             self::createArticle(
                 __( 'Introducing form types', 'wp-full-stripe-free' ),
                 '/article/21-introducing-form-types',
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
             ),
-        );
+        ];
 		$globalArticles = self::getDefaultGlobalArticlesArray( $page );
 
 		$contextHelp->setRelatedArticles( $relatedArticles );
@@ -773,7 +773,7 @@ class MM_WPFS_HelpRepositoryFactory {
 
 		$contextHelp = new MM_WPFS_ContextHelp( $page, $section );
 
-		$relatedArticles = array(
+		$relatedArticles = [
             self::createArticle(
                 __( 'Set up Stripe account', 'wp-full-stripe-free' ),
                 '/article/16-configuring-the-stripe-api-keys',
@@ -792,7 +792,7 @@ class MM_WPFS_HelpRepositoryFactory {
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
             ),
-        );
+        ];
 		$globalArticles  = self::getDefaultGlobalArticlesArray( $page );
 
 		$contextHelp->setRelatedArticles( $relatedArticles );
@@ -810,7 +810,7 @@ class MM_WPFS_HelpRepositoryFactory {
 
 		$contextHelp = new MM_WPFS_ContextHelp( $page, $section );
 
-		$relatedArticles = array(
+		$relatedArticles = [
             self::createArticle(
                 __( 'Customizing form styles', 'wp-full-stripe-free' ),
                 '/article/2114-customizing-forms-with-css',
@@ -823,7 +823,7 @@ class MM_WPFS_HelpRepositoryFactory {
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
             ),
-        );
+        ];
 		$globalArticles  = self::getDefaultGlobalArticlesArray( $page );
 
 		$contextHelp->setRelatedArticles( $relatedArticles );
@@ -841,14 +841,14 @@ class MM_WPFS_HelpRepositoryFactory {
 
 		$contextHelp = new MM_WPFS_ContextHelp( $page, $section );
 
-		$relatedArticles = array(
+		$relatedArticles = [
             self::createArticle(
                 __( 'Configuring email notifications', 'wp-full-stripe-free' ),
                 '/article/2101-configuring-email-notifications',
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
             ),
-        );
+        ];
 		$globalArticles  = self::getDefaultGlobalArticlesArray( $page );
 
 		$contextHelp->setRelatedArticles( $relatedArticles );
@@ -866,7 +866,7 @@ class MM_WPFS_HelpRepositoryFactory {
 
         $contextHelp = new MM_WPFS_ContextHelp( $page, $section );
 
-        $relatedArticles = array(
+        $relatedArticles = [
             self::createArticle(
                 __( 'Using placeholder tokens', 'wp-full-stripe-free' ),
                 '/article/29-using-placeholder-tokens',
@@ -879,7 +879,7 @@ class MM_WPFS_HelpRepositoryFactory {
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
             ),
-        );
+        ];
         $globalArticles  = self::getDefaultGlobalArticlesArray( $page );
 
         $contextHelp->setRelatedArticles( $relatedArticles );
@@ -897,14 +897,14 @@ class MM_WPFS_HelpRepositoryFactory {
 
 		$contextHelp = new MM_WPFS_ContextHelp( $page, $section );
 
-		$relatedArticles = array(
+		$relatedArticles = [
             self::createArticle(
                 __( 'Using Google reCaptcha', 'wp-full-stripe-free' ),
                 '/article/2099-registering-your-website-for-google-recaptcha',
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
             ),
-        );
+        ];
 		$globalArticles  = self::getDefaultGlobalArticlesArray( $page );
 
 		$contextHelp->setRelatedArticles( $relatedArticles );
@@ -922,14 +922,14 @@ class MM_WPFS_HelpRepositoryFactory {
 
 		$contextHelp = new MM_WPFS_ContextHelp( $page, $section );
 
-		$relatedArticles = array(
+		$relatedArticles = [
             self::createArticle(
                 __( 'Setting up Customer Portal', 'wp-full-stripe-free' ),
                 '/article/2124-customer-portal',
                 MM_WPFS_HelpArticleVisualType::bookmark(),
                 $page
             ),
-        );
+        ];
 		$globalArticles  = self::getDefaultGlobalArticlesArray( $page );
 
 		$contextHelp->setRelatedArticles( $relatedArticles );

@@ -22,10 +22,10 @@ if ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS ) {
 
                 <?php
                 $pageUrl = add_query_arg(
-                    array(
+                    [
                         'page' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_FORMS,
                         'tab'  => $tabId
-                    ),
+                    ],
                     admin_url( 'admin.php' )
                 );
 

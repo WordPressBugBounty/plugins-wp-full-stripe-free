@@ -94,7 +94,7 @@ class MM_WPFS_Mailer {
      * @return array
      */
     public static function getEmailTemplateDescriptors($formType ) {
-        $res = array();
+        $res = [];
 
         switch ( $formType ) {
             case MM_WPFS::FORM_TYPE_INLINE_SAVE_CARD:
@@ -252,7 +252,7 @@ class MM_WPFS_Mailer {
             $emailTemplate->enabled = $isTemplateEnabled;
             $emailTemplate->senderName = '';
             $emailTemplate->senderAddress = '';
-            $emailTemplate->receiverAddresses = array();
+            $emailTemplate->receiverAddresses = [];
             $emailTemplate->content = $content;
 
             $emailTemplates->{$currentDescriptor->type} = $emailTemplate;
@@ -747,7 +747,7 @@ abstract class MM_WPFS_TestFormTransactionDataCreator extends MM_WPFS_TestTransa
     const PAYMENT_INTENT_ID = 'pi_XZCv3fASD4HFGd7ujNdf';
 
     protected function getAddressArray( $line1, $line2, $city, $state, $countryName, $countryCode, $zip ) {
-        return array(
+        return [
             self::ARRAY_KEY_ADDRESS_LINE_1       => is_null( $line1 ) ? '' : $line1,
             self::ARRAY_KEY_ADDRESS_LINE_2       => is_null( $line2 ) ? '' : $line2,
             self::ARRAY_KEY_ADDRESS_CITY         => is_null( $city ) ? '' : $city,
@@ -755,7 +755,7 @@ abstract class MM_WPFS_TestFormTransactionDataCreator extends MM_WPFS_TestTransa
             self::ARRAY_KEY_ADDRESS_COUNTRY      => is_null( $countryName ) ? '' : $countryName,
             self::ARRAY_KEY_ADDRESS_COUNTRY_CODE => is_null( $countryCode ) ? '' : $countryCode,
             self::ARRAY_KEY_ADDRESS_ZIP          => is_null( $zip ) ? '' : $zip
-        );
+        ];
     }
 
     /**
@@ -1115,10 +1115,10 @@ class MM_WPFS_DonationReceiptSender extends MM_WPFS_MailerTask {
     protected function getSubjectAndMessage() {
         $emailReceipts = $this->getEmailReceipts();
 
-        return array(
+        return [
             $emailReceipts->donationMade->subject,
             $emailReceipts->donationMade->html
-        );
+        ];
     }
 }
 
@@ -1135,10 +1135,10 @@ trait MM_WPFS_CustomTemplateBasedSender {
     }
 
     protected function getSubjectAndMessage() {
-        return array(
+        return [
             $this->subject,
             $this->body
-        );
+        ];
     }
 }
 
@@ -1161,10 +1161,10 @@ class MM_WPFS_GenericEmailNotificationSender extends MM_WPFS_MailerTask {
     protected function getSubjectAndMessage() {
         $emailReceipts = $this->getEmailReceipts();
 
-        return array(
+        return [
             $emailReceipts->{$this->template}->subject,
             $emailReceipts->{$this->template}->html
-        );
+        ];
     }
 
     protected function getMacroReplacer() {
@@ -1191,10 +1191,10 @@ class MM_WPFS_MyAccountLoginNotificationSender extends MM_WPFS_MailerTask {
     protected function getSubjectAndMessage() {
         $emailReceipts = $this->getEmailReceipts();
 
-        return array(
+        return [
             $emailReceipts->cardUpdateConfirmationRequest->subject,
             $emailReceipts->cardUpdateConfirmationRequest->html
-        );
+        ];
     }
 }
 
@@ -1221,10 +1221,10 @@ class MM_WPFS_OneTimePaymentReceiptSender extends MM_WPFS_MailerTask {
     protected function getSubjectAndMessage() {
         $emailReceipts = $this->getEmailReceipts();
 
-        return array(
+        return [
             $emailReceipts->paymentMade->subject,
             $emailReceipts->paymentMade->html
-        );
+        ];
     }
 }
 
@@ -1251,10 +1251,10 @@ class MM_WPFS_SaveCardNotificationSender extends MM_WPFS_MailerTask {
     protected function getSubjectAndMessage() {
         $emailReceipts = $this->getEmailReceipts();
 
-        return array(
+        return [
             $emailReceipts->cardCaptured->subject,
             $emailReceipts->cardCaptured->html
-        );
+        ];
     }
 }
 
@@ -1282,10 +1282,10 @@ class MM_WPFS_SubscriptionEmailReceiptSender extends MM_WPFS_MailerTask {
     protected function getSubjectAndMessage() {
         $emailReceipts = $this->getEmailReceipts();
 
-        return array(
+        return [
             $emailReceipts->subscriptionStarted->subject,
             $emailReceipts->subscriptionStarted->html
-        );
+        ];
     }
 }
 
@@ -1312,10 +1312,10 @@ class MM_WPFS_SubscriptionEndedNotificationSender extends MM_WPFS_MailerTask {
     protected function getSubjectAndMessage() {
         $emailReceipts = $this->getEmailReceipts();
 
-        return array(
+        return [
             $emailReceipts->subscriptionFinished->subject,
             $emailReceipts->subscriptionFinished->html
-        );
+        ];
     }
 }
 

@@ -22,10 +22,10 @@
 			include( 'partials/wpfs-transactions-empty.php' );
 		} else {
 			$pageUrl = add_query_arg(
-				array(
+				[
 					'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
 					'tab'  => $tabId
-				),
+				],
 				admin_url( 'admin.php' )
 			);
 

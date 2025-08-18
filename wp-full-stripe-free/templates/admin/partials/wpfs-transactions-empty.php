@@ -49,9 +49,9 @@
     <div class="wpfs-empty-state__title"><?php echo $title; ?></div>
     <div class="wpfs-empty-state__message"><?php echo $description; ?></div>
     <?php if ( $formCount == 0 ) {
-        $createFormParams = array(
+        $createFormParams = [
             MM_WPFS_Admin_Menu::PARAM_NAME_TYPE => $formType
-        );
+        ];
         $createButtonUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlugAndParams(MM_WPFS_Admin_Menu::SLUG_CREATE_FORM, $createFormParams);
     ?>
     <a class="wpfs-btn wpfs-btn-primary" href="<?php echo $createButtonUrl; ?>"><?php echo $createButtonLabel; ?></a>

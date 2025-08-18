@@ -21,7 +21,7 @@ function checkout_session_setup_future_usage( $session_args ) {
 
 	$payment_method_types = isset( $session_args['payment_method_types'] )
 		? $session_args['payment_method_types']
-		: array();
+		: [];
 
 	if ( false === array_search( 'card', $payment_method_types, true ) ) {
 		return $session_args;

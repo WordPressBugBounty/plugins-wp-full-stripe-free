@@ -13,7 +13,7 @@ class MM_WPFS_TransactionDataService {
 
 
 	/**
-	 * @param $stripeCustomer \StripeWPFS\Customer
+	 * @param $stripeCustomer \StripeWPFS\Stripe\Customer
 	 * @param $sessionHash string
 	 * @param $securityCode string
 	 *
@@ -1283,7 +1283,7 @@ class MM_WPFS_SubscriptionTransactionData extends MM_WPFS_PaymentTransactionData
 	 * @return string
 	 */
 	public function getJSONString() {
-		$data = array(
+		$data = [
 			'planId' => $this->planId,
 			'planName' => $this->planName,
 			'planCurrency' => $this->planCurrency,
@@ -1311,7 +1311,7 @@ class MM_WPFS_SubscriptionTransactionData extends MM_WPFS_PaymentTransactionData
 			'stripeInvoiceId' => $this->stripeInvoiceId,
 			'discountId' => $this->discountId,
 			'discountType' => $this->discountType
-		);
+		];
 		return json_encode($data);
 	}
 }

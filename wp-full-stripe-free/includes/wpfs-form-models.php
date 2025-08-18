@@ -295,8 +295,8 @@ class MM_WPFS_BindingResult
 {
 
 	protected $formHash = null;
-	protected $globalErrors = array();
-	protected $fieldErrors = array();
+	protected $globalErrors = [];
+	protected $fieldErrors = [];
 
 	/**
 	 * MM_WPFS_BindingResult constructor.
@@ -328,22 +328,22 @@ class MM_WPFS_BindingResult
 			return;
 		}
 		if (!array_key_exists($fieldName, $this->fieldErrors)) {
-			$this->fieldErrors[$fieldName] = array();
+			$this->fieldErrors[$fieldName] = [];
 		}
 		array_push(
 			$this->fieldErrors[$fieldName],
-			array(
+			[
 				'id' => $fieldId,
 				'name' => $fieldName,
 				'message' => $error
-			)
+			]
 		);
 	}
 
 	public function getFieldErrors($field = null)
 	{
 		if (is_null($field)) {
-			$fieldErrors = array();
+			$fieldErrors = [];
 			foreach (array_values($this->fieldErrors) as $errors) {
 				$fieldErrors = array_merge($fieldErrors, $errors);
 			}
@@ -353,7 +353,7 @@ class MM_WPFS_BindingResult
 		if (array_key_exists($field, $this->fieldErrors)) {
 			return $this->fieldErrors[$field];
 		} else {
-			return array();
+			return [];
 		}
 	}
 
@@ -485,21 +485,21 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	protected $__shippingAddressCountryName;
 	protected $__shippingAddressCountryCode;
 	/**
-	 * @var \StripeWPFS\Customer
+	 * @var \StripeWPFS\Stripe\Customer
 	 */
 	protected $__stripeCustomer;
 	protected $__productName;
 	/**
-	 * @var \StripeWPFS\PaymentMethod
+	 * @var \StripeWPFS\Stripe\PaymentMethod
 	 */
 	protected $__stripePaymentMethod;
 
 	/**
-	 * @var \StripeWPFS\Coupon|\StripeWPFS\PromotionCode
+	 * @var \StripeWPFS\Stripe\Coupon|\StripeWPFS\Stripe\PromotionCode
 	 */
 	protected $__stripeDiscount;
 	/**
-	 * @var \StripeWPFS\Coupon
+	 * @var \StripeWPFS\Stripe\Coupon
 	 */
 	protected $__stripeCoupon;
 	protected $__stripeDiscountId;
@@ -543,7 +543,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	 */
 	private function findIpAddress()
 	{
-		$httpHeaderNames = array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR');
+		$httpHeaderNames = ['HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR'];
 
 		foreach ($httpHeaderNames as $httpHeaderName) {
 			if (array_key_exists($httpHeaderName, $_SERVER) === true) {
@@ -761,13 +761,13 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	public function getData()
 	{
 		// tnagy unsupported operation
-		return array();
+		return [];
 	}
 
 	public function getPostData()
 	{
 
-		$array = array(
+		$array = [
 			self::PARAM_WPFS_FORM_ACTION => $this->action,
 			self::PARAM_WPFS_FORM_NAME => $this->formName,
 			self::PARAM_WPFS_FORM_GET_PARAMETERS => $this->formGetParameters,
@@ -799,7 +799,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 			self::PARAM_WPFS_NONCE => $this->nonce,
 			self::PARAM_WPFS_COUPON => $this->couponCode,
 			self::PARAM_WPFS_IP_ADDRESS => $this->ipAddress
-		);
+		];
 
 		return $array;
 	}
@@ -1142,7 +1142,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	 */
 	public function getMetadata()
 	{
-		$metadata = array();
+		$metadata = [];
 
 		if (isset($this->cardHolderEmail)) {
 			$metadata['customer_email'] = $this->cardHolderEmail;
@@ -1168,7 +1168,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 				$metadata['billing_name'] = $this->billingName;
 			}
 			if (isset($this->billingAddressLine1) || isset($this->billingAddressZip) || isset($this->billingAddressCity) || isset($this->billingAddressCountry)) {
-				$metadata['billing_address'] = implode('|', array(
+				$metadata['billing_address'] = implode('|', [
 					$this->billingAddressLine1,
 					$this->billingAddressLine2,
 					$this->billingAddressZip,
@@ -1176,7 +1176,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 					$this->billingAddressState,
 					$this->__billingAddressCountryName,
 					$this->__billingAddressCountryCode
-				));
+				]);
 			}
 		}
 		if (isset($this->__form->showShippingAddress) && 1 == $this->__form->showShippingAddress) {
@@ -1184,7 +1184,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 				$metadata['shipping_name'] = $this->shippingName;
 			}
 			if (isset($this->shippingAddressLine1) || isset($this->shippingAddressZip) || isset($this->shippingAddressCity) || isset($this->shippingAddressCountry)) {
-				$metadata['shipping_address'] = implode('|', array(
+				$metadata['shipping_address'] = implode('|', [
 					$this->shippingAddressLine1,
 					$this->shippingAddressLine2,
 					$this->shippingAddressZip,
@@ -1192,7 +1192,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 					$this->shippingAddressState,
 					$this->__shippingAddressCountryName,
 					$this->__shippingAddressCountryCode
-				));
+				]);
 			}
 		}
 		if (is_null($this->__form->customInputs)) {
@@ -1215,7 +1215,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 
 		// users can add custom metadata via filter
 		try {
-			$user_meta = apply_filters(MM_WPFS::FILTER_NAME_ADD_TRANSACTION_METADATA, array(), $this->getFormName(), $this->getFormGetParametersAsArray());
+			$user_meta = apply_filters(MM_WPFS::FILTER_NAME_ADD_TRANSACTION_METADATA, [], $this->getFormName(), $this->getFormGetParametersAsArray());
 			$metadata = array_merge($metadata, $user_meta);
 		} catch (Exception $ex) {
 			$this->logger->error(__FUNCTION__, 'Cannot apply metadata filter', $ex);
@@ -1229,7 +1229,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	 */
 	public function getDecodedCustomInputLabels()
 	{
-		$customInputLabels = array();
+		$customInputLabels = [];
 		if (isset($this->__form->customInputs)) {
 			$customInputLabels = explode('{{', $this->__form->customInputs);
 		}
@@ -1242,7 +1242,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	 */
 	public function getCustomFieldsJSON()
 	{
-		$customFields = array();
+		$customFields = [];
 		if (empty($this->__form->customInputs)) {
 			if (is_array($this->customInputValues)) {
 				foreach ($this->customInputValues as $i => $value) {
@@ -1297,11 +1297,11 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	{
 		$res = json_decode($this->formGetParameters, true);
 
-		return $res ? $res : array();
+		return $res ? $res : [];
 	}
 
 	/**
-	 * @return \StripeWPFS\Customer
+	 * @return \StripeWPFS\Stripe\Customer
 	 */
 	public function getStripeCustomer()
 	{
@@ -1309,7 +1309,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	}
 
 	/**
-	 * @param \StripeWPFS\Customer $stripeCustomer
+	 * @param \StripeWPFS\Stripe\Customer $stripeCustomer
 	 * @param bool $updatePropertiesByCustomer
 	 */
 	public function setStripeCustomer($stripeCustomer, $updatePropertiesByCustomer = false)
@@ -1343,7 +1343,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	}
 
 	/**
-	 * @return \StripeWPFS\PaymentMethod
+	 * @return \StripeWPFS\Stripe\PaymentMethod
 	 */
 	public function getStripePaymentMethod()
 	{
@@ -1351,7 +1351,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	}
 
 	/**
-	 * @param \StripeWPFS\PaymentMethod $stripePaymentMethod
+	 * @param \StripeWPFS\Stripe\PaymentMethod $stripePaymentMethod
 	 */
 	public function setStripePaymentMethod($stripePaymentMethod)
 	{
@@ -1431,7 +1431,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	 */
 	protected function getAddressArray($mayReturnNull, $line1, $line2, $city, $state, $countryName, $countryCode, $zip)
 	{
-		$addressData = array(
+		$addressData = [
 			self::ARRAY_KEY_ADDRESS_LINE_1 => is_null($line1) ? '' : $line1,
 			self::ARRAY_KEY_ADDRESS_LINE_2 => is_null($line2) ? '' : $line2,
 			self::ARRAY_KEY_ADDRESS_CITY => is_null($city) ? '' : $city,
@@ -1439,7 +1439,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 			self::ARRAY_KEY_ADDRESS_COUNTRY => is_null($countryName) ? '' : $countryName,
 			self::ARRAY_KEY_ADDRESS_COUNTRY_CODE => is_null($countryCode) ? '' : $countryCode,
 			self::ARRAY_KEY_ADDRESS_ZIP => is_null($zip) ? '' : $zip
-		);
+		];
 		if ($mayReturnNull) {
 			$hasNotEmptyValue = false;
 			foreach ($addressData as $key => $value) {
@@ -1499,7 +1499,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	 */
 	public function extractFormModelDataFromPopupFormSubmit($popupFormSubmit)
 	{
-		$postData = array();
+		$postData = [];
 		if (isset($popupFormSubmit) && isset($popupFormSubmit->postData)) {
 			$postData = json_decode(
 				$popupFormSubmit->postData,
@@ -1507,7 +1507,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 				true
 			);
 			if (JSON_ERROR_NONE !== json_last_error()) {
-				$postData = array();
+				$postData = [];
 			}
 		}
 
@@ -1522,7 +1522,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	public function extractFormModelDataFromCheckoutSession($checkoutSession)
 	{
 		// todo tnagy extract data from setup intent / subscription's setup intent / payment intent
-		$result = array();
+		$result = [];
 
 		if (isset($checkoutSession)) {
 			if (isset($checkoutSession->line_items) && count($checkoutSession->line_items->data) > 0) {
@@ -1681,7 +1681,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	}
 
 	/**
-	 * @return \StripeWPFS\Coupon
+	 * @return \StripeWPFS\Stripe\Coupon
 	 */
 	public function getStripeCoupon()
 	{
@@ -1689,7 +1689,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	}
 
 	/**
-	 * @param \StripeWPFS\Coupon $stripeCoupon
+	 * @param \StripeWPFS\Stripe\Coupon $stripeCoupon
 	 */
 	public function setStripeCoupon($stripeCoupon)
 	{
@@ -1697,7 +1697,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	}
 
 	/**
-	 * @return \StripeWPFS\Coupon|\StripeWPFS\PromotionCode
+	 * @return \StripeWPFS\Stripe\Coupon|\StripeWPFS\Stripe\PromotionCode
 	 */
 	public function getStripeDiscount()
 	{
@@ -1705,7 +1705,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	}
 
 	/**
-	 * @param \StripeWPFS\Coupon|\StripeWPFS\PromotionCode $stripeDiscount
+	 * @param \StripeWPFS\Stripe\Coupon|\StripeWPFS\Stripe\PromotionCode $stripeDiscount
 	 */
 	public function setStripeDiscount($stripeDiscount)
 	{
@@ -1713,8 +1713,8 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	}
 
 	/**
-	 * @return \StripeWPFS\Coupon
-	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 * @return \StripeWPFS\Stripe\Coupon
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 */
 	protected function retrieveCouponOrPromotionalCode()
 	{
@@ -1731,7 +1731,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	}
 
 	/**
-	 * @return \StripeWPFS\PromotionCode|null
+	 * @return \StripeWPFS\Stripe\PromotionCode|null
 	 */
 	protected function retrievePromotionalCode()
 	{
@@ -1743,7 +1743,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	}
 
 	/**
-	 * @return \StripeWPFS\Coupon|null
+	 * @return \StripeWPFS\Stripe\Coupon|null
 	 */
 	protected function retrieveCoupon()
 	{
@@ -1957,11 +1957,11 @@ abstract class MM_WPFS_Public_PaymentFormModel extends MM_WPFS_Public_FormModel
 	{
 		$parentPostData = parent::getPostData();
 
-		$postData = array(
+		$postData = [
 			self::PARAM_WPFS_CUSTOM_AMOUNT_INDEX => $this->customAmountIndex,
 			self::PARAM_WPFS_CUSTOM_AMOUNT => $this->customAmountValue,
 			self::PARAM_WPFS_CUSTOM_AMOUNT_UNIQUE => $this->customAmountUniqueValue
-		);
+		];
 
 		return array_merge($postData, $parentPostData);
 	}
@@ -2179,12 +2179,12 @@ abstract class MM_WPFS_Public_DonationFormModel extends MM_WPFS_Public_FormModel
 	{
 		$parentPostData = parent::getPostData();
 
-		$postData = array(
+		$postData = [
 			self::PARAM_WPFS_CUSTOM_AMOUNT_INDEX => $this->customAmountIndex,
 			self::PARAM_WPFS_CUSTOM_AMOUNT => $this->customAmountValue,
 			self::PARAM_WPFS_CUSTOM_AMOUNT_UNIQUE => $this->customAmountUniqueValue,
 			self::PARAM_WPFS_DONATION_FREQUENCY => $this->donationFrequency
-		);
+		];
 
 		return array_merge($postData, $parentPostData);
 	}
@@ -2351,7 +2351,7 @@ abstract class MM_WPFS_Public_SubscriptionFormModel extends MM_WPFS_Public_FormM
 	protected $stripePlanId;
 	protected $stripePlanQuantity;
 	/**
-	 * @var \StripeWPFS\Plan
+	 * @var \StripeWPFS\Stripe\Plan
 	 */
 	protected $__stripePlan;
 	protected $__stripePlanAmount;
@@ -2468,10 +2468,10 @@ abstract class MM_WPFS_Public_SubscriptionFormModel extends MM_WPFS_Public_FormM
 	{
 		$parentPostData = parent::getPostData();
 
-		$postData = array(
+		$postData = [
 			self::PARAM_WPFS_STRIPE_PLAN => $this->stripePlanId,
 			self::PARAM_WPFS_STRIPE_PLAN_QUANTITY => $this->stripePlanQuantity
-		);
+		];
 
 		return array_merge($postData, $parentPostData);
 	}

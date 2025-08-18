@@ -22,10 +22,10 @@
 
                 <?php
                 $pageUrl = add_query_arg(
-                    array(
+                    [
                         'page' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_EMAIL_NOTIFICATIONS,
                         'tab'  => $tabId
-                    ),
+                    ],
                     admin_url( 'admin.php' )
                 );
 

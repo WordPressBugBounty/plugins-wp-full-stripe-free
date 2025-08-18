@@ -10,7 +10,7 @@
 trait MM_WPFS_CheckoutTaxTools
 {
     /**
-     * @param $stripeCustomer \StripeWPFS\Customer
+     * @param $stripeCustomer \StripeWPFS\Stripe\Customer
      */
     protected function getTaxIdFromCustomer($stripeCustomer)
     {
@@ -29,7 +29,7 @@ trait MM_WPFS_CheckoutInvoiceTools
 {
     /**
      * @param $transactionData MM_WPFS_PaymentTransactionData|MM_WPFS_DonationTransactionData|MM_WPFS_SubscriptionTransactionData
-     * @param $stripeInvoice \StripeWPFS\Invoice
+     * @param $stripeInvoice \StripeWPFS\Stripe\Invoice
      */
     protected function setTransactionDataFromInvoice(&$transactionData, $invoice)
     {
@@ -98,15 +98,15 @@ abstract class MM_WPFS_CheckoutChargeHandler
 
     /**
      * @param MM_WPFS_Public_CheckoutPaymentFormModel|MM_WPFS_Public_CheckoutSubscriptionFormModel $formModel
-     * @param \StripeWPFS\Checkout\Session $checkoutSession
+     * @param \StripeWPFS\Stripe\Checkout\Session $checkoutSession
      *
      * @return MM_WPFS_ChargeResult
      */
     public abstract function handle($formModel, $checkoutSession);
 
     /**
-     * @param $stripeCustomer \StripeWPFS\Customer
-     * @param $paymentMethod \StripeWPFS\PaymentMethod
+     * @param $stripeCustomer \StripeWPFS\Stripe\Customer
+     * @param $paymentMethod \StripeWPFS\Stripe\PaymentMethod
      */
     protected function setBillingAddress(&$stripeCustomer, &$paymentMethod)
     {
@@ -120,27 +120,27 @@ abstract class MM_WPFS_CheckoutChargeHandler
     }
 
     /**
-     * @param $stripeCustomer \StripeWPFS\Customer
-     * @param $checkoutSession \StripeWPFS\Checkout\Session
+     * @param $stripeCustomer \StripeWPFS\Stripe\Customer
+     * @param $checkoutSession \StripeWPFS\Stripe\Checkout\Session
      */
     protected function setShippingAddress(&$stripeCustomer, &$checkoutSession)
     {
         if (isset($checkoutSession->shipping->address)) {
-            $shipping = array(
+            $shipping = [
                 'name' => $checkoutSession->shipping->name,
                 'address' => $checkoutSession->shipping->address
-            );
+            ];
 
             $stripeCustomer->shipping = $shipping;
         }
     }
 
     /**
-     * @param $stripeCustomer \StripeWPFS\Customer
-     * @param $paymentMethod \StripeWPFS\PaymentMethod
-     * @param $checkoutSession \StripeWPFS\Checkout\Session
+     * @param $stripeCustomer \StripeWPFS\Stripe\Customer
+     * @param $paymentMethod \StripeWPFS\Stripe\PaymentMethod
+     * @param $checkoutSession \StripeWPFS\Stripe\Checkout\Session
      *
-     * @throws \StripeWPFS\Exception\ApiErrorException
+     * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
      */
     protected function fixCustomerNamesAndAddresses(&$stripeCustomer, &$paymentMethod, &$checkoutSession)
     {
@@ -158,11 +158,11 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
     use MM_WPFS_OneTimeInvoiceCreator_AddOn;
 
     /**
-     * @param $stripeCustomer \StripeWPFS\Customer
+     * @param $stripeCustomer \StripeWPFS\Stripe\Customer
      * @param $formModel MM_WPFS_Public_CheckoutPaymentFormModel
      * @param $transactionData MM_WPFS_SaveCardTransactionData
      *
-     * @throws \StripeWPFS\Exception\ApiErrorException
+     * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
      */
     private function setMetadataAndDescriptionForStripeCustomer(&$stripeCustomer, $formModel, $transactionData)
     {
@@ -178,11 +178,11 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
     }
 
     /**
-     * @param $paymentIntent \StripeWPFS\PaymentIntent
+     * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
      * @param $formModel MM_WPFS_Public_CheckoutPaymentFormModel
      * @param $transactionData MM_WPFS_OneTimePaymentTransactionData
      *
-     * @throws \StripeWPFS\Exception\ApiErrorException
+     * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
      */
     private function setMetadataAndDescriptionForPaymentIntent(&$paymentIntent, $formModel, $transactionData)
     {
@@ -201,10 +201,10 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
     }
 
     /**
-     * @param $paymentMethod \StripeWPFS\PaymentMethod
+     * @param $paymentMethod \StripeWPFS\Stripe\PaymentMethod
      * @param $formModel MM_WPFS_Public_CheckoutPaymentFormModel
      *
-     * @return \StripeWPFS\Customer
+     * @return \StripeWPFS\Stripe\Customer
      */
     private function findOrCreateStripeCustomer(&$paymentMethod, $formModel)
     {
@@ -237,13 +237,13 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
     /**
      * @param $saveCardFormModel MM_WPFS_Public_CheckoutPaymentFormModel
      * @param $transactionData MM_WPFS_SaveCardTransactionData
-     * @param $stripeCustomer \StripeWPFS\Customer
+     * @param $stripeCustomer \StripeWPFS\Stripe\Customer
      */
     protected function fireAfterCheckoutSaveCardAction($saveCardFormModel, $transactionData, $stripeCustomer)
     {
         $replacer = new MM_WPFS_SaveCardMacroReplacer($saveCardFormModel->getForm(), $transactionData, $this->loggerService);
 
-        $params = array(
+        $params = [
             'email' => $saveCardFormModel->getCardHolderEmail(),
             'urlParameters' => $saveCardFormModel->getFormGetParametersAsArray(),
             'formName' => $saveCardFormModel->getFormName(),
@@ -251,7 +251,7 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
             'stripeCustomer' => $stripeCustomer,
             'rawPlaceholders' => $replacer->getRawKeyValuePairs(),
             'decoratedPlaceholders' => $replacer->getDecoratedKeyValuePairs(),
-        );
+        ];
 
         do_action(MM_WPFS::ACTION_NAME_AFTER_CHECKOUT_SAVE_CARD, $params);
 		do_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, $saveCardFormModel->getForm(), $params );
@@ -260,13 +260,13 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
     /**
      * @param $paymentFormModel MM_WPFS_Public_PaymentFormModel
      * @param $transactionData MM_WPFS_OneTimePaymentTransactionData
-     * @param $paymentIntent \StripeWPFS\PaymentIntent
+     * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
      */
     private function fireAfterCheckoutPaymentAction($paymentFormModel, $transactionData, $paymentIntent)
     {
         $replacer = new MM_WPFS_OneTimePaymentMacroReplacer($paymentFormModel->getForm(), $transactionData, $this->loggerService);
 
-        $params = array(
+        $params = [
             'email' => $paymentFormModel->getCardHolderEmail(),
             'urlParameters' => $paymentFormModel->getFormGetParametersAsArray(),
             'formName' => $paymentFormModel->getFormName(),
@@ -278,7 +278,7 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
             'stripePaymentIntent' => $paymentIntent,
             'rawPlaceholders' => $replacer->getRawKeyValuePairs(),
             'decoratedPlaceholders' => $replacer->getDecoratedKeyValuePairs(),
-        );
+        ];
 
         do_action(MM_WPFS::ACTION_NAME_AFTER_CHECKOUT_PAYMENT_CHARGE, $params);
 		do_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, $paymentFormModel->getForm(), $params );
@@ -286,7 +286,7 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
 
     /**
      * @param $transactionData MM_WPFS_OneTimePaymentTransactionData
-     * @param $stripeCustomer \StripeWPFS\Customer
+     * @param $stripeCustomer \StripeWPFS\Stripe\Customer
      */
     private function setTransactionDataFromContext(&$transactionData, $context)
     {
@@ -300,7 +300,7 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
     }
 
     /**
-     * @param $checkoutSession \StripeWPFS\Checkout\Session
+     * @param $checkoutSession \StripeWPFS\Stripe\Checkout\Session
      */
     protected function getInvoiceDataFromCheckoutSession($checkoutSession)
     {
@@ -327,7 +327,7 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
             $invoiceData->quantity = $lineItem->quantity;
 
             if (count($lineItem->taxes) > 0) {
-                $taxRates = array();
+                $taxRates = [];
                 $taxAmount = 0;
 
                 foreach ($lineItem->taxes as $tax) {
@@ -338,7 +338,7 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
                 $invoiceData->taxRates = $taxRates;
                 $invoiceData->taxAmount = $taxAmount;
             } else {
-                $invoiceData->taxRates = array();
+                $invoiceData->taxRates = [];
                 $invoiceData->taxAmount = 0;
             }
         } else {
@@ -347,7 +347,7 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
             $invoiceData->description = '';
             $invoiceData->discountAmount = 0;
             $invoiceData->couponCode = '';
-            $invoiceData->taxRates = array();
+            $invoiceData->taxRates = [];
             $invoiceData->taxAmount = 0;
         }
 
@@ -355,10 +355,10 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
     }
 
     /**
-     * @param $checkoutSession \StripeWPFS\Checkout\Session
-     * @param $stripeCustomer \StripeWPFS\Customer
-     * @param $paymentIntent \StripeWPFS\PaymentIntent
-     * @param $paymentMethod \StripeWPFS\PaymentMethod
+     * @param $checkoutSession \StripeWPFS\Stripe\Checkout\Session
+     * @param $stripeCustomer \StripeWPFS\Stripe\Customer
+     * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
+     * @param $paymentMethod \StripeWPFS\Stripe\PaymentMethod
      *
      * @return \StdClass
      */
@@ -372,9 +372,9 @@ class MM_WPFS_CheckoutPaymentChargeHandler extends MM_WPFS_CheckoutChargeHandler
 
     /**
      * @param MM_WPFS_Public_CheckoutPaymentFormModel $formModel
-     * @param \StripeWPFS\Checkout\Session $checkoutSession
+     * @param \StripeWPFS\Stripe\Checkout\Session $checkoutSession
      * @return MM_WPFS_ChargeResult
-     * @throws \StripeWPFS\Exception\ApiErrorException
+     * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
      *
      */
     public function handle($formModel, $checkoutSession)
@@ -506,7 +506,7 @@ class MM_WPFS_CheckoutDonationChargeHandler extends MM_WPFS_CheckoutChargeHandle
     /**
      * @param $formModel MM_WPFS_Public_DonationFormModel
      * @param $transactionData MM_WPFS_DonationTransactionData
-     * @param $paymentIntent \StripeWPFS\PaymentIntent
+     * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
      *
      * @throws Exception
      */
@@ -523,7 +523,7 @@ class MM_WPFS_CheckoutDonationChargeHandler extends MM_WPFS_CheckoutChargeHandle
     }
 
     /**
-     * @param $paymentIntent \StripeWPFS\PaymentIntent
+     * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
      * @param $formName
      */
     protected function addFormNameToPaymentIntent(&$paymentIntent, $formName)
@@ -534,13 +534,13 @@ class MM_WPFS_CheckoutDonationChargeHandler extends MM_WPFS_CheckoutChargeHandle
     /**
      * @param $donationFormModel MM_WPFS_Public_DonationFormModel
      * @param $transactionData MM_WPFS_DonationTransactionData
-     * @param $paymentIntent \StripeWPFS\PaymentIntent
+     * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
      */
     protected function fireAfterCheckoutDonationAction($donationFormModel, $transactionData, $paymentIntent)
     {
         $replacer = new MM_WPFS_DonationMacroReplacer($donationFormModel->getForm(), $transactionData, $this->loggerService);
 
-        $params = array(
+        $params = [
             'email' => $donationFormModel->getCardHolderEmail(),
             'urlParameters' => $donationFormModel->getFormGetParametersAsArray(),
             'formName' => $donationFormModel->getFormName(),
@@ -552,7 +552,7 @@ class MM_WPFS_CheckoutDonationChargeHandler extends MM_WPFS_CheckoutChargeHandle
             'stripeSubscription' => $donationFormModel->getStripeSubscription(),
             'rawPlaceholders' => $replacer->getRawKeyValuePairs(),
             'decoratedPlaceholders' => $replacer->getDecoratedKeyValuePairs(),
-        );
+        ];
 
         do_action(MM_WPFS::ACTION_NAME_AFTER_CHECKOUT_DONATION_CHARGE, $params);
 		do_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, $donationFormModel->getForm(), $params );
@@ -576,10 +576,10 @@ class MM_WPFS_CheckoutDonationChargeHandler extends MM_WPFS_CheckoutChargeHandle
 
 
     /**
-     * @param $paymentIntent \StripeWPFS\PaymentIntent
-     * @param $stripeCustomer \StripeWPFS\Customer
+     * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
+     * @param $stripeCustomer \StripeWPFS\Stripe\Customer
      *
-     * @return \StripeWPFS\PaymentMethod
+     * @return \StripeWPFS\Stripe\PaymentMethod
      */
     protected function setDefaultPaymentMethodFromPaymentIntent($paymentIntent, &$stripeCustomer)
     {
@@ -598,11 +598,11 @@ class MM_WPFS_CheckoutDonationChargeHandler extends MM_WPFS_CheckoutChargeHandle
 
     /**
      * @param MM_WPFS_Public_DonationFormModel $formModel
-     * @param \StripeWPFS\Checkout\Session $checkoutSession
+     * @param \StripeWPFS\Stripe\Checkout\Session $checkoutSession
      *
      * @return MM_WPFS_ChargeResult
      * @throws Exception
-     * @throws \StripeWPFS\Exception\ApiErrorException
+     * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
      */
     public function handle($formModel, $checkoutSession)
     {
@@ -668,7 +668,7 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
     use MM_WPFS_CheckoutInvoiceTools;
 
     /**
-     * @param $subscription \StripeWPFS\Subscription
+     * @param $subscription \StripeWPFS\Stripe\Subscription
      *
      * @return string
      */
@@ -691,7 +691,7 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
 
     /**
      * @param $transactionData MM_WPFS_SubscriptionTransactionData
-     * @param $subscription \StripeWPFS\Subscription
+     * @param $subscription \StripeWPFS\Stripe\Subscription
      * @param $formModel MM_WPFS_Public_CheckoutSubscriptionFormModel
      */
     private function updateTransactionData(&$transactionData, $subscription, $formModel)
@@ -703,7 +703,7 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
     }
 
     /**
-     * @param $stripeSubscription \StripeWPFS\Subscription
+     * @param $stripeSubscription \StripeWPFS\Stripe\Subscription
      *
      * @return array
      */
@@ -722,9 +722,9 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
     }
 
     /**
-     * @param $subscription \StripeWPFS\Subscription
+     * @param $subscription \StripeWPFS\Stripe\Subscription
      *
-     * @throws \StripeWPFS\Exception\ApiErrorException
+     * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
      */
     private function processStripeEvents($subscription)
     {
@@ -744,11 +744,11 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
 
 
     /**
-     * @param $stripePaymentIntent \StripeWPFS\PaymentIntent
-     * @param $stripeSetupIntent \StripeWPFS\SetupIntent
+     * @param $stripePaymentIntent \StripeWPFS\Stripe\PaymentIntent
+     * @param $stripeSetupIntent \StripeWPFS\Stripe\SetupIntent
      *
-     * @return string|\StripeWPFS\PaymentMethod|null
-     * @throws \StripeWPFS\Exception\ApiErrorException
+     * @return string|\StripeWPFS\Stripe\PaymentMethod|null
+     * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
      */
     private function extractPaymentMethod($stripePaymentIntent, $stripeSetupIntent)
     {
@@ -762,16 +762,16 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
 
 
     /**
-     * @param $stripePaymentIntent \StripeWPFS\PaymentIntent
+     * @param $stripePaymentIntent \StripeWPFS\Stripe\PaymentIntent
      * @param $transactionData MM_WPFS_SubscriptionTransactionData
      */
     private function updateSubscriptionToRunning($stripePaymentIntent, $transactionData)
     {
         if (isset($stripePaymentIntent)) {
             if (
-                \StripeWPFS\PaymentIntent::STATUS_SUCCEEDED === $stripePaymentIntent->status
-                || \StripeWPFS\PaymentIntent::STATUS_REQUIRES_CAPTURE === $stripePaymentIntent->status
-                || \StripeWPFS\PaymentIntent::STATUS_PROCESSING === $stripePaymentIntent->status
+                \StripeWPFS\Stripe\PaymentIntent::STATUS_SUCCEEDED === $stripePaymentIntent->status
+                || \StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_CAPTURE === $stripePaymentIntent->status
+                || \StripeWPFS\Stripe\PaymentIntent::STATUS_PROCESSING === $stripePaymentIntent->status
             ) {
                 $this->db->updateSubscriptionByPaymentIntentToRunning($stripePaymentIntent->id);
             }
@@ -798,13 +798,13 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
     /**
      * @param $formModel MM_WPFS_Public_CheckoutSubscriptionFormModel
      * @param $transactionData MM_WPFS_SubscriptionTransactionData
-     * @param $subscription \StripeWPFS\Subscription
+     * @param $subscription \StripeWPFS\Stripe\Subscription
      */
     private function fireAfterSubscriptionAction($subscriptionFormModel, $transactionData, $subscription)
     {
         $replacer = new MM_WPFS_SubscriptionMacroReplacer($subscriptionFormModel->getForm(), $transactionData, $this->loggerService);
 
-        $params = array(
+        $params = [
             'email' => $subscriptionFormModel->getCardHolderEmail(),
             'urlParameters' => $subscriptionFormModel->getFormGetParametersAsArray(),
             'formName' => $subscriptionFormModel->getFormName(),
@@ -818,7 +818,7 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
             'stripeSubscription' => $subscription,
             'rawPlaceholders' => $replacer->getRawKeyValuePairs(),
             'decoratedPlaceholders' => $replacer->getDecoratedKeyValuePairs(),
-        );
+        ];
 
         do_action(MM_WPFS::ACTION_NAME_AFTER_CHECKOUT_SUBSCRIPTION_CHARGE, $params);
 		do_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, $subscriptionFormModel->getForm(), $params );
@@ -865,7 +865,7 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
         $result->quantity = $lineItem->quantity;
 
         if (count($lineItem->taxes) > 0) {
-            $taxRates = array();
+            $taxRates = [];
             $taxAmount = 0;
 
             foreach ($lineItem->taxes as $tax) {
@@ -876,7 +876,7 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
             $result->taxRates = $taxRates;
             $result->taxAmount = $taxAmount;
         } else {
-            $result->taxRates = array();
+            $result->taxRates = [];
             $result->taxAmount = 0;
         }
 
@@ -884,7 +884,7 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
     }
 
     /**
-     * @param $checkoutSession \StripeWPFS\Checkout\Session
+     * @param $checkoutSession \StripeWPFS\Stripe\Checkout\Session
      */
     protected function getInvoiceDataFromCheckoutSession($checkoutSession)
     {
@@ -910,7 +910,7 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
             $result->taxAmount = 0;
             $result->description = '';
             $result->couponCode = '';
-            $result->taxRates = array();
+            $result->taxRates = [];
 
             $invoiceData->plan = $result;
         }
@@ -919,10 +919,10 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
     }
 
     /**
-     * @param $checkoutSession \StripeWPFS\Checkout\Session
-     * @param $stripeCustomer \StripeWPFS\Customer
-     * @param $paymentIntent \StripeWPFS\PaymentIntent
-     * @param $paymentMethod \StripeWPFS\PaymentMethod
+     * @param $checkoutSession \StripeWPFS\Stripe\Checkout\Session
+     * @param $stripeCustomer \StripeWPFS\Stripe\Customer
+     * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
+     * @param $paymentMethod \StripeWPFS\Stripe\PaymentMethod
      *
      * @returns \StdClass
      */
@@ -1004,7 +1004,7 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
 
     /**
      * @param $transactionData MM_WPFS_SubscriptionTransactionData
-     * @param $stripeCustomer \StripeWPFS\Customer
+     * @param $stripeCustomer \StripeWPFS\Stripe\Customer
      */
     private function setTransactionDataFromContext(&$transactionData, $context)
     {
@@ -1086,10 +1086,10 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
     {
         $decodedStripeEventIDs = json_decode($encodedStripeEventIDs);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            $decodedStripeEventIDs = array();
+            $decodedStripeEventIDs = [];
         }
         if (!is_array($decodedStripeEventIDs)) {
-            $decodedStripeEventIDs = array();
+            $decodedStripeEventIDs = [];
         }
 
         return $decodedStripeEventIDs;
@@ -1098,8 +1098,8 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
     /**
      * @param $stripeEventID
      *
-     * @return \StripeWPFS\Event
-     * @throws \StripeWPFS\Exception\ApiErrorException
+     * @return \StripeWPFS\Stripe\Event
+     * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
      */
     protected function retrieveStripeEvent($stripeEventID)
     {
@@ -1109,8 +1109,8 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
     /**
      * @param $stripeSubscription
      *
-     * @return \StripeWPFS\Invoice
-     * @throws \StripeWPFS\Exception\ApiErrorException
+     * @return \StripeWPFS\Stripe\Invoice
+     * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
      */
     protected function getLatestInvoice($stripeSubscription)
     {
@@ -1119,12 +1119,12 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
         if (isset($stripeSubscription->latest_invoice)) {
             $result = $stripeSubscription->latest_invoice;
         } else {
-            $params = array(
-                'expand' => array(
+            $params = [
+                'expand' => [
                     'payment_intent',
                     'charge'
-                )
-            );
+                ]
+            ];
             $result = $this->stripe->retrieveInvoiceWithParams($stripeSubscription->latest_invoice, $params);
         }
 

@@ -64,18 +64,18 @@ class MM_WPFS_Admin_CreateFormModel implements MM_WPFS_Binder {
 	}
 
 	public function getData() {
-		$data = array(
+		$data = [
 			'displayName' => $this->displayName,
 			'name' => $this->name,
 			'type' => $this->type,
 			'layout' => $this->layout
-		);
+		];
 
 		return $data;
 	}
 
 	public function getPostData() {
-		return array();
+		return [];
 	}
 
 
@@ -176,19 +176,19 @@ class MM_WPFS_Admin_StripeAccountModel implements MM_WPFS_Binder {
 	}
 
 	public function getData() {
-		$data = array(
+		$data = [
 			'testSecretKey' => $this->testSecretKey,
 			'testPublishableKey' => $this->testPublishableKey,
 			'liveSecretKey' => $this->liveSecretKey,
 			'livePublishableKey' => $this->livePublishableKey,
 			'apiMode' => $this->apiMode
-		);
+		];
 
 		return $data;
 	}
 
 	public function getPostData() {
-		return array();
+		return [];
 	}
 
 	public function afterBind() {
@@ -286,7 +286,7 @@ class MM_WPFS_Admin_MyAccountModel implements MM_WPFS_Binder {
 	}
 
 	public function getData() {
-		$data = array(
+		$data = [
 			'showSubscriptionsToCustomers' => $this->showSubscriptions,
 			'letCustomersCancelSubscriptions' => $this->cancelSubscriptions,
 			'whenToCancelSubscriptions' => $this->whenCancelSubscriptions,
@@ -294,13 +294,13 @@ class MM_WPFS_Admin_MyAccountModel implements MM_WPFS_Binder {
 			'showInvoicesToCustomers' => $this->showInvoices,
 			'scrollingPaneIntoView' => $this->scrollingPaneIntoView,
 			'useStripeCustomerPortal' => $this->useStripeCustomerPortal
-		);
+		];
 
 		return $data;
 	}
 
 	public function getPostData() {
-		return array();
+		return [];
 	}
 
 	public function afterBind() {
@@ -380,19 +380,19 @@ class MM_WPFS_Admin_SecurityModel implements MM_WPFS_Binder {
 	}
 
 	public function getData() {
-		$data = array(
+		$data = [
 			'secureInlineForms' => $this->secureInlineForms,
 			'secureCheckoutForms' => $this->secureCheckoutForms,
 			'secureCustomerPortal' => $this->secureCustomerPortal,
 			'reCaptchaSecretKey' => $this->reCaptchaSecretKey,
 			'reCaptchaSiteKey' => $this->reCaptchaSiteKey,
-		);
+		];
 
 		return $data;
 	}
 
 	public function getPostData() {
-		return array();
+		return [];
 	}
 
 	public function afterBind() {
@@ -464,18 +464,18 @@ class MM_WPFS_Admin_EmailOptionsModel implements MM_WPFS_Binder {
 	}
 
 	public function getData() {
-		$data = array(
+		$data = [
 			'fromAddress' => $this->fromAddress,
 			'fromAddressCustom' => $this->fromAddressCustom,
 			'sendCopyToAdmin' => $this->sendCopyToAdmin,
 			'sendCopyToList' => $this->getSendCopyToList()
-		);
+		];
 
 		return $data;
 	}
 
 	public function getPostData() {
-		return array();
+		return [];
 	}
 
 	public function afterBind() {
@@ -517,15 +517,15 @@ class MM_WPFS_Admin_EmailTemplatesModel implements MM_WPFS_Binder {
 	}
 
 	public function getData() {
-		$data = array(
+		$data = [
 			'emailTemplates' => $this->emailTemplates,
-		);
+		];
 
 		return $data;
 	}
 
 	public function getPostData() {
-		return array();
+		return [];
 	}
 
 	public function afterBind() {
@@ -584,16 +584,16 @@ class MM_WPFS_Admin_FormsOptionsModel implements MM_WPFS_Binder {
 	}
 
 	public function getData() {
-		$data = array(
+		$data = [
 			'defaultBillingCountry' => $this->defaultBillingCountry,
 			'fillInEmail' => $this->fillInEmail
-		);
+		];
 
 		return $data;
 	}
 
 	public function getPostData() {
-		return array();
+		return [];
 	}
 
 	public function afterBind() {
@@ -637,15 +637,15 @@ class MM_WPFS_Admin_FormsAppearanceModel implements MM_WPFS_Binder {
 	}
 
 	public function getData() {
-		$data = array(
+		$data = [
 			'customCss' => $this->customCss
-		);
+		];
 
 		return $data;
 	}
 
 	public function getPostData() {
-		return array();
+		return [];
 	}
 
 	public function afterBind() {
@@ -770,7 +770,7 @@ class MM_WPFS_Admin_WordpressDashboardModel implements MM_WPFS_Binder {
 	}
 
 	public function getData() {
-		$data = array(
+		$data = [
 			'decimalSeparator' => $this->decimalSeparator,
 			'useSymbolNotCode' => $this->useSymbolNotCode,
 			'currencySymbolAtFirstPosition' => $this->currencySymbolAtFirstPosition,
@@ -781,13 +781,13 @@ class MM_WPFS_Admin_WordpressDashboardModel implements MM_WPFS_Binder {
 			'feeRecoveryCurrency' => $this->feeRecoveryCurrency,
 			'feeRecoveryFeePercentage' => $this->feeRecoveryFeePercentage,
 			'feeRecoveryFeeAdditionalAmount' => $this->feeRecoveryFeeAdditionalAmount
-		);
+		];
 
 		return $data;
 	}
 
 	public function getPostData() {
-		return array();
+		return [];
 	}
 
 	public function afterBind() {
@@ -846,15 +846,15 @@ class MM_WPFS_Admin_LogsModel implements MM_WPFS_Binder {
 	}
 
 	public function getData() {
-		$data = array(
+		$data = [
 			'logLevel' => $this->logLevel,
-		);
+		];
 
 		return $data;
 	}
 
 	public function getPostData() {
-		return array();
+		return [];
 	}
 
 	public function afterBind() {
@@ -962,7 +962,7 @@ abstract class MM_WPFS_Admin_FormModel implements MM_WPFS_Binder {
 
 	public function getData() {
 
-		$data = array(
+		$data = [
 			'name' => $this->name,
 			'displayName' => $this->displayName,
 			'buttonTitle' => $this->buttonLabel,
@@ -993,14 +993,14 @@ abstract class MM_WPFS_Admin_FormModel implements MM_WPFS_Binder {
 			// Legacy fields
 			'showDetailedSuccessPage' => 1,
 			'sendEmailReceipt' => 0
-		);
+		];
 
 		return $data;
 	}
 
 	public function getPostData() {
 		// tnagy unsupported operation
-		return array();
+		return [];
 	}
 
 	/**
@@ -1226,12 +1226,12 @@ trait MM_WPFS_Admin_InlineFormModel {
 
 	protected function getInlineDataArray() {
 
-		$data = array(
+		$data = [
 			'preferredLanguage' => $this->cardInputFieldLanguage,
 			'showAddress' => $this->collectBillingAddress,
 			'defaultBillingCountry' => $this->defaultBillingCountry,
 			'showShippingAddress' => $this->collectShippingAddress,
-		);
+		];
 
 		return $data;
 	}
@@ -1289,7 +1289,7 @@ trait MM_WPFS_Admin_CheckoutFormModel {
 
 	protected function getCheckoutDataArray() {
 
-		$data = array(
+		$data = [
 			'openButtonTitle' => $this->openButtonLabel,
 			'preferredLanguage' => $this->checkoutFormLanguage,
 			'showBillingAddress' => $this->collectBillingAddress,
@@ -1297,7 +1297,7 @@ trait MM_WPFS_Admin_CheckoutFormModel {
 			'showShippingAddress' => $this->collectShippingAddress,
 			// Legacy fields
 			'image' => '',
-		);
+		];
 
 		return $data;
 	}
@@ -1356,7 +1356,7 @@ abstract class MM_WPFS_Admin_SaveCardFormModel extends MM_WPFS_Admin_FormModel {
 	public function getData() {
 		$parentData = parent::getData();
 
-		$data = array(
+		$data = [
 			'stripeDescription' => $this->transactionDescription,
 			// The fields below are required because save card forms and payment forms are in the same database table
 			'currency' => MM_WPFS::CURRENCY_USD,
@@ -1366,7 +1366,7 @@ abstract class MM_WPFS_Admin_SaveCardFormModel extends MM_WPFS_Admin_FormModel {
 			'allowListOfAmountsCustom' => 0,
 			'showButtonAmount' => 0,
 			'amountSelectorStyle' => MM_WPFS::SELECTOR_STYLE_DROPDOWN,
-		);
+		];
 
 		$data = array_merge( $data, $parentData );
 
@@ -1398,24 +1398,24 @@ trait MM_WPFS_Admin_Model_TaxAddOn {
 	}
 
 	protected function getTaxData() {
-		return array(
+		return [
 			'vatRateType' => $this->taxType,
 			'collectCustomerTaxId' => $this->collectCustomerTaxId,
 			'vatRates' => json_encode( $this->taxRates ),
-		);
+		];
 	}
 
 	/**
 	 * @param $taxRateIds
 	 */
 	protected function prepareTaxRates( $taxRateIds ) {
-		$taxRates = array();
-		$taxRatesLookup = array();
+		$taxRates = [];
+		$taxRatesLookup = [];
 
 		$stripeTaxRates = $this->stripe->getTaxRates();
 		foreach ( $stripeTaxRates as $stripeTaxRate ) {
 			if ( array_search( $stripeTaxRate->id, $taxRateIds ) !== false ) {
-				$taxRatesLookup[ $stripeTaxRate->id ] = array(
+				$taxRatesLookup[ $stripeTaxRate->id ] = [
 					'displayName' => $stripeTaxRate->display_name,
 					'inclusive' => $stripeTaxRate->inclusive,
 					'country' => $stripeTaxRate->country,
@@ -1423,7 +1423,7 @@ trait MM_WPFS_Admin_Model_TaxAddOn {
 					'percentage' => $stripeTaxRate->percentage,
 					'jurisdiction' => $stripeTaxRate->jurisdiction,
 					'taxRateId' => $stripeTaxRate->id
-				);
+				];
 			}
 		}
 
@@ -1466,9 +1466,9 @@ trait MM_WPFS_Admin_Model_CouponAddOn {
 	}
 
 	protected function getCouponData() {
-		return array(
+		return [
 			'showCouponInput' => $this->showCouponField,
-		);
+		];
 	}
 
 	/**
@@ -1487,9 +1487,9 @@ trait MM_WPFS_Admin_Model_InvoiceAddOn {
 	}
 
 	protected function getInvoiceData() {
-		return array(
+		return [
 			'generateInvoice' => $this->generateInvoice,
-		);
+		];
 	}
 
 	/**
@@ -1528,18 +1528,18 @@ abstract class MM_WPFS_Admin_PaymentFormModel extends MM_WPFS_Admin_FormModel im
 	 * @param $onetimeProducts
 	 */
 	protected function prepareOnetimeProducts( $priceIds ) {
-		$products = array();
-		$productsLookup = array();
+		$products = [];
+		$productsLookup = [];
 
 		$stripePrices = $this->stripe->getOnetimePrices();
 		foreach ( $stripePrices as $stripePrice ) {
 			if ( array_search( $stripePrice->id, $priceIds ) !== false ) {
-				$productsLookup[ $stripePrice->id ] = array(
+				$productsLookup[ $stripePrice->id ] = [
 					'stripePriceId' => $stripePrice->id,
 					'name' => $stripePrice->product->name,
 					'price' => $stripePrice->unit_amount,
 					'currency' => $stripePrice->currency,
-				);
+				];
 			}
 		}
 
@@ -1582,7 +1582,7 @@ abstract class MM_WPFS_Admin_PaymentFormModel extends MM_WPFS_Admin_FormModel im
 	public function getData() {
 		$parentData = parent::getData();
 
-		$data = array(
+		$data = [
 			'stripeDescription' => $this->transactionDescription,
 			'currency' => $this->currency,
 			'minimumPaymentAmount' => $this->minimumPaymentAmount,
@@ -1595,7 +1595,7 @@ abstract class MM_WPFS_Admin_PaymentFormModel extends MM_WPFS_Admin_FormModel im
 			'amount' => 0,
 			'showButtonAmount' => 0,
 			'paymentMethods' => $this->paymentMethods,
-		);
+		];
 
 		return array_merge( $data,
 			$parentData,
@@ -1717,7 +1717,7 @@ abstract class MM_WPFS_Admin_DonationFormModel extends MM_WPFS_Admin_FormModel i
 
 		$parentData = parent::getData();
 
-		$data = array(
+		$data = [
 			'stripeDescription' => $this->transactionDescription,
 			'currency' => $this->currency,
 			'minimumDonationAmount' => $this->minimumDonationAmount,
@@ -1730,7 +1730,7 @@ abstract class MM_WPFS_Admin_DonationFormModel extends MM_WPFS_Admin_FormModel i
 			'allowAnnualRecurring' => $this->donationFrequencyAnnual,
 			'showDonationGoal' => $this->showDonationGoal,
 			'donationGoal' => $this->donationGoal,
-		);
+		];
 
 		return array_merge( $data,
 			$parentData,
@@ -1848,7 +1848,7 @@ abstract class MM_WPFS_Admin_SubscriptionFormModel extends MM_WPFS_Admin_FormMod
 	 * @return array
 	 */
 	protected function extractPriceIdsFromProducts( $products ) {
-		$priceIds = array();
+		$priceIds = [];
 
 		foreach ( $products as $product ) {
 			array_push( $priceIds, $product->stripePriceId );
@@ -1863,7 +1863,7 @@ abstract class MM_WPFS_Admin_SubscriptionFormModel extends MM_WPFS_Admin_FormMod
 	 * @return array
 	 */
 	protected function createProductsLookup( $products ) {
-		$productsLookup = array();
+		$productsLookup = [];
 
 		foreach ( $products as $product ) {
 			$productsLookup[ $product->stripePriceId ] = $product;
@@ -1880,8 +1880,8 @@ abstract class MM_WPFS_Admin_SubscriptionFormModel extends MM_WPFS_Admin_FormMod
 		$priceIds = $this->extractPriceIdsFromProducts( $recurringProducts );
 		$recurringProductsLookup = $this->createProductsLookup( $recurringProducts );
 
-		$savedProducts = array();
-		$savedProductsLookup = array();
+		$savedProducts = [];
+		$savedProductsLookup = [];
 
 		$stripePrices = $this->stripe->getRecurringPrices();
 		foreach ( $stripePrices as $stripePrice ) {
@@ -1928,14 +1928,14 @@ abstract class MM_WPFS_Admin_SubscriptionFormModel extends MM_WPFS_Admin_FormMod
 	public function getData() {
 		$parentData = parent::getData();
 
-		$data = array(
+		$data = [
 			'decoratedPlans' => json_encode( $this->recurringProducts ),
 			'planSelectorStyle' => $this->productSelectorStyle,
 			'allowMultipleSubscriptions' => $this->allowSubscriptionQuantity,
 			'minimumQuantityOfSubscriptions' => $this->subscriptionMinimumQuantity,
 			'maximumQuantityOfSubscriptions' => $this->subscriptionMaximumQuantity,
 			'feeRecoveryCurrency' => $this->feeRecoveryCurrency,
-		);
+		];
 
 		return array_merge( $data,
 			$parentData,
@@ -2024,9 +2024,9 @@ class MM_WPFS_Admin_InlineSaveCardFormModel extends MM_WPFS_Admin_SaveCardFormMo
 
 		$inlineData = $this->getInlineDataArray();
 
-		$data = array(
+		$data = [
 			'formTitle' => $this->title,
-		);
+		];
 
 		$data = array_merge( $data, $inlineData, $parentData );
 
@@ -2078,11 +2078,11 @@ class MM_WPFS_Admin_CheckoutSaveCardFormModel extends MM_WPFS_Admin_SaveCardForm
 
 		$inlineData = $this->getCheckoutDataArray();
 
-		$data = array(
+		$data = [
 			// Legacy fields
 			'showRememberMe' => 0,
 			'disableStyling' => 0,
-		);
+		];
 
 		$data = array_merge( $data, $inlineData, $parentData );
 
@@ -2131,9 +2131,9 @@ class MM_WPFS_Admin_InlinePaymentFormModel extends MM_WPFS_Admin_PaymentFormMode
 
 		$inlineData = $this->getInlineDataArray();
 
-		$data = array(
+		$data = [
 			'formTitle' => $this->title,
-		);
+		];
 
 		$data = array_merge( $data, $inlineData, $parentData );
 
@@ -2160,9 +2160,9 @@ trait MM_WPFS_Admin_Model_CheckoutPhoneNumber_AddOn {
 	}
 
 	protected function getCheckoutPhoneNumberData() {
-		return array(
+		return [
 			'collectPhoneNumber' => $this->collectPhoneNumber,
-		);
+		];
 	}
 
 	/**
@@ -2185,9 +2185,9 @@ trait MM_WPFS_Admin_Model_CheckoutProductImage_AddOn {
 	}
 
 	protected function getCheckoutProductImageData() {
-		return array(
+		return [
 			'image' => $this->checkoutProductImage,
-		);
+		];
 	}
 
 	/**
@@ -2237,7 +2237,7 @@ class MM_WPFS_Admin_CheckoutPaymentFormModel extends MM_WPFS_Admin_PaymentFormMo
 	public function getData() {
 		$parentData = parent::getData();
 
-		$data = array(
+		$data = [
 			'productDesc' => $this->checkoutProductName,
 			'companyName' => $this->checkoutProductDescription,
 			// Legacy fields
@@ -2245,7 +2245,7 @@ class MM_WPFS_Admin_CheckoutPaymentFormModel extends MM_WPFS_Admin_PaymentFormMo
 			'disableStyling' => 0,
 			'useBitcoin' => 0,
 			'useAlipay' => 0
-		);
+		];
 
 		$data = array_merge( $data, $parentData, $this->getCheckoutDataArray(), $this->getCheckoutPhoneNumberData() );
 
@@ -2311,9 +2311,9 @@ class MM_WPFS_Admin_InlineDonationFormModel extends MM_WPFS_Admin_DonationFormMo
 
 		$inlineData = $this->getInlineDataArray();
 
-		$data = array(
+		$data = [
 			'productDesc' => $this->defaultProductName
-		);
+		];
 
 		$data = array_merge( $data, $inlineData, $parentData );
 
@@ -2373,10 +2373,10 @@ class MM_WPFS_Admin_CheckoutDonationFormModel extends MM_WPFS_Admin_DonationForm
 	public function getData() {
 		$parentData = parent::getData();
 
-		$data = array(
+		$data = [
 			'productDesc' => $this->checkoutProductName,
 			'companyName' => $this->checkoutProductDescription,
-		);
+		];
 		$data = array_merge( $parentData, $data, $this->getCheckoutDataArray(), $this->getCheckoutPhoneNumberData() );
 		$data['image'] = $this->checkoutProductImage;
 
@@ -2439,9 +2439,9 @@ class MM_WPFS_Admin_InlineSubscriptionFormModel extends MM_WPFS_Admin_Subscripti
 
 		$inlineData = $this->getInlineDataArray();
 
-		$data = array(
+		$data = [
 			'formTitle' => $this->title,
-		);
+		];
 
 		$data = array_merge( $data, $inlineData, $parentData );
 
@@ -2497,12 +2497,12 @@ class MM_WPFS_Admin_CheckoutSubscriptionFormModel extends MM_WPFS_Admin_Subscrip
 	public function getData() {
 		$parentData = parent::getData();
 
-		$data = array(
+		$data = [
 			'simpleButtonLayout' => $this->simpleButtonLayout,
 			// Legacy fields
 			'showRememberMe' => 0,
 			'disableStyling' => 0,
-		);
+		];
 
 		$data = array_merge( $parentData, $data, $this->getCheckoutDataArray(), $this->getCheckoutPhoneNumberData() );
 

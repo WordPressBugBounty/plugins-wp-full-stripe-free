@@ -25,7 +25,7 @@ class MM_WPFS_EventHandler
 	protected $options = null;
 
 	/** @var array */
-	protected $eventProcessors = array();
+	protected $eventProcessors = [];
 
 	/**
 	 * MM_WPFS_WebHookEventHandler constructor.
@@ -51,7 +51,7 @@ class MM_WPFS_EventHandler
 	protected function hooks()
 	{
 		// tnagy WPFS-554: register REST API Endpoint for Stripe Webhooks
-		add_action('rest_api_init', array($this, 'registerRESTAPIRoutes'));
+		add_action('rest_api_init', [$this, 'registerRESTAPIRoutes']);
 	}
 
 	/**
@@ -67,12 +67,12 @@ class MM_WPFS_EventHandler
 	 */
 	public function registerRESTAPIRoutes()
 	{
-		register_rest_route(self::getRESTNamespace(), $this->getRESTRoute(), array(
+		register_rest_route(self::getRESTNamespace(), $this->getRESTRoute(), [
 			'methods' => WP_REST_Server::CREATABLE,
-			'callback' => array($this, 'handleRESTRequest'),
-			'args' => array(),
+			'callback' => [$this, 'handleRESTRequest'],
+			'args' => [],
 			'permission_callback' => '__return_true'
-		));
+		]);
 	}
 
 	/**
@@ -89,9 +89,9 @@ class MM_WPFS_EventHandler
 	public static function getWebhookEndpointURL($context)
 	{
 		return add_query_arg(
-			array(
+			[
 				'auth_token' => MM_WPFS_EventHandler::getWebhookToken($context)
-			),
+			],
 			get_rest_url(null, MM_WPFS_EventHandler::getWebhookPath())
 		);
 	}
@@ -112,17 +112,17 @@ class MM_WPFS_EventHandler
 	public static function getLegacyWebhookEndpointURL($context)
 	{
 		return add_query_arg(
-			array(
+			[
 				'action' => 'handle_wpfs_event',
 				'auth_token' => MM_WPFS_EventHandler::getWebhookToken($context)
-			),
+			],
 			admin_url('admin-post.php')
 		);
 	}
 
 	protected function initProcessors()
 	{
-		$processors = array(
+		$processors = [
 			new MM_WPFS_CustomerSubscriptionDeleted($this->db, $this->mailer, $this->loggerService),
 			new MM_WPFS_InvoiceCreated($this->db, $this->mailer, $this->loggerService),
 			new MM_WPFS_InvoicePaymentSucceeded($this->db, $this->mailer, $this->loggerService),
@@ -134,7 +134,7 @@ class MM_WPFS_EventHandler
 			new MM_WPFS_ChargeSucceeded($this->db, $this->mailer, $this->loggerService),
 			new MM_WPFS_ChargeUpdated($this->db, $this->mailer, $this->loggerService),
 			new MM_WPFS_CustomerSubscriptionUpdated($this->db, $this->mailer, $this->loggerService)
-		);
+		];
 		foreach ($processors as $processor) {
 			$this->eventProcessors[$processor->getType()] = $processor;
 		}
@@ -249,7 +249,7 @@ class MM_WPFS_EventHandler
 	}
 
 	/**
-	 * @param \StripeWPFS\Event $event
+	 * @param \StripeWPFS\Stripe\Event $event
 	 *
 	 * @return MM_WPFS_LiveModeAwareEventProcessorContext
 	 * @throws Exception
@@ -413,7 +413,7 @@ abstract class MM_WPFS_EventProcessor
 			}
 
 			if (!is_null($event)) {
-				$event = \StripeWPFS\Event::constructFrom(json_decode(json_encode($event), true));
+				$event = \StripeWPFS\Stripe\Event::constructFrom(json_decode(json_encode($event), true));
 				$this->processEvent($event, $context);
 			}
 		}
@@ -433,7 +433,7 @@ abstract class MM_WPFS_EventProcessor
 	/**
 	 * @param $event
 	 *
-	 * @return null|\StripeWPFS\ApiResource
+	 * @return null|\StripeWPFS\Stripe\ApiResource
 	 */
 	protected function getDataObject($event)
 	{
@@ -449,21 +449,21 @@ abstract class MM_WPFS_EventProcessor
 	 * Adds an event ID to a JSON encoded array if the ID is not in the array
 	 *
 	 * @param string $encodedStripeEventIDs JSON encoded event ID array
-	 * @param \StripeWPFS\Event $stripeEvent
+	 * @param \StripeWPFS\Stripe\Event $stripeEvent
 	 * @param bool $success output variable to determine whether the event ID has been added to the array
 	 *
 	 * @return string the new JSON encoded array
 	 */
 	protected function insertIfNotExists($encodedStripeEventIDs, $stripeEvent, &$success)
 	{
-		$decodedStripeEventIDs = array();
+		$decodedStripeEventIDs = [];
 		if (isset($encodedStripeEventIDs)) {
 			$decodedStripeEventIDs = json_decode($encodedStripeEventIDs);
 			if (json_last_error() !== JSON_ERROR_NONE) {
-				$decodedStripeEventIDs = array();
+				$decodedStripeEventIDs = [];
 			}
 			if (!is_array($decodedStripeEventIDs)) {
-				$decodedStripeEventIDs = array();
+				$decodedStripeEventIDs = [];
 			}
 		}
 		if (isset($stripeEvent) && isset($stripeEvent->id)) {
@@ -682,8 +682,8 @@ abstract class MM_WPFS_InvoiceEventProcessor extends MM_WPFS_EventProcessor
 	protected abstract function getLogger();
 
 	/**
-	 * @param \StripeWPFS\Event $event
-	 * @param \StripeWPFS\InvoiceLineItem $line
+	 * @param \StripeWPFS\Stripe\Event $event
+	 * @param \StripeWPFS\Stripe\InvoiceLineItem $line
 	 *
 	 * @return null
 	 */
@@ -713,11 +713,11 @@ abstract class MM_WPFS_InvoiceEventProcessor extends MM_WPFS_EventProcessor
 
 	/**
 	 * @param $popupFormSubmit
-	 * @param \StripeWPFS\Event $stripeEvent
+	 * @param \StripeWPFS\Stripe\Event $stripeEvent
 	 *
 	 * @return bool|int
 	 */
-	protected function updatePopupFormSubmitWithEvent($popupFormSubmit, \StripeWPFS\Event $stripeEvent)
+	protected function updatePopupFormSubmitWithEvent($popupFormSubmit, \StripeWPFS\Stripe\Event $stripeEvent)
 	{
 		if (isset($popupFormSubmit->relatedStripeEventIDs)) {
 			$encodedStripeEventIDs = $popupFormSubmit->relatedStripeEventIDs;
@@ -752,11 +752,11 @@ abstract class MM_WPFS_InvoiceEventProcessor extends MM_WPFS_EventProcessor
 
 	/**
 	 * @param $wpfsSubscriber
-	 * @param \StripeWPFS\Event $stripeEvent
+	 * @param \StripeWPFS\Stripe\Event $stripeEvent
 	 *
 	 * @return bool|int
 	 */
-	protected function updateSubscriberWithPaymentAndEvent($wpfsSubscriber, \StripeWPFS\Event $stripeEvent)
+	protected function updateSubscriberWithPaymentAndEvent($wpfsSubscriber, \StripeWPFS\Stripe\Event $stripeEvent)
 	{
 		if (isset($wpfsSubscriber->processedEventIDs)) {
 			$encodedStripeEventIDs = $wpfsSubscriber->processedEventIDs;
@@ -774,11 +774,11 @@ abstract class MM_WPFS_InvoiceEventProcessor extends MM_WPFS_EventProcessor
 
 	/**
 	 * @param $wpfsSubscriber
-	 * @param \StripeWPFS\Event $stripeEvent
+	 * @param \StripeWPFS\Stripe\Event $stripeEvent
 	 *
 	 * @return bool|int
 	 */
-	protected function updateSubscriberWithInvoiceAndEvent($wpfsSubscriber, \StripeWPFS\Event $stripeEvent)
+	protected function updateSubscriberWithInvoiceAndEvent($wpfsSubscriber, \StripeWPFS\Stripe\Event $stripeEvent)
 	{
 		if (isset($wpfsSubscriber->processedEventIDs)) {
 			$encodedStripeEventIDs = $wpfsSubscriber->processedEventIDs;
@@ -796,11 +796,11 @@ abstract class MM_WPFS_InvoiceEventProcessor extends MM_WPFS_EventProcessor
 
 	/**
 	 * @param $wpfsSubscriber
-	 * @param \StripeWPFS\Event $stripeEvent
+	 * @param \StripeWPFS\Stripe\Event $stripeEvent
 	 * @param bool $inserted
 	 * @return string
 	 */
-	protected function addProcessedWebhookEvent($wpfsSubscriber, \StripeWPFS\Event $stripeEvent, &$inserted)
+	protected function addProcessedWebhookEvent($wpfsSubscriber, \StripeWPFS\Stripe\Event $stripeEvent, &$inserted)
 	{
 		if (isset($wpfsSubscriber->processedStripeEventIDs)) {
 			$encodedStripeEventIDs = $wpfsSubscriber->processedStripeEventIDs;
@@ -824,7 +824,7 @@ class MM_WPFS_CustomerSubscriptionDeleted extends MM_WPFS_EventProcessor
 
 	public function getType()
 	{
-		return \StripeWPFS\Event::CUSTOMER_SUBSCRIPTION_DELETED;
+		return \StripeWPFS\Stripe\Event::CUSTOMER_SUBSCRIPTION_DELETED;
 	}
 
 	protected function isDonationSubscription($subscriptionId)
@@ -898,7 +898,7 @@ class MM_WPFS_CustomerSubscriptionDeleted extends MM_WPFS_EventProcessor
 		}
 	}
 
-	private function updateSubscriberWithEvent($wpfsSubscriber, \StripeWPFS\Event $stripeEvent)
+	private function updateSubscriberWithEvent($wpfsSubscriber, \StripeWPFS\Stripe\Event $stripeEvent)
 	{
 		if (isset($wpfsSubscriber->processedEventIDs)) {
 			$encodedStripeEventIDs = $wpfsSubscriber->processedEventIDs;
@@ -935,7 +935,7 @@ class MM_WPFS_InvoicePaymentSucceeded extends MM_WPFS_InvoiceEventProcessor
 
 	public function getType()
 	{
-		return \StripeWPFS\Event::INVOICE_PAYMENT_SUCCEEDED;
+		return \StripeWPFS\Stripe\Event::INVOICE_PAYMENT_SUCCEEDED;
 	}
 
 	protected function getLogger()
@@ -1019,7 +1019,7 @@ class MM_WPFS_InvoicePaymentSucceeded extends MM_WPFS_InvoiceEventProcessor
 		$report = $this->db->getReportByPaymentIntentID( $event->payment_intent );
 
 		if ( $report ) {
-			$this->db->updateReport( $report->id, array(
+			$this->db->updateReport( $report->id, [
 				'updated_at'            => date( 'Y-m-d H:i:s', time() ),
 				'currency'              => $event->currency ?? null,
 				'amount'                => $event->amount_paid ?? null,
@@ -1028,9 +1028,9 @@ class MM_WPFS_InvoicePaymentSucceeded extends MM_WPFS_InvoiceEventProcessor
 				'stripeCustomerID'      => $event->customer ?? null,
 				'status'                => 'succeeded',
 				'mode'				    => $event->livemode ? 'live' : 'test',
-			) );
+			] );
 		} else {
-			$this->db->addReport( array(
+			$this->db->addReport( [
 				'created_at'            => date( 'Y-m-d H:i:s', $event->created ),
 				'updated_at'            => date( 'Y-m-d H:i:s', $event->created ),
 				'currency'              => $event->currency ?? null,
@@ -1042,7 +1042,7 @@ class MM_WPFS_InvoicePaymentSucceeded extends MM_WPFS_InvoiceEventProcessor
 				'stripeSubscriptionID'  => $event->subscription ?? null,
 				'status'                => 'succeeded',
 				'mode'				    => $event->livemode ? 'live' : 'test',
-			) );
+			] );
 		}
 	}
 }
@@ -1057,7 +1057,7 @@ class MM_WPFS_InvoiceCreated extends MM_WPFS_InvoiceEventProcessor
 
 	public function getType()
 	{
-		return \StripeWPFS\Event::INVOICE_CREATED;
+		return \StripeWPFS\Stripe\Event::INVOICE_CREATED;
 	}
 
 	protected function getLogger()
@@ -1135,91 +1135,91 @@ trait MM_WPFS_ChargeEventUtils
 	}
 
 	/**
-	 * @param $charge \StripeWPFS\ApiResource
+	 * @param $charge \StripeWPFS\Stripe\ApiResource
 	 */
 	protected function updatePaymentStatus($charge)
 	{
 		if ($this->isDonationPayment($charge->payment_intent)) {
 			$this->db->updateDonationByPaymentIntentId(
 				$charge->payment_intent,
-				array(
+				[
 					'paid' => $charge->paid,
 					'captured' => $charge->captured,
 					'refunded' => $charge->refunded,
 					'lastChargeStatus' => $charge->status
-				)
+				]
 			);
 		} else {
 			$this->db->updatePaymentByEventId(
 				$charge->payment_intent,
-				array(
+				[
 					'paid' => $charge->paid,
 					'captured' => $charge->captured,
 					'refunded' => $charge->refunded,
 					'last_charge_status' => $charge->status
-				)
+				]
 			);
 		}
 	}
 
 	/**
-	 * @param $charge \StripeWPFS\ApiResource
+	 * @param $charge \StripeWPFS\Stripe\ApiResource
 	 */
 	protected function updatePaymentStatusAndExpiry($charge)
 	{
 		if ($this->isDonationPayment($charge->payment_intent)) {
 			$this->db->updateDonationByPaymentIntentId(
 				$charge->payment_intent,
-				array(
+				[
 					'paid' => $charge->paid,
 					'captured' => $charge->captured,
 					'refunded' => $charge->refunded,
 					'lastChargeStatus' => $charge->status,
 					'expired' => true
-				)
+				]
 			);
 		} else {
 			$this->db->updatePaymentByEventId(
 				$charge->payment_intent,
-				array(
+				[
 					'paid' => $charge->paid,
 					'captured' => $charge->captured,
 					'refunded' => $charge->refunded,
 					'last_charge_status' => $charge->status,
 					'expired' => true
-				)
+				]
 			);
 		}
 	}
 
 	/**
-	 * @param $charge \StripeWPFS\ApiResource
+	 * @param $charge \StripeWPFS\Stripe\ApiResource
 	 */
 	protected function updatePaymentStatusAndFailureCodes($charge)
 	{
 		if ($this->isDonationPayment($charge->payment_intent)) {
 			$this->db->updateDonationByPaymentIntentId(
 				$charge->payment_intent,
-				array(
+				[
 					'paid' => $charge->paid,
 					'captured' => $charge->captured,
 					'refunded' => $charge->refunded,
 					'lastChargeStatus' => $charge->status,
 					'failureCode' => $charge->failure_code,
 					'failureMessage' => $charge->failure_message
-				)
+				]
 			);
 		} else {
 			$this->db->updatePaymentByEventId(
 				$charge->payment_intent,
-				array(
+				[
 					'paid' => $charge->paid,
 					'captured' => $charge->captured,
 					'refunded' => $charge->refunded,
 					'last_charge_status' => $charge->status,
 					'failure_code' => $charge->failure_code,
 					'failure_message' => $charge->failure_message
-				)
+				]
 			);
 		}
 	}
@@ -1236,7 +1236,7 @@ class MM_WPFS_ChargeCaptured extends MM_WPFS_EventProcessor
 
 	public function getType()
 	{
-		return \StripeWPFS\Event::CHARGE_CAPTURED;
+		return \StripeWPFS\Stripe\Event::CHARGE_CAPTURED;
 	}
 
 	protected function processEvent($event, MM_WPFS_LiveModeAwareEventProcessorContext $context)
@@ -1259,7 +1259,7 @@ class MM_WPFS_ChargeExpired extends MM_WPFS_EventProcessor
 
 	public function getType()
 	{
-		return \StripeWPFS\Event::CHARGE_EXPIRED;
+		return \StripeWPFS\Stripe\Event::CHARGE_EXPIRED;
 	}
 
 	protected function processEvent($event, MM_WPFS_LiveModeAwareEventProcessorContext $context)
@@ -1282,7 +1282,7 @@ class MM_WPFS_ChargeFailed extends MM_WPFS_EventProcessor
 
 	public function getType()
 	{
-		return \StripeWPFS\Event::CHARGE_FAILED;
+		return \StripeWPFS\Stripe\Event::CHARGE_FAILED;
 	}
 
 	protected function processEvent($event, MM_WPFS_LiveModeAwareEventProcessorContext $context)
@@ -1305,7 +1305,7 @@ class MM_WPFS_ChargePending extends MM_WPFS_EventProcessor
 
 	public function getType()
 	{
-		return \StripeWPFS\Event::CHARGE_PENDING;
+		return \StripeWPFS\Stripe\Event::CHARGE_PENDING;
 	}
 
 	protected function processEvent($event, MM_WPFS_LiveModeAwareEventProcessorContext $context)
@@ -1328,7 +1328,7 @@ class MM_WPFS_ChargeRefunded extends MM_WPFS_EventProcessor
 
 	public function getType()
 	{
-		return \StripeWPFS\Event::CHARGE_REFUNDED;
+		return \StripeWPFS\Stripe\Event::CHARGE_REFUNDED;
 	}
 
 	protected function processEvent($event, MM_WPFS_LiveModeAwareEventProcessorContext $context)
@@ -1341,10 +1341,10 @@ class MM_WPFS_ChargeRefunded extends MM_WPFS_EventProcessor
 			$report = $this->db->getReportByPaymentIntentID( $charge->payment_intent );
 
 			if ( $report ) {
-				$this->db->updateReport( $report->id, array(
+				$this->db->updateReport( $report->id, [
 					'updated_at'            => date( 'Y-m-d H:i:s', time() ),
 					'status'                => $status,
-				) );
+				] );
 			}
 		}
 	}
@@ -1361,7 +1361,7 @@ class MM_WPFS_ChargeSucceeded extends MM_WPFS_EventProcessor
 
 	public function getType()
 	{
-		return \StripeWPFS\Event::CHARGE_SUCCEEDED;
+		return \StripeWPFS\Stripe\Event::CHARGE_SUCCEEDED;
 	}
 
 	protected function processEvent($event, MM_WPFS_LiveModeAwareEventProcessorContext $context)
@@ -1384,7 +1384,7 @@ class MM_WPFS_ChargeUpdated extends MM_WPFS_EventProcessor
 
 	public function getType()
 	{
-		return \StripeWPFS\Event::CHARGE_UPDATED;
+		return \StripeWPFS\Stripe\Event::CHARGE_UPDATED;
 	}
 
 	protected function processEvent($event, MM_WPFS_LiveModeAwareEventProcessorContext $context)
@@ -1401,14 +1401,14 @@ class MM_WPFS_CustomerSubscriptionUpdated extends MM_WPFS_EventProcessor
 
 	public function getType()
 	{
-		return \StripeWPFS\Event::CUSTOMER_SUBSCRIPTION_UPDATED;
+		return \StripeWPFS\Stripe\Event::CUSTOMER_SUBSCRIPTION_UPDATED;
 	}
 
 	protected function processEvent($event, MM_WPFS_LiveModeAwareEventProcessorContext $context)
 	{
 		$previousAttributes = $this->getDataPreviousAttributes($event);
 		if (!is_null($previousAttributes)) {
-			/** @var \StripeWPFS\Subscription $stripeSubscription */
+			/** @var \StripeWPFS\Stripe\Subscription $stripeSubscription */
 			$stripeSubscription = $this->getDataObject($event);
 			if (!is_null($stripeSubscription)) {
 				$wpfsSubscriber = $this->findSubscriberByStripeSubscriptionId($stripeSubscription->id);
@@ -1416,7 +1416,7 @@ class MM_WPFS_CustomerSubscriptionUpdated extends MM_WPFS_EventProcessor
 					if ($previousAttributes->offsetExists('quantity')) {
 						$this->db->updateSubscriber(
 							$wpfsSubscriber->subscriberID,
-							array('quantity' => $stripeSubscription->quantity)
+							['quantity' => $stripeSubscription->quantity]
 						);
 					}
 				}

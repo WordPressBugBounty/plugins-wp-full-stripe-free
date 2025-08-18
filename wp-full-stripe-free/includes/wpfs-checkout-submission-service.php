@@ -75,10 +75,10 @@ class MM_WPFS_CheckoutSubmissionService {
 	private function hooks() {
 		add_action(
 			self::ACTION_FULLSTRIPE_PROCESS_CHECKOUT_SUBMISSIONS,
-			array(
+			[
 				$this,
 				'processCheckoutSubmissions'
-			)
+			]
 		);
 	}
 
@@ -119,9 +119,9 @@ class MM_WPFS_CheckoutSubmissionService {
 			$rawReferrer :
 			strstr( $formModel->getReferrer(), '#', true );
 		$decoratedReferrer = add_query_arg(
-			array(
+			[
 				self::STRIPE_CALLBACK_PARAM_WPFS_POPUP_FORM_SUBMIT_HASH => $submitHash
-			),
+			],
 			$prunedReferrer
 		) . '#' . \MM_WPFS_FormViewConstants::ATTR_ID_VALUE_PREFIX . $formModel->getFormHash();
 
@@ -147,18 +147,18 @@ class MM_WPFS_CheckoutSubmissionService {
 	public function updateSubmitEntryWithSessionIdToPending( $submitHash, $stripeCheckoutSessionId ) {
 		return $this->db->update_popup_form_submit_by_hash(
 			$submitHash,
-			array(
+			[
 				'checkoutSessionId' => $stripeCheckoutSessionId,
 				'status' => self::POPUP_FORM_SUBMIT_STATUS_PENDING
-			)
+			]
 		);
 	}
 
 	/**
 	 * @param MM_WPFS_Public_CheckoutPaymentFormModel|MM_WPFS_Public_CheckoutSubscriptionFormModel|MM_WPFS_Public_CheckoutDonationFormModel $formModel
 	 *
-	 * @return \StripeWPFS\Checkout\Session
-	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 * @return \StripeWPFS\Stripe\Checkout\Session
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 */
 	public function createCheckoutSession( $formModel ) {
 
@@ -223,11 +223,11 @@ class MM_WPFS_CheckoutSubmissionService {
 	 */
 	private function findAndProcessSubmissions() {
 		$iteration = 0;
-		$popupFormSubmitIdsToFaulty = array();
-		$popupFormSubmitsToProcess = array();
-		$popupFormSubmitsToComplete = array();
-		$popupFormSubmitIdsToDelete = array();
-		$popupFormSubmitsTouched = array();
+		$popupFormSubmitIdsToFaulty = [];
+		$popupFormSubmitsToProcess = [];
+		$popupFormSubmitsToComplete = [];
+		$popupFormSubmitIdsToDelete = [];
+		$popupFormSubmitsTouched = [];
 
 		$popupFormSubmits = $this->findPopupEntries();
 		if ( isset( $popupFormSubmits ) ) {
@@ -239,7 +239,7 @@ class MM_WPFS_CheckoutSubmissionService {
 
 				// tnagy prepare array of submits
 				if ( ! is_array( $popupFormSubmits ) ) {
-					$popupFormSubmits = array( $popupFormSubmits );
+					$popupFormSubmits = [ $popupFormSubmits ];
 				}
 
 				// tnagy sort out submits by status
@@ -316,10 +316,10 @@ class MM_WPFS_CheckoutSubmissionService {
 				$this->logger->debug( __FUNCTION__, 'Marked as FAULTY ' . $faulty . ' Checkout Form Submission(s).' );
 
 				// tnagy clear arrays
-				$popupFormSubmitIdsToFaulty = array();
-				$popupFormSubmitsToProcess = array();
-				$popupFormSubmitsToComplete = array();
-				$popupFormSubmitIdsToDelete = array();
+				$popupFormSubmitIdsToFaulty = [];
+				$popupFormSubmitsToProcess = [];
+				$popupFormSubmitsToComplete = [];
+				$popupFormSubmitIdsToDelete = [];
 
 				// tnagy load next fragment of submits
 				$popupFormSubmits = $this->findPopupEntries();
@@ -348,7 +348,7 @@ class MM_WPFS_CheckoutSubmissionService {
 			if ( isset( $popupFormSubmit->checkoutSessionId ) ) {
 				$checkoutSession = $this->retrieveCheckoutSession( $popupFormSubmit->checkoutSessionId );
 				$paymentIntent = $this->findPaymentIntentInCheckoutSession( $checkoutSession );
-				if ( isset( $paymentIntent ) && \StripeWPFS\PaymentIntent::STATUS_SUCCEEDED === $paymentIntent->status ) {
+				if ( isset( $paymentIntent ) && \StripeWPFS\Stripe\PaymentIntent::STATUS_SUCCEEDED === $paymentIntent->status ) {
 					$formModel = null;
 					$checkoutChargeHandler = null;
 					if (
@@ -413,13 +413,13 @@ class MM_WPFS_CheckoutSubmissionService {
 	/**
 	 * @param $checkoutSessionId
 	 *
-	 * @return \StripeWPFS\Checkout\Session
+	 * @return \StripeWPFS\Stripe\Checkout\Session
 	 */
 	public function retrieveCheckoutSession( $checkoutSessionId ) {
 		$checkoutSession = $this->stripe->retrieveCheckoutSessionWithParams(
 			$checkoutSessionId,
-			array(
-				'expand' => array(
+			[
+				'expand' => [
 					'customer',
 					'customer.tax_ids',
 					'payment_intent',
@@ -433,8 +433,8 @@ class MM_WPFS_CheckoutSubmissionService {
 					'line_items.data.discounts',
 					'line_items.data.taxes',
 					'line_items.data.price.product'
-				)
-			)
+				]
+			]
 		);
 
 		return $checkoutSession;
@@ -443,8 +443,8 @@ class MM_WPFS_CheckoutSubmissionService {
 	/**
 	 * @param $checkoutSession
 	 *
-	 * @return string|\StripeWPFS\PaymentIntent|null
-	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 * @return string|\StripeWPFS\Stripe\PaymentIntent|null
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 */
 	public function findPaymentIntentInCheckoutSession( $checkoutSession ) {
 		$paymentIntent = null;
@@ -462,8 +462,8 @@ class MM_WPFS_CheckoutSubmissionService {
 	/**
 	 * @param $checkoutSession
 	 *
-	 * @return \StripeWPFS\PaymentIntent|null
-	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 * @return \StripeWPFS\Stripe\PaymentIntent|null
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 */
 	public function retrieveStripePaymentIntentByCheckoutSession( $checkoutSession ) {
 		$stripePaymentIntent = null;
@@ -488,8 +488,8 @@ class MM_WPFS_CheckoutSubmissionService {
 	/**
 	 * @param $checkoutSession
 	 *
-	 * @return \StripeWPFS\Subscription|null
-	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 * @return \StripeWPFS\Stripe\Subscription|null
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 */
 	public function retrieveStripeSubscriptionByCheckoutSession( $checkoutSession ) {
 		$stripeSubscription = null;
@@ -504,15 +504,15 @@ class MM_WPFS_CheckoutSubmissionService {
 
 				$stripeSubscription = $this->stripe->retrieveSubscriptionWithParams(
 					$subscriptionId,
-					array(
-						'expand' => array(
+					[
+						'expand' => [
 							'latest_invoice',
 							'latest_invoice.payment_intent',
 							'latest_invoice.charge',
 							'pending_setup_intent',
 							'discount.promotion_code'
-						)
-					)
+						]
+					]
 				);
 			}
 		}
@@ -523,8 +523,8 @@ class MM_WPFS_CheckoutSubmissionService {
 	/**
 	 * @param $stripeSubscription
 	 *
-	 * @return string|\StripeWPFS\PaymentIntent|null
-	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 * @return string|\StripeWPFS\Stripe\PaymentIntent|null
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 */
 	public function findPaymentIntentInSubscription( $stripeSubscription ) {
 		$paymentIntent = null;
@@ -534,12 +534,12 @@ class MM_WPFS_CheckoutSubmissionService {
 				if ( isset( $stripeSubscription->latest_invoice ) ) {
 					$stripeInvoice = $stripeSubscription->latest_invoice;
 				} else {
-					$retrieveParams = array(
-						'expand' => array(
+					$retrieveParams = [
+						'expand' => [
 							'payment_intent',
 							'charge'
-						)
-					);
+						]
+					];
 
 					$stripeInvoice = $this->stripe->retrieveInvoiceWithParams(
 						$stripeSubscription->latest_invoice,
@@ -574,11 +574,11 @@ class MM_WPFS_CheckoutSubmissionService {
 
 		return $this->db->update_popup_form_submit_by_hash(
 			$popupFormSubmit->hash,
-			array(
+			[
 				'status' => self::POPUP_FORM_SUBMIT_STATUS_SUCCESS,
 				'lastMessageTitle' => $lastMessageTitle,
 				'lastMessage' => $lastMessage
-			)
+			]
 		);
 	}
 
@@ -606,11 +606,11 @@ class MM_WPFS_CheckoutSubmissionService {
 
 		return $this->db->update_popup_form_submit_by_hash(
 			$popupFormSubmit->hash,
-			array(
+			[
 				'status' => self::POPUP_FORM_SUBMIT_STATUS_FAILED,
 				'lastMessageTitle' => $lastMessageTitle,
 				'lastMessage' => $lastMessage
-			)
+			]
 		);
 	}
 
@@ -628,10 +628,10 @@ class MM_WPFS_CheckoutSubmissionService {
 
 		return $this->db->update_popup_form_submit_by_hash(
 			$popupFormSubmit->hash,
-			array(
+			[
 				'processedWithError' => $popupFormSubmit->processedWithError + 1,
 				'errorMessage' => $errorMessage
-			)
+			]
 		);
 	}
 
@@ -648,7 +648,7 @@ class MM_WPFS_CheckoutSubmissionService {
 
 		return $this->db->update_popup_form_submit_by_hash(
 			$popupFormSubmit->hash,
-			array(
+			[
 				'status' => self::CHECKOUT_SESSION_STATUS_CANCELLED,
 				'lastMessageTitle' =>
 					/* translators: Banner title of cancelled transaction */
@@ -656,7 +656,7 @@ class MM_WPFS_CheckoutSubmissionService {
 				'lastMessage' =>
 					/* translators: Banner message of cancelled transaction */
 					__( 'The customer has cancelled the payment.', 'wp-full-stripe-free' )
-			)
+			]
 		);
 	}
 
@@ -673,9 +673,9 @@ class MM_WPFS_CheckoutSubmissionService {
 
 		return $this->db->update_popup_form_submit_by_hash(
 			$popupFormSubmit->hash,
-			array(
+			[
 				'status' => self::POPUP_FORM_SUBMIT_STATUS_COMPLETE
-			)
+			]
 		);
 	}
 
@@ -726,8 +726,8 @@ class MM_WPFS_CheckoutSubmissionService {
 	/**
 	 * @param $checkoutSession
 	 *
-	 * @return \StripeWPFS\SetupIntent|null
-	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 * @return \StripeWPFS\Stripe\SetupIntent|null
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 */
 	public function findSetupIntentInCheckoutSession( $checkoutSession ) {
 		$setupIntent = null;
@@ -745,8 +745,8 @@ class MM_WPFS_CheckoutSubmissionService {
 	/**
 	 * @param $checkoutSession
 	 *
-	 * @return \StripeWPFS\SetupIntent|null
-	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 * @return \StripeWPFS\Stripe\SetupIntent|null
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 */
 	public function retrieveStripeSetupIntentByCheckoutSession( $checkoutSession ) {
 		$stripeSetupIntent = null;
@@ -766,7 +766,7 @@ class MM_WPFS_CheckoutSubmissionService {
 	/**
 	 * @param $stripeSubscription
 	 *
-	 * @return \StripeWPFS\SetupIntent|null
+	 * @return \StripeWPFS\Stripe\SetupIntent|null
 	 */
 	public function findSetupIntentInSubscription( $stripeSubscription ) {
 		$setupIntent = null;
@@ -784,9 +784,9 @@ class MM_WPFS_CheckoutSubmissionService {
 	}
 
 	/**
-	 * @param \StripeWPFS\Checkout\Session $checkoutSession
+	 * @param \StripeWPFS\Stripe\Checkout\Session $checkoutSession
 	 *
-	 * @return \StripeWPFS\Customer
+	 * @return \StripeWPFS\Stripe\Customer
 	 */
 	public function retrieveStripeCustomerByCheckoutSession( $checkoutSession ) {
 		$stripeCustomer = null;
@@ -811,8 +811,8 @@ class MM_WPFS_CheckoutSubmissionService {
 	/**
 	 * @param $setupIntent
 	 *
-	 * @return string|\StripeWPFS\PaymentMethod|null
-	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 * @return string|\StripeWPFS\Stripe\PaymentMethod|null
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 */
 	public function retrieveStripePaymentMethodBySetupIntent( $setupIntent ) {
 		$stripePaymentMethod = null;
@@ -832,8 +832,8 @@ class MM_WPFS_CheckoutSubmissionService {
 	/**
 	 * @param $paymentIntent
 	 *
-	 * @return string|\StripeWPFS\PaymentMethod|null
-	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 * @return string|\StripeWPFS\Stripe\PaymentMethod|null
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 */
 	public function retrieveStripePaymentMethodByPaymentIntent( $paymentIntent ) {
 		$stripePaymentMethod = null;
@@ -852,9 +852,9 @@ class MM_WPFS_CheckoutSubmissionService {
 	}
 
 	/**
-	 * @param \StripeWPFS\PaymentMethod $paymentMethod
+	 * @param \StripeWPFS\Stripe\PaymentMethod $paymentMethod
 	 *
-	 * @return null|\StripeWPFS\Customer
+	 * @return null|\StripeWPFS\Stripe\Customer
 	 */
 	public function retrieveStripeCustomerByPaymentMethod( $paymentMethod ) {
 		$stripeCustomer = null;
@@ -925,11 +925,11 @@ abstract class MM_WPFS_CheckoutSessionBuilder {
 	 */
 	private function buildCheckoutSessionStatusURL( $submitHash, $status ) {
 		return add_query_arg(
-			array(
+			[
 				'action' => 'wp_full_stripe_handle_checkout_session',
 				MM_WPFS_CheckoutSubmissionService::STRIPE_CALLBACK_PARAM_WPFS_POPUP_FORM_SUBMIT_HASH => $submitHash,
 				MM_WPFS_CheckoutSubmissionService::STRIPE_CALLBACK_PARAM_WPFS_STATUS => $status
-			),
+			],
 			admin_url( 'admin-ajax.php' )
 		);
 	}
@@ -982,9 +982,9 @@ abstract class MM_WPFS_CheckoutSessionBuilder {
 		];
 
 		if ( $this->formModel->getForm()->showShippingAddress ) {
-			$sessionData['shipping_address_collection'] = array(
+			$sessionData['shipping_address_collection'] = [
 				'allowed_countries' => $this->getShippingCountryCodes()
-			);
+			];
 		}
 
 		$customerIdField = $this->fieldConfiguration[ MM_WPFS_ConfigurableFormFields::FIELD_CUSTOMER_ID ];
@@ -1062,14 +1062,14 @@ class MM_WPFS_CheckoutSessionBuilder_Donation extends MM_WPFS_CheckoutSessionBui
 		$this->buildPhoneNumber( $sessionData );
 
 		$sessionData['mode'] = 'payment';
-		$sessionData['payment_intent_data'] = array(
+		$sessionData['payment_intent_data'] = [
 			'setup_future_usage' => 'off_session'
-		);
+		];
 		$sessionData['customer_creation'] = 'always'; // always capture a customer. we need it post payment for internal logic
 
-		$productData = array(
+		$productData = [
 			'name' => $this->getProductLabel()
-		);
+		];
 		if ( isset( $this->formModel->getForm()->companyName ) && ! empty( $this->formModel->getForm()->companyName ) ) {
 			$productData['description'] = $this->formModel->getForm()->companyName;
 		}
@@ -1080,28 +1080,28 @@ class MM_WPFS_CheckoutSessionBuilder_Donation extends MM_WPFS_CheckoutSessionBui
 			];
 		}
 
-		$lineItem = array(
-			'price_data' => array(
+		$lineItem = [
+			'price_data' => [
 				'currency' => $this->formModel->getForm()->currency,
 				'product_data' => $productData,
 				'unit_amount' => $this->formModel->getAmount(),
-			),
+			],
 			'quantity' => 1,
-		);
+		];
 
-		$sessionData['line_items'] = array( $lineItem );
+		$sessionData['line_items'] = [ $lineItem ];
 
 		if ( $recoveryFee && ! empty( $recoveryFeeData ) ) {
-			$recoveryFeeLineItem = array(
-				'price_data' => array(
+			$recoveryFeeLineItem = [
+				'price_data' => [
 					'currency' => $currency,
-					'product_data' => array(
+					'product_data' => [
 						'name' => __( 'Transaction Fee', 'wp-full-stripe-free' ),
-					),
+					],
 					'unit_amount' => MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] ),
-				),
+				],
 				'quantity' => 1
-			);
+			];
 
 			array_push( $sessionData['line_items'], $recoveryFeeLineItem );
 		}
@@ -1188,9 +1188,9 @@ class MM_WPFS_CheckoutSessionBuilder_OneTimePayment extends MM_WPFS_CheckoutSess
 		$sessionData = parent::build();
 
 		$sessionData['mode'] = 'payment';
-		$sessionData['payment_intent_data'] = array(
+		$sessionData['payment_intent_data'] = [
 			'setup_future_usage' => 'off_session'
-		);
+		];
 		$sessionData['customer_creation'] = 'always'; // always capture a customer. we need it post payment for internal logic
 
 		$amount = $this->formModel->getAmount();
@@ -1200,21 +1200,21 @@ class MM_WPFS_CheckoutSessionBuilder_OneTimePayment extends MM_WPFS_CheckoutSess
 
 		$lineItem = [];
 		if ( ! is_null( $this->formModel->getPriceId() ) ) {
-			$lineItem = array(
+			$lineItem = [
 				'price' => $this->formModel->getPriceId(),
 				'quantity' => 1
-			);
+			];
 		} else {
-			$lineItem = array(
-				'price_data' => array(
+			$lineItem = [
+				'price_data' => [
 					'currency' => $currency,
-					'product_data' => array(
+					'product_data' => [
 						'name' => $this->formModel->getProductName()
-					),
+					],
 					'unit_amount' => $this->formModel->getAmount(),
-				),
+				],
 				'quantity' => 1
-			);
+			];
 
 			if ( isset( $this->formModel->getForm()->companyName ) && ! empty( $this->formModel->getForm()->companyName ) ) {
 				$lineItem['price_data']['product_data']['description'] = $this->formModel->getForm()->companyName;
@@ -1227,19 +1227,19 @@ class MM_WPFS_CheckoutSessionBuilder_OneTimePayment extends MM_WPFS_CheckoutSess
 		}
 
 		$this->updateLineItemWithTax( $lineItem );
-		$sessionData['line_items'] = array( $lineItem );
+		$sessionData['line_items'] = [ $lineItem ];
 
 		if ( $recoveryFee && ! empty( $recoveryFeeData ) ) {
-			$recoveryFeeLineItem = array(
-				'price_data' => array(
+			$recoveryFeeLineItem = [
+				'price_data' => [
 					'currency' => $currency,
-					'product_data' => array(
+					'product_data' => [
 						'name' => __( 'Transaction Fee', 'wp-full-stripe-free' ),
-					),
+					],
 					'unit_amount' => MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] ),
-				),
+				],
 				'quantity' => 1
-			);
+			];
 
 			array_push( $sessionData['line_items'], $recoveryFeeLineItem );
 		}
@@ -1248,7 +1248,7 @@ class MM_WPFS_CheckoutSessionBuilder_OneTimePayment extends MM_WPFS_CheckoutSess
 	}
 
 	private function prepareImagesValueArray( $checkoutForm ) {
-		$imagesValue = array();
+		$imagesValue = [];
 		if ( empty( $checkoutForm->image ) ) {
 			// $imagesValue = [ self::DEFAULT_CHECKOUT_LINE_ITEM_IMAGE ];
 		} else {
@@ -1274,7 +1274,7 @@ class MM_WPFS_CheckoutSessionBuilder_Subscription extends MM_WPFS_CheckoutSessio
 		$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $this->formModel->getForm() );
 
 		$subscriptionData = [];
-		$lineItems = array();
+		$lineItems = [];
 
 		$setupFee = $this->formModel->getSetupFee();
 		$trialDays = $this->formModel->getTrialPeriodDays();
@@ -1284,10 +1284,10 @@ class MM_WPFS_CheckoutSessionBuilder_Subscription extends MM_WPFS_CheckoutSessio
 		}
 
 		if ( $setupFee > 0 ) {
-			$setupFeeLineItem = array(
-				'price_data' => array(
+			$setupFeeLineItem = [
+				'price_data' => [
 					'currency' => $this->formModel->getStripePlan()->currency,
-					'product_data' => array(
+					'product_data' => [
 						'name' => sprintf(
 							/* translators: It's a line item for the initial payment of a subscription  */
 							__( 'One-time setup fee (plan: %s)', 'wp-full-stripe-free' ),
@@ -1302,20 +1302,20 @@ class MM_WPFS_CheckoutSessionBuilder_Subscription extends MM_WPFS_CheckoutSessio
 							$this->formModel->getStripePlan()->id,
 							$this->formModel->getStripePlanQuantity()
 						),
-					),
+					],
 					'unit_amount' => $setupFee
-				),
+				],
 				'quantity' => $this->formModel->getStripePlanQuantity()
-			);
+			];
 
 			$this->updateLineItemWithTax( $setupFeeLineItem );
 			array_push( $lineItems, $setupFeeLineItem );
 		}
 
-		$planLineItem = array(
+		$planLineItem = [
 			'price' => $this->formModel->getStripePlan()->id,
 			'quantity' => $this->formModel->getStripePlanQuantity()
-		);
+		];
 		$this->updateLineItemWithTax( $planLineItem );
 		array_push( $lineItems, $planLineItem );
 
@@ -1329,21 +1329,21 @@ class MM_WPFS_CheckoutSessionBuilder_Subscription extends MM_WPFS_CheckoutSessio
 			$amount = $this->formModel->getStripePlan()->unit_amount * $this->formModel->getStripePlanQuantity();
 			$currency = $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY ];
 
-			$recoveryFeeLineItem = array(
-				'price_data' => array(
+			$recoveryFeeLineItem = [
+				'price_data' => [
 					'currency' => $currency,
-					'product_data' => array(
+					'product_data' => [
 						'name' => __( 'Transaction Fee', 'wp-full-stripe-free' ),
-					),
+					],
 					'unit_amount' => MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] ),
-				),
+				],
 				'quantity' => 1
-			);
+			];
 
 			if ( isset( $this->formModel->getStripePlan()->recurring ) ) {
-				$recoveryFeeLineItem['price_data']['recurring'] = array(
+				$recoveryFeeLineItem['price_data']['recurring'] = [
 					'interval' => $this->formModel->getStripePlan()->recurring->interval
-				);
+				];
 			}
 
 			array_push( $sessionData['line_items'], $recoveryFeeLineItem );

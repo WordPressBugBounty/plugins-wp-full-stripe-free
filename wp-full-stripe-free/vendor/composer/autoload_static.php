@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit09590bf9ca2325e9d25a228c41a9c7d8
+class ComposerStaticInit8e2612d154c9520b9f22c3bc006bfd83
 {
     public static $files = array (
         '3109cb1a231dcd04bee1f9f620d46975' => __DIR__ . '/..' . '/paragonie/sodium_compat/autoload.php',
@@ -12,6 +12,10 @@ class ComposerStaticInit09590bf9ca2325e9d25a228c41a9c7d8
     );
 
     public static $prefixLengthsPsr4 = array (
+        'S' => 
+        array (
+            'StripeWPFS\\Stripe\\' => 18,
+        ),
         'P' => 
         array (
             'Psr\\EventDispatcher\\' => 20,
@@ -20,6 +24,10 @@ class ComposerStaticInit09590bf9ca2325e9d25a228c41a9c7d8
     );
 
     public static $prefixDirsPsr4 = array (
+        'StripeWPFS\\Stripe\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/stripe/stripe-php/lib',
+        ),
         'Psr\\EventDispatcher\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/event-dispatcher/src',
@@ -37,9 +45,9 @@ class ComposerStaticInit09590bf9ca2325e9d25a228c41a9c7d8
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit09590bf9ca2325e9d25a228c41a9c7d8::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit09590bf9ca2325e9d25a228c41a9c7d8::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit09590bf9ca2325e9d25a228c41a9c7d8::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit8e2612d154c9520b9f22c3bc006bfd83::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit8e2612d154c9520b9f22c3bc006bfd83::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit8e2612d154c9520b9f22c3bc006bfd83::$classMap;
 
         }, null, ClassLoader::class);
     }

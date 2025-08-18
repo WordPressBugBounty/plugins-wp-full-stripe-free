@@ -49,7 +49,7 @@ class MM_WPFS_Pricing {
 				$discountTotal += $discountAmount->amount;
 			}
 
-			foreach ( $lineItem->tax_amounts as $taxAmount ) {
+			foreach ( $lineItem->taxes as $taxAmount ) {
 				if ( $taxAmount->inclusive ) {
 					$taxInclusiveTotal += $taxAmount->amount;
 				} else {
@@ -85,7 +85,7 @@ class MM_WPFS_Pricing {
 				$statItem->discount += $discountAmount->amount;
 			}
 
-			foreach ( $lineItem->tax_amounts as $taxAmount ) {
+			foreach ( $lineItem->taxes as $taxAmount ) {
 				if ( $taxAmount->inclusive ) {
 					$statItem->taxInclusive += $taxAmount->amount;
 				} else {
@@ -120,7 +120,7 @@ class MM_WPFS_Pricing {
 	 * @return array
 	 */
 	public static function extractPriceIdsFromProductsStatic( $savedProducts ) {
-		$priceIds = array();
+		$priceIds = [];
 
 		foreach ( $savedProducts as $savedProduct ) {
 			array_push( $priceIds, $savedProduct->stripePriceId );
@@ -339,23 +339,12 @@ abstract class MM_WPFS_PriceCalculator {
 				// calculation
 				$invoice = $this->stripe->getUpcomingInvoice( $invoiceParams );
 				if ( $invoice->lines->has_more ) {
-					// has_more means there are more prices than returned
-					// limit is usually 10
-					// Stripe returns a URL where we can get all the lines
-					// we just need the params though as we use the Stripe client
-					$next_url = $invoice->lines->url;
-					// split parameters from url and urldecode
-					$next_url = explode( '?', $next_url )[1];
-					$next_url = urldecode( $next_url );
-					// convert the string to an array
-					$next_url = wp_parse_args( $next_url );
-					$next_url['limit'] = 100;
-					$invoice_line_items = $this->stripe->getUpcomingInvoiceItems( $next_url );
-					// TODO: handle has_more for invoice line items as there could be more than 100 prices
-					$lines = $invoice_line_items;
-				} else {
-					$lines = $invoice->lines->data;
+					// Log a warning — there may be more lines, but you can't paginate beyond 100
+					$this->logger->warning( __FUNCTION__, 'Invoice line items exceed limit=100, results truncated.' );
+					// Optionally display message or throw depending on criticality
 				}
+
+				$lines = $invoice->lines->data;
 			} catch (Exception $ex) {
 				if ( $ex->getMessage() === $this->generateTaxIdStripeErrorMessage() ) {
 					throw new WPFS_InvalidTaxIdException( $ex->getMessage() );
@@ -483,7 +472,7 @@ abstract class MM_WPFS_PaymentPriceCalculator extends MM_WPFS_PriceCalculator {
 		foreach ( $lineItems as $lineItem ) {
 			$dislayItems = [];
 
-			$priceId = $lineItem->price->id;
+			$priceId = $lineItem->pricing->price_details->price;
 			$metaData = $lineItem->metadata;
 			if (
 				$metaData !== null && isset( $metaData->type ) &&
@@ -520,7 +509,7 @@ abstract class MM_WPFS_PaymentPriceCalculator extends MM_WPFS_PriceCalculator {
 			}
 
 			$taxItemLookup = [];
-			foreach ( $lineItem->tax_amounts as $taxItem ) {
+			foreach ( $lineItem->taxes as $taxItem ) {
 				$taxItemLookup[ $taxItem->tax_rate ] = $taxItem;
 			}
 			if ( $this->pricingData->stripeTax ) {
@@ -670,7 +659,9 @@ abstract class MM_WPFS_SubscriptionPriceCalculator extends MM_WPFS_PriceCalculat
 		}
 
 		$result['invoice_items'] = $invoiceItems;
-		$result['subscription_items'] = $subscriptionItems;
+		$result['subscription_details'] = [
+			'items' => $subscriptionItems,
+		];
 
 		return $result;
 	}
@@ -727,7 +718,7 @@ abstract class MM_WPFS_SubscriptionPriceCalculator extends MM_WPFS_PriceCalculat
 
 		$priceGroupLookup = [];
 		foreach ( $lineItems as $lineItem ) {
-			$priceId = $lineItem->price->id;
+			$priceId = $lineItem->pricing->price_details->price;
 			$isSetupFee = false;
 
 			$metaData = $lineItem->metadata;
@@ -758,7 +749,7 @@ abstract class MM_WPFS_SubscriptionPriceCalculator extends MM_WPFS_PriceCalculat
 			$dislayItems = [];
 
 			foreach ( $lineItems as $lineItem ) {
-				$priceId = $lineItem->price->id;
+				$priceId = $lineItem->pricing->price_details->price;
 				$type = MM_WPFS::LINE_ITEM_TYPE_PRODUCT;
 				$discountTotal = 0;
 				$taxAmountLookup = [];
@@ -797,7 +788,7 @@ abstract class MM_WPFS_SubscriptionPriceCalculator extends MM_WPFS_PriceCalculat
 				}
 
 				$taxItemLookup = [];
-				foreach ( $lineItem->tax_amounts as $taxItem ) {
+				foreach ( $lineItem->taxes as $taxItem ) {
 					$taxItemLookup[ $taxItem->tax_rate ] = $taxItem;
 				}
 

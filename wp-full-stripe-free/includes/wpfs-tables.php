@@ -30,7 +30,7 @@ abstract class WPFS_Transactions_Table extends WPFS_List_Table {
 	abstract protected function getForms(): array;
 
 	protected function initFormDisplayNameCache() {
-		$this->formDisplayNameCache = array();
+		$this->formDisplayNameCache = [];
 
 		$forms = $this->getForms();
 		foreach ( $forms as $form ) {
@@ -60,11 +60,11 @@ abstract class WPFS_Transactions_Table extends WPFS_List_Table {
 		$orderBy = ! empty( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_ORDER_BY ] ) ? trim( sanitize_sql_orderby( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_ORDER_BY ] ) ) : 'created';
 		$order = ! empty( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_ORDER ] ) ? trim( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_ORDER ] ) : 'desc';
 
-		if ( ! in_array( $order, array( 'desc', 'asc' ), true ) ) {
+		if ( ! in_array( $order, [ 'desc', 'asc' ], true ) ) {
 			$order = 'desc';
 		}
 
-		return array( $orderBy, $order );
+		return [ $orderBy, $order ];
 	}
 
 	protected function addOrderByStatementToQuery( &$query ) {
@@ -95,11 +95,11 @@ abstract class WPFS_Transactions_Table extends WPFS_List_Table {
 	protected function configurePagination( $numItems ) {
 		$totalPages = ceil( $numItems / self::ITEMS_PER_PAGE );
 
-		$this->set_pagination_args( array(
+		$this->set_pagination_args( [
 			"total_items" => $numItems,
 			"total_pages" => $totalPages,
 			"per_page" => self::ITEMS_PER_PAGE,
-		) );
+		] );
 	}
 
 	protected function addPageOffsetToQuery( &$query ) {
@@ -115,10 +115,10 @@ abstract class WPFS_Transactions_Table extends WPFS_List_Table {
 	 */
 	protected function configureColumnHeaders() {
 		$columns = $this->get_columns();
-		$hidden = array();
+		$hidden = [];
 		$sortable = $this->get_sortable_columns();
 
-		$this->_column_headers = array( $columns, $hidden, $sortable );
+		$this->_column_headers = [ $columns, $hidden, $sortable ];
 	}
 
 	protected function createCompositeColumnLabel( $column1, $column2 ) {
@@ -349,7 +349,7 @@ abstract class WPFS_Transactions_Table extends WPFS_List_Table {
 	 * @return string[]
 	 */
 	protected function get_table_classes() {
-		return array( 'wpfs-data-table' );
+		return [ 'wpfs-data-table' ];
 	}
 
 }
@@ -371,7 +371,7 @@ class WPFS_Subscriptions_Table extends WPFS_Transactions_Table {
 	 * @param $loggerService MM_WPFS_LoggerService
 	 */
 	public function __construct( $loggerService ) {
-		parent::__construct( $loggerService, array(
+		parent::__construct( $loggerService, [
 			'singular' =>
 				/* translators: Singular version of the word 'subscription', used on the subscription list page */
 				__( 'Subscription', 'wp-full-stripe-free' ),
@@ -379,7 +379,7 @@ class WPFS_Subscriptions_Table extends WPFS_Transactions_Table {
 				/* translators: Plural version of the word 'subscription', used on the subscription list page */
 				__( 'Subscriptions', 'wp-full-stripe-free' ),
 			'ajax' => false
-		) );
+		] );
 	}
 
 	/**
@@ -397,7 +397,7 @@ class WPFS_Subscriptions_Table extends WPFS_Transactions_Table {
 		$status = ! empty( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_SUBSCRIPTIONS_STATUS_FILTER ] ) ? trim( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_SUBSCRIPTIONS_STATUS_FILTER ] ) : null;
 		$mode = ! empty( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_SUBSCRIPTIONS_MODE_FILTER ] ) ? trim( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_SUBSCRIPTIONS_MODE_FILTER ] ) : null;
 
-		return array( $searchText, $status, $mode );
+		return [ $searchText, $status, $mode ];
 	}
 
 	protected function getQuery() {
@@ -461,7 +461,7 @@ class WPFS_Subscriptions_Table extends WPFS_Transactions_Table {
 	 * @return array
 	 */
 	public function get_columns() {
-		return array(
+		return [
 			self::COLUMN_PAYMENT_METHOD => '',
 			self::COLUMN_ID_DATE => $this->createCompositeColumnLabel(
 				/* translators: Name of the 'ID' column */
@@ -488,14 +488,14 @@ class WPFS_Subscriptions_Table extends WPFS_Transactions_Table {
 				__( 'Mode', 'wp-full-stripe-free' )
 			),
 			self::COLUMN_ACTIONS => '',
-		);
+		];
 	}
 
 	/**
 	 * @return array
 	 */
 	protected function get_sortable_columns() {
-		return array();
+		return [];
 	}
 
 	/**
@@ -513,7 +513,7 @@ class WPFS_Subscriptions_Table extends WPFS_Transactions_Table {
 
 		$columnHeader = '<tr class="wpfs-data-table__tr">';
 		foreach ( $columns as $key => $displayName ) {
-			$cssClasses = array( 'wpfs-data-table__th' );
+			$cssClasses = [ 'wpfs-data-table__th' ];
 			switch ( $key ) {
 				case self::COLUMN_PAYMENT_METHOD:
 					array_push( $cssClasses, 'wpfs-data-table__th--w40' );
@@ -673,7 +673,7 @@ class WPFS_Subscriptions_Table extends WPFS_Transactions_Table {
 	 * @param $planId string
 	 * @param $liveMode bool
 	 *
-	 * @return \StripeWPFS\Price|null
+	 * @return \StripeWPFS\Stripe\Price|null
 	 * @throws Exception
 	 */
 	protected function retrievePlanByMode( $planId, $liveMode ) {
@@ -751,7 +751,7 @@ class WPFS_Donations_Table extends WPFS_Transactions_Table {
 	const COLUMN_ACTIONS = 'actions';
 
 	public function __construct( $loggerService ) {
-		parent::__construct( $loggerService, array(
+		parent::__construct( $loggerService, [
 			'singular' =>
 				/* translators: Singular version of the word 'Donation', used on the donation list page */
 				__( 'Donation', 'wp-full-stripe-free' ),
@@ -759,7 +759,7 @@ class WPFS_Donations_Table extends WPFS_Transactions_Table {
 				/* translators: Plural version of the word 'Donation', used on the donation list page */
 				__( 'Donations', 'wp-full-stripe-free' ),
 			'ajax' => false
-		) );
+		] );
 	}
 
 	/**
@@ -776,7 +776,7 @@ class WPFS_Donations_Table extends WPFS_Transactions_Table {
 		$searchText = ! empty( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_DONATIONS_TEXT_FILTER ] ) ? trim( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_DONATIONS_TEXT_FILTER ] ) : null;
 		$mode = ! empty( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_DONATIONS_MODE_FILTER ] ) ? trim( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_DONATIONS_MODE_FILTER ] ) : null;
 
-		return array( $searchText, $mode );
+		return [ $searchText, $mode ];
 	}
 
 	protected function getQuery() {
@@ -839,7 +839,7 @@ class WPFS_Donations_Table extends WPFS_Transactions_Table {
 	 * @return array
 	 */
 	public function get_columns() {
-		return array(
+		return [
 			self::COLUMN_PAYMENT_METHOD => '',
 			self::COLUMN_ID_DATE => $this->createCompositeColumnLabel(
 				/* translators: Name of the 'ID' column */
@@ -866,14 +866,14 @@ class WPFS_Donations_Table extends WPFS_Transactions_Table {
 				__( 'Mode', 'wp-full-stripe-free' )
 			),
 			self::COLUMN_ACTIONS => '',
-		);
+		];
 	}
 
 	/**
 	 * @return array
 	 */
 	protected function get_sortable_columns() {
-		return array();
+		return [];
 	}
 
 	/**
@@ -891,7 +891,7 @@ class WPFS_Donations_Table extends WPFS_Transactions_Table {
 
 		$columnHeader = '<tr class="wpfs-data-table__tr">';
 		foreach ( $columns as $key => $displayName ) {
-			$cssClasses = array( 'wpfs-data-table__th' );
+			$cssClasses = [ 'wpfs-data-table__th' ];
 			switch ( $key ) {
 				case self::COLUMN_PAYMENT_METHOD:
 					array_push( $cssClasses, 'wpfs-data-table__th--w40' );
@@ -1078,7 +1078,7 @@ class WPFS_Donations_Table extends WPFS_Transactions_Table {
 
 		}
 
-		if ( \StripeWPFS\Subscription::STATUS_ACTIVE === $donation->subscriptionStatus ) {
+		if ( \StripeWPFS\Stripe\Subscription::STATUS_ACTIVE === $donation->subscriptionStatus ) {
 			$cancelLabel =
 				/* translators: 'Cancel' action label for donations */
 				__( 'Cancel', 'wp-full-stripe-free' );
@@ -1160,7 +1160,7 @@ class WPFS_SavedCards_Table extends WPFS_Transactions_Table {
 	const COLUMN_ACTIONS = 'actions';
 
 	public function __construct( $loggerService ) {
-		parent::__construct( $loggerService, array(
+		parent::__construct( $loggerService, [
 			'singular' =>
 				/* translators: Singular version of the expression 'Saved card', used on the save card list page */
 				__( 'Saved card', 'wp-full-stripe-free' ),
@@ -1168,7 +1168,7 @@ class WPFS_SavedCards_Table extends WPFS_Transactions_Table {
 				/* translators: Plural version of the expression 'Saved card', used on the save card list page */
 				__( 'Saved cards', 'wp-full-stripe-free' ),
 			'ajax' => false
-		) );
+		] );
 	}
 
 	/**
@@ -1185,7 +1185,7 @@ class WPFS_SavedCards_Table extends WPFS_Transactions_Table {
 		$searchText = ! empty( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_SAVED_CARDS_TEXT_FILTER ] ) ? trim( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_SAVED_CARDS_TEXT_FILTER ] ) : null;
 		$mode = ! empty( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_SAVED_CARDS_MODE_FILTER ] ) ? trim( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_SAVED_CARDS_MODE_FILTER ] ) : null;
 
-		return array( $searchText, $mode );
+		return [ $searchText, $mode ];
 	}
 
 	/**
@@ -1239,7 +1239,7 @@ class WPFS_SavedCards_Table extends WPFS_Transactions_Table {
 	 * @return array
 	 */
 	public function get_columns() {
-		return array(
+		return [
 			self::COLUMN_PAYMENT_METHOD => '',
 			self::COLUMN_ID_DATE => $this->createCompositeColumnLabel(
 				/* translators: Name of the 'ID' column */
@@ -1257,14 +1257,14 @@ class WPFS_SavedCards_Table extends WPFS_Transactions_Table {
 				/* translators: Name of the 'Mode' column */
 				__( 'Mode', 'wp-full-stripe-free' ),
 			self::COLUMN_ACTIONS => ''
-		);
+		];
 	}
 
 	/**
 	 * @return array
 	 */
 	protected function get_sortable_columns() {
-		return array();
+		return [];
 	}
 
 	/**
@@ -1282,7 +1282,7 @@ class WPFS_SavedCards_Table extends WPFS_Transactions_Table {
 
 		$columnHeader = '<tr class="wpfs-data-table__tr">';
 		foreach ( $columns as $key => $displayName ) {
-			$cssClasses = array( 'wpfs-data-table__th' );
+			$cssClasses = [ 'wpfs-data-table__th' ];
 			switch ( $key ) {
 				case self::COLUMN_PAYMENT_METHOD:
 					array_push( $cssClasses, 'wpfs-data-table__th--w40' );
@@ -1416,7 +1416,7 @@ class WPFS_OneTimePayments_Table extends WPFS_Transactions_Table {
 	const COLUMN_ACTIONS = 'actions';
 
 	public function __construct( $loggerService ) {
-		parent::__construct( $loggerService, array(
+		parent::__construct( $loggerService, [
 			'singular' =>
 				/* translators: Singular version of the word 'Payment', used on the payment list page */
 				__( 'Payment', 'wp-full-stripe-free' ),
@@ -1424,7 +1424,7 @@ class WPFS_OneTimePayments_Table extends WPFS_Transactions_Table {
 				/* translators: Plural version of the word 'Payment', used on the payment list page */
 				__( 'Payments', 'wp-full-stripe-free' ),
 			'ajax' => false
-		) );
+		] );
 	}
 
 	/**
@@ -1442,7 +1442,7 @@ class WPFS_OneTimePayments_Table extends WPFS_Transactions_Table {
 		$status = ! empty( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_PAYMENTS_STATUS_FILTER ] ) ? trim( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_PAYMENTS_STATUS_FILTER ] ) : null;
 		$mode = ! empty( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_PAYMENTS_MODE_FILTER ] ) ? trim( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_PAYMENTS_MODE_FILTER ] ) : null;
 
-		return array( $searchText, $status, $mode );
+		return [ $searchText, $status, $mode ];
 	}
 
 	protected function getQuery() {
@@ -1528,7 +1528,7 @@ class WPFS_OneTimePayments_Table extends WPFS_Transactions_Table {
 	 * @return array
 	 */
 	public function get_columns() {
-		return array(
+		return [
 			self::COLUMN_PAYMENT_METHOD => '',
 			self::COLUMN_ID_DATE => $this->createCompositeColumnLabel(
 				/* translators: Name of the 'ID' column */
@@ -1552,14 +1552,14 @@ class WPFS_OneTimePayments_Table extends WPFS_Transactions_Table {
 				__( 'Mode', 'wp-full-stripe-free' )
 			),
 			self::COLUMN_ACTIONS => '',
-		);
+		];
 	}
 
 	/**
 	 * @return array
 	 */
 	protected function get_sortable_columns() {
-		return array();
+		return [];
 	}
 
 	/**
@@ -1577,7 +1577,7 @@ class WPFS_OneTimePayments_Table extends WPFS_Transactions_Table {
 
 		$columnHeader = '<tr class="wpfs-data-table__tr">';
 		foreach ( $columns as $key => $displayName ) {
-			$cssClasses = array( 'wpfs-data-table__th' );
+			$cssClasses = [ 'wpfs-data-table__th' ];
 			switch ( $key ) {
 				case self::COLUMN_PAYMENT_METHOD:
 					array_push( $cssClasses, 'wpfs-data-table__th--w40' );
@@ -1820,7 +1820,7 @@ class WPFS_Base_Table extends WPFS_List_Table {
 		}
 
 		foreach ( $columns as $column_key => $column_display_name ) {
-			$class = array( 'manage-column', "column-$column_key" );
+			$class = [ 'manage-column', "column-$column_key" ];
 
 			if ( in_array( $column_key, $hidden ) ) {
 				$class[] = 'hidden';
@@ -1828,7 +1828,7 @@ class WPFS_Base_Table extends WPFS_List_Table {
 
 			if ( 'cb' === $column_key ) {
 				$class[] = 'check-column';
-			} elseif ( in_array( $column_key, array( 'posts', 'comments', 'links' ) ) ) {
+			} elseif ( in_array( $column_key, [ 'posts', 'comments', 'links' ] ) ) {
 				$class[] = 'num';
 			}
 
@@ -1970,11 +1970,11 @@ class WPFS_Base_Table extends WPFS_List_Table {
 class WPFS_Log_Table extends WPFS_Base_Table {
 
 	public function __construct() {
-		parent::__construct( array(
+		parent::__construct( [
 			'singular' => __( 'Log entry', 'wp-full-stripe-free' ),
 			'plural' => __( 'Log entries', 'wp-full-stripe-free' ),
 			'ajax' => false
-		) );
+		] );
 	}
 
 	/**
@@ -2021,11 +2021,11 @@ class WPFS_Log_Table extends WPFS_Base_Table {
 		$total_items = $wpdb->query( $query );
 		$per_page = 50;
 		$total_pages = ceil( $total_items / $per_page );
-		$this->set_pagination_args( array(
+		$this->set_pagination_args( [
 			"total_items" => $total_items,
 			"total_pages" => $total_pages,
 			"per_page" => $per_page,
-		) );
+		] );
 		$current_page = $this->get_pagenum();
 		if ( ! empty( $current_page ) && ! empty( $per_page ) ) {
 			$offset = ( $current_page - 1 ) * $per_page;
@@ -2033,9 +2033,9 @@ class WPFS_Log_Table extends WPFS_Base_Table {
 		}
 
 		$columns = $this->get_columns();
-		$hidden = array();
+		$hidden = [];
 		$sortable = $this->get_sortable_columns();
-		$this->_column_headers = array( $columns, $hidden, $sortable );
+		$this->_column_headers = [ $columns, $hidden, $sortable ];
 
 		$this->items = $wpdb->get_results( $query );
 	}
@@ -2045,9 +2045,9 @@ class WPFS_Log_Table extends WPFS_Base_Table {
 	 * @return array $sortable, the array of columns that can be sorted by the user
 	 */
 	protected function get_sortable_columns() {
-		return array(
-			'created' => array( 'created', false )
-		);
+		return [
+			'created' => [ 'created', false ]
+		];
 	}
 
 

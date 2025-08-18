@@ -27,9 +27,9 @@ class MM_WPFS_ThankYou {
 
         $this->initStaticContext();
 
-        add_shortcode( self::SHORTCODE_FULLSTRIPE_THANKYOU, array( $this, 'thankYouShortCode') );
-        add_shortcode( self::SHORTCODE_FULLSTRIPE_THANKYOU_SUCCESS, array( $this, 'thankYouSuccessShortCode') );
-        add_shortcode( self::SHORTCODE_FULLSTRIPE_THANKYOU_DEFAULT, array( $this, 'thankYouDefaultShortCode') );
+        add_shortcode( self::SHORTCODE_FULLSTRIPE_THANKYOU, [ $this, 'thankYouShortCode'] );
+        add_shortcode( self::SHORTCODE_FULLSTRIPE_THANKYOU_SUCCESS, [ $this, 'thankYouSuccessShortCode'] );
+        add_shortcode( self::SHORTCODE_FULLSTRIPE_THANKYOU_DEFAULT, [ $this, 'thankYouDefaultShortCode'] );
 
         $this->database                  = new MM_WPFS_Database();
         $this->transactionDataService    = new MM_WPFS_TransactionDataService();
@@ -125,17 +125,17 @@ class MM_WPFS_ThankYou {
      * @return array
      */
     public static function getPagesAndPosts( $form ) : array {
-        $result = array();
+        $result = [];
 
-        $filterParams = array(
+        $filterParams = [
             'formName'  => $form->name,
             'formType'  => MM_WPFS_Utils::getFormType( $form )
-        );
-        $query = new WP_Query( array(
+        ];
+        $query = new WP_Query( [
             'nopaging' => true,
             'update_post_meta_cache' => false,
-            'post_type' => apply_filters( self::FILTER_NAME_THANK_YOU_POST_TYPES, array( 'page' ), $filterParams )
-        ) );
+            'post_type' => apply_filters( self::FILTER_NAME_THANK_YOU_POST_TYPES, [ 'page' ], $filterParams )
+        ] );
 
         foreach ( $query->posts as $pageOrPost ) {
             $item = new \StdClass;
@@ -231,12 +231,12 @@ trait MM_WPFS_ThankYou_AddOn {
                     // macro replacer handles checkout type forms to get additional data
                    $replacer = $this->getMacroReplacer( $formModel, $transactionData );
 
-                    $params = array(
+                    $params = [
                         'formName'                => $formModel->getFormName(),
                         'formType'                => MM_WPFS_Utils::getFormType( $formModel->getForm() ),
                         'rawPlaceholders'         => $replacer->getRawKeyValuePairs(),
                         'decoratedPlaceholders'   => $replacer->getDecoratedKeyValuePairs()
-                    );
+                    ];
 
                     $transactionResult->setRedirect( true );
                     $transactionResult->setRedirectURL( MM_WPFS_ThankYou::getRedirectUrl( $redirectUrl, $transactionDataKey, $params ) );
@@ -324,11 +324,11 @@ abstract class MM_WPFS_ThankYouPostProcessor {
     }
 
     public function process( $content) {
-        $params = array(
+        $params = [
             'formType'                => $this->getFormType(),
             'rawPlaceholders'         => $this->replacer->getRawKeyValuePairs(),
             'decoratedPlaceholders'   => $this->replacer->getDecoratedKeyValuePairs()
-        );
+        ];
 
         $content = apply_filters( 'fullstripe_thank_you_output', $content, $params );
         $result = $this->replacer->replaceMacrosWithHtmlEscape( $content );

@@ -48,11 +48,11 @@ class MM_WPFS_Admin_CreateFormValidator extends MM_WPFS_Validator {
                     __( 'This identifier is already in use, choose a different one.', 'wp-full-stripe-free' ) );
             }
 
-            $formTypes = array(
+            $formTypes = [
                 MM_WPFS::FORM_TYPE_PAYMENT,
                 MM_WPFS::FORM_TYPE_SUBSCRIPTION,
                 MM_WPFS::FORM_TYPE_DONATION,
-                MM_WPFS::FORM_TYPE_SAVE_CARD );
+                MM_WPFS::FORM_TYPE_SAVE_CARD ];
             if ( false === array_search( $formModelObject->getType(), $formTypes ) ) {
                 $error =
                     /* translators: Create form validation error message when no form type is selected */
@@ -61,10 +61,10 @@ class MM_WPFS_Admin_CreateFormValidator extends MM_WPFS_Validator {
                 $bindingResult->addGlobalError( $error );
             }
 
-            $formLayouts = array(
+            $formLayouts = [
                 MM_WPFS::FORM_LAYOUT_INLINE,
                 MM_WPFS::FORM_LAYOUT_CHECKOUT
-            );
+            ];
             if ( false === array_search( $formModelObject->getLayout(), $formLayouts ) ) {
                 $error =
                     /* translators: Create form validation error message when no form layout is selected */
@@ -95,10 +95,10 @@ class MM_WPFS_Admin_StripeAccountValidator extends MM_WPFS_Validator {
      * @param MM_WPFS_Admin_StripeAccountModel $formModelObject
      */
     public function validate( $bindingResult, $formModelObject ) {
-        $apiModes = array(
+        $apiModes = [
             MM_WPFS::STRIPE_API_MODE_TEST,
             MM_WPFS::STRIPE_API_MODE_LIVE
-        );
+        ];
         if ( false === array_search( $formModelObject->getApiMode(), $apiModes ) ) {
             $error =
                 /* translators: Save Stripe settings validation error when no API mode is selected */
@@ -119,11 +119,11 @@ class MM_WPFS_Admin_MyAccountValidator extends MM_WPFS_Validator {
      * @param MM_WPFS_Admin_MyAccountModel $formModelObject
      */
     public function validate( $bindingResult, $formModelObject ) {
-        $yesNoValues     = array( '0', '1' );
-        $whenCancelValues = array(
+        $yesNoValues     = [ '0', '1' ];
+        $whenCancelValues = [
             MM_WPFS::CANCEL_SUBSCRIPTION_IMMEDIATELY,
             MM_WPFS::CANCEL_SUBSCRIPTION_AT_PERIOD_END
-        );
+        ];
 
         if ( false === array_search( $formModelObject->getShowSubscriptions(), $yesNoValues ) ) {
             $error =
@@ -186,7 +186,7 @@ class MM_WPFS_Admin_SecurityValidator extends MM_WPFS_Validator {
      * @param MM_WPFS_Admin_SecurityModel $formModelObject
      */
     public function validate( $bindingResult, $formModelObject ) {
-        $yesNoValues     = array( '0', '1' );
+        $yesNoValues     = [ '0', '1' ];
 
         if ( false === array_search( $formModelObject->getSecureInlineForms(), $yesNoValues ) ) {
             $error =
@@ -243,10 +243,10 @@ class MM_WPFS_Admin_EmailOptionsValidator extends MM_WPFS_Validator {
      * @param MM_WPFS_Admin_EmailOptionsModel $formModelObject
      */
     public function validate( $bindingResult, $formModelObject ) {
-        $fromAddressValues = array(
+        $fromAddressValues = [
             MM_WPFS_Admin_EmailOptionsViewConstants::FIELD_VALUE_FROM_ADDRESS_ADMIN,
             MM_WPFS_Admin_EmailOptionsViewConstants::FIELD_VALUE_FROM_ADDRESS_CUSTOM
-        );
+        ];
 
         if ( false === array_search( $formModelObject->getFromAddress(), $fromAddressValues ) ) {
             $error =
@@ -308,7 +308,7 @@ class MM_WPFS_Admin_FormsOptionsValidator extends MM_WPFS_Validator {
      * @param MM_WPFS_Admin_FormsOptionsModel $formModelObject
      */
     public function validate( $bindingResult, $formModelObject ) {
-        $yesNoValues = array( '0', '1' );
+        $yesNoValues = [ '0', '1' ];
         $countries = MM_WPFS_Countries::getAvailableCountries();
 
         if ( ! array_key_exists( $formModelObject->getDefaultBillingCountry(), $countries ) ) {
@@ -357,11 +357,11 @@ class MM_WPFS_Admin_WordpressDashboardValidator extends MM_WPFS_Validator {
      * @param MM_WPFS_Admin_WordpressDashboardModel $formModelObject
      */
     public function validate( $bindingResult, $formModelObject ) {
-        $yesNoValues            = array( '0', '1' );
-        $decimalSeparatorValues = array(
+        $yesNoValues            = [ '0', '1' ];
+        $decimalSeparatorValues = [
             MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_DOT,
             MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_COMMA
-        );
+        ];
 
         if ( false === array_search( $formModelObject->getDecimalSeparator(), $decimalSeparatorValues ) ) {
             $error =
@@ -450,13 +450,13 @@ class MM_WPFS_Admin_LogsValidator extends MM_WPFS_Validator {
      * @param MM_WPFS_Admin_LogsModel $formModelObject
      */
     public function validate( $bindingResult, $formModelObject ) {
-        $yesNoValues            = array( '0', '1' );
-        $logLevelValues = array(
+        $yesNoValues            = [ '0', '1' ];
+        $logLevelValues = [
             MM_WPFS_LoggerService::LEVEL_ERROR,
             MM_WPFS_LoggerService::LEVEL_WARNING,
             MM_WPFS_LoggerService::LEVEL_INFO,
             MM_WPFS_LoggerService::LEVEL_DEBUG
-        );
+        ];
 
         if ( false === array_search( $formModelObject->getLogLevel(), $logLevelValues ) ) {
             $error =
@@ -568,11 +568,11 @@ abstract class MM_WPFS_Admin_FormValidator extends MM_WPFS_Validator {
      * @param $formModel MM_WPFS_Binder|MM_WPFS_Admin_FormModel
      */
     protected function validateLocaleSettings($bindingResult, $formModel ) {
-        $yesNoValues            = array( '0', '1' );
-        $decimalSeparatorValues = array(
+        $yesNoValues            = [ '0', '1' ];
+        $decimalSeparatorValues = [
             MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_DOT,
             MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_COMMA
-        );
+        ];
 
         if ( false === array_search( $formModel->getInheritLocale(), $yesNoValues ) ) {
             $error =
@@ -659,11 +659,11 @@ abstract class MM_WPFS_Admin_FormValidator extends MM_WPFS_Validator {
      * @param $formModel MM_WPFS_Binder|MM_WPFS_Admin_FormModel
      */
     protected function validateRedirect($bindingResult, $formModel ) {
-        $redirectValues = array(
+        $redirectValues = [
             MM_WPFS::REDIRECT_TYPE_SHOW_CONFIRMATION_MESSAGE,
             MM_WPFS::REDIRECT_TYPE_TO_PAGE_OR_POST,
             MM_WPFS::REDIRECT_TYPE_TO_CUSTOM_URL,
-        );
+        ];
         if ( false === array_search( $formModel->getRedirectType(), $redirectValues ) ) {
             $error =
                 __( 'Please decide what should happen after a successful payment (General tab)', 'wp-full-stripe-free' );
@@ -689,12 +689,12 @@ abstract class MM_WPFS_Admin_FormValidator extends MM_WPFS_Validator {
      * @param MM_WPFS_Admin_MyAccountModel $formModelObject
      */
     public function validateFeeRecovery( $bindingResult, $formModelObject ) {
-        $yesNoValues = array( '0', '1' );
-        $feeRecoveryValues = array(
+        $yesNoValues = [ '0', '1' ];
+        $feeRecoveryValues = [
             MM_WPFS::FEE_RECOVERY_INHERIT,
             MM_WPFS::FEE_RECOVERY_CUSTOMIZE,
             MM_WPFS::FEE_RECOVERY_DISABLE
-        );
+        ];
 
         if ( false === array_search( $formModelObject->getFeeRecovery(), $feeRecoveryValues ) ) {
             $error =
@@ -965,7 +965,7 @@ abstract class MM_WPFS_Admin_DonationFormValidator extends MM_WPFS_Admin_FormVal
      * @param $formModel MM_WPFS_Admin_InlineDonationFormModel
      */
     protected function validateShowDonationGoal( $bindingResult, $formModel ) {
-        $yesNoValues = array( 0, 1 );
+        $yesNoValues = [ 0, 1 ];
 
         if ( false === array_search( $formModel->getShowDonationGoal(), $yesNoValues ) ) {
             $error =
@@ -1045,7 +1045,7 @@ trait MM_WPFS_Admin_CheckoutPhoneNumberValidator_AddOn {
      * @return void
      */
     protected function validateCheckoutCollectPhoneNumber( $bindingResult, $formModelObject ) {
-        $yesNoValues     = array( '0', '1' );
+        $yesNoValues     = [ '0', '1' ];
 
         if ( false === array_search( $formModelObject->getCollectPhoneNumber(), $yesNoValues ) ) {
             $error =
@@ -1098,12 +1098,12 @@ trait MM_WPFS_Admin_TaxRateValidatorTools {
     }
 
     protected function validateTaxRates( $bindingResult, $formModel ) {
-        $taxRateTypes = array(
+        $taxRateTypes = [
             MM_WPFS::FIELD_VALUE_TAX_RATE_NO_TAX,
             MM_WPFS::FIELD_VALUE_TAX_RATE_STRIPE_TAX,
             MM_WPFS::FIELD_VALUE_TAX_RATE_FIXED,
             MM_WPFS::FIELD_VALUE_TAX_RATE_DYNAMIC,
-        );
+        ];
 
         if ( false === array_search( $formModel->getTaxType(), $taxRateTypes )) {
             $error =
@@ -1171,10 +1171,10 @@ abstract class MM_WPFS_Admin_PaymentFormValidator extends MM_WPFS_Admin_FormVali
      * @param $formModel MM_WPFS_Binder|MM_WPFS_Admin_PaymentFormModel
      */
     protected function validatePaymentType( $bindingResult, $formModel ) {
-        $paymentTypes = array(
+        $paymentTypes = [
             MM_WPFS::PAYMENT_TYPE_LIST_OF_AMOUNTS,
             MM_WPFS::PAYMENT_TYPE_CUSTOM_AMOUNT
-        );
+        ];
 
         if ( false === array_search( $formModel->getPaymentType(), $paymentTypes )) {
             $error =
@@ -1240,10 +1240,10 @@ abstract class MM_WPFS_Admin_PaymentFormValidator extends MM_WPFS_Admin_FormVali
      * @param $formModel MM_WPFS_Binder|MM_WPFS_Admin_PaymentFormModel
      */
     protected function validateChargeType( $bindingResult, $formModel ) {
-        $chargeTypes = array(
+        $chargeTypes = [
             MM_WPFS::CHARGE_TYPE_IMMEDIATE,
             MM_WPFS::CHARGE_TYPE_AUTHORIZE_AND_CAPTURE
-        );
+        ];
 
         if ( false === array_search( $formModel->getChargeType(), $chargeTypes )) {
             $error =
@@ -1273,11 +1273,11 @@ abstract class MM_WPFS_Admin_PaymentFormValidator extends MM_WPFS_Admin_FormVali
      * @param $formModel MM_WPFS_Binder|MM_WPFS_Admin_PaymentFormModel
      */
     protected function validateProductSelectorStyle( $bindingResult, $formModel ) {
-        $productSelectorStyles = array(
+        $productSelectorStyles = [
             MM_WPFS::SELECTOR_STYLE_RADIO_BUTTONS,
             MM_WPFS::SELECTOR_STYLE_DROPDOWN,
             MM_WPFS::SELECTOR_STYLE_BUTTON_GROUP,
-        );
+        ];
 
         if ( false === array_search( $formModel->getProductSelectorStyle(), $productSelectorStyles )) {
             $error =
@@ -1292,7 +1292,7 @@ abstract class MM_WPFS_Admin_PaymentFormValidator extends MM_WPFS_Admin_FormVali
      * @param $formModel MM_WPFS_Binder|MM_WPFS_Admin_PaymentFormModel
      */
     protected function validateShowCouponField( $bindingResult, $formModel ) {
-        $yesNoValues = array( '0', '1' );
+        $yesNoValues = [ '0', '1' ];
 
         if ( false === array_search( $formModel->getShowCouponField(), $yesNoValues ) ) {
             $error =
@@ -1306,7 +1306,7 @@ abstract class MM_WPFS_Admin_PaymentFormValidator extends MM_WPFS_Admin_FormVali
      * @param $formModel MM_WPFS_Binder|MM_WPFS_Admin_PaymentFormModel
      */
     protected function validateGenerateInvoice( $bindingResult, $formModel ) {
-        $yesNoValues = array( '0', '1' );
+        $yesNoValues = [ '0', '1' ];
 
         if ( false === array_search( $formModel->getGenerateInvoice(), $yesNoValues ) ) {
             $error =
@@ -1424,11 +1424,11 @@ abstract class MM_WPFS_Admin_SubscriptionFormValidator extends MM_WPFS_Admin_For
      */
     protected function validateMinMaxSubscriptionQuantity($bindingResult, $formModel ) {
         if ( $formModel->getAllowSubscriptionQuantity() == 1 ) {
-            $filterOptions = array(
-                'options' => array(
+            $filterOptions = [
+                'options' => [
                     'min_range' => 0
-                )
-            );
+                ]
+            ];
             if ( filter_var( $formModel->getSubscriptionMinimumQuantity(), FILTER_VALIDATE_INT, $filterOptions ) === false ) {
                 $fieldName = MM_WPFS_Admin_SubscriptionFormViewConstants::FIELD_FORM_SUBSCRIPTION_MINIMUM_QUANTITY;
                 $fieldId   = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModel->getFormHash() );
@@ -1436,11 +1436,11 @@ abstract class MM_WPFS_Admin_SubscriptionFormValidator extends MM_WPFS_Admin_For
                 $error     = __( 'Please enter the minimum subscription quantity or zero', 'wp-full-stripe-free' );
                 $bindingResult->addFieldError( $fieldName, $fieldId, $error );
             }
-            $filterOptions = array(
-                'options' => array(
+            $filterOptions = [
+                'options' => [
                     'min_range' => 0
-                )
-            );
+                ]
+            ];
             if ( filter_var( $formModel->getSubscriptionMaximumQuantity(), FILTER_VALIDATE_INT, $filterOptions ) === false ) {
                 $fieldName = MM_WPFS_Admin_SubscriptionFormViewConstants::FIELD_FORM_SUBSCRIPTION_MAXIMUM_QUANTITY;
                 $fieldId   = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModel->getFormHash() );
@@ -1467,10 +1467,10 @@ abstract class MM_WPFS_Admin_SubscriptionFormValidator extends MM_WPFS_Admin_For
      * @param $formModel MM_WPFS_Binder|MM_WPFS_Admin_SubscriptionFormModel
      */
     protected function validatePlanSelectorStyle( $bindingResult, $formModel ) {
-        $productSelectorStyles = array(
+        $productSelectorStyles = [
             MM_WPFS::SELECTOR_STYLE_RADIO_BUTTONS,
             MM_WPFS::SELECTOR_STYLE_DROPDOWN,
-        );
+        ];
 
         if ( false === array_search( $formModel->getProductSelectorStyle(), $productSelectorStyles )) {
             $error =
@@ -1485,7 +1485,7 @@ abstract class MM_WPFS_Admin_SubscriptionFormValidator extends MM_WPFS_Admin_For
      * @param $formModel MM_WPFS_Binder|MM_WPFS_Admin_SubscriptionFormModel
      */
     protected function validateShowCouponField( $bindingResult, $formModel ) {
-        $yesNoValues = array( '0', '1' );
+        $yesNoValues = [ '0', '1' ];
 
         if ( false === array_search( $formModel->getShowCouponField(), $yesNoValues ) ) {
             $error =

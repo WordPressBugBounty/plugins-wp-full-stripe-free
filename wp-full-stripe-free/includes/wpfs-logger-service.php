@@ -72,16 +72,16 @@ class MM_WPFS_LoggerService {
 	}
 
 	protected function buildLevels() {
-		return array(
+		return [
 			self::LEVEL_DEBUG,
 			self::LEVEL_INFO,
 			self::LEVEL_WARNING,
 			self::LEVEL_ERROR
-		);
+		];
 	}
 
 	protected function buildModules() {
-		return array(
+		return [
 			self::MODULE_PATCHER,
 			self::MODULE_DATABASE,
 			self::MODULE_ADMIN,
@@ -91,7 +91,7 @@ class MM_WPFS_LoggerService {
 			self::MODULE_CHECKOUT_SUBMISSION,
 			self::MODULE_STRIPE,
 			self::MODULE_API,
-		);
+		];
 	}
 
 	/**
@@ -108,12 +108,12 @@ class MM_WPFS_LoggerService {
 	}
 
 	protected function buildLevelPriorities() {
-		return array(
+		return [
 			self::LEVEL_DEBUG => self::LEVEL_PRIORITY_DEBUG,
 			self::LEVEL_INFO => self::LEVEL_PRIORITY_INFO,
 			self::LEVEL_WARNING => self::LEVEL_PRIORITY_WARNING,
 			self::LEVEL_ERROR => self::LEVEL_PRIORITY_ERROR
-		);
+		];
 	}
 
 	protected function getModuleLevel( $module ) {
@@ -274,7 +274,7 @@ class MM_WPFS_LoggerService {
 		// check for nonce and return 400 error if not valid
 		if ( ! isset( $_GET['nonce'] ) || ! wp_verify_nonce( $_GET['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce ' . __FUNCTION__ ] );
 			exit;
 		}
 

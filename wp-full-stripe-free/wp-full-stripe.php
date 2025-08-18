@@ -5,7 +5,7 @@ Plugin Name: WP Full Pay
 Plugin URI: https://paymentsplugin.com
 Description: Use WP Full Pay to accept Stripe payments on your WordPress. Prebuilt forms to accept payments, donations and subscriptions. 
 Author: Themeisle
-Version: 8.2.6
+Version: 8.3.0
 Author URI: https://themeisle.com
 Text Domain: wp-full-stripe-free
 Domain Path: /languages
@@ -43,12 +43,12 @@ if ( ! defined( 'WP_FULL_STRIPE_PATH' ) ) {
 
 function wp_full_stripe_prepare_cron_schedules( $schedules ) {
     if ( ! isset( $schedules[ WP_FULL_STRIPE_CRON_SCHEDULES_KEY_15_MIN ] ) ) {
-        $schedules[ WP_FULL_STRIPE_CRON_SCHEDULES_KEY_15_MIN ] = array(
+        $schedules[ WP_FULL_STRIPE_CRON_SCHEDULES_KEY_15_MIN ] = [
             'interval' => 15 * 60,
             'display'  =>
             /* translators: Textual description of how often a periodic task of the plugin runs */
                 __( 'Every 15 minutes', 'wp-full-stripe-free' )
-        );
+        ];
     }
 
     return $schedules;
@@ -97,6 +97,7 @@ $wpfsDiagCheck = $wpfsDiagCheck && wpfsIsMbStringAvailable();
 
 if ( $wpfsDiagCheck ) {
     require_once( dirname( __FILE__ ) . '/vendor/autoload.php' );
+    require_once( dirname( __FILE__ ) . '/includes/stripe/autoload.php' );
 
     add_filter(
         'themeisle_sdk_products',
@@ -135,21 +136,17 @@ if ( $wpfsDiagCheck ) {
         ];
     } );
 
-    if ( ! class_exists( '\StripeWPFS\StripeWPFS' ) ) {
-        require_once( dirname( __FILE__ ) . '/includes/stripe/init.php' );
-    }
-
     require_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'wpfs-main.php';
     require_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'includes'. DIRECTORY_SEPARATOR
         . 'payment-methods' . DIRECTORY_SEPARATOR . 'functions.php';
 
-    register_activation_hook( __FILE__, array( 'MM_WPFS', 'setup_db' ) );
-    register_activation_hook( __FILE__, array('MM_WPFS_CustomerPortalService', 'onActivation' ) );
-    register_deactivation_hook( __FILE__, array('MM_WPFS_CustomerPortalService', 'onDeactivation' ) );
-    register_activation_hook( __FILE__, array( 'MM_WPFS_CheckoutSubmissionService', 'onActivation' ) );
-    register_deactivation_hook( __FILE__, array( 'MM_WPFS_CheckoutSubmissionService', 'onDeactivation' ) );
+    register_activation_hook( __FILE__, [ 'MM_WPFS', 'setup_db' ] );
+    register_activation_hook( __FILE__, ['MM_WPFS_CustomerPortalService', 'onActivation' ] );
+    register_deactivation_hook( __FILE__, ['MM_WPFS_CustomerPortalService', 'onDeactivation' ] );
+    register_activation_hook( __FILE__, [ 'MM_WPFS_CheckoutSubmissionService', 'onActivation' ] );
+    register_deactivation_hook( __FILE__, [ 'MM_WPFS_CheckoutSubmissionService', 'onDeactivation' ] );
 
-    \StripeWPFS\StripeWPFS::setAppInfo( 'WP Full Pay', MM_WPFS::VERSION, 'https://paymentsplugin.com', 'pp_partner_FnULHViL0IqHp6' );
+    \StripeWPFS\Stripe\Stripe::setAppInfo( 'WP Full Pay', MM_WPFS::VERSION, 'https://paymentsplugin.com', 'pp_partner_FnULHViL0IqHp6' );
 
     add_filter( 'cron_schedules', 'wp_full_stripe_prepare_cron_schedules' );
 } else {

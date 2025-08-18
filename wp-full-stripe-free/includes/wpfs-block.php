@@ -12,8 +12,8 @@ class MM_WPFS_Block {
 	 * Constructor.
 	 */
 	public function __construct() {
-		add_action( 'init', array( $this, 'register_block' ) );
-		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
+		add_action( 'init', [ $this, 'register_block' ] );
+		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
 	}
 
 	/**
@@ -45,13 +45,13 @@ class MM_WPFS_Block {
 	 * @return void
 	 */
 	public function register_routes() {
-		register_rest_route( $this->get_namespace(), $this->get_route(), array(
-			array(
+		register_rest_route( $this->get_namespace(), $this->get_route(), [
+			[
 				'methods' => WP_REST_Server::READABLE,
-				'callback' => array( $this, 'callback' ),
-				'permission_callback' => array( $this, 'permission_callback' ),
-			)
-		));
+				'callback' => [ $this, 'callback' ],
+				'permission_callback' => [ $this, 'permission_callback' ],
+			]
+		]);
 	}
 
 	/**

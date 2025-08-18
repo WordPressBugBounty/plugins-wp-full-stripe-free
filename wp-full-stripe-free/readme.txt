@@ -4,7 +4,7 @@ Tags: stripe payments, credit card payments, donation form, stripe checkout, str
 Requires at least: 5.3
 Requires PHP: 7.4
 Tested up to: 6.8
-Stable tag: 8.2.6
+Stable tag: 8.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -287,14 +287,6 @@ WP Full Pay fully supports Strong Customer Authentication (SCA) requirements for
 
 - Fixed amount parsing in payment forms to correctly handle different currency formats
 - Enhanced security
-
-
-
-
-#####   Version 8.2.5 (2025-06-13)
-
-Updated strings for improved clarity and correctness.
-
 
 
 [See changelog for all versions](http://rviv.ly/SArBK7). 

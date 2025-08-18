@@ -120,101 +120,101 @@ class MM_WPFS_CustomerPortalService
     private function hooks()
     {
 
-        add_shortcode(self::FULLSTRIPE_SHORTCODE_CUSTOMER_PORTAL, array($this, 'renderShortCode'));
-        add_shortcode(self::FULLSTRIPE_SHORTCODE_MANAGE_SUBSCRIPTIONS, array($this, 'renderShortCode'));
+        add_shortcode(self::FULLSTRIPE_SHORTCODE_CUSTOMER_PORTAL, [$this, 'renderShortCode']);
+        add_shortcode(self::FULLSTRIPE_SHORTCODE_MANAGE_SUBSCRIPTIONS, [$this, 'renderShortCode']);
 
-        add_action(self::ACTION_NAME_CHECK_CUSTOMER_PORTAL_SESSIONS, array(
+        add_action(self::ACTION_NAME_CHECK_CUSTOMER_PORTAL_SESSIONS, [
             $this,
             'checkSessionsAndCodes'
-        )
+        ]
         );
 
-        add_action('wp_ajax_wp_full_stripe_create_card_update_session', array(
+        add_action('wp_ajax_wp_full_stripe_create_card_update_session', [
             $this,
             'handleSessionRequest'
-        )
+        ]
         );
-        add_action('wp_ajax_nopriv_wp_full_stripe_create_card_update_session', array(
+        add_action('wp_ajax_nopriv_wp_full_stripe_create_card_update_session', [
             $this,
             'handleSessionRequest'
-        )
+        ]
         );
-        add_action('wp_ajax_wp_full_stripe_reset_card_update_session', array(
+        add_action('wp_ajax_wp_full_stripe_reset_card_update_session', [
             $this,
             'handleResetSessionRequest'
-        )
+        ]
         );
-        add_action('wp_ajax_nopriv_wp_full_stripe_reset_card_update_session', array(
+        add_action('wp_ajax_nopriv_wp_full_stripe_reset_card_update_session', [
             $this,
             'handleResetSessionRequest'
-        )
+        ]
         );
-        add_action('wp_ajax_wp_full_stripe_validate_security_code', array(
+        add_action('wp_ajax_wp_full_stripe_validate_security_code', [
             $this,
             'handleSecurityCodeValidationRequest'
-        )
+        ]
         );
-        add_action('wp_ajax_nopriv_wp_full_stripe_validate_security_code', array(
+        add_action('wp_ajax_nopriv_wp_full_stripe_validate_security_code', [
             $this,
             'handleSecurityCodeValidationRequest'
-        )
+        ]
         );
-        add_action('wp_ajax_wp_full_stripe_select_customer_portal_account', array(
+        add_action('wp_ajax_wp_full_stripe_select_customer_portal_account', [
             $this,
             'handleSelectAccountRequest'
-        )
+        ]
         );
-        add_action('wp_ajax_nopriv_wp_full_stripe_select_customer_portal_account', array(
+        add_action('wp_ajax_nopriv_wp_full_stripe_select_customer_portal_account', [
             $this,
             'handleSelectAccountRequest'
-        )
+        ]
         );
-        add_action('wp_ajax_wp_full_stripe_show_customer_portal_account_selector', array(
+        add_action('wp_ajax_wp_full_stripe_show_customer_portal_account_selector', [
             $this,
             'handleShowAccountSelectorRequest'
-        )
+        ]
         );
-        add_action('wp_ajax_nopriv_wp_full_stripe_show_customer_portal_account_selector', array(
+        add_action('wp_ajax_nopriv_wp_full_stripe_show_customer_portal_account_selector', [
             $this,
             'handleShowAccountSelectorRequest'
-        )
+        ]
         );
-        add_action('wp_ajax_wp_full_stripe_update_card', array(
+        add_action('wp_ajax_wp_full_stripe_update_card', [
             $this,
             'handleCardUpdateRequest'
-        )
+        ]
         );
-        add_action('wp_ajax_nopriv_wp_full_stripe_update_card', array(
+        add_action('wp_ajax_nopriv_wp_full_stripe_update_card', [
             $this,
             'handleCardUpdateRequest'
-        )
+        ]
         );
-        add_action('wp_ajax_wp_full_stripe_cancel_my_subscription', array(
+        add_action('wp_ajax_wp_full_stripe_cancel_my_subscription', [
             $this,
             'handleSubscriptionCancellationRequest'
-        )
+        ]
         );
-        add_action('wp_ajax_nopriv_wp_full_stripe_cancel_my_subscription', array(
+        add_action('wp_ajax_nopriv_wp_full_stripe_cancel_my_subscription', [
             $this,
             'handleSubscriptionCancellationRequest'
-        )
+        ]
         );
-        add_action('wp_ajax_wp_full_stripe_toggle_invoice_view', array(
+        add_action('wp_ajax_wp_full_stripe_toggle_invoice_view', [
             $this,
             'toggleInvoiceView'
-        )
+        ]
         );
-        add_action('wp_ajax_nopriv_wp_full_stripe_toggle_invoice_view', array(
+        add_action('wp_ajax_nopriv_wp_full_stripe_toggle_invoice_view', [
             $this,
             'toggleInvoiceView'
-        )
+        ]
         );
 
         // tnagy register REST API Endpoint for Manage Subscriptions
-        add_action('rest_api_init', array($this, 'registerRESTAPIRoutes'));
+        add_action('rest_api_init', [$this, 'registerRESTAPIRoutes']);
 
         // tnagy WPFS-861: prevent caching of pages generated by the shortcode
-        add_action('send_headers', array($this, 'addCacheControlHeader'), 10, 1);
+        add_action('send_headers', [$this, 'addCacheControlHeader'], 10, 1);
     }
 
     public static function onActivation()
@@ -244,7 +244,7 @@ class MM_WPFS_CustomerPortalService
     }
 
     /**
-     * @param $subscription \StripeWPFS\Subscription
+     * @param $subscription \StripeWPFS\Stripe\Subscription
      *
      * @return bool
      */
@@ -492,9 +492,9 @@ class MM_WPFS_CustomerPortalService
                             $returnUrl = get_permalink();
                             $portalSession = $this->stripe->createCustomerPortalSession( $session->stripeCustomerId, $returnUrl );
 
-                            if ( isset( $portalSession->session ) && isset( $portalSession->session->url ) && ! empty( $portalSession->session->url ) ) {
+                            if ( isset( $portalSession->url ) && ! empty( $portalSession->url ) ) {
                                 $this->invalidateSession($session);
-                                wp_redirect( esc_url( $portalSession->session->url ) );
+                                wp_redirect( esc_url( $portalSession->url ) );
                                 exit;
                             } else {
                                 $content = __('Error while creating Customer Portal session', 'wp-full-stripe-free');
@@ -553,9 +553,9 @@ class MM_WPFS_CustomerPortalService
                     $returnUrl = get_permalink();
                     $portalSession = $this->stripe->createCustomerPortalSession( $session->stripeCustomerId, $returnUrl );
 
-                    if ( isset( $portalSession->session ) && isset( $portalSession->session->url ) && ! empty( $portalSession->session->url ) ) {
+                    if ( isset( $portalSession->url ) && ! empty( $portalSession->url ) ) {
                         $this->invalidateSession($session);
-                        wp_redirect( esc_url( $portalSession->session->url ) );
+                        wp_redirect( esc_url( $portalSession->url ) );
                         exit;
                     } else {
                         $content = __('Error while creating Customer Portal session', 'wp-full-stripe-free');
@@ -631,7 +631,7 @@ class MM_WPFS_CustomerPortalService
     {
         $session->status = self::SESSION_STATUS_INVALIDATED;
 
-        $this->db->updateCustomerPortalSession($session->id, array('status' => self::SESSION_STATUS_INVALIDATED));
+        $this->db->updateCustomerPortalSession($session->id, ['status' => self::SESSION_STATUS_INVALIDATED]);
     }
 
     /**
@@ -704,7 +704,7 @@ class MM_WPFS_CustomerPortalService
     {
         $session->status = self::SESSION_STATUS_CONFIRMED;
 
-        return $this->db->updateCustomerPortalSession($session->id, array('status' => $session->status));
+        return $this->db->updateCustomerPortalSession($session->id, ['status' => $session->status]);
     }
 
     /**
@@ -716,7 +716,7 @@ class MM_WPFS_CustomerPortalService
     {
         $session->status = self::SESSION_STATUS_WAITING_FOR_ACCOUNT_SELECTION;
 
-        return $this->db->updateCustomerPortalSession($session->id, array('status' => $session->status));
+        return $this->db->updateCustomerPortalSession($session->id, ['status' => $session->status]);
     }
 
     private function getActiveStripeCustomersByEmail($email)
@@ -735,7 +735,7 @@ class MM_WPFS_CustomerPortalService
 
     /**
      * @param $subscriptions
-     * @return array \StripeWPFS\Subscription
+     * @return array \StripeWPFS\Stripe\Subscription
      */
     private function filterOutIncompleteSubscriptions($subscriptions)
     {
@@ -745,11 +745,11 @@ class MM_WPFS_CustomerPortalService
         if (isset($subscriptions)) {
             foreach ($subscriptions as $subscription) {
                 switch ($subscription->status) {
-                    case \StripeWPFS\Subscription::STATUS_ACTIVE:
-                    case \StripeWPFS\Subscription::STATUS_PAST_DUE:
-                    case \StripeWPFS\Subscription::STATUS_UNPAID:
-                    case \StripeWPFS\Subscription::STATUS_CANCELED:
-                    case \StripeWPFS\Subscription::STATUS_TRIALING:
+                    case \StripeWPFS\Stripe\Subscription::STATUS_ACTIVE:
+                    case \StripeWPFS\Stripe\Subscription::STATUS_PAST_DUE:
+                    case \StripeWPFS\Stripe\Subscription::STATUS_UNPAID:
+                    case \StripeWPFS\Stripe\Subscription::STATUS_CANCELED:
+                    case \StripeWPFS\Stripe\Subscription::STATUS_TRIALING:
                         array_push($result, $subscription);
                         break;
 
@@ -767,14 +767,14 @@ class MM_WPFS_CustomerPortalService
      * @param $model MM_WPFS_CustomerPortalModel
      * @param $email
      * @return void
-     * @throws \StripeWPFS\Exception\ApiErrorException
+     * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
      */
     private function fetchAccountDataIntoCustomerPortalModel($model, $email)
     {
         $accounts = [];
         $stripeCustomers = $this->getActiveStripeCustomersByEmail($email);
 
-        /* @var $stripeCustomer \StripeWPFS\Customer */
+        /* @var $stripeCustomer \StripeWPFS\Stripe\Customer */
         foreach ($stripeCustomers as $stripeCustomer) {
             $filterParams = [
                 'customer' => $stripeCustomer->id,
@@ -799,25 +799,25 @@ class MM_WPFS_CustomerPortalService
 
     /**
      * @param MM_WPFS_CustomerPortalModel $model
-     * @param \StripeWPFS\Customer $stripeCustomer
+     * @param \StripeWPFS\Stripe\Customer $stripeCustomer
      */
     private function fetchDataIntoCustomerPortalModel($model, $stripeCustomer)
     {
         /**
-         * @var null|\StripeWPFS\PaymentMethod
+         * @var null|\StripeWPFS\Stripe\PaymentMethod
          */
         $defaultPaymentMethod = null;
         /**
-         * @var null|\StripeWPFS\Source
+         * @var null|\StripeWPFS\Stripe\Source
          */
         $defaultSource = null;
         if (isset($stripeCustomer)) {
             $model->setStripeCustomer($stripeCustomer);
 
-            $paymentMethodParams = array(
+            $paymentMethodParams = [
                 'customer' => $stripeCustomer->id,
                 'type' => 'card'
-            );
+            ];
             $paymentMethods = $this->stripe->listPaymentMethodsWithParams($paymentMethodParams);
 
             if (isset($paymentMethods) && isset($paymentMethods->data)) {
@@ -857,14 +857,14 @@ class MM_WPFS_CustomerPortalService
             $model->setSubscriptions($this->prepareSubscriptions($stripeCustomer));
         } else {
             $model->setShowSubscriptions(false);
-            $model->setSubscriptions(array());
+            $model->setSubscriptions([]);
         }
         if ($this->options->get(MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_SHOW_INVOICES_SECTION)) {
             $model->setShowInvoices(true);
             $model->setInvoices($this->prepareInvoices($stripeCustomer));
         } else {
             $model->setShowInvoices(false);
-            $model->setInvoices(array());
+            $model->setInvoices([]);
         }
 
         // $model->setInvoices($this->prepareInvoices($stripeCustomer));
@@ -894,7 +894,7 @@ class MM_WPFS_CustomerPortalService
 
     /**
      * @param MM_WPFS_CustomerPortalModel $model
-     * @param \StripeWPFS\Card|\StripeWPFS\Source $card
+     * @param \StripeWPFS\Stripe\Card|\StripeWPFS\Stripe\Source $card
      */
     private function updateModelWithCard($model, $card)
     {
@@ -932,7 +932,7 @@ class MM_WPFS_CustomerPortalService
     }
 
     /**
-     * @param \StripeWPFS\Card $card
+     * @param \StripeWPFS\Stripe\Card $card
      *
      * @return bool
      */
@@ -942,7 +942,7 @@ class MM_WPFS_CustomerPortalService
     }
 
     /**
-     * Checks if a \StripeWPFS\Card's brand is matching a known brand stripped and lowercased.
+     * Checks if a \StripeWPFS\Stripe\Card's brand is matching a known brand stripped and lowercased.
      *
      * @param $knownBrand
      * @param $currentBrand
@@ -958,7 +958,7 @@ class MM_WPFS_CustomerPortalService
     }
 
     /**
-     * @param \StripeWPFS\Card $card
+     * @param \StripeWPFS\Stripe\Card $card
      *
      * @return bool
      */
@@ -968,7 +968,7 @@ class MM_WPFS_CustomerPortalService
     }
 
     /**
-     * @param \StripeWPFS\Card $card
+     * @param \StripeWPFS\Stripe\Card $card
      *
      * @return bool
      */
@@ -978,7 +978,7 @@ class MM_WPFS_CustomerPortalService
     }
 
     /**
-     * @param \StripeWPFS\Card $card
+     * @param \StripeWPFS\Stripe\Card $card
      *
      * @return bool
      */
@@ -988,7 +988,7 @@ class MM_WPFS_CustomerPortalService
     }
 
     /**
-     * @param \StripeWPFS\Card $card
+     * @param \StripeWPFS\Stripe\Card $card
      *
      * @return bool
      */
@@ -998,7 +998,7 @@ class MM_WPFS_CustomerPortalService
     }
 
     /**
-     * @param \StripeWPFS\Card $card
+     * @param \StripeWPFS\Stripe\Card $card
      *
      * @return bool
      */
@@ -1008,7 +1008,7 @@ class MM_WPFS_CustomerPortalService
     }
 
     /**
-     * @param \StripeWPFS\Card $card
+     * @param \StripeWPFS\Stripe\Card $card
      *
      * @return bool
      */
@@ -1018,7 +1018,7 @@ class MM_WPFS_CustomerPortalService
     }
 
     /**
-     * @param \StripeWPFS\Card $card
+     * @param \StripeWPFS\Stripe\Card $card
      *
      * @return bool
      */
@@ -1050,21 +1050,21 @@ class MM_WPFS_CustomerPortalService
     }
 
     /**
-     * @param \StripeWPFS\Customer $stripeCustomer
+     * @param \StripeWPFS\Stripe\Customer $stripeCustomer
      *
      * @return array
-     * @throws StripeWPFS\Exception\ApiErrorException
+     * @throws Stripe\Exception\ApiErrorException
      */
     private function prepareSubscriptions($stripeCustomer)
     {
-        $subscriptions = array();
+        $subscriptions = [];
         if (isset($stripeCustomer)) {
-            $subscriptionParams = array(
+            $subscriptionParams = [
                 'customer' => $stripeCustomer->id,
-                'expand' => array(
+                'expand' => [
                     'data.items.data.price'
-                )
-            );
+                ]
+            ];
 
             $customerSubscriptions = $this->filterOutIncompleteSubscriptions($this->stripe->listSubscriptionsWithParams($subscriptionParams));
 
@@ -1079,11 +1079,11 @@ class MM_WPFS_CustomerPortalService
     {
         if ($invoices) {
             foreach ($invoices as $invoice) {
-                $invoiceParams = array(
-                    'expand' => array(
+                $invoiceParams = [
+                    'expand' => [
                         'lines.data.price.product'
-                    )
-                );
+                    ]
+                ];
 
                 $invoiceExpanded = $this->stripe->retrieveInvoiceWithParams(
                     $invoice->id,
@@ -1096,20 +1096,20 @@ class MM_WPFS_CustomerPortalService
     }
 
     /**
-     * @param \StripeWPFS\Customer $stripeCustomer
+     * @param \StripeWPFS\Stripe\Customer $stripeCustomer
      *
      * @return array
-     * @throws StripeWPFS\Exception\ApiErrorException
+     * @throws Stripe\Exception\ApiErrorException
      */
     private function prepareInvoices($stripeCustomer)
     {
-        $invoices = array();
+        $invoices = [];
         if (isset($stripeCustomer)) {
-            $invoiceParams = array(
+            $invoiceParams = [
                 'customer' => $stripeCustomer->id,
-                'status' => \StripeWPFS\Invoice::STATUS_PAID,
+                'status' => \StripeWPFS\Stripe\Invoice::STATUS_PAID,
                 'limit' => 100
-            );
+            ];
 
             $invoices = $this->stripe->listInvoicesWithParams($invoiceParams);
             $this->prepareInvoiceProducts($invoices);
@@ -1151,7 +1151,7 @@ class MM_WPFS_CustomerPortalService
 
             $managedSubscriptionEntry = new MM_WPFS_ManagedSubscriptionEntry($subscription, $donationAmount);
 
-            $availablePlansForSubscription = $managedSubscriptionEntry->isDonationEntry() ? array() : $this->findAvailablePlansByForm($managedSubscriptionEntry->getSubscriptionFormName(), $managedSubscriptionEntry->getPlanId());
+            $availablePlansForSubscription = $managedSubscriptionEntry->isDonationEntry() ? [] : $this->findAvailablePlansByForm($managedSubscriptionEntry->getSubscriptionFormName(), $managedSubscriptionEntry->getPlanId());
 
 
             $model = $managedSubscriptionEntry->toModel($this->getPriceAndIntervalLabelForPlans($availablePlansForSubscription));
@@ -1160,7 +1160,7 @@ class MM_WPFS_CustomerPortalService
     }
 
     /**
-     * @param $invoice \StripeWPFS\Invoice
+     * @param $invoice \StripeWPFS\Stripe\Invoice
      * @return bool
      */
     private function shouldDisplayInvoice($invoice)
@@ -1184,20 +1184,20 @@ class MM_WPFS_CustomerPortalService
 
 
         wp_register_style(MM_WPFS::HANDLE_STYLE_WPFS_VARIABLES, MM_WPFS_Assets::css('wpfs-variables.css'), null, MM_WPFS::VERSION);
-        wp_enqueue_style(self::HANDLE_MANAGE_SUBSCRIPTIONS_CSS, MM_WPFS_Assets::css(self::ASSET_WPFS_CUSTOMER_PORTAL_CSS), array(MM_WPFS::HANDLE_STYLE_WPFS_VARIABLES), MM_WPFS::VERSION);
+        wp_enqueue_style(self::HANDLE_MANAGE_SUBSCRIPTIONS_CSS, MM_WPFS_Assets::css(self::ASSET_WPFS_CUSTOMER_PORTAL_CSS), [MM_WPFS::HANDLE_STYLE_WPFS_VARIABLES], MM_WPFS::VERSION);
 
-        wp_register_script(self::HANDLE_STRIPE_JS_V_3, 'https://js.stripe.com/v3/', array('jquery'));
+        wp_register_script(self::HANDLE_STRIPE_JS_V_3, 'https://js.stripe.com/v3/', ['jquery']);
         wp_register_script(MM_WPFS::HANDLE_SPRINTF_JS, MM_WPFS_Assets::scripts('sprintf.min.js'), null, MM_WPFS::VERSION);
 
         if (MM_WPFS_ReCaptcha::getSecureCustomerPortal($this->staticContext)) {
             $source = add_query_arg(
-                array(
+                [
                     'render' => 'explicit'
-                ),
+                ],
                 MM_WPFS::SOURCE_GOOGLE_RECAPTCHA_V2_API_JS
             );
             wp_register_script(MM_WPFS::HANDLE_GOOGLE_RECAPTCHA_V_2, $source, null, MM_WPFS::VERSION, true /* in footer */);
-            $dependencies = array(
+            $dependencies = [
                 'jquery',
                 'jquery-ui-core',
                 'jquery-ui-spinner',
@@ -1207,9 +1207,9 @@ class MM_WPFS_CustomerPortalService
                 MM_WPFS::HANDLE_SPRINTF_JS,
                 self::HANDLE_STRIPE_JS_V_3,
                 MM_WPFS::HANDLE_GOOGLE_RECAPTCHA_V_2
-            );
+            ];
         } else {
-            $dependencies = array(
+            $dependencies = [
                 'jquery',
                 'jquery-ui-core',
                 'jquery-ui-spinner',
@@ -1218,7 +1218,7 @@ class MM_WPFS_CustomerPortalService
                 'backbone',
                 MM_WPFS::HANDLE_SPRINTF_JS,
                 self::HANDLE_STRIPE_JS_V_3
-            );
+            ];
         }
 
         wp_enqueue_script(
@@ -1228,11 +1228,11 @@ class MM_WPFS_CustomerPortalService
             MM_WPFS::VERSION
         );
 
-        $wpfsCustomerPortalSettings = array(
+        $wpfsCustomerPortalSettings = [
             self::JS_VARIABLE_AJAX_URL => admin_url('admin-ajax.php'),
             self::JS_VARIABLE_REST_URL => get_rest_url(null),
             self::JS_VARIABLE_GOOGLE_RECAPTCHA_SITE_KEY => MM_WPFS_ReCaptcha::getSiteKey($this->staticContext)
-        );
+        ];
 
         $apiMode = $this->options->get(MM_WPFS_Options::OPTION_API_MODE);
         $isTestMode = $apiMode === MM_WPFS::STRIPE_API_MODE_TEST;
@@ -1253,10 +1253,10 @@ class MM_WPFS_CustomerPortalService
                 : $this->options->get(MM_WPFS_Options::OPTION_API_LIVE_PUBLISHABLE_KEY);
         }
 
-        $sessionData = array();
-        $wpfsMyAccountOptions = array();
+        $sessionData = [];
+        $wpfsMyAccountOptions = [];
 
-        $sessionData['i18n'] = array(
+        $sessionData['i18n'] = [
             'confirmSubscriptionCancellationMessage' => __('Are you sure you\'d like to cancel the selected subscriptions?', 'wp-full-stripe-free'),
             'confirmSingleSubscriptionCancellationMessage' => __('Are you sure you\'d like to cancel this subscription?', 'wp-full-stripe-free'),
             'confirmSingleSubscriptionActivationMessage' => __('Are you sure you\'d like to activate this subscription again?', 'wp-full-stripe-free'),
@@ -1275,7 +1275,7 @@ class MM_WPFS_CustomerPortalService
                  * p1: the message of the exception thrown
                  */
                 __("Cannot initialize Stripe: %s", 'wp-full-stripe-free')
-        );
+        ];
 
         // Converting the string ('0' or '1') to int, it makes dealing with it in javascript easier
         $wpfsMyAccountOptions['showSubscriptionsToCustomers'] = $this->options->get(MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_SHOW_SUBSCRIPTIONS_TO_CUSTOMERS) + 0;
@@ -1283,7 +1283,7 @@ class MM_WPFS_CustomerPortalService
         $wpfsMyAccountOptions['letSubscribersUpdowngradeSubscriptions'] = $this->options->get(MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_LET_SUBSCRIBERS_UPDOWNGRADE_SUBSCRIPTIONS) + 0;
         $wpfsMyAccountOptions['scrollingPaneIntoView'] = $this->options->get(MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_SCROLLING_PANE_INTO_VIEW) + 0;
         if ($this->options->get(MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_SHOW_SUBSCRIPTIONS_TO_CUSTOMERS)) {
-            $stripeSubscriptions = array();
+            $stripeSubscriptions = [];
             if (!is_null($model)) {
                 $this->buildManagedSubscriptionsArray($model->getSubscriptions(), $stripeSubscriptions);
             }
@@ -1295,11 +1295,11 @@ class MM_WPFS_CustomerPortalService
         }
 
         if ($this->options->get(MM_WPFS_Options::OPTION_CUSTOMER_PORTAL_SHOW_INVOICES_SECTION)) {
-            $stripeInvoices = array();
+            $stripeInvoices = [];
             if (!is_null($model)) {
                 foreach ($model->getInvoices() as $invoice) {
                     if ($this->shouldDisplayInvoice($invoice)) {
-                        $managedInvoiceEntry = new MM_WPFS_ManagedInvoiceEntry($invoice);
+                        $managedInvoiceEntry = new MM_WPFS_ManagedInvoiceEntry($invoice, $this->stripe );
                         array_push($stripeInvoices, $managedInvoiceEntry->toModel());
                     }
                 }
@@ -1436,7 +1436,7 @@ class MM_WPFS_CustomerPortalService
             $valid = true;
         }
 
-        return array('valid' => $valid, 'securityCode' => $matchingSecurityCode);
+        return ['valid' => $valid, 'securityCode' => $matchingSecurityCode];
     }
 
     /**
@@ -1445,11 +1445,11 @@ class MM_WPFS_CustomerPortalService
      */
     private function confirmCustomerPortalSessionWithSecurityCode($customerPortalSession, $matchingSecurityCode)
     {
-        $this->db->updateCustomerPortalSession($customerPortalSession->id, array('status' => self::SESSION_STATUS_WAITING_FOR_ACCOUNT_SELECTION));
-        $this->db->updateSecurityCode($matchingSecurityCode->id, array(
+        $this->db->updateCustomerPortalSession($customerPortalSession->id, ['status' => self::SESSION_STATUS_WAITING_FOR_ACCOUNT_SELECTION]);
+        $this->db->updateSecurityCode($matchingSecurityCode->id, [
             'consumed' => current_time('mysql'),
             'status' => self::SECURITY_CODE_STATUS_CONSUMED
-        )
+        ]
         );
     }
 
@@ -1506,7 +1506,7 @@ class MM_WPFS_CustomerPortalService
     public function handleSessionRequest()
     {
 
-        $return = array();
+        $return = [];
 
         try {
 
@@ -1644,10 +1644,10 @@ class MM_WPFS_CustomerPortalService
                                 $transactionData = MM_WPFS_TransactionDataService::createMyAccountLoginData($stripeCustomer, $cardUpdateSession->hash, $securityCode);
                                 $this->mailer->sendMyAccountLoginRequest($transactionData);
                             }
-                            $this->db->updateSecurityCode($securityCodeId, array(
+                            $this->db->updateSecurityCode($securityCodeId, [
                                 'sent' => current_time('mysql'),
                                 'status' => self::SECURITY_CODE_STATUS_SENT
-                            )
+                            ]
                             );
                         }
                     } else {
@@ -1682,7 +1682,7 @@ class MM_WPFS_CustomerPortalService
 
     public function handleResetSessionRequest()
     {
-        $return = array();
+        $return = [];
 
         try {
 
@@ -1713,7 +1713,7 @@ class MM_WPFS_CustomerPortalService
 
     public function handleSecurityCodeValidationRequest()
     {
-        $return = array();
+        $return = [];
 
         try {
 
@@ -1766,7 +1766,7 @@ class MM_WPFS_CustomerPortalService
 
     public function handleSelectAccountRequest()
     {
-        $return = array();
+        $return = [];
 
         try {
             $stripeCustomerId = isset($_POST['customerId']) ? sanitize_text_field($_POST['customerId']) : null;
@@ -1795,7 +1795,7 @@ class MM_WPFS_CustomerPortalService
 
                         if ($foundCustomer) {
                             $session->stripeCustomerId = $stripeCustomerId;
-                            $this->db->updateCustomerPortalSession($session->id, array('stripeCustomerId' => $session->stripeCustomerId));
+                            $this->db->updateCustomerPortalSession($session->id, ['stripeCustomerId' => $session->stripeCustomerId]);
 
                             $this->confirmSession($session);
 
@@ -1828,7 +1828,7 @@ class MM_WPFS_CustomerPortalService
 
     public function handleShowAccountSelectorRequest()
     {
-        $return = array();
+        $return = [];
 
         try {
             $success = false;
@@ -1871,7 +1871,7 @@ class MM_WPFS_CustomerPortalService
 
     public function handleCardUpdateRequest()
     {
-        $return = array();
+        $return = [];
         try {
             $stripePaymentMethodId = isset($_POST['paymentMethodId']) ? sanitize_text_field($_POST['paymentMethodId']) : null;
             $stripeSetupIntentId = isset($_POST['setupIntentId']) ? sanitize_text_field($_POST['setupIntentId']) : null;
@@ -1896,7 +1896,7 @@ class MM_WPFS_CustomerPortalService
                             if ($stripeSetupIntent && $stripeSetupIntent->status) {
                                 $return['setupIntentId'] = $stripeSetupIntent->id;
                                 if (
-                                    \StripeWPFS\SetupIntent::STATUS_REQUIRES_ACTION === $stripeSetupIntent->status
+                                    \StripeWPFS\Stripe\SetupIntent::STATUS_REQUIRES_ACTION === $stripeSetupIntent->status
                                     && 'use_stripe_sdk' === $stripeSetupIntent->next_action->type
                                 ) {
                                     $this->logger->debug(__FUNCTION__, 'SetupIntent requires action...');
@@ -1907,7 +1907,7 @@ class MM_WPFS_CustomerPortalService
                                     $return['message'] =
                                         /* translators: Banner message of a pending card saving transaction requiring a second factor authentication (SCA/PSD2) */
                                         __('Saving this card requires additional action before completion!', 'wp-full-stripe-free');
-                                } elseif (\StripeWPFS\SetupIntent::STATUS_SUCCEEDED === $stripeSetupIntent->status) {
+                                } elseif (\StripeWPFS\Stripe\SetupIntent::STATUS_SUCCEEDED === $stripeSetupIntent->status) {
                                     $this->logger->debug(__FUNCTION__, 'SetupIntent succeeded.');
 
                                     $this->stripe->attachPaymentMethodToCustomerIfMissing($stripeCustomer, $stripePaymentMethod, true);
@@ -1977,7 +1977,7 @@ class MM_WPFS_CustomerPortalService
 
     public function toggleInvoiceView()
     {
-        $return = array();
+        $return = [];
         try {
             $cardUpdateSessionHash = $this->findSessionCookieValue();
             if (!is_null($cardUpdateSessionHash)) {
@@ -2017,11 +2017,11 @@ class MM_WPFS_CustomerPortalService
      */
     private function cancelSubscriptionInDatabase($subscriptionId)
     {
-        $subscriptionParams = array(
-            'expand' => array(
+        $subscriptionParams = [
+            'expand' => [
                 'items.data.price'
-            )
-        );
+            ]
+        ];
         $subscription = $this->stripe->retrieveSubscriptionWithParams($subscriptionId, $subscriptionParams);
 
         if (self::isDonationPlan($subscription)) {
@@ -2043,7 +2043,7 @@ class MM_WPFS_CustomerPortalService
 
     public function handleSubscriptionCancellationRequest()
     {
-        $return = array();
+        $return = [];
 
         $cancelAtPeriodEnd = MM_WPFS_Utils::getCancelSubscriptionsAtPeriodEnd($this->staticContext);
 
@@ -2092,7 +2092,7 @@ class MM_WPFS_CustomerPortalService
      */
     public function handleSubscriptionsFetchRequest(WP_REST_Request $request)
     {
-        $data = array();
+        $data = [];
         try {
 
             $cardUpdateSessionHash = $this->findSessionCookieValue();
@@ -2134,7 +2134,7 @@ class MM_WPFS_CustomerPortalService
      */
     public function handleSubscriptionUpdateRequest(WP_REST_Request $request)
     {
-        $data = array();
+        $data = [];
 
         $cancelAtPeriodEnd = MM_WPFS_Utils::getCancelSubscriptionsAtPeriodEnd($this->staticContext);
 
@@ -2232,23 +2232,23 @@ class MM_WPFS_CustomerPortalService
      */
     public function registerRESTAPIRoutes()
     {
-        register_rest_route($this->getRESTAPINamespace(), $this->getBaseRoute(), array(
-            array(
+        register_rest_route($this->getRESTAPINamespace(), $this->getBaseRoute(), [
+            [
                 'methods' => WP_REST_Server::READABLE,
-                'callback' => array($this, 'handleSubscriptionsFetchRequest'),
-                'args' => array(),
+                'callback' => [$this, 'handleSubscriptionsFetchRequest'],
+                'args' => [],
                 'permission_callback' => '__return_true'
-            )
-        )
+            ]
+        ]
         );
-        register_rest_route($this->getRESTAPINamespace(), $this->getItemRoute(), array(
-            array(
+        register_rest_route($this->getRESTAPINamespace(), $this->getItemRoute(), [
+            [
                 'methods' => WP_REST_Server::EDITABLE,
-                'callback' => array($this, 'handleSubscriptionUpdateRequest'),
-                'args' => array(),
+                'callback' => [$this, 'handleSubscriptionUpdateRequest'],
+                'args' => [],
                 'permission_callback' => '__return_true'
-            )
-        )
+            ]
+        ]
         );
     }
 
@@ -2270,7 +2270,7 @@ class MM_WPFS_CustomerPortalService
 
     private function getSubscriptionFormPlans($formName)
     {
-        $plans = array();
+        $plans = [];
         if (is_null($formName) || empty($formName)) {
             // bail out if form name is not set
             return $plans;
@@ -2304,7 +2304,7 @@ class MM_WPFS_CustomerPortalService
     {
         $plans = $this->stripe->getSubscriptionPlans();
 
-        $orderedPlans = array();
+        $orderedPlans = [];
 
         foreach ($plans as $plan) {
             $i = array_search($plan->id, $formPlanIds);
@@ -2333,7 +2333,7 @@ class MM_WPFS_CustomerPortalService
 
         $formPlanIds = apply_filters(MM_WPFS::FILTER_NAME_GET_UPGRADE_DOWNGRADE_PLANS, $formPlanIds, $formName);
         if (is_null($formPlanIds) || !is_array($formPlanIds)) {
-            $formPlanIds = array();
+            $formPlanIds = [];
         }
 
         if (array_search($currentPlanId, $formPlanIds) === false) {
@@ -2379,7 +2379,7 @@ class MM_WPFS_CustomerPortalService
      */
     protected function getSummaryLabelsForPlan($plan, $priceAndIntervalLabel)
     {
-        return array(
+        return [
             sprintf(
                 /*
                  * translators:
@@ -2406,7 +2406,7 @@ class MM_WPFS_CustomerPortalService
                 $plan->product->name,
                 $priceAndIntervalLabel
             )
-        );
+        ];
     }
 
     /**
@@ -2416,7 +2416,7 @@ class MM_WPFS_CustomerPortalService
      */
     private function getPriceAndIntervalLabelForPlans(array $availablePlans)
     {
-        $plansWithPriceAndIntervalLabels = array();
+        $plansWithPriceAndIntervalLabels = [];
         foreach ($availablePlans as $plan) {
             $plan->priceAndIntervalLabel = $this->getPriceAndIntervalLabelForPlan($plan);
             $summaryLabels = $this->getSummaryLabelsForPlan($plan, $plan->priceAndIntervalLabel);
@@ -2526,15 +2526,15 @@ class MM_WPFS_CustomerPortalModel
     const AUTHENTICATION_TYPE_WORDPRESS = 'Wordpress';
 
     /**
-     * @var \StripeWPFS\Customer
+     * @var \StripeWPFS\Stripe\Customer
      */
     private $stripeCustomer;
     /**
-     * @var \StripeWPFS\Card
+     * @var \StripeWPFS\Stripe\Card
      */
     private $defaultSource;
     /**
-     * @var \StripeWPFS\PaymentMethod
+     * @var \StripeWPFS\Stripe\PaymentMethod
      */
     private $defaultPaymentMethod;
     /**
@@ -2556,11 +2556,11 @@ class MM_WPFS_CustomerPortalModel
     /**
      * @var array
      */
-    private $subscriptions = array();
+    private $subscriptions = [];
     /**
      * @var array
      */
-    private $products = array();
+    private $products = [];
     /**
      * @var string
      */
@@ -2572,11 +2572,11 @@ class MM_WPFS_CustomerPortalModel
     /**
      * @var array
      */
-    private $invoices = array();
+    private $invoices = [];
     /**
      * @var array
      */
-    private $accounts = array();
+    private $accounts = [];
     /**
      * @var bool
      */
@@ -2665,7 +2665,7 @@ class MM_WPFS_CustomerPortalModel
     }
 
     /**
-     * @return \StripeWPFS\Customer
+     * @return \StripeWPFS\Stripe\Customer
      */
     public function getStripeCustomer()
     {
@@ -2673,7 +2673,7 @@ class MM_WPFS_CustomerPortalModel
     }
 
     /**
-     * @param \StripeWPFS\Customer $stripeCustomer
+     * @param \StripeWPFS\Stripe\Customer $stripeCustomer
      */
     public function setStripeCustomer($stripeCustomer)
     {
@@ -2681,7 +2681,7 @@ class MM_WPFS_CustomerPortalModel
     }
 
     /**
-     * @return \StripeWPFS\Card
+     * @return \StripeWPFS\Stripe\Card
      */
     public function getDefaultSource()
     {
@@ -2689,7 +2689,7 @@ class MM_WPFS_CustomerPortalModel
     }
 
     /**
-     * @param \StripeWPFS\Card $defaultSource
+     * @param \StripeWPFS\Stripe\Card $defaultSource
      */
     public function setDefaultSource($defaultSource)
     {
@@ -2697,7 +2697,7 @@ class MM_WPFS_CustomerPortalModel
     }
 
     /**
-     * @return \StripeWPFS\PaymentMethod
+     * @return \StripeWPFS\Stripe\PaymentMethod
      */
     public function getDefaultPaymentMethod()
     {
@@ -2705,7 +2705,7 @@ class MM_WPFS_CustomerPortalModel
     }
 
     /**
-     * @param \StripeWPFS\PaymentMethod $defaultPaymentMethod
+     * @param \StripeWPFS\Stripe\PaymentMethod $defaultPaymentMethod
      */
     public function setDefaultPaymentMethod($defaultPaymentMethod)
     {
@@ -2876,18 +2876,25 @@ class MM_WPFS_CustomerPortalModel
 class MM_WPFS_ManagedInvoiceEntry
 {
     /**
-     * @var \StripeWPFS\Invoice
+     * @var \StripeWPFS\Stripe\Invoice
      */
     private $invoice;
 
     /**
+     * @var MM_WPFS_Stripe
+     */
+    private $stripe;
+
+    /**
      * MM_WPFS_ManagedInvoiceEntry constructor.
      *
-     * @param \StripeWPFS\Invoice $invoice
+     * @param \StripeWPFS\Stripe\Invoice $invoice
+     * @param MM_WPFS_Stripe $stripe
      */
-    public function __construct($invoice)
+    public function __construct($invoice, $stripe)
     {
         $this->invoice = $invoice;
+        $this->stripe = $stripe;
     }
 
     /**
@@ -2910,16 +2917,17 @@ class MM_WPFS_ManagedInvoiceEntry
     {
         $result = '';
 
-        if ($this->invoice && $this->invoice->linesExpanded && $this->invoice->linesExpanded->data) {
+        if ($this->invoice && $this->invoice->lines && $this->invoice->lines->data) {
             $first = true;
-            foreach ($this->invoice->linesExpanded->data as $lineItem) {
+            foreach ($this->invoice->lines->data as $lineItem) {
                 if (!$first) {
                     $result .= '• ';
                 }
                 if ($lineItem->quantity > 1) {
                     $result .= $lineItem->quantity . 'x ';
                 }
-                $result .= $lineItem->price->product->name;
+                $product = $this->stripe->retrieveProduct( $lineItem->pricing->price_details->product );
+                $result .= $product->name;
                 $result .= ' ';
 
                 $first = false;
@@ -2973,7 +2981,7 @@ class MM_WPFS_ManagedSubscriptionEntry
     const PARAM_WPFS_SUBSCRIPTION_ID = 'wpfs-subscription-id[]';
 
     /**
-     * @var \StripeWPFS\Subscription
+     * @var \StripeWPFS\Stripe\Subscription
      */
     private $subscription;
     private $donationAmount;
@@ -2981,7 +2989,7 @@ class MM_WPFS_ManagedSubscriptionEntry
     /**
      * MM_WPFS_ManagedSubscriptionEntry constructor.
      *
-     * @param \StripeWPFS\Subscription $subscription
+     * @param \StripeWPFS\Stripe\Subscription $subscription
      */
     public function __construct($subscription, $recurringDonationAmount = 0)
     {
@@ -3002,7 +3010,7 @@ class MM_WPFS_ManagedSubscriptionEntry
      * @return stdClass
      * @throws Exception
      */
-    public function toModel($availablePlans = array())
+    public function toModel($availablePlans = [])
     {
         $model = new stdClass();
         $model->id = $this->getValue();
@@ -3040,15 +3048,21 @@ class MM_WPFS_ManagedSubscriptionEntry
             $model->summaryLabelSingular = null;
             $model->summaryLabelPlural = null;
             $model->newPlanId = null;
-            $model->availablePlans = array();
+            $model->availablePlans = [];
         }
 
         if (
-            $this->subscription->status = \StripeWPFS\Subscription::STATUS_ACTIVE &&
+            $this->subscription->status = \StripeWPFS\Stripe\Subscription::STATUS_ACTIVE &&
             $this->subscription->cancel_at_period_end === true
         ) {
             $model->cancelAtPeriodEnd = true;
-            $model->canceled = MM_WPFS_Utils::formatTimestampWithWordpressDateFormat($this->subscription->current_period_end);
+            $periodEnds = array_map(
+                fn($item) => $item->current_period_end,
+                $this->subscription->items->data
+            );
+
+            $currentPeriodEnd = max($periodEnds);
+            $model->canceled = MM_WPFS_Utils::formatTimestampWithWordpressDateFormat($currentPeriodEnd);
         } else {
             $model->cancelAtPeriodEnd = false;
             $model->canceled = null;
@@ -3076,19 +3090,19 @@ class MM_WPFS_ManagedSubscriptionEntry
     {
         $locStatus = '';
 
-        if (\StripeWPFS\Subscription::STATUS_TRIALING === $this->subscription->status) {
+        if (\StripeWPFS\Stripe\Subscription::STATUS_TRIALING === $this->subscription->status) {
             /* translators: The 'Trialing' subscription status */
             $locStatus = __('Trialing', 'wp-full-stripe-free');
-        } elseif (\StripeWPFS\Subscription::STATUS_ACTIVE === $this->subscription->status) {
+        } elseif (\StripeWPFS\Stripe\Subscription::STATUS_ACTIVE === $this->subscription->status) {
             /* translators: The 'Active' subscription status */
             $locStatus = __('Active', 'wp-full-stripe-free');
-        } elseif (\StripeWPFS\Subscription::STATUS_PAST_DUE === $this->subscription->status) {
+        } elseif (\StripeWPFS\Stripe\Subscription::STATUS_PAST_DUE === $this->subscription->status) {
             /* translators: The 'Past due' subscription status */
             $locStatus = __('Past due', 'wp-full-stripe-free');
-        } elseif (\StripeWPFS\Subscription::STATUS_CANCELED === $this->subscription->status) {
+        } elseif (\StripeWPFS\Stripe\Subscription::STATUS_CANCELED === $this->subscription->status) {
             /* translators: The 'Canceled' subscription status */
             $locStatus = __('Canceled', 'wp-full-stripe-free');
-        } elseif (\StripeWPFS\Subscription::STATUS_UNPAID === $this->subscription->status) {
+        } elseif (\StripeWPFS\Stripe\Subscription::STATUS_UNPAID === $this->subscription->status) {
             /* translators: The 'Unpaid' subscription status */
             $locStatus = __('Unpaid', 'wp-full-stripe-free');
         }
@@ -3099,15 +3113,15 @@ class MM_WPFS_ManagedSubscriptionEntry
     public function getClass()
     {
         $clazz = '';
-        if (\StripeWPFS\Subscription::STATUS_TRIALING === $this->subscription->status) {
+        if (\StripeWPFS\Stripe\Subscription::STATUS_TRIALING === $this->subscription->status) {
             $clazz = 'wpfs-subscription-status--trialing';
-        } elseif (\StripeWPFS\Subscription::STATUS_ACTIVE === $this->subscription->status) {
+        } elseif (\StripeWPFS\Stripe\Subscription::STATUS_ACTIVE === $this->subscription->status) {
             $clazz = 'wpfs-subscription-status--active';
-        } elseif (\StripeWPFS\Subscription::STATUS_PAST_DUE === $this->subscription->status) {
+        } elseif (\StripeWPFS\Stripe\Subscription::STATUS_PAST_DUE === $this->subscription->status) {
             $clazz = 'wpfs-subscription-status--past-due';
-        } elseif (\StripeWPFS\Subscription::STATUS_CANCELED === $this->subscription->status) {
+        } elseif (\StripeWPFS\Stripe\Subscription::STATUS_CANCELED === $this->subscription->status) {
             $clazz = 'wpfs-subscription-status--canceled';
-        } elseif (\StripeWPFS\Subscription::STATUS_UNPAID === $this->subscription->status) {
+        } elseif (\StripeWPFS\Stripe\Subscription::STATUS_UNPAID === $this->subscription->status) {
             $clazz = 'wpfs-subscription-status--unpaid';
         }
 
@@ -3149,7 +3163,7 @@ class MM_WPFS_ManagedSubscriptionEntry
     }
 
     /**
-     * @return null|\StripeWPFS\Product
+     * @return null|\StripeWPFS\Stripe\Product
      */
     private function findProductInSubscription()
     {
@@ -3166,7 +3180,7 @@ class MM_WPFS_ManagedSubscriptionEntry
      */
     private function getSummaryLabels(): array
     {
-        return array(
+        return [
             sprintf(
                 /*
                  * translators:
@@ -3189,7 +3203,7 @@ class MM_WPFS_ManagedSubscriptionEntry
                 ),
                 $this->getPriceAndIntervalLabel()
             )
-        );
+        ];
     }
 
     /**
@@ -3245,7 +3259,7 @@ class MM_WPFS_ManagedSubscriptionEntry
     }
 
     /**
-     * @param \StripeWPFS\SubscriptionItem $subscriptionItem
+     * @param \StripeWPFS\Stripe\SubscriptionItem $subscriptionItem
      *
      * @return string
      * @throws Exception

@@ -93,7 +93,7 @@ class MM_WPFS_Patcher {
         $set_default_donation_product                                 = new MM_WPFS_SetDefaultInlineDonationProduct( $loggerService );
 		$set_minimum_quantities_for_subscription_forms                = new MM_WPFS_SetMinimumQuantitiesForSubscriptionForms( $loggerService );
 
-		$patches = array(
+		$patches = [
 			$convert_subscription_form_plans->getId()                              => $convert_subscription_form_plans,
 			$convert_email_receipts->getId()                                       => $convert_email_receipts,
 			$convert_subscription_status->getId()                                  => $convert_subscription_status,
@@ -128,7 +128,7 @@ class MM_WPFS_Patcher {
             $set_default_tax_options->getId()                                      => $set_default_tax_options,
             $set_default_donation_product->getId()                                 => $set_default_donation_product,
             $set_minimum_quantities_for_subscription_forms->getId()                => $set_minimum_quantities_for_subscription_forms
-		);
+		];
 
 		return $patches;
 	}
@@ -141,7 +141,7 @@ class MM_WPFS_Patcher {
 
 		$result = $wpdb->get_results( "select id,patch_id,plugin_version,applied_at,description from {$wpdb->prefix}fullstripe_patch_info" );
 
-		$applied_patches = array();
+		$applied_patches = [];
 
 		foreach ( $result as $applied_patch ) {
 			$applied_patches[ $applied_patch->patch_id ] = $applied_patch;
@@ -160,12 +160,12 @@ class MM_WPFS_Patcher {
 
 		global $wpdb;
 
-		$data = array(
+		$data = [
 			'patch_id'       => $patch->getId(),
 			'plugin_version' => $patch->getPluginVersion(),
 			'applied_at'     => current_time( 'mysql', 1 ),
 			'description'    => $patch->getDescription()
-		);
+		];
 
 		if ( $wpdb->insert( "{$wpdb->prefix}fullstripe_patch_info", $data ) === false ) {
 			throw new Exception( 'Cannot insert patch_info: ' . $wpdb->last_error );
@@ -274,8 +274,8 @@ class MM_WPFS_SetMinimumQuantitiesForSubscriptionForms extends MM_WPFS_Patch {
 
 		$minimum_quantity_of_subscriptions_update_result = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_subscription_forms",
-			array( 'minimumQuantityOfSubscriptions' => '0' ),
-			array( 'minimumQuantityOfSubscriptions' => '' )
+			[ 'minimumQuantityOfSubscriptions' => '0' ],
+			[ 'minimumQuantityOfSubscriptions' => '' ]
 		);
 
 		if ( $minimum_quantity_of_subscriptions_update_result === false ) {
@@ -290,8 +290,8 @@ class MM_WPFS_SetMinimumQuantitiesForSubscriptionForms extends MM_WPFS_Patch {
 
 		$minimum_quantity_of_subscriptions_update_result = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_checkout_subscription_forms",
-			array( 'minimumQuantityOfSubscriptions' => '0' ),
-			array( 'minimumQuantityOfSubscriptions' => '' )
+			[ 'minimumQuantityOfSubscriptions' => '0' ],
+			[ 'minimumQuantityOfSubscriptions' => '' ]
 		);
 
 		if ( $minimum_quantity_of_subscriptions_update_result === false ) {
@@ -353,7 +353,7 @@ class MM_WPFS_SetDefaultTaxOptions extends MM_WPFS_Patch {
         $this->logger->debug(__FUNCTION__, 'Started processing.' );
 
         $taxTypeDefault  = MM_WPFS::FIELD_VALUE_TAX_RATE_NO_TAX;
-        $taxRatesDefault = json_encode( array() );
+        $taxRatesDefault = json_encode( [] );
 
         $this->db->updateInlinePaymentFormTaxDefaultSettings( $taxTypeDefault, $taxRatesDefault );
         $this->db->updateCheckoutPaymentFormTaxDefaultSettings( $taxTypeDefault, $taxRatesDefault );
@@ -727,19 +727,19 @@ class MM_WPFS_SetCurrencyForOneTimeForms extends MM_WPFS_WPFSF_Patch {
         // Let's start with rows where currency is null
         $nullUpdateResult = $wpdb->update(
             "{$wpdb->prefix}fullstripe_payment_forms",
-            array(
+            [
                 'currency' => $currency
-            ),
-            array( 'currency' => null )
+            ],
+            [ 'currency' => null ]
         );
 
         // Make sure we update rows where currency is an empty string
         $emptyStringUpdateResult = $wpdb->update(
             "{$wpdb->prefix}fullstripe_payment_forms",
-            array(
+            [
                 'currency' => $currency
-            ),
-            array( 'currency' => '' )
+            ],
+            [ 'currency' => '' ]
         );
     }
 
@@ -774,19 +774,19 @@ class MM_WPFS_SetCurrencyForOneTimePayments extends MM_WPFS_WPFSF_Patch {
         // Let's start with rows where currency is null
         $nullUpdateResult = $wpdb->update(
             "{$wpdb->prefix}fullstripe_payments",
-            array(
+            [
                 'currency' => $currency
-            ),
-            array( 'currency' => null )
+            ],
+            [ 'currency' => null ]
         );
 
         // Make sure we update rows where currency is an empty string
         $emptyStringUpdateResult = $wpdb->update(
             "{$wpdb->prefix}fullstripe_payments",
-            array(
+            [
                 'currency' => $currency
-            ),
-            array( 'currency' => '' )
+            ],
+            [ 'currency' => '' ]
         );
     }
 
@@ -881,23 +881,23 @@ class MM_WPFS_SetInitialDecimalSeparatorForForms extends MM_WPFS_Patch {
 
 		$set_payment_form_initial_decimal_separator_result      = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_payment_forms",
-			array( 'decimalSeparator' => MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_DOT ),
-			array( 'decimalSeparator' => '' )
+			[ 'decimalSeparator' => MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_DOT ],
+			[ 'decimalSeparator' => '' ]
 		);
 		$set_subscription_form_initial_decimal_separator_result      = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_subscription_forms",
-			array( 'decimalSeparator' => MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_DOT ),
-			array( 'decimalSeparator' => '' )
+			[ 'decimalSeparator' => MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_DOT ],
+			[ 'decimalSeparator' => '' ]
 		);
 		$set_checkout_form_initial_decimal_separator_result      = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_checkout_forms",
-			array( 'decimalSeparator' => MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_DOT ),
-			array( 'decimalSeparator' => '' )
+			[ 'decimalSeparator' => MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_DOT ],
+			[ 'decimalSeparator' => '' ]
 		);
 		$set_checkout_subscription_form_initial_decimal_separator_result      = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_checkout_subscription_forms",
-			array( 'decimalSeparator' => MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_DOT ),
-			array( 'decimalSeparator' => '' )
+			[ 'decimalSeparator' => MM_WPFS::DECIMAL_SEPARATOR_SYMBOL_DOT ],
+			[ 'decimalSeparator' => '' ]
 		);
 
 		if (
@@ -946,13 +946,13 @@ class MM_WPFS_SetInitialQuantitiesForSubscriptionForms extends MM_WPFS_Patch {
 
 		$allow_multiple_subscriptions_update_result      = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_subscription_forms",
-			array( 'allowMultipleSubscriptions' => '0' ),
-			array( 'allowMultipleSubscriptions' => '' )
+			[ 'allowMultipleSubscriptions' => '0' ],
+			[ 'allowMultipleSubscriptions' => '' ]
 		);
 		$maximum_quantity_of_subscriptions_update_result = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_subscription_forms",
-			array( 'maximumQuantityOfSubscriptions' => '0' ),
-			array( 'maximumQuantityOfSubscriptions' => '' )
+			[ 'maximumQuantityOfSubscriptions' => '0' ],
+			[ 'maximumQuantityOfSubscriptions' => '' ]
 		);
 
 		if ( $allow_multiple_subscriptions_update_result === false || $maximum_quantity_of_subscriptions_update_result === false ) {
@@ -967,13 +967,13 @@ class MM_WPFS_SetInitialQuantitiesForSubscriptionForms extends MM_WPFS_Patch {
 
 		$allow_multiple_subscriptions_update_result      = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_checkout_subscription_forms",
-			array( 'allowMultipleSubscriptions' => '0' ),
-			array( 'allowMultipleSubscriptions' => '' )
+			[ 'allowMultipleSubscriptions' => '0' ],
+			[ 'allowMultipleSubscriptions' => '' ]
 		);
 		$maximum_quantity_of_subscriptions_update_result = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_checkout_subscription_forms",
-			array( 'maximumQuantityOfSubscriptions' => '0' ),
-			array( 'maximumQuantityOfSubscriptions' => '' )
+			[ 'maximumQuantityOfSubscriptions' => '0' ],
+			[ 'maximumQuantityOfSubscriptions' => '' ]
 		);
 
 		if ( $allow_multiple_subscriptions_update_result === false || $maximum_quantity_of_subscriptions_update_result === false ) {
@@ -988,8 +988,8 @@ class MM_WPFS_SetInitialQuantitiesForSubscriptionForms extends MM_WPFS_Patch {
 
 		$update_result = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_subscribers",
-			array( 'quantity' => 1 ),
-			array( 'quantity' => '' )
+			[ 'quantity' => 1 ],
+			[ 'quantity' => '' ]
 		);
 
 		if ( false === $update_result ) {
@@ -1027,8 +1027,8 @@ class MM_WPFS_SetInitialProductNameForCheckoutForms extends MM_WPFS_Patch {
 		$defaultProductName          = MM_WPFS_Utils::getDefaultProductDescription();
 		$checkout_form_update_result = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_checkout_forms",
-			array( 'productDesc' => $defaultProductName ),
-			array( 'productDesc' => '' )
+			[ 'productDesc' => $defaultProductName ],
+			[ 'productDesc' => '' ]
 		);
 		if ( $checkout_form_update_result === false ) {
 			return false;
@@ -1064,8 +1064,8 @@ class MM_WPFS_ConvertPreferredLanguageForPopupForms extends MM_WPFS_Patch {
 
 		$preferredLanguageNorwegian               = 'no';
 		$preferredLanguageNorwegianBokmal         = 'nb';
-		$checkout_form_update_result              = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", array( 'preferredLanguage' => $preferredLanguageNorwegianBokmal ), array( 'preferredLanguage' => $preferredLanguageNorwegian ) );
-		$checkout_subscription_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_subscription_forms", array( 'preferredLanguage' => $preferredLanguageNorwegianBokmal ), array( 'preferredLanguage' => $preferredLanguageNorwegian ) );
+		$checkout_form_update_result              = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", [ 'preferredLanguage' => $preferredLanguageNorwegianBokmal ], [ 'preferredLanguage' => $preferredLanguageNorwegian ] );
+		$checkout_subscription_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_subscription_forms", [ 'preferredLanguage' => $preferredLanguageNorwegianBokmal ], [ 'preferredLanguage' => $preferredLanguageNorwegian ] );
 		if ( $checkout_form_update_result === false || $checkout_subscription_form_update_result === false ) {
 			return false;
 		} else {
@@ -1098,8 +1098,8 @@ class MM_WPFS_SetInitialPlanSelectorStyleForSubscriptionForms extends MM_WPFS_Pa
 	protected function update_subscription_form_plan_selector_style() {
 		global $wpdb;
 
-		$subscription_form_update_result          = $wpdb->update( "{$wpdb->prefix}fullstripe_subscription_forms", array( 'planSelectorStyle' => MM_WPFS::PLAN_SELECTOR_STYLE_DROPDOWN ), array( 'planSelectorStyle' => '' ) );
-		$checkout_subscription_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_subscription_forms", array( 'planSelectorStyle' => MM_WPFS::PLAN_SELECTOR_STYLE_DROPDOWN ), array( 'planSelectorStyle' => '' ) );
+		$subscription_form_update_result          = $wpdb->update( "{$wpdb->prefix}fullstripe_subscription_forms", [ 'planSelectorStyle' => MM_WPFS::PLAN_SELECTOR_STYLE_DROPDOWN ], [ 'planSelectorStyle' => '' ] );
+		$checkout_subscription_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_subscription_forms", [ 'planSelectorStyle' => MM_WPFS::PLAN_SELECTOR_STYLE_DROPDOWN ], [ 'planSelectorStyle' => '' ] );
 		if ( $subscription_form_update_result === false || $checkout_subscription_form_update_result === false ) {
 			return false;
 		} else {
@@ -1132,8 +1132,8 @@ class MM_WPFS_SetInitialAmountSelectorStyleForPaymentForms extends MM_WPFS_Patch
 	protected function update_payment_form_amount_selector_style() {
 		global $wpdb;
 
-		$payment_form_update_result  = $wpdb->update( "{$wpdb->prefix}fullstripe_payment_forms", array( 'amountSelectorStyle' => MM_WPFS::SELECTOR_STYLE_DROPDOWN ), array( 'amountSelectorStyle' => '' ) );
-		$checkout_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", array( 'amountSelectorStyle' => MM_WPFS::SELECTOR_STYLE_DROPDOWN ), array( 'amountSelectorStyle' => '' ) );
+		$payment_form_update_result  = $wpdb->update( "{$wpdb->prefix}fullstripe_payment_forms", [ 'amountSelectorStyle' => MM_WPFS::SELECTOR_STYLE_DROPDOWN ], [ 'amountSelectorStyle' => '' ] );
+		$checkout_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", [ 'amountSelectorStyle' => MM_WPFS::SELECTOR_STYLE_DROPDOWN ], [ 'amountSelectorStyle' => '' ] );
 		if ( $payment_form_update_result === false || $checkout_form_update_result === false ) {
 			return false;
 		} else {
@@ -1169,7 +1169,7 @@ class MM_WPFS_SetShowButtonAmountForPopupPaymentForms extends MM_WPFS_Patch {
 	protected function update_popup_payment_form_show_button_amounts() {
 		global $wpdb;
 
-		$checkout_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", array( 'showButtonAmount' => 0 ), array( 'showButtonAmount' => '' ) );
+		$checkout_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", [ 'showButtonAmount' => 0 ], [ 'showButtonAmount' => '' ] );
 		if ( false === $checkout_form_update_result ) {
 			return false;
 		} else {
@@ -1209,10 +1209,10 @@ class MM_WPFS_SetStripeChargeFlagsAndMethodForPayments extends MM_WPFS_Patch {
 
 		$payment_method_update_result = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_payments",
-			array(
+			[
 				'payment_method' => MM_WPFS::PAYMENT_METHOD_CARD
-			),
-			array( 'payment_method' => null )
+			],
+			[ 'payment_method' => null ]
 		);
 
 		return $payment_method_update_result;
@@ -1223,13 +1223,13 @@ class MM_WPFS_SetStripeChargeFlagsAndMethodForPayments extends MM_WPFS_Patch {
 
 		$payment_flags_update_result = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_payments",
-			array(
+			[
 				'captured'           => 1,
 				'refunded'           => 0,
 				'expired'            => 0,
 				'last_charge_status' => MM_WPFS::STRIPE_CHARGE_STATUS_SUCCEEDED
-			),
-			array( 'paid' => 1 )
+			],
+			[ 'paid' => 1 ]
 		);
 
 		return $payment_flags_update_result;
@@ -1259,8 +1259,8 @@ class MM_WPFS_SetInitialChargeTypeForForms extends MM_WPFS_Patch {
 	private function update_payment_forms_initial_charge_type() {
 		global $wpdb;
 
-		$payment_form_update_result  = $wpdb->update( "{$wpdb->prefix}fullstripe_payment_forms", array( 'chargeType' => MM_WPFS::CHARGE_TYPE_IMMEDIATE ), array( 'chargeType' => '' ) );
-		$checkout_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", array( 'chargeType' => MM_WPFS::CHARGE_TYPE_IMMEDIATE ), array( 'chargeType' => '' ) );
+		$payment_form_update_result  = $wpdb->update( "{$wpdb->prefix}fullstripe_payment_forms", [ 'chargeType' => MM_WPFS::CHARGE_TYPE_IMMEDIATE ], [ 'chargeType' => '' ] );
+		$checkout_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", [ 'chargeType' => MM_WPFS::CHARGE_TYPE_IMMEDIATE ], [ 'chargeType' => '' ] );
 		if ( $payment_form_update_result === false || $checkout_form_update_result === false ) {
 			return false;
 		} else {
@@ -1293,8 +1293,8 @@ class MM_WPFS_SetStripeDescriptionForPaymentForms extends MM_WPFS_Patch {
 	private function update_payment_forms_initial_stripe_description() {
 		global $wpdb;
 
-		$payment_form_update_result  = $wpdb->update( "{$wpdb->prefix}fullstripe_payment_forms", array( 'stripeDescription' => MM_WPFS_Utils::getDefaultPaymentStripeDescription() ), array( 'stripeDescription' => null ) );
-		$checkout_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", array( 'stripeDescription' => MM_WPFS_Utils::getDefaultPaymentStripeDescription() ), array( 'stripeDescription' => null ) );
+		$payment_form_update_result  = $wpdb->update( "{$wpdb->prefix}fullstripe_payment_forms", [ 'stripeDescription' => MM_WPFS_Utils::getDefaultPaymentStripeDescription() ], [ 'stripeDescription' => null ] );
+		$checkout_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", [ 'stripeDescription' => MM_WPFS_Utils::getDefaultPaymentStripeDescription() ], [ 'stripeDescription' => null ] );
 		if ( $payment_form_update_result === false || $checkout_form_update_result === false ) {
 			return false;
 		} else {
@@ -1329,8 +1329,8 @@ class MM_WPFS_SetPreferredLanguageForPopupForms extends MM_WPFS_Patch {
 	private function update_popup_forms_initial_preferred_language() {
 		global $wpdb;
 
-		$checkout_form_update_result              = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", array( 'preferredLanguage' => MM_WPFS::PREFERRED_LANGUAGE_AUTO ), array( 'preferredLanguage' => null ) );
-		$checkout_subscription_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_subscription_forms", array( 'preferredLanguage' => MM_WPFS::PREFERRED_LANGUAGE_AUTO ), array( 'preferredLanguage' => null ) );
+		$checkout_form_update_result              = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", [ 'preferredLanguage' => MM_WPFS::PREFERRED_LANGUAGE_AUTO ], [ 'preferredLanguage' => null ] );
+		$checkout_subscription_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_subscription_forms", [ 'preferredLanguage' => MM_WPFS::PREFERRED_LANGUAGE_AUTO ], [ 'preferredLanguage' => null ] );
 		if ( $checkout_form_update_result === false || $checkout_subscription_form_update_result === false ) {
 			return false;
 		} else {
@@ -1366,7 +1366,7 @@ class MM_WPFS_SetSimpleButtonLayout extends MM_WPFS_Patch {
 	private function update_simple_button_layout_for_popup_subscription_forms() {
 		global $wpdb;
 
-		$checkout_subscription_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_subscription_forms", array( 'simpleButtonLayout' => '0' ), array( 'simpleButtonLayout' => '' ) );
+		$checkout_subscription_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_subscription_forms", [ 'simpleButtonLayout' => '0' ], [ 'simpleButtonLayout' => '' ] );
 
 		return $checkout_subscription_form_update_result;
 	}
@@ -1396,8 +1396,8 @@ class MM_WPFS_SetInitialVATRateTypeForSubscriptionForms extends MM_WPFS_Patch {
 	private function update_subscription_forms_vat_rate_type_value() {
 		global $wpdb;
 
-		$subscription_form_update_result          = $wpdb->update( "{$wpdb->prefix}fullstripe_subscription_forms", array( 'vatRateType' => MM_WPFS::VAT_RATE_TYPE_NO_VAT ), array( 'vatRateType' => '' ) );
-		$checkout_subscription_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_subscription_forms", array( 'vatRateType' => MM_WPFS::VAT_RATE_TYPE_NO_VAT ), array( 'vatRateType' => '' ) );
+		$subscription_form_update_result          = $wpdb->update( "{$wpdb->prefix}fullstripe_subscription_forms", [ 'vatRateType' => MM_WPFS::VAT_RATE_TYPE_NO_VAT ], [ 'vatRateType' => '' ] );
+		$checkout_subscription_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_subscription_forms", [ 'vatRateType' => MM_WPFS::VAT_RATE_TYPE_NO_VAT ], [ 'vatRateType' => '' ] );
 		if ( $subscription_form_update_result === false || $checkout_subscription_form_update_result === false ) {
 			return false;
 		} else {
@@ -1481,7 +1481,7 @@ class MM_WPFS_SetSpecifiedAmountForCheckoutForms extends MM_WPFS_Patch {
 	private function update_checkout_forms_custom_amount() {
 		global $wpdb;
 
-		return $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", array( 'customAmount' => MM_WPFS::PAYMENT_TYPE_SPECIFIED_AMOUNT ), array( 'customAmount' => '' ) );
+		return $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", [ 'customAmount' => MM_WPFS::PAYMENT_TYPE_SPECIFIED_AMOUNT ], [ 'customAmount' => '' ] );
 	}
 
 }
@@ -1566,8 +1566,8 @@ class MM_WPFS_MigrateCurrencyAndSetupFee extends MM_WPFS_Patch {
 			if ( array_key_exists( 'currency', $options ) ) {
 				$currency = $options['currency'];
 				global $wpdb;
-				$payment_form_update_result  = $wpdb->update( "{$wpdb->prefix}fullstripe_payment_forms", array( 'currency' => $currency ), array( 'currency' => '' ) );
-				$checkout_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", array( 'currency' => $currency ), array( 'currency' => '' ) );
+				$payment_form_update_result  = $wpdb->update( "{$wpdb->prefix}fullstripe_payment_forms", [ 'currency' => $currency ], [ 'currency' => '' ] );
+				$checkout_form_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", [ 'currency' => $currency ], [ 'currency' => '' ] );
 				if ( $payment_form_update_result === false || $checkout_form_update_result === false ) {
 					return false;
 				} else {
@@ -1620,7 +1620,7 @@ class MM_WPFS_MigrateCurrencyAndSetupFee extends MM_WPFS_Patch {
 	private function update_subscription_form_setup_fee( $id, $setupFee ) {
 		global $wpdb;
 
-		return $wpdb->update( "{$wpdb->prefix}fullstripe_subscription_forms", array( 'setupFee' => $setupFee ), array( 'subscriptionFormID' => $id ) );
+		return $wpdb->update( "{$wpdb->prefix}fullstripe_subscription_forms", [ 'setupFee' => $setupFee ], [ 'subscriptionFormID' => $id ] );
 	}
 
 	private function remove_currency_from_fullstripe_options() {
@@ -1658,8 +1658,8 @@ class MM_WPFS_SetCustomInputRequired extends MM_WPFS_Patch {
 	private function update_custom_input_required_for_forms() {
 		global $wpdb;
 
-		$payment_update_result      = $wpdb->update( "{$wpdb->prefix}fullstripe_payment_forms", array( 'customInputRequired' => '0' ), array( 'customInputRequired' => '' ) );
-		$subscription_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_subscription_forms", array( 'customInputRequired' => '0' ), array( 'customInputRequired' => '' ) );
+		$payment_update_result      = $wpdb->update( "{$wpdb->prefix}fullstripe_payment_forms", [ 'customInputRequired' => '0' ], [ 'customInputRequired' => '' ] );
+		$subscription_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_subscription_forms", [ 'customInputRequired' => '0' ], [ 'customInputRequired' => '' ] );
 
 		if ( $payment_update_result === false || $subscription_update_result === false ) {
 			return false;
@@ -1693,9 +1693,9 @@ class MM_WPFS_SetShowDetailedSuccessPage extends MM_WPFS_Patch {
 	private function update_show_detailed_success_page_for_forms() {
 		global $wpdb;
 
-		$payment_update_result      = $wpdb->update( "{$wpdb->prefix}fullstripe_payment_forms", array( 'showDetailedSuccessPage' => '0' ), array( 'showDetailedSuccessPage' => '' ) );
-		$checkout_update_result     = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", array( 'showDetailedSuccessPage' => '0' ), array( 'showDetailedSuccessPage' => '' ) );
-		$subscription_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_subscription_forms", array( 'showDetailedSuccessPage' => '0' ), array( 'showDetailedSuccessPage' => '' ) );
+		$payment_update_result      = $wpdb->update( "{$wpdb->prefix}fullstripe_payment_forms", [ 'showDetailedSuccessPage' => '0' ], [ 'showDetailedSuccessPage' => '' ] );
+		$checkout_update_result     = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_forms", [ 'showDetailedSuccessPage' => '0' ], [ 'showDetailedSuccessPage' => '' ] );
+		$subscription_update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_subscription_forms", [ 'showDetailedSuccessPage' => '0' ], [ 'showDetailedSuccessPage' => '' ] );
 
 		if ( $payment_update_result === false || $checkout_update_result === false || $subscription_update_result === false ) {
 			// tnagy an error occurred
@@ -1730,7 +1730,7 @@ class MM_WPFS_SetAllowListOfAmountsCustom extends MM_WPFS_Patch {
 	private function update_allow_list_of_amounts_custom_for_payment_forms() {
 		global $wpdb;
 
-		return $wpdb->update( "{$wpdb->prefix}fullstripe_payment_forms", array( 'allowListOfAmountsCustom' => '0' ), array( 'allowListOfAmountsCustom' => '' ) );
+		return $wpdb->update( "{$wpdb->prefix}fullstripe_payment_forms", [ 'allowListOfAmountsCustom' => '0' ], [ 'allowListOfAmountsCustom' => '' ] );
 	}
 
 }
@@ -1763,7 +1763,7 @@ class MM_WPFS_SetCurrentCurrencyForPayments extends MM_WPFS_Patch {
 
 				global $wpdb;
 
-				return $wpdb->update( "{$wpdb->prefix}fullstripe_payments", array( 'currency' => $currency ), array( 'currency' => '' ) );
+				return $wpdb->update( "{$wpdb->prefix}fullstripe_payments", [ 'currency' => $currency ], [ 'currency' => '' ] );
 			}
 		}
 
@@ -1796,7 +1796,7 @@ class MM_WPFS_ConvertSubscriptionStatus extends MM_WPFS_Patch {
 	private function update_subscription_status() {
 		global $wpdb;
 
-		return $wpdb->update( "{$wpdb->prefix}fullstripe_subscribers", array( 'status' => 'running' ), array( 'status' => '' ) );
+		return $wpdb->update( "{$wpdb->prefix}fullstripe_subscribers", [ 'status' => 'running' ], [ 'status' => '' ] );
 	}
 
 }
@@ -1824,7 +1824,7 @@ class MM_WPFS_ConvertEmailReceiptsPatch extends MM_WPFS_Patch {
 				&& array_key_exists( 'subscription_email_receipt_subject', $options )
 				&& array_key_exists( 'subscription_email_receipt_html', $options )
 			) {
-				$emailReceipts                         = array();
+				$emailReceipts                         = [];
 				$paymentMade                           = new stdClass();
 				$subscriptionStarted                   = new stdClass();
 				$subscriptionFinished                  = new stdClass();
@@ -1895,7 +1895,7 @@ class MM_WPFS_ConvertSubscriptionFormPlansPatch extends MM_WPFS_Patch {
 	private function update_subscription_form_plans( $id, $plans ) {
 		global $wpdb;
 
-		return $wpdb->update( "{$wpdb->prefix}fullstripe_subscription_forms", array( 'plans' => $plans ), array( 'subscriptionFormID' => $id ) );
+		return $wpdb->update( "{$wpdb->prefix}fullstripe_subscription_forms", [ 'plans' => $plans ], [ 'subscriptionFormID' => $id ] );
 	}
 }
 

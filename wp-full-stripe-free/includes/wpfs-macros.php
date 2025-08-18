@@ -29,7 +29,7 @@ trait MM_WPFS_MacroReplacer_AddOn {
         $keys 	= $this->getDecoratedMacroKeys();
         $values = $this->getDecoratedMacroValues();
 
-        $escapedValues = array();
+        $escapedValues = [];
         foreach ( $values as $value ) {
             array_push( $escapedValues, MM_WPFS_Utils::escape( $value, $escapeType ));
         }
@@ -90,28 +90,28 @@ class MM_WPFS_MyAccountLoginMacroReplacer {
     }
 
     public static function getMacroKeys() {
-        return array(
+        return [
             '%NAME%',
             '%CUSTOMERNAME%',
             '%CUSTOMER_EMAIL%',
             '%CARD_UPDATE_SECURITY_CODE%',
             '%CARD_UPDATE_SESSION_HASH%',
             '%DATE%'
-        );
+        ];
     }
 
     protected function getKeyValuePairs() {
         $siteTitle      = get_bloginfo( 'name' );
         $dateFormat     = get_option( 'date_format' );
 
-        $keyValuePairs = array(
+        $keyValuePairs = [
             '%NAME%'		                => $siteTitle,
             '%CUSTOMERNAME%'		        => $this->transactionData->getCustomerName(),
             '%CUSTOMER_EMAIL%'		        => $this->transactionData->getCustomerEmail(),
             '%CARD_UPDATE_SECURITY_CODE%'   => $this->transactionData->getSecurityCode(),
             '%CARD_UPDATE_SESSION_HASH%'    => $this->transactionData->getSessionHash(),
             '%DATE%'                        => MM_WPFS_Utils::formatTimestampWithWordpressDateFormat( time() )
-        );
+        ];
 
         return $keyValuePairs;
     }
@@ -145,15 +145,15 @@ abstract class MM_WPFS_FormMacroReplacer {
         $this->form             = $form;
         $this->transactionData  = $transactionData;
 
-        $this->rawKeyValuePairs = array();
-        $this->decoratedKeyValuePairs = array();
+        $this->rawKeyValuePairs = [];
+        $this->decoratedKeyValuePairs = [];
 
         $this->initRawKeyValuePairs();
         $this->initDecoratedKeyValuePairs();
     }
 
     public static function getMacroKeys() {
-        return array(
+        return [
             '%NAME%',
             '%CUSTOMERNAME%',
             '%CUSTOMER_EMAIL%',
@@ -179,7 +179,7 @@ abstract class MM_WPFS_FormMacroReplacer {
             '%TRANSACTION_ID%',
             '%CUSTOMFIELD1%',
             '%IP_ADDRESS%'
-        );
+        ];
     }
 
     private function getKeyValuePairs() {
@@ -188,7 +188,7 @@ abstract class MM_WPFS_FormMacroReplacer {
         $billingAddress = $this->transactionData->getBillingAddress();
         $shippingAddress = $this->transactionData->getShippingAddress();
 
-        $keyValuePairs = array(
+        $keyValuePairs = [
             '%NAME%'                  => $siteTitle,
             '%CUSTOMERNAME%'          => $this->transactionData->getCustomerName(),
             '%CUSTOMER_EMAIL%'        => $this->transactionData->getCustomerEmail(),
@@ -213,7 +213,7 @@ abstract class MM_WPFS_FormMacroReplacer {
             '%STRIPE_CUSTOMER_ID%'    => $this->transactionData->getStripeCustomerId(),
             '%TRANSACTION_ID%'        => $this->transactionData->getTransactionId(),
             '%IP_ADDRESS%'            => $this->transactionData->getIpAddress()
-        );
+        ];
 
         $customInputKeyValuePairs = $this->getCustomInputKeyValuePairs();
 
@@ -229,7 +229,7 @@ abstract class MM_WPFS_FormMacroReplacer {
     }
 
     private function getCustomInputKeyValuePairs() {
-        $keyValuePairs      = array();
+        $keyValuePairs      = [];
         $customInputValues  = $this->transactionData->getCustomInputValues();
 
         $customInputFieldMaxCount = MM_WPFS::getCustomFieldMaxCount( $this->staticContext );
@@ -246,7 +246,7 @@ abstract class MM_WPFS_FormMacroReplacer {
             } else {
                 $value = '';
             }
-            $customInputElement = array( $key => $value  );
+            $customInputElement = [ $key => $value  ];
 
             $keyValuePairs = array_merge( $keyValuePairs, $customInputElement );
         }
@@ -267,17 +267,17 @@ abstract class MM_WPFS_ProductMacroReplacer extends MM_WPFS_FormMacroReplacer {
     }
 
     public static function getMacroKeys() {
-        return array_merge( parent::getMacroKeys(), array(
+        return array_merge( parent::getMacroKeys(), [
             '%PRODUCT_NAME%',
             '%CUSTOMER_PHONE%',
-        ));
+        ]);
     }
 
     private function getKeyValuePairs() {
-        $keyValuePairs = array(
+        $keyValuePairs = [
             '%PRODUCT_NAME%'    => $this->transactionData->getProductName(),
             '%CUSTOMER_PHONE%'    => $this->transactionData->getCustomerPhone(),
-        );
+        ];
 
         return $keyValuePairs;
     }
@@ -301,21 +301,21 @@ abstract class MM_WPFS_OneTimeInvolvedMacroReplacer extends MM_WPFS_ProductMacro
     }
 
     public static function getMacroKeys() {
-        return array_merge( parent::getMacroKeys(), array(
+        return array_merge( parent::getMacroKeys(), [
             '%AMOUNT%',
             '%INVOICE_URL%',
             '%INVOICE_NUMBER%',
-        ));
+        ]);
     }
 
     protected function initRawKeyValuePairs() {
         parent::initRawKeyValuePairs();
 
-        $keyValuePairs = array(
+        $keyValuePairs = [
             '%AMOUNT%' =>               $this->transactionData->getAmount(),
             '%INVOICE_URL%'             => $this->transactionData->getInvoiceUrl(),
             '%INVOICE_NUMBER%'          => $this->transactionData->getInvoiceNumber(),
-        );
+        ];
 
         $this->rawKeyValuePairs = array_merge( $this->rawKeyValuePairs, $keyValuePairs );
     }
@@ -323,7 +323,7 @@ abstract class MM_WPFS_OneTimeInvolvedMacroReplacer extends MM_WPFS_ProductMacro
     protected function initDecoratedKeyValuePairs() {
         parent::initDecoratedKeyValuePairs();
 
-        $keyValuePairs = array(
+        $keyValuePairs = [
             '%AMOUNT%'		            => MM_WPFS_Currencies::formatAndEscapeByForm(
                 $this->form,
                 $this->transactionData->getCurrency(),
@@ -331,7 +331,7 @@ abstract class MM_WPFS_OneTimeInvolvedMacroReplacer extends MM_WPFS_ProductMacro
             ),
             '%INVOICE_URL%'             => $this->transactionData->getInvoiceUrl(),
             '%INVOICE_NUMBER%'          => $this->transactionData->getInvoiceNumber(),
-        );
+        ];
 
         $this->decoratedKeyValuePairs = array_merge( $this->decoratedKeyValuePairs, $keyValuePairs );
     }
@@ -348,27 +348,27 @@ class MM_WPFS_OneTimePaymentMacroReplacer extends MM_WPFS_OneTimeInvolvedMacroRe
     }
 
     public static function getMacroKeys() {
-        return array_merge( parent::getMacroKeys(), array(
+        return array_merge( parent::getMacroKeys(), [
             '%COUPON_CODE%',
             '%CUSTOMER_TAX_ID%',
             '%PRODUCT_AMOUNT_GROSS%',
             '%PRODUCT_AMOUNT_TAX%',
             '%PRODUCT_AMOUNT_NET%',
             '%PRODUCT_AMOUNT_DISCOUNT%'
-        ));
+        ]);
     }
 
     protected function initRawKeyValuePairs() {
         parent::initRawKeyValuePairs();
 
-        $keyValuePairs = array(
+        $keyValuePairs = [
             '%COUPON_CODE%'             => $this->transactionData->getCouponCode(),
             '%CUSTOMER_TAX_ID%'         => $this->transactionData->getCustomerTaxId(),
             '%PRODUCT_AMOUNT_GROSS%'    => $this->transactionData->getProductAmountGross(),
             '%PRODUCT_AMOUNT_TAX%'      => $this->transactionData->getProductAmountTax(),
             '%PRODUCT_AMOUNT_NET%'      => $this->transactionData->getProductAmountNet(),
             '%PRODUCT_AMOUNT_DISCOUNT%' => $this->transactionData->getProductAmountDiscount(),
-        );
+        ];
 
         $this->rawKeyValuePairs = array_merge( $this->rawKeyValuePairs, $keyValuePairs );
     }
@@ -376,7 +376,7 @@ class MM_WPFS_OneTimePaymentMacroReplacer extends MM_WPFS_OneTimeInvolvedMacroRe
     protected function initDecoratedKeyValuePairs() {
         parent::initDecoratedKeyValuePairs();
 
-        $keyValuePairs = array(
+        $keyValuePairs = [
             '%COUPON_CODE%'     => $this->transactionData->getCouponCode(),
             '%CUSTOMER_TAX_ID%' => $this->transactionData->getCustomerTaxId(),
             '%PRODUCT_AMOUNT_GROSS%'  => MM_WPFS_Currencies::formatAndEscapeByForm(
@@ -399,7 +399,7 @@ class MM_WPFS_OneTimePaymentMacroReplacer extends MM_WPFS_OneTimeInvolvedMacroRe
                 $this->transactionData->getCurrency(),
                 $this->transactionData->getProductAmountDiscount()
             ),
-        );
+        ];
 
         $this->decoratedKeyValuePairs = array_merge( $this->decoratedKeyValuePairs, $keyValuePairs );
     }
@@ -415,17 +415,17 @@ class MM_WPFS_DonationMacroReplacer extends MM_WPFS_OneTimeInvolvedMacroReplacer
     }
 
     public static function getMacroKeys() {
-        return array_merge( parent::getMacroKeys(), array(
+        return array_merge( parent::getMacroKeys(), [
             '%DONATION_FREQUENCY%',
-        ));
+        ]);
     }
 
     protected function initRawKeyValuePairs() {
         parent::initRawKeyValuePairs();
 
-        $keyValuePairs = array(
+        $keyValuePairs = [
             '%DONATION_FREQUENCY%'    => MM_WPFS_Localization::getDonationFrequencyLabel( $this->transactionData->getDonationFrequency() ),
-        );
+        ];
 
         $this->rawKeyValuePairs = array_merge( $this->rawKeyValuePairs, $keyValuePairs );
     }
@@ -433,9 +433,9 @@ class MM_WPFS_DonationMacroReplacer extends MM_WPFS_OneTimeInvolvedMacroReplacer
     protected function initDecoratedKeyValuePairs() {
         parent::initDecoratedKeyValuePairs();
 
-        $keyValuePairs = array(
+        $keyValuePairs = [
             '%DONATION_FREQUENCY%' => MM_WPFS_Localization::getDonationFrequencyLabel( $this->transactionData->getDonationFrequency() ),
-        );
+        ];
 
         $this->decoratedKeyValuePairs = array_merge( $this->decoratedKeyValuePairs, $keyValuePairs );
     }
@@ -451,7 +451,7 @@ class MM_WPFS_SubscriptionMacroReplacer extends MM_WPFS_ProductMacroReplacer {
     }
 
     public static function getMacroKeys() {
-        return array_merge( parent::getMacroKeys(), array(
+        return array_merge( parent::getMacroKeys(), [
             '%SETUP_FEE%',
             '%SETUP_FEE_NET%',
             '%SETUP_FEE_GROSS%',
@@ -481,13 +481,13 @@ class MM_WPFS_SubscriptionMacroReplacer extends MM_WPFS_ProductMacroReplacer {
             '%AMOUNT%',
             '%COUPON_CODE%',
             '%CUSTOMER_TAX_ID%'
-        ));
+        ]);
     }
 
     protected function initRawKeyValuePairs() {
         parent::initRawKeyValuePairs();
 
-        $keyValuePairs = array(
+        $keyValuePairs = [
             '%SETUP_FEE%'               => $this->transactionData->getSetupFeeGrossAmount(),
             '%SETUP_FEE_NET%'           => $this->transactionData->getSetupFeeNetAmount(),
             '%SETUP_FEE_GROSS%'         => $this->transactionData->getSetupFeeGrossAmount(),
@@ -515,7 +515,7 @@ class MM_WPFS_SubscriptionMacroReplacer extends MM_WPFS_ProductMacroReplacer {
             '%AMOUNT%'                  => $this->transactionData->getPlanGrossAmountAndGrossSetupFeeTotal(),
             '%COUPON_CODE%'             => $this->transactionData->getCouponCode(),
             '%CUSTOMER_TAX_ID%'         => $this->transactionData->getCustomerTaxId(),
-        );
+        ];
 
         $this->rawKeyValuePairs = array_merge( $this->rawKeyValuePairs, $keyValuePairs );
     }
@@ -525,7 +525,7 @@ class MM_WPFS_SubscriptionMacroReplacer extends MM_WPFS_ProductMacroReplacer {
 
         $stripePlanCurrency = $this->transactionData->getPlanCurrency();
 
-        $keyValuePairs = array(
+        $keyValuePairs = [
             '%SETUP_FEE%'               => MM_WPFS_Currencies::formatAndEscapeByForm( $this->form, $stripePlanCurrency, $this->transactionData->getSetupFeeGrossAmount() ),
             '%SETUP_FEE_NET%'           => MM_WPFS_Currencies::formatAndEscapeByForm( $this->form, $stripePlanCurrency, $this->transactionData->getSetupFeeNetAmount() ),
             '%SETUP_FEE_GROSS%'         => MM_WPFS_Currencies::formatAndEscapeByForm( $this->form, $stripePlanCurrency, $this->transactionData->getSetupFeeGrossAmount() ),
@@ -553,7 +553,7 @@ class MM_WPFS_SubscriptionMacroReplacer extends MM_WPFS_ProductMacroReplacer {
             '%AMOUNT%'                  => MM_WPFS_Currencies::formatAndEscapeByForm( $this->form, $stripePlanCurrency, $this->transactionData->getPlanGrossAmountAndGrossSetupFeeTotal() ),
             '%COUPON_CODE%'             => $this->transactionData->getCouponCode(),
             '%CUSTOMER_TAX_ID%'         => $this->transactionData->getCustomerTaxId(),
-        );
+        ];
 
         $this->decoratedKeyValuePairs = array_merge( $this->decoratedKeyValuePairs, $keyValuePairs );
     }

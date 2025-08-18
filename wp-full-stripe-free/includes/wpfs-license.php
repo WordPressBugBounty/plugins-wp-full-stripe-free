@@ -211,20 +211,20 @@ class WPFS_License {
 		$response  = apply_filters( 'themeisle_sdk_license_process_wpfs', $key, $status );
 
 		if ( is_wp_error( $response ) ) {
-			return array(
+			return [
 				'message' => $response->get_error_message(),
 				'success' => false,
-			);
+			];
 		}
 
-		return array(
+		return [
 			'success' => true,
 			'message' => 'activate' === $status ? __( 'Activated.', 'wp-full-stripe-free' ) : __( 'Deactivated', 'wp-full-stripe-free' ),
-			'license' => array(
+			'license' => [
 				'key'        => apply_filters( 'product_wpfs_license_key', 'free' ),
 				'valid'      => apply_filters( 'product_wpfs_license_status', false ),
 				'expiration' => self::get_expiration_date(),
-			),
-		);
+			],
+		];
 	}
 }

@@ -224,7 +224,7 @@ class MM_WPFS_FormValidator extends MM_WPFS_Validator {
 	public function __construct( $loggerService ) {
 		parent::__construct( $loggerService );
 
-		$this->fieldsToIgnore = array();
+		$this->fieldsToIgnore = [];
 	}
 
 	public final function validate( $bindingResult, $formModelObject ) {
@@ -303,7 +303,7 @@ class MM_WPFS_FormValidator extends MM_WPFS_Validator {
 							} elseif ( isset( $form->decoratedPlans ) ) {
 								$savedProducts = MM_WPFS_Utils::decodeJsonArray( $form->decoratedPlans );
 							} else {
-								$savedProducts = array();
+								$savedProducts = [];
 							}
 
 							if ( isset( $savedProducts ) && ! empty( $savedProducts ) ) {
@@ -717,12 +717,12 @@ class MM_WPFS_DonationFormValidator extends MM_WPFS_FormValidator {
 			}
 
 			// Validate donation frequency
-			$donationFrequencies = array(
+			$donationFrequencies = [
 				MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_ONE_TIME,
 				MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_DAILY,
 				MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_WEEKLY,
 				MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_MONTHLY,
-				MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_ANNUAL );
+				MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_ANNUAL ];
 			if ( false === array_search( $formModelObject->getDonationFrequency(), $donationFrequencies ) ) {
 				$fieldName = $formModelObject::PARAM_WPFS_DONATION_FREQUENCY;
 				$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );

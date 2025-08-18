@@ -305,10 +305,10 @@ class MM_WPFS_SubscriptionContextCreator {
 			$plan = $this->createSubscriptionForRecoveryFee( $currency, $this->formModel->getStripePlan()->recurring->interval );
 			$quantity = MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] );
 
-			$recoveryFeeLineItem = array(
+			$recoveryFeeLineItem = [
 				'price' => $plan->id,
 				'quantity' => $quantity,
-			);
+			];
 			
 			$result->feeRecoveryLineItem = $recoveryFeeLineItem;
 		}
@@ -320,7 +320,7 @@ class MM_WPFS_SubscriptionContextCreator {
 	 * @param $formModel MM_WPFS_Public_SubscriptionFormModel
 	 * @param $transactionData MM_WPFS_SubscriptionTransactionData
 	 *
-	 * @return \StripeWPFS\Plan
+	 * @return \StripeWPFS\Stripe\Plan
 	 * @throws Exception
 	 */
 	protected function createSubscriptionForRecoveryFee( $currency, $frequency ) {
@@ -332,7 +332,7 @@ class MM_WPFS_SubscriptionContextCreator {
 	 * @param $currency string
 	 * @param $frequency string
 	 *
-	 * @return \StripeWPFS\Plan
+	 * @return \StripeWPFS\Stripe\Plan
 	 * @throws Exception
 	 */
 	protected function createOrRetrieveSubscriptionPlan( $currency, $frequency ) {
@@ -362,7 +362,7 @@ class MM_WPFS_SubscriptionContextCreator {
 	 * @param $currency string
 	 * @param $donationFrequency string
 	 *
-	 * @return \StripeWPFS\Plan
+	 * @return \StripeWPFS\Stripe\Plan
 	 * @throws Exception
 	 */
 	protected function createSubscriptionPlan( $planID, $currency, $frequency ) {
@@ -410,12 +410,12 @@ trait MM_WPFS_DonationTools_AddOn {
 	private function isRecurringDonation( $donationFormModel ) {
 		$res = false;
 
-		$donationFrequencies = array(
+		$donationFrequencies = [
 			MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_DAILY,
 			MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_WEEKLY,
 			MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_MONTHLY,
 			MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_ANNUAL
-		);
+		];
 
 		if ( false === array_search( $donationFormModel->getDonationFrequency(), $donationFrequencies ) ) {
 			$res = false;
@@ -503,7 +503,7 @@ trait MM_WPFS_DonationTools_AddOn {
 	 * @param $currency string
 	 * @param $donationFrequency string
 	 *
-	 * @return \StripeWPFS\Plan
+	 * @return \StripeWPFS\Stripe\Plan
 	 * @throws Exception
 	 */
 	protected function createDonationPlan( $planID, $currency, $donationFrequency ) {
@@ -517,7 +517,7 @@ trait MM_WPFS_DonationTools_AddOn {
 	/**
 	 * @param $planId
 	 *
-	 * @return \StripeWPFS\Price
+	 * @return \StripeWPFS\Stripe\Price
 	 */
 	protected function retrieveDonationPlan( $planId ) {
 		$plan = null;
@@ -532,7 +532,7 @@ trait MM_WPFS_DonationTools_AddOn {
 	 * @param $currency string
 	 * @param $donationFrequency string
 	 *
-	 * @return \StripeWPFS\Plan
+	 * @return \StripeWPFS\Stripe\Plan
 	 * @throws Exception
 	 */
 	protected function createOrRetrieveDonationPlan( $currency, $donationFrequency ) {
@@ -549,22 +549,20 @@ trait MM_WPFS_DonationTools_AddOn {
 	/**
 	 * @param $donationFormModel MM_WPFS_Public_DonationFormModel
 	 *
-	 * @return \StripeWPFS\Subscription
+	 * @return \StripeWPFS\Stripe\Subscription
 	 * @throws Exception
 	 */
 	protected function createSubscriptionForDonation( $donationFormModel ) {
 		$plan = $this->createOrRetrieveDonationPlan( $donationFormModel->getForm()->currency, $donationFormModel->getDonationFrequency() );
-		$subscription = $this->stripe->subscribeCustomerToPlan( $donationFormModel->getStripeCustomer()->id, $plan->id );
-
 		$amount = $donationFormModel->getAmount();
+		$subscription = $this->stripe->subscribeCustomerToPlan( $donationFormModel->getStripeCustomer()->id, $plan->id, $amount );
+
 		$recoveryFee = $donationFormModel->getFeeRecoveryAccepted();
 		$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $donationFormModel->getForm() );
 
 		if ( $recoveryFee && ! empty( $recoveryFeeData ) ) {
 			$amount = $amount + MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] );
 		}
-
-		$this->stripe->createUsageRecordForSubscription( $subscription, $amount );
 
 		return $subscription;
 	}
@@ -620,75 +618,75 @@ class MM_WPFS_Customer {
 	}
 
 	private function hooks() {
-		add_action( 'wp_ajax_wp_full_stripe_subscription_charge', array( $this, 'fullstripe_subscription_charge' ) );
-		add_action( 'wp_ajax_nopriv_wp_full_stripe_subscription_charge', array( $this, 'fullstripe_subscription_charge' ) );
+		add_action( 'wp_ajax_wp_full_stripe_subscription_charge', [ $this, 'fullstripe_subscription_charge' ] );
+		add_action( 'wp_ajax_nopriv_wp_full_stripe_subscription_charge', [ $this, 'fullstripe_subscription_charge' ] );
 
-		add_action( 'wp_ajax_wp_full_stripe_confirm_redirect', array( $this, 'fullstripe_confirm_redirect' ) );
-		add_action( 'wp_ajax_nopriv_wp_full_stripe_confirm_redirect', array( $this, 'fullstripe_confirm_redirect' ) );
+		add_action( 'wp_ajax_wp_full_stripe_confirm_redirect', [ $this, 'fullstripe_confirm_redirect' ] );
+		add_action( 'wp_ajax_nopriv_wp_full_stripe_confirm_redirect', [ $this, 'fullstripe_confirm_redirect' ] );
 
-		add_action( 'wp_ajax_wpfs-save-draft-transaction', array( $this, 'fullstripe_save_draft_transaction' ) );
-		add_action( 'wp_ajax_nopriv_wpfs-save-draft-transaction', array( $this, 'fullstripe_save_draft_transaction' ) );
+		add_action( 'wp_ajax_wpfs-save-draft-transaction', [ $this, 'fullstripe_save_draft_transaction' ] );
+		add_action( 'wp_ajax_nopriv_wpfs-save-draft-transaction', [ $this, 'fullstripe_save_draft_transaction' ] );
 
-		add_action( 'wp_ajax_wpfs-check-coupon', array( $this, 'fullstripe_check_coupon' ) );
-		add_action( 'wp_ajax_nopriv_wpfs-check-coupon', array( $this, 'fullstripe_check_coupon' ) );
+		add_action( 'wp_ajax_wpfs-check-coupon', [ $this, 'fullstripe_check_coupon' ] );
+		add_action( 'wp_ajax_nopriv_wpfs-check-coupon', [ $this, 'fullstripe_check_coupon' ] );
 
-		add_action( 'wp_ajax_wp_get_Setup_Intent_Client_Secret', array( $this, 'get_Setup_Intent_Client_Secret' ) );
-		add_action( 'wp_ajax_nopriv_wp_get_Setup_Intent_Client_Secret', array( $this, 'get_Setup_Intent_Client_Secret' ) );
+		add_action( 'wp_ajax_wp_get_Setup_Intent_Client_Secret', [ $this, 'get_Setup_Intent_Client_Secret' ] );
+		add_action( 'wp_ajax_nopriv_wp_get_Setup_Intent_Client_Secret', [ $this, 'get_Setup_Intent_Client_Secret' ] );
 
-		add_action( 'wp_ajax_wp_full_stripe_inline_payment_charge', array( $this, 'fullstripe_inline_payment_charge' ) );
-		add_action( 'wp_ajax_nopriv_wp_full_stripe_inline_payment_charge', array( $this, 'fullstripe_inline_payment_charge' ) );
+		add_action( 'wp_ajax_wp_full_stripe_inline_payment_charge', [ $this, 'fullstripe_inline_payment_charge' ] );
+		add_action( 'wp_ajax_nopriv_wp_full_stripe_inline_payment_charge', [ $this, 'fullstripe_inline_payment_charge' ] );
 
-		add_action( 'wp_ajax_wp_full_stripe_inline_donation_charge', array( $this, 'fullstripe_inline_donation_charge' ) );
-		add_action( 'wp_ajax_nopriv_wp_full_stripe_inline_donation_charge', array( $this, 'fullstripe_inline_donation_charge' ) );
+		add_action( 'wp_ajax_wp_full_stripe_inline_donation_charge', [ $this, 'fullstripe_inline_donation_charge' ] );
+		add_action( 'wp_ajax_nopriv_wp_full_stripe_inline_donation_charge', [ $this, 'fullstripe_inline_donation_charge' ] );
 
-		add_action( 'wp_ajax_wp_full_stripe_inline_subscription_charge', array(
+		add_action( 'wp_ajax_wp_full_stripe_inline_subscription_charge', [
 			$this,
 			'fullstripe_inline_subscription_charge'
-		) );
-		add_action( 'wp_ajax_nopriv_wp_full_stripe_inline_subscription_charge', array(
+		] );
+		add_action( 'wp_ajax_nopriv_wp_full_stripe_inline_subscription_charge', [
 			$this,
 			'fullstripe_inline_subscription_charge'
-		) );
-		add_action( 'wp_ajax_wp_full_stripe_popup_payment_charge', array(
+		] );
+		add_action( 'wp_ajax_wp_full_stripe_popup_payment_charge', [
 			$this,
 			'fullstripe_checkout_payment_charge'
-		) );
-		add_action( 'wp_ajax_nopriv_wp_full_stripe_popup_payment_charge', array(
+		] );
+		add_action( 'wp_ajax_nopriv_wp_full_stripe_popup_payment_charge', [
 			$this,
 			'fullstripe_checkout_payment_charge'
-		) );
-		add_action( 'wp_ajax_wp_full_stripe_popup_donation_charge', array(
+		] );
+		add_action( 'wp_ajax_wp_full_stripe_popup_donation_charge', [
 			$this,
 			'fullstripe_checkout_donation_charge'
-		) );
-		add_action( 'wp_ajax_nopriv_wp_full_stripe_popup_donation_charge', array(
+		] );
+		add_action( 'wp_ajax_nopriv_wp_full_stripe_popup_donation_charge', [
 			$this,
 			'fullstripe_checkout_donation_charge'
-		) );
-		add_action( 'wp_ajax_wp_full_stripe_popup_subscription_charge', array(
+		] );
+		add_action( 'wp_ajax_wp_full_stripe_popup_subscription_charge', [
 			$this,
 			'fullstripe_checkout_subscription_charge'
-		) );
-		add_action( 'wp_ajax_nopriv_wp_full_stripe_popup_subscription_charge', array(
+		] );
+		add_action( 'wp_ajax_nopriv_wp_full_stripe_popup_subscription_charge', [
 			$this,
 			'fullstripe_checkout_subscription_charge'
-		) );
-		add_action( 'wp_ajax_wp_full_stripe_handle_checkout_session', array(
+		] );
+		add_action( 'wp_ajax_wp_full_stripe_handle_checkout_session', [
 			$this,
 			'fullstripe_handle_checkout_session'
-		) );
-		add_action( 'wp_ajax_nopriv_wp_full_stripe_handle_checkout_session', array(
+		] );
+		add_action( 'wp_ajax_nopriv_wp_full_stripe_handle_checkout_session', [
 			$this,
 			'fullstripe_handle_checkout_session'
-		) );
+		] );
 
 		// actions for pricing/tax calculations
-		add_action( 'wp_ajax_wpfs-calculate-pricing', array( $this, 'calculatePricing' ) );
-		add_action( 'wp_ajax_nopriv_wpfs-calculate-pricing', array( $this, 'calculatePricing' ) );
+		add_action( 'wp_ajax_wpfs-calculate-pricing', [ $this, 'calculatePricing' ] );
+		add_action( 'wp_ajax_nopriv_wpfs-calculate-pricing', [ $this, 'calculatePricing' ] );
 
 		// action for updating payment intent
-		add_action( 'wp_ajax_wpfs-update-payment-intent', array( $this, 'updatePaymentIntent' ) );
-		add_action( 'wp_ajax_nopriv_wpfs-update-payment-intent', array( $this, 'updatePaymentIntent' ) );
+		add_action( 'wp_ajax_wpfs-update-payment-intent', [ $this, 'updatePaymentIntent' ] );
+		add_action( 'wp_ajax_nopriv_wpfs-update-payment-intent', [ $this, 'updatePaymentIntent' ] );
 	}
 
 	function fullstripe_handle_checkout_session() {
@@ -823,7 +821,7 @@ class MM_WPFS_Customer {
 	 * @param $formModel MM_WPFS_Public_SubscriptionFormModel
 	 * @param $transactionData MM_WPFS_SubscriptionTransactionData
 	 * @param $options MM_WPFS_CreateSubscriptionOptions
-	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 */
 	protected function createSubscription( $formModel, $transactionData, $options ) {
 		return $this->stripe->createSubscriptionForCustomer( $this->createSubscriptionContext( $formModel, $transactionData ), $options );
@@ -861,7 +859,7 @@ class MM_WPFS_Customer {
 					$check = MM_WPFS_PaymentMethods::is_supported_currency( $paymentMethod,
 						$paymentFormModel->getForm()->currency );
 					if ( ! $check ) {
-						$result = array(
+						$result = [
 							'success' => false,
 							'messageTitle' =>
 								/* translators: Banner title of an error returned from an extension point by a developer */
@@ -870,7 +868,7 @@ class MM_WPFS_Customer {
 								'Currency not supported for payment method : ' . $paymentMethod ),
 							'exceptionMessage' => MM_WPFS_Localization::translateLabel(
 								'Currency not supported for payment method : ' . $paymentMethod )
-						);
+						];
 
 						header( "Content-Type: application/json" );
 						status_header( 400 );
@@ -901,14 +899,14 @@ class MM_WPFS_Customer {
 			}
 			$result = $result->client_secret;
 		} catch (Exception $ex) {
-			$result = array(
+			$result = [
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
 					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
-			);
+			];
 			header( "Content-Type: application/json" );
 			status_header( 400 );
 			echo json_encode( $result );
@@ -917,7 +915,7 @@ class MM_WPFS_Customer {
 		}
 
 		header( "Content-Type: application/json" );
-		echo json_encode( array( 'clientSecret' => $result, 'intentType' => $intent_type ) );
+		echo json_encode( [ 'clientSecret' => $result, 'intentType' => $intent_type ] );
 		exit;
 	}
 
@@ -946,13 +944,13 @@ class MM_WPFS_Customer {
 				__( 'Internal Error', 'wp-full-stripe-free' ) :
 				$ex->getTitle();
 			$message = $ex->getMessage();
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' => $messageTitle,
 				'message' => $message,
 				'exceptionMessage' => $ex->getMessage()
-			);
-		} catch (\StripeWPFS\Exception\CardException $ex) {
+			];
+		} catch (\StripeWPFS\Stripe\Exception\CardException $ex) {
 			$this->logger->error( __FUNCTION__, 'Stripe card exception while handling payment charge', $ex );
 
 			$messageTitle =
@@ -962,34 +960,34 @@ class MM_WPFS_Customer {
 			if ( is_null( $message ) ) {
 				$message = MM_WPFS_Localization::translateLabel( $ex->getMessage() );
 			}
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' => $messageTitle,
 				'message' => $message,
 				'exceptionMessage' => $ex->getMessage()
-			);
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Generic exception while handling payment charge', $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
 					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
-			);
+			];
 		} catch (Error $err) {
 			$this->logger->error( __FUNCTION__, 'Generic error while handling payment charge', $err );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
 					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $err->getMessage() ),
 				'exceptionMessage' => $err->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -1019,13 +1017,13 @@ class MM_WPFS_Customer {
 				__( 'Internal Error', 'wp-full-stripe-free' ) :
 				$ex->getTitle();
 			$message = $ex->getMessage();
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' => $messageTitle,
 				'message' => $message,
 				'exceptionMessage' => $ex->getMessage()
-			);
-		} catch (\StripeWPFS\Exception\CardException $ex) {
+			];
+		} catch (\StripeWPFS\Stripe\Exception\CardException $ex) {
 			$this->logger->error( __FUNCTION__, 'Stripe card exception while handling donation charge', $ex );
 
 			$messageTitle =
@@ -1035,23 +1033,23 @@ class MM_WPFS_Customer {
 			if ( is_null( $message ) ) {
 				$message = MM_WPFS_Localization::translateLabel( $ex->getMessage() );
 			}
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' => $messageTitle,
 				'message' => $message,
 				'exceptionMessage' => $ex->getMessage()
-			);
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Generic exception while handling donation charge', $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
 					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -1065,12 +1063,12 @@ class MM_WPFS_Customer {
 	 * @param $transactionData MM_WPFS_PaymentTransactionData
 	 */
 	protected function fireBeforeInlineSaveCardAction( $saveCardFormModel, $transactionData ) {
-		$params = array(
+		$params = [
 			'email' => $saveCardFormModel->getCardHolderEmail(),
 			'urlParameters' => $saveCardFormModel->getFormGetParametersAsArray(),
 			'formName' => $saveCardFormModel->getFormName(),
 			'stripeClient' => $this->stripe->getStripeClient(),
-		);
+		];
 
 		do_action( MM_WPFS::ACTION_NAME_BEFORE_SAVE_CARD, $params );
 	}
@@ -1078,12 +1076,12 @@ class MM_WPFS_Customer {
 	/**
 	 * @param $saveCardFormModel MM_WPFS_Public_PaymentFormModel
 	 * @param $transactionData MM_WPFS_SaveCardTransactionData
-	 * @param $stripeCustomer \StripeWPFS\Customer
+	 * @param $stripeCustomer \StripeWPFS\Stripe\Customer
 	 */
 	protected function fireAfterInlineSaveCardAction( $saveCardFormModel, $transactionData, $stripeCustomer ) {
 		$replacer = new MM_WPFS_SaveCardMacroReplacer( $saveCardFormModel->getForm(), $transactionData, $this->loggerService );
 
-		$params = array(
+		$params = [
 			'email' => $saveCardFormModel->getCardHolderEmail(),
 			'urlParameters' => $saveCardFormModel->getFormGetParametersAsArray(),
 			'formName' => $saveCardFormModel->getFormName(),
@@ -1091,7 +1089,7 @@ class MM_WPFS_Customer {
 			'stripeCustomer' => $stripeCustomer,
 			'rawPlaceholders' => $replacer->getRawKeyValuePairs(),
 			'decoratedPlaceholders' => $replacer->getDecoratedKeyValuePairs(),
-		);
+		];
 
 		do_action( MM_WPFS::ACTION_NAME_AFTER_SAVE_CARD, $params );
 		do_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, $saveCardFormModel->getForm(), $params );
@@ -1122,7 +1120,7 @@ class MM_WPFS_Customer {
 		$transactionData = null;
 		if ( isset( $setupIntent ) ) {
 			if (
-				\StripeWPFS\SetupIntent::STATUS_REQUIRES_ACTION === $setupIntent->status
+				\StripeWPFS\Stripe\SetupIntent::STATUS_REQUIRES_ACTION === $setupIntent->status
 				&& 'use_stripe_sdk' === $setupIntent->next_action->type
 			) {
 				$this->logger->debug( __FUNCTION__, 'SetupIntent requires action...' );
@@ -1138,7 +1136,7 @@ class MM_WPFS_Customer {
 					/* translators: Banner message of a pending card saving transaction requiring a second factor authentication (SCA/PSD2) */
 					__( 'Saving this card requires additional action before completion!', 'wp-full-stripe-free' )
 				);
-			} elseif ( \StripeWPFS\SetupIntent::STATUS_SUCCEEDED === $setupIntent->status ) {
+			} elseif ( \StripeWPFS\Stripe\SetupIntent::STATUS_SUCCEEDED === $setupIntent->status ) {
 				$this->logger->debug( __FUNCTION__, 'SetupIntent succeeded.' );
 
 				$this->fireBeforeInlineSaveCardAction( $paymentFormModel, $transactionData );
@@ -1295,9 +1293,9 @@ class MM_WPFS_Customer {
 	}
 
 	/**
-	 * Updates the \StripeWPFS\Customer object's address property with an appropriate address array.
+	 * Updates the \StripeWPFS\Stripe\Customer object's address property with an appropriate address array.
 	 *
-	 * @param $stripeCustomer \StripeWPFS\Customer
+	 * @param $stripeCustomer \StripeWPFS\Stripe\Customer
 	 * @param $ctx MM_WPFS_CreateCustomerContext
 	 */
 	public function updateCustomerBillingAddress( &$stripeCustomer, $ctx ) {
@@ -1315,7 +1313,7 @@ class MM_WPFS_Customer {
 	 * @return array
 	 */
 	protected function prepareTaxAddress( $ctx ) {
-		$result = array();
+		$result = [];
 
 		if ( ! empty( $ctx->taxState ) ) {
 			$result['state'] = $ctx->taxState;
@@ -1335,9 +1333,9 @@ class MM_WPFS_Customer {
 	}
 
 	/**
-	 * Updates the \StripeWPFS\Customer object's shipping property with an appropriate address array.
+	 * Updates the \StripeWPFS\Stripe\Customer object's shipping property with an appropriate address array.
 	 *
-	 * @param $stripeCustomer \StripeWPFS\Customer
+	 * @param $stripeCustomer \StripeWPFS\Stripe\Customer
 	 * @param $shippingName
 	 * @param $shippingPhone
 	 * @param $shippingAddress array
@@ -1363,7 +1361,7 @@ class MM_WPFS_Customer {
 
 	/**
 	 * @param $paymentIntentResult MM_WPFS_DonationPaymentIntentResult
-	 * @param $paymentIntent \StripeWPFS\PaymentIntent
+	 * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
 	 * @param $title string
 	 * @param $message string
 	 *
@@ -1382,7 +1380,7 @@ class MM_WPFS_Customer {
 
 	/**
 	 * @param $paymentIntentResult MM_WPFS_DonationPaymentIntentResult
-	 * @param $paymentIntent \StripeWPFS\PaymentIntent
+	 * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
 	 * @param $title string
 	 * @param $message string
 	 *
@@ -1399,7 +1397,7 @@ class MM_WPFS_Customer {
 
 	/**
 	 * @param $paymentIntentResult MM_WPFS_DonationPaymentIntentResult
-	 * @param $paymentIntent \StripeWPFS\PaymentIntent
+	 * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
 	 * @param $title string
 	 * @param $message string
 	 *
@@ -1414,7 +1412,7 @@ class MM_WPFS_Customer {
 	}
 
 	/**
-	 * @param $paymentIntent \StripeWPFS\PaymentIntent
+	 * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
 	 * @param $formName
 	 */
 	protected function addFormNameToPaymentIntent( &$paymentIntent, $formName ) {
@@ -1434,8 +1432,8 @@ class MM_WPFS_Customer {
 	 * @param $donationFormModel MM_WPFS_Public_DonationFormModel
 	 * @param $transactionData MM_WPFS_DonationTransactionData
 	 *
-	 * @return \StripeWPFS\PaymentIntent
-	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 * @return \StripeWPFS\Stripe\PaymentIntent
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 */
 	protected function createPaymentIntentForDonation( $donationFormModel, $transactionData ) {
 		$donationDescription = MM_WPFS_Utils::prepareStripeDonationDescription( $this->staticContext, $donationFormModel, $transactionData );
@@ -1446,6 +1444,20 @@ class MM_WPFS_Customer {
 
 			$finalizedInvoice = $this->stripe->finalizeInvoice( $stripeInvoice->id );
 
+			$payments = $finalizedInvoice->payments->data ?? [];
+			$stripePaymentIntent = null;
+
+			foreach ( $payments as $payment ) {
+				if (
+					isset( $payment->payment->type ) &&
+					$payment->payment->type === 'payment_intent' &&
+					isset( $payment->payment->payment_intent )
+				) {
+					$stripePaymentIntent = $payment->payment->payment_intent;
+					break;
+				}
+			}
+
 			$this->stripe->updatePaymentIntentByInvoice(
 				$finalizedInvoice,
 				$donationFormModel->getStripePaymentMethodId(),
@@ -1454,7 +1466,7 @@ class MM_WPFS_Customer {
 				MM_WPFS_Mailer::canSendDonationStripeReceipt( $donationFormModel->getForm() ) ? $donationFormModel->getCardHolderEmail() : null
 			);
 
-			$paymentIntent = $this->stripe->retrievePaymentIntent( $finalizedInvoice->payment_intent );
+			$paymentIntent = $this->stripe->retrievePaymentIntent( $stripePaymentIntent );
 		} else {
 			$metadata = $donationFormModel->getMetadata();
 			$metadata['webhookUrl'] = esc_attr( MM_WPFS_EventHandler::getWebhookEndpointURL( $this->staticContext ) );
@@ -1487,7 +1499,7 @@ class MM_WPFS_Customer {
 	 * @param $donationFormModel MM_WPFS_Public_DonationFormModel
 	 * @param $transactionData MM_WPFS_DonationTransactionData
 	 *
-	 * @return \StripeWPFS\PaymentIntent
+	 * @return \StripeWPFS\Stripe\PaymentIntent
 	 * @throws Exception
 	 */
 	protected function createOrRetrievePaymentIntentForDonation( $donationFormModel, $transactionData ) {
@@ -1502,7 +1514,7 @@ class MM_WPFS_Customer {
 			$paymentIntent = $this->stripe->retrievePaymentIntent( $donationFormModel->getStripePaymentIntentId() );
 
 			if ( isset( $paymentIntent ) ) {
-				if ( \StripeWPFS\PaymentIntent::STATUS_REQUIRES_CONFIRMATION === $paymentIntent->status ) {
+				if ( \StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_CONFIRMATION === $paymentIntent->status ) {
 					$paymentIntent->confirm();
 				}
 
@@ -1515,30 +1527,30 @@ class MM_WPFS_Customer {
 	}
 
 	/**
-	 * @param $paymentIntent \StripeWPFS\PaymentIntent
+	 * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
 	 *
 	 * @return boolean
 	 */
 	protected function paymentIntentRequiresAction( $paymentIntent ) {
-		return \StripeWPFS\PaymentIntent::STATUS_REQUIRES_ACTION === $paymentIntent->status
+		return \StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_ACTION === $paymentIntent->status
 			&& 'use_stripe_sdk' === $paymentIntent->next_action->type;
 	}
 
 	/**
-	 * @param $paymentIntent \StripeWPFS\PaymentIntent
+	 * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
 	 *
 	 * @return boolean
 	 */
 	protected function paymentIntentSucceeded( $paymentIntent ) {
-		return \StripeWPFS\PaymentIntent::STATUS_SUCCEEDED === $paymentIntent->status
-			|| \StripeWPFS\PaymentIntent::STATUS_REQUIRES_CAPTURE === $paymentIntent->status;
+		return \StripeWPFS\Stripe\PaymentIntent::STATUS_SUCCEEDED === $paymentIntent->status
+			|| \StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_CAPTURE === $paymentIntent->status;
 	}
 
 	/**
 	 * @param $donationFormModel MM_WPFS_Public_DonationFormModel
 	 */
 	protected function fireBeforeInlineDonationAction( $donationFormModel, $transactionData ) {
-		$params = array(
+		$params = [
 			'email' => $donationFormModel->getCardHolderEmail(),
 			'urlParameters' => $donationFormModel->getFormGetParametersAsArray(),
 			'formName' => $donationFormModel->getFormName(),
@@ -1546,19 +1558,19 @@ class MM_WPFS_Customer {
 			'frequency' => $donationFormModel->getDonationFrequency(),
 			'amount' => $donationFormModel->getAmount(),
 			'stripeClient' => $this->stripe->getStripeClient()
-		);
+		];
 
 		do_action( MM_WPFS::ACTION_NAME_BEFORE_DONATION_CHARGE, $params );
 	}
 
 	/**
 	 * @param $donationFormModel MM_WPFS_Public_DonationFormModel
-	 * @param $paymentIntent \StripeWPFS\PaymentIntent
+	 * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
 	 */
 	protected function fireAfterInlineDonationAction( $donationFormModel, $transactionData, $paymentIntent ) {
 		$replacer = new MM_WPFS_DonationMacroReplacer( $donationFormModel->getForm(), $transactionData, $this->loggerService );
 
-		$params = array(
+		$params = [
 			'email' => $donationFormModel->getCardHolderEmail(),
 			'urlParameters' => $donationFormModel->getFormGetParametersAsArray(),
 			'formName' => $donationFormModel->getFormName(),
@@ -1570,7 +1582,7 @@ class MM_WPFS_Customer {
 			'stripeSubscription' => $donationFormModel->getStripeSubscription(),
 			'rawPlaceholders' => $replacer->getRawKeyValuePairs(),
 			'decoratedPlaceholders' => $replacer->getDecoratedKeyValuePairs(),
-		);
+		];
 
 		do_action( MM_WPFS::ACTION_NAME_AFTER_DONATION_CHARGE, $params );
 		do_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, $donationFormModel->getForm(), $params );
@@ -1615,7 +1627,7 @@ class MM_WPFS_Customer {
 
 		if ( isset( $paymentIntent ) && $paymentIntent !== null ) {
 			// first check if we need to re-confirm the intent
-			if ( $paymentIntent->status === \StripeWPFS\PaymentIntent::STATUS_REQUIRES_CONFIRMATION ) {
+			if ( $paymentIntent->status === \StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_CONFIRMATION ) {
 				$paymentIntent = $this->stripe->confirmPaymentIntent( $paymentIntent->id, $transactionData->getStripePaymentMethodId() );
 			}
 			if ( $this->paymentIntentRequiresAction( $paymentIntent ) ) {
@@ -1685,7 +1697,7 @@ class MM_WPFS_Customer {
 	 * @param $transactionData MM_WPFS_OneTimePaymentTransactionData
 	 */
 	private function fireBeforeInlinePaymentAction( $paymentFormModel, $transactionData ) {
-		$params = array(
+		$params = [
 			'email' => $paymentFormModel->getCardHolderEmail(),
 			'urlParameters' => $paymentFormModel->getFormGetParametersAsArray(),
 			'formName' => $paymentFormModel->getFormName(),
@@ -1694,7 +1706,7 @@ class MM_WPFS_Customer {
 			'currency' => $transactionData->getCurrency(),
 			'amount' => $paymentFormModel->getAmount(),
 			'stripeClient' => $this->stripe->getStripeClient(),
-		);
+		];
 
 		do_action( MM_WPFS::ACTION_NAME_BEFORE_PAYMENT_CHARGE, $params );
 	}
@@ -1702,12 +1714,12 @@ class MM_WPFS_Customer {
 	/**
 	 * @param $paymentFormModel MM_WPFS_Public_PaymentFormModel
 	 * @param $transactionData MM_WPFS_OneTimePaymentTransactionData
-	 * @param $paymentIntent \StripeWPFS\PaymentIntent
+	 * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
 	 */
 	private function fireAfterInlinePaymentAction( $paymentFormModel, $transactionData, $paymentIntent ) {
 		$replacer = new MM_WPFS_OneTimePaymentMacroReplacer( $paymentFormModel->getForm(), $transactionData, $this->loggerService );
 
-		$params = array(
+		$params = [
 			'email' => $paymentFormModel->getCardHolderEmail(),
 			'urlParameters' => $paymentFormModel->getFormGetParametersAsArray(),
 			'formName' => $paymentFormModel->getFormName(),
@@ -1719,7 +1731,7 @@ class MM_WPFS_Customer {
 			'stripePaymentIntent' => $paymentIntent,
 			'rawPlaceholders' => $replacer->getRawKeyValuePairs(),
 			'decoratedPlaceholders' => $replacer->getDecoratedKeyValuePairs(),
-		);
+		];
 
 		do_action( MM_WPFS::ACTION_NAME_AFTER_PAYMENT_CHARGE, $params );
 		do_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, $paymentFormModel->getForm(), $params );
@@ -1777,7 +1789,7 @@ class MM_WPFS_Customer {
 
 	/**
 	 * @param $transactionData MM_WPFS_PaymentTransactionData
-	 * @param $invoice \StripeWPFS\Invoice
+	 * @param $invoice \StripeWPFS\Stripe\Invoice
 	 */
 	private function updatePaymentTransactionDataPricing( $transactionData, $invoice ) {
 		$pricingDetails = MM_WPFS_Pricing::extractSimplifiedPricingFromInvoiceLineItems( $invoice->lines->data );
@@ -1834,6 +1846,20 @@ class MM_WPFS_Customer {
 					$finalizedInvoice = $this->stripe->finalizeInvoice( $stripeInvoice->id );
 
 					$this->updatePaymentTransactionDataPricing( $transactionData, $finalizedInvoice );
+
+					$payments = $finalizedInvoice->payments->data ?? [];
+					$stripePaymentIntent = null;
+
+					foreach ( $payments as $payment ) {
+						if (
+							isset( $payment->payment->type ) &&
+							$payment->payment->type === 'payment_intent' &&
+							isset( $payment->payment->payment_intent )
+						) {
+							$stripePaymentIntent = $payment->payment->payment_intent;
+							break;
+						}
+					}
 					$transactionData->setStripeInvoiceId( $finalizedInvoice->id );
 					$transactionData->setInvoiceUrl( $finalizedInvoice->invoice_pdf );
 					$transactionData->setInvoiceNumber( $finalizedInvoice->number );
@@ -1846,7 +1872,7 @@ class MM_WPFS_Customer {
 						MM_WPFS_Mailer::canSendPaymentStripeReceipt( $paymentFormModel->getForm() ) ? $paymentFormModel->getCardHolderEmail() : null
 					);
 
-					$paymentIntent = $this->stripe->retrievePaymentIntent( $finalizedInvoice->payment_intent );
+					$paymentIntent = $this->stripe->retrievePaymentIntent( $stripePaymentIntent );
 					$paymentFormModel->setTransactionId( $paymentIntent->id );
 					$transactionData->setTransactionId( $paymentFormModel->getTransactionId() );
 				} else {
@@ -1913,7 +1939,7 @@ class MM_WPFS_Customer {
 			}
 			if ( isset( $paymentIntent ) ) {
 				// in some cases we need to re-confirm the PaymentIntent
-				if ( \StripeWPFS\PaymentIntent::STATUS_REQUIRES_CONFIRMATION === $paymentIntent->status ) {
+				if ( \StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_CONFIRMATION === $paymentIntent->status ) {
 					$this->stripe->confirmPaymentIntent( $paymentIntent->id, $paymentFormModel->getStripePaymentMethodId() );
 				}
 
@@ -1939,11 +1965,11 @@ class MM_WPFS_Customer {
 
 		if ( isset( $paymentIntent ) ) {
 			// in some cases we need to re-confirm the PaymentIntent
-			if ( \StripeWPFS\PaymentIntent::STATUS_REQUIRES_CONFIRMATION === $paymentIntent->status ) {
+			if ( \StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_CONFIRMATION === $paymentIntent->status ) {
 				$paymentIntent = $this->stripe->confirmPaymentIntent( $paymentIntent->id, $paymentFormModel->getStripePaymentMethodId() );
 			}
 			if (
-				\StripeWPFS\PaymentIntent::STATUS_REQUIRES_ACTION === $paymentIntent->status
+				\StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_ACTION === $paymentIntent->status
 				&& 'use_stripe_sdk' === $paymentIntent->next_action->type
 			) {
 				$this->logger->debug( __FUNCTION__, "PaymentIntent requires action..." );
@@ -1961,8 +1987,8 @@ class MM_WPFS_Customer {
 					__( 'The payment needs additional action before completion!', 'wp-full-stripe-free' )
 				);
 			} elseif (
-				\StripeWPFS\PaymentIntent::STATUS_SUCCEEDED === $paymentIntent->status
-				|| \StripeWPFS\PaymentIntent::STATUS_REQUIRES_CAPTURE === $paymentIntent->status
+				\StripeWPFS\Stripe\PaymentIntent::STATUS_SUCCEEDED === $paymentIntent->status
+				|| \StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_CAPTURE === $paymentIntent->status
 			) {
 				$this->logger->debug( __FUNCTION__, "processPaymentIntentCharge(): PaymentIntent succeeded." );
 
@@ -2015,7 +2041,7 @@ class MM_WPFS_Customer {
 	 * @return array
 	 */
 	private function generateReturnValueFromTransactionResult( $transactionResult ) {
-		$returnValue = array(
+		$returnValue = [
 			'success' => $transactionResult->isSuccess(),
 			'messageTitle' => $transactionResult->getMessageTitle(),
 			'message' => $transactionResult->getMessage(),
@@ -2026,7 +2052,7 @@ class MM_WPFS_Customer {
 			'setupIntentClientSecret' => $transactionResult->getSetupIntentClientSecret(),
 			'formType' => $transactionResult->getFormType(),
 			'nonce' => $transactionResult->getNonce(),
-		);
+		];
 
 		return $returnValue;
 	}
@@ -2053,13 +2079,13 @@ class MM_WPFS_Customer {
 				__( 'Internal Error', 'wp-full-stripe-free' ) :
 				$ex->getTitle();
 			$message = $ex->getMessage();
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' => $messageTitle,
 				'message' => $message,
 				'exceptionMessage' => $ex->getMessage()
-			);
-		} catch (\StripeWPFS\Exception\CardException $ex) {
+			];
+		} catch (\StripeWPFS\Stripe\Exception\CardException $ex) {
 			$this->logger->error( __FUNCTION__, "Card exception while processing subscription charge", $ex );
 
 			$messageTitle =
@@ -2069,23 +2095,23 @@ class MM_WPFS_Customer {
 			if ( is_null( $message ) ) {
 				$message = MM_WPFS_Localization::translateLabel( $ex->getMessage() );
 			}
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' => $messageTitle,
 				'message' => $message,
 				'exceptionMessage' => $ex->getMessage()
-			);
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, "Generic exception while processing subscription charge", $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' =>
 					/* Banner title of internal error */
 					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2099,7 +2125,7 @@ class MM_WPFS_Customer {
 	 * @param $transactionData MM_WPFS_SubscriptionTransactionData
 	 */
 	protected function fireBeforeInlineSubscriptionAction( $subscriptionFormModel, $transactionData ) {
-		$params = array(
+		$params = [
 			'email' => $subscriptionFormModel->getCardHolderEmail(),
 			'urlParameters' => $subscriptionFormModel->getFormGetParametersAsArray(),
 			'formName' => $subscriptionFormModel->getFormName(),
@@ -2110,7 +2136,7 @@ class MM_WPFS_Customer {
 			'setupFee' => $subscriptionFormModel->getSetupFee(),
 			'quantity' => $subscriptionFormModel->getStripePlanQuantity(),
 			'stripeClient' => $this->stripe->getStripeClient(),
-		);
+		];
 
 		do_action( MM_WPFS::ACTION_NAME_BEFORE_SUBSCRIPTION_CHARGE, $params );
 	}
@@ -2118,12 +2144,12 @@ class MM_WPFS_Customer {
 	/**
 	 * @param $subscriptionFormModel MM_WPFS_Public_SubscriptionFormModel
 	 * @param $transactionData MM_WPFS_SubscriptionTransactionData
-	 * @param $subscription \StripeWPFS\Subscription
+	 * @param $subscription \StripeWPFS\Stripe\Subscription
 	 */
 	protected function fireAfterInlineSubscriptionAction( $subscriptionFormModel, $transactionData, $subscription ) {
 		$replacer = new MM_WPFS_SubscriptionMacroReplacer( $subscriptionFormModel->getForm(), $transactionData, $this->loggerService );
 
-		$params = array(
+		$params = [
 			'email' => $subscriptionFormModel->getCardHolderEmail(),
 			'urlParameters' => $subscriptionFormModel->getFormGetParametersAsArray(),
 			'formName' => $subscriptionFormModel->getFormName(),
@@ -2137,7 +2163,7 @@ class MM_WPFS_Customer {
 			'stripeSubscription' => $subscription,
 			'rawPlaceholders' => $replacer->getRawKeyValuePairs(),
 			'decoratedPlaceholders' => $replacer->getDecoratedKeyValuePairs(),
-		);
+		];
 
 		do_action( MM_WPFS::ACTION_NAME_AFTER_SUBSCRIPTION_CHARGE, $params );
 		do_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, $subscriptionFormModel->getForm(), $params );
@@ -2145,7 +2171,7 @@ class MM_WPFS_Customer {
 
 	/**
 	 * @param $transactionData MM_WPFS_SubscriptionTransactionData
-	 * @param $invoice \StripeWPFS\Invoice
+	 * @param $invoice \StripeWPFS\Stripe\Invoice
 	 */
 	private function updateSubscriptionTransactionDataPricing( &$transactionData, $invoice ) {
 		$pricingDetails = MM_WPFS_Pricing::extractSubscriptionPricingFromInvoiceLineItems( $invoice->lines->data );
@@ -2206,11 +2232,11 @@ class MM_WPFS_Customer {
 		} else {
 			$expandedInvoice = $this->stripe->retrieveInvoiceWithParams(
 				$this->getInvoiceId( $invoice ),
-				array(
-					'expand' => array(
+				[
+					'expand' => [
 						'charge'
-					)
-				)
+					]
+				]
 			);
 		}
 
@@ -2221,7 +2247,7 @@ class MM_WPFS_Customer {
 	 * @param MM_WPFS_Public_SubscriptionFormModel $subscriptionFormModel
 	 *
 	 * @return MM_WPFS_SubscriptionResult
-	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 */
 	private function processSubscription( $subscriptionFormModel ) {
 		$subscriptionResult = new MM_WPFS_SubscriptionResult();
@@ -2257,7 +2283,21 @@ class MM_WPFS_Customer {
 
 			if ( isset( $stripeSubscription ) ) {
 				if ( isset( $stripeSubscription->latest_invoice ) && isset( $stripeSubscription->latest_invoice->id ) ) {
-					$stripePaymentIntent = $stripeSubscription->latest_invoice->payment_intent;
+					$payments = $stripeSubscription->latest_invoice->payments->data ?? [];
+
+					$stripePaymentIntent = null;
+
+					foreach ( $payments as $payment ) {
+						if (
+							isset( $payment->payment->type ) &&
+							$payment->payment->type === 'payment_intent' &&
+							isset( $payment->payment->payment_intent )
+						) {
+							$stripePaymentIntent = $this->stripe->retrievePaymentIntent( $payment->payment->payment_intent );
+							break; // You can break after first match, or collect all if needed
+						}
+					}
+
 					if ( isset( $stripePaymentIntent ) && ! empty( $stripePaymentIntent ) ) {
 						// Update payment intent for metadata
 						$this->updatePaymentIntentWithMetadataAndWebhookUrl( $stripePaymentIntent, $subscriptionFormModel );
@@ -2349,14 +2389,14 @@ class MM_WPFS_Customer {
 	 * SetupIntent are given, we consider the subscription as successful.
 	 *
 	 * @param MM_WPFS_SubscriptionResult $subscriptionResult
-	 * @param \StripeWPFS\Subscription $subscription
-	 * @param \StripeWPFS\PaymentIntent $paymentIntent
-	 * @param \StripeWPFS\SetupIntent $setupIntent
+	 * @param \StripeWPFS\Stripe\Subscription $subscription
+	 * @param \StripeWPFS\Stripe\PaymentIntent $paymentIntent
+	 * @param \StripeWPFS\Stripe\SetupIntent $setupIntent
 	 */
 	private function handleIntent( $subscriptionResult, $subscription, $paymentIntent, $setupIntent ) {
 		if ( isset( $paymentIntent ) ) {
 			if (
-				\StripeWPFS\PaymentIntent::STATUS_REQUIRES_ACTION === $paymentIntent->status
+				\StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_ACTION === $paymentIntent->status
 				&& 'use_stripe_sdk' === $paymentIntent->next_action->type
 			) {
 				$this->logger->debug( __FUNCTION__, "PaymentIntent requires action..." );
@@ -2373,9 +2413,9 @@ class MM_WPFS_Customer {
 					__( 'The payment needs additional action before completion!', 'wp-full-stripe-free' )
 				);
 			} elseif (
-				\StripeWPFS\PaymentIntent::STATUS_SUCCEEDED === $paymentIntent->status
-				|| \StripeWPFS\PaymentIntent::STATUS_REQUIRES_CAPTURE === $paymentIntent->status
-				|| \StripeWPFS\PaymentIntent::STATUS_PROCESSING === $paymentIntent->status
+				\StripeWPFS\Stripe\PaymentIntent::STATUS_SUCCEEDED === $paymentIntent->status
+				|| \StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_CAPTURE === $paymentIntent->status
+				|| \StripeWPFS\Stripe\PaymentIntent::STATUS_PROCESSING === $paymentIntent->status
 			) {
 				$this->logger->debug( __FUNCTION__, "PaymentIntent succeeded." );
 
@@ -2403,7 +2443,7 @@ class MM_WPFS_Customer {
 			}
 		} elseif ( isset( $setupIntent ) ) {
 			if (
-				\StripeWPFS\SetupIntent::STATUS_REQUIRES_ACTION === $setupIntent->status
+				\StripeWPFS\Stripe\SetupIntent::STATUS_REQUIRES_ACTION === $setupIntent->status
 				&& 'use_stripe_sdk' === $setupIntent->next_action->type
 			) {
 				$this->logger->debug( __FUNCTION__, "SetupIntent requires action..." );
@@ -2420,7 +2460,7 @@ class MM_WPFS_Customer {
 					__( 'The payment needs additional action before completion!', 'wp-full-stripe-free' )
 				);
 			} elseif (
-				\StripeWPFS\SetupIntent::STATUS_SUCCEEDED === $setupIntent->status
+				\StripeWPFS\Stripe\SetupIntent::STATUS_SUCCEEDED === $setupIntent->status
 			) {
 				$this->logger->debug( __FUNCTION__, "SetupIntent succeeded." );
 
@@ -2471,7 +2511,7 @@ class MM_WPFS_Customer {
 	 * @param $stripePaymentIntent
 	 * @param $subscriptionFormModel
 	 * @return void
-	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 */
 	public function updatePaymentIntentWithMetadataAndWebhookUrl( $stripePaymentIntent, $subscriptionFormModel ): void {
 		// Update payment intent for metadata
@@ -2486,11 +2526,11 @@ class MM_WPFS_Customer {
 	 * @param $saveCardFormModel MM_WPFS_Public_CheckoutPaymentFormModel
 	 */
 	protected function fireBeforeCheckoutSaveCardAction( $saveCardFormModel ) {
-		$params = array(
+		$params = [
 			'urlParameters' => $saveCardFormModel->getFormGetParametersAsArray(),
 			'formName' => $saveCardFormModel->getFormName(),
 			'stripeClient' => $this->stripe->getStripeClient(),
-		);
+		];
 
 		do_action( MM_WPFS::ACTION_NAME_BEFORE_CHECKOUT_SAVE_CARD, $params );
 	}
@@ -2500,7 +2540,7 @@ class MM_WPFS_Customer {
 	 * @param $transactionData MM_WPFS_PaymentTransactionData
 	 */
 	private function fireBeforeCheckoutPaymentAction( $paymentFormModel, $transactionData ) {
-		$params = array(
+		$params = [
 			'urlParameters' => $paymentFormModel->getFormGetParametersAsArray(),
 			'formName' => $paymentFormModel->getFormName(),
 			'priceId' => $paymentFormModel->getPriceId(),
@@ -2508,7 +2548,7 @@ class MM_WPFS_Customer {
 			'currency' => $transactionData->getCurrency(),
 			'amount' => $paymentFormModel->getAmount(),
 			'stripeClient' => $this->stripe->getStripeClient(),
-		);
+		];
 
 		do_action( MM_WPFS::ACTION_NAME_BEFORE_CHECKOUT_PAYMENT_CHARGE, $params );
 	}
@@ -2539,13 +2579,13 @@ class MM_WPFS_Customer {
 				__( 'Internal Error', 'wp-full-stripe-free' ) :
 				$ex->getTitle();
 			$message = $ex->getMessage();
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' => $messageTitle,
 				'message' => $message,
 				'exceptionMessage' => $ex->getMessage()
-			);
-		} catch (\StripeWPFS\Exception\CardException $ex) {
+			];
+		} catch (\StripeWPFS\Stripe\Exception\CardException $ex) {
 			$this->logger->error( __FUNCTION__, "Card exception while submitting checkout payment charge.", $ex );
 
 			$messageTitle =
@@ -2555,23 +2595,23 @@ class MM_WPFS_Customer {
 			if ( is_null( $message ) ) {
 				$message = MM_WPFS_Localization::translateLabel( $ex->getMessage() );
 			}
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' => $messageTitle,
 				'message' => $message,
 				'exceptionMessage' => $ex->getMessage()
-			);
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, "Generic exception while submitting checkout payment charge.", $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
 					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2585,14 +2625,14 @@ class MM_WPFS_Customer {
 	 * @param $transactionData MM_WPFS_DonationTransactionData
 	 */
 	protected function fireBeforeCheckoutDonationAction( $donationFormModel, $transactionData ) {
-		$params = array(
+		$params = [
 			'urlParameters' => $donationFormModel->getFormGetParametersAsArray(),
 			'formName' => $donationFormModel->getFormName(),
 			'currency' => $transactionData->getCurrency(),
 			'frequency' => $donationFormModel->getDonationFrequency(),
 			'amount' => $donationFormModel->getAmount(),
 			'stripeClient' => $this->stripe->getStripeClient()
-		);
+		];
 
 		do_action( MM_WPFS::ACTION_NAME_BEFORE_CHECKOUT_DONATION_CHARGE, $params );
 	}
@@ -2619,13 +2659,13 @@ class MM_WPFS_Customer {
 				__( 'Internal Error', 'wp-full-stripe-free' ) :
 				$ex->getTitle();
 			$message = $ex->getMessage();
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' => $messageTitle,
 				'message' => $message,
 				'exceptionMessage' => $ex->getMessage()
-			);
-		} catch (\StripeWPFS\Exception\CardException $ex) {
+			];
+		} catch (\StripeWPFS\Stripe\Exception\CardException $ex) {
 			$this->logger->error( __FUNCTION__, "Card exception while submitting checkout donation charge.", $ex );
 
 			$messageTitle =
@@ -2635,23 +2675,23 @@ class MM_WPFS_Customer {
 			if ( is_null( $message ) ) {
 				$message = MM_WPFS_Localization::translateLabel( $ex->getMessage() );
 			}
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' => $messageTitle,
 				'message' => $message,
 				'exceptionMessage' => $ex->getMessage()
-			);
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, "Generic exception while submitting checkout donation charge.", $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
 					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2661,16 +2701,16 @@ class MM_WPFS_Customer {
 	}
 
 	/**
-	 * @param \StripeWPFS\Checkout\Session $checkoutSession
+	 * @param \StripeWPFS\Stripe\Checkout\Session $checkoutSession
 	 *
 	 * @return array
 	 */
 	private function generateReturnValueFromCheckoutSession( $checkoutSession ) {
-		return array(
+		return [
 			'success' => true,
 			'checkoutSessionId' => $checkoutSession->id,
 			'redirectUrl' => $checkoutSession->url
-		);
+		];
 	}
 
 	/**
@@ -2678,7 +2718,7 @@ class MM_WPFS_Customer {
 	 * @param $transactionData MM_WPFS_SubscriptionTransactionData
 	 */
 	protected function fireBeforeCheckoutSubscriptionAction( $subscriptionFormModel, $transactionData ) {
-		$params = array(
+		$params = [
 			'urlParameters' => $subscriptionFormModel->getFormGetParametersAsArray(),
 			'formName' => $subscriptionFormModel->getFormName(),
 			'productName' => $subscriptionFormModel->getProductName(),
@@ -2688,7 +2728,7 @@ class MM_WPFS_Customer {
 			'setupFee' => $subscriptionFormModel->getSetupFee(),
 			'quantity' => $subscriptionFormModel->getStripePlanQuantity(),
 			'stripeClient' => $this->stripe->getStripeClient(),
-		);
+		];
 
 		do_action( MM_WPFS::ACTION_NAME_BEFORE_CHECKOUT_SUBSCRIPTION_CHARGE, $params );
 	}
@@ -2717,13 +2757,13 @@ class MM_WPFS_Customer {
 				__( 'Internal Error', 'wp-full-stripe-free' ) :
 				$ex->getTitle();
 			$message = $ex->getMessage();
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' => $messageTitle,
 				'message' => $message,
 				'exceptionMessage' => $ex->getMessage()
-			);
-		} catch (\StripeWPFS\Exception\CardException $ex) {
+			];
+		} catch (\StripeWPFS\Stripe\Exception\CardException $ex) {
 			$this->logger->error( __FUNCTION__, "Card exception while submitting checkout subscription charge.", $ex );
 
 			$messageTitle =
@@ -2733,23 +2773,23 @@ class MM_WPFS_Customer {
 			if ( is_null( $message ) ) {
 				$message = MM_WPFS_Localization::translateLabel( $ex->getMessage() );
 			}
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' => $messageTitle,
 				'message' => $message,
 				'exceptionMessage' => $ex->getMessage()
-			);
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, "Generic exception while submitting checkout subscription charge.", $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
 					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2776,13 +2816,13 @@ class MM_WPFS_Customer {
 				__( 'Internal Error', 'wp-full-stripe-free' ) :
 				$ex->getTitle();
 			$message = $ex->getMessage();
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' => $messageTitle,
 				'message' => $message,
 				'exceptionMessage' => $ex->getMessage()
-			);
-		} catch (\StripeWPFS\Exception\CardException $ex) {
+			];
+		} catch (\StripeWPFS\Stripe\Exception\CardException $ex) {
 			$this->logger->error( __FUNCTION__, 'Stripe card exception while handling payment charge', $ex );
 
 			$messageTitle =
@@ -2792,34 +2832,34 @@ class MM_WPFS_Customer {
 			if ( is_null( $message ) ) {
 				$message = MM_WPFS_Localization::translateLabel( $ex->getMessage() );
 			}
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' => $messageTitle,
 				'message' => $message,
 				'exceptionMessage' => $ex->getMessage()
-			);
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Generic exception while handling payment charge', $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
 					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
-			);
+			];
 		} catch (Error $err) {
 			$this->logger->error( __FUNCTION__, 'Generic error while handling payment charge', $err );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
 					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $err->getMessage() ),
 				'exceptionMessage' => $err->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2859,9 +2899,9 @@ class MM_WPFS_Customer {
 
 		$this->db->insertOrUpdatePayment( $paymentFormModel, $transactionData, $latest_charge );
 		// just return if everything is fine
-		return array(
+		return [
 			'success' => true
-		);
+		];
 	}
 
 	function fullstripe_confirm_redirect() {
@@ -2877,7 +2917,7 @@ class MM_WPFS_Customer {
 				if ( isset( $draft_payment->customFields ) && ! empty( $draft_payment->customFields ) ) {
 					// handle custom fields
 					$customFields = json_decode( $draft_payment->customFields );
-					$customFieldValues = array();
+					$customFieldValues = [];
 					foreach ( $customFields as $customField ) {
 						array_push( $customFieldValues, $customField->value );
 					}
@@ -2933,13 +2973,13 @@ class MM_WPFS_Customer {
 				__( 'Internal Error', 'wp-full-stripe-free' ) :
 				$ex->getTitle();
 			$message = $ex->getMessage();
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' => $messageTitle,
 				'message' => $message,
 				'exceptionMessage' => $ex->getMessage()
-			);
-		} catch (\StripeWPFS\Exception\CardException $ex) {
+			];
+		} catch (\StripeWPFS\Stripe\Exception\CardException $ex) {
 			$this->logger->error( __FUNCTION__, 'Stripe card exception while handling payment charge', $ex );
 
 			$messageTitle =
@@ -2949,34 +2989,34 @@ class MM_WPFS_Customer {
 			if ( is_null( $message ) ) {
 				$message = MM_WPFS_Localization::translateLabel( $ex->getMessage() );
 			}
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' => $messageTitle,
 				'message' => $message,
 				'exceptionMessage' => $ex->getMessage()
-			);
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Generic exception while handling payment charge', $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
 					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
 				'exceptionMessage' => $ex->getMessage()
-			);
+			];
 		} catch (Error $err) {
 			$this->logger->error( __FUNCTION__, 'Generic error while handling payment charge', $err );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'messageTitle' =>
 					/* translators: Banner title of internal error */
 					__( 'Internal Error', 'wp-full-stripe-free' ),
 				'message' => MM_WPFS_Localization::translateLabel( $err->getMessage() ),
 				'exceptionMessage' => $err->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -3083,28 +3123,28 @@ class MM_WPFS_Customer {
 					if ( ! empty( $productPricing ) && ! $bindingResult->hasErrors() ) {
 						// for payment intent scenarios we need to update the payment intent 
 						// with an updated amount as they don't support coupons
-						if ( ! empty( $pricingData->stripePaymentIntentId ) ) {
+						if ( ! empty( $pricingData->stripePaymentIntentId ) && isset( $productPricing->stripePriceId ) ) {
 							$this->updatePaymentIntentAmount( $pricingData->stripePaymentIntentId, $productPricing, $productPricing->stripePriceId );
 						}
 
-						$return = array(
+						$return = [
 							'msg_title' =>
 								/* translators: Banner title for messages related to applying a coupon */
 								__( 'Coupon redemption', 'wp-full-stripe-free' ),
 							'msg' =>
 								/* translators: Banner message of successfully applying a coupon */
 								__( 'The coupon has been applied successfully', 'wp-full-stripe-free' ),
-							'coupon' => array(
+							'coupon' => [
 								'id' => $coupon->id,
 								'name' => $couponCode,
 								'currency' => $coupon->currency,
 								'percent_off' => $coupon->percent_off,
 								'amount_off' => $coupon->amount_off,
 								'discounted_price_ids' => $discountedPriceIds
-							),
+							],
 							'success' => true,
 							'productPricing' => $productPricing
-						);
+						];
 					} else {
 						$return = MM_WPFS_Utils::generateReturnValueFromBindings( $bindingResult );
 					}
@@ -3147,10 +3187,10 @@ class MM_WPFS_Customer {
 		try {
 			$return = $this->reCalculatePricing();
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' => __( 'There was an error updating the payment intent: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -3161,9 +3201,9 @@ class MM_WPFS_Customer {
 	private function reCalculatePricing() {
 		$couponId = null;
 		$coupon = null;
-		$return = array(
+		$return = [
 			'success' => false
-		);
+		];
 
 		if ( ! empty( $_POST['coupon'] ) ) {
 			$coupon = $this->stripe->retrieveCouponByPromotionalCodeOrCouponCode( $_POST['coupon'] );
@@ -3218,10 +3258,10 @@ class MM_WPFS_Customer {
 			if ( ! empty( $_POST['stripePaymentIntentId'] ) ) {
 				$this->updatePaymentIntentAmount( $_POST['stripePaymentIntentId'], $pricing, $pricingData->stripePriceId );
 			}
-			$return = array(
+			$return = [
 				'success' => true,
 				'productPricing' => $pricing
-			);
+			];
 		} else {
 			$return = MM_WPFS_Utils::generateReturnValueFromBindings( $bindingResult );
 		}
@@ -3233,10 +3273,10 @@ class MM_WPFS_Customer {
 		try {
 			$return = $this->reCalculatePricing();
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' => __( 'There was an error calculating product pricing: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -3459,7 +3499,7 @@ class MM_WPFS_PaymentIntentResult extends MM_WPFS_ChargeResult {
 	}
 
 	public function getAsArray() {
-		return array(
+		return [
 			'success' => $this->success,
 			'messageTitle' => $this->messageTitle,
 			'message' => $this->message,
@@ -3471,7 +3511,7 @@ class MM_WPFS_PaymentIntentResult extends MM_WPFS_ChargeResult {
 			'formType' => $this->formType,
 			'nonce' => $this->nonce,
 			'isManualConfirmation' => $this->isManualConfirmation,
-		);
+		];
 	}
 }
 
@@ -3485,7 +3525,7 @@ class MM_WPFS_DonationPaymentIntentResult extends MM_WPFS_ChargeResult {
 	}
 
 	public function getAsArray() {
-		return array(
+		return [
 			'success' => $this->success,
 			'messageTitle' => $this->messageTitle,
 			'message' => $this->message,
@@ -3497,7 +3537,7 @@ class MM_WPFS_DonationPaymentIntentResult extends MM_WPFS_ChargeResult {
 			'formType' => $this->formType,
 			'nonce' => $this->nonce,
 			'isManualConfirmation' => $this->isManualConfirmation
-		);
+		];
 	}
 }
 
@@ -3521,7 +3561,7 @@ class MM_WPFS_SetupIntentResult extends MM_WPFS_ChargeResult {
 	}
 
 	public function getAsArray() {
-		return array(
+		return [
 			'success' => $this->success,
 			'messageTitle' => $this->messageTitle,
 			'message' => $this->message,
@@ -3532,7 +3572,7 @@ class MM_WPFS_SetupIntentResult extends MM_WPFS_ChargeResult {
 			'setupIntentClientSecret' => $this->setupIntentClientSecret,
 			'formType' => $this->formType,
 			'nonce' => $this->nonce,
-		);
+		];
 	}
 }
 
@@ -3591,37 +3631,37 @@ class MM_WPFS_SubscriptionResult extends MM_WPFS_TransactionResult {
 class MM_WPFS_CreateOrRetrieveCustomerResult {
 
 	/**
-	 * @var \StripeWPFS\Customer
+	 * @var \StripeWPFS\Stripe\Customer
 	 */
 	private $customer;
 	/**
-	 * @var \StripeWPFS\PaymentMethod
+	 * @var \StripeWPFS\Stripe\PaymentMethod
 	 */
 	private $paymentMethod;
 
 	/**
-	 * @return \StripeWPFS\Customer
+	 * @return \StripeWPFS\Stripe\Customer
 	 */
 	public function getCustomer() {
 		return $this->customer;
 	}
 
 	/**
-	 * @param \StripeWPFS\Customer $customer
+	 * @param \StripeWPFS\Stripe\Customer $customer
 	 */
 	public function setCustomer( $customer ) {
 		$this->customer = $customer;
 	}
 
 	/**
-	 * @return \StripeWPFS\PaymentMethod
+	 * @return \StripeWPFS\Stripe\PaymentMethod
 	 */
 	public function getPaymentMethod() {
 		return $this->paymentMethod;
 	}
 
 	/**
-	 * @param \StripeWPFS\PaymentMethod $paymentMethod
+	 * @param \StripeWPFS\Stripe\PaymentMethod $paymentMethod
 	 */
 	public function setPaymentMethod( $paymentMethod ) {
 		$this->paymentMethod = $paymentMethod;

@@ -51,98 +51,98 @@ class MM_WPFS_Admin {
 	private function hooks() {
 
 		// show notice banner if not fully configured
-		add_action( 'admin_notices', array( $this, 'wpfp_config_notice' ) );
-		add_action( 'admin_notices', array( $this, 'wpfp_coupon_notice' ) );
-		add_action( 'wp_ajax_wpfs-dismiss-stripe-connect-notice', array( $this, 'wpfp_dismiss_notice' ) );
+		add_action( 'admin_notices', [ $this, 'wpfp_config_notice' ] );
+		add_action( 'admin_notices', [ $this, 'wpfp_coupon_notice' ] );
+		add_action( 'wp_ajax_wpfs-dismiss-stripe-connect-notice', [ $this, 'wpfp_dismiss_notice' ] );
 
 		// actions for forms
-		add_action( 'wp_ajax_wpfs-create-form', array( $this, 'createForm' ) );
-		add_action( 'wp_ajax_wpfs-delete-form', array( $this, 'deleteForm' ) );
-		add_action( 'wp_ajax_wpfs-clone-form', array( $this, 'cloneForm' ) );
+		add_action( 'wp_ajax_wpfs-create-form', [ $this, 'createForm' ] );
+		add_action( 'wp_ajax_wpfs-delete-form', [ $this, 'deleteForm' ] );
+		add_action( 'wp_ajax_wpfs-clone-form', [ $this, 'cloneForm' ] );
 
 		// actions for subscription forms
-		add_action( 'wp_ajax_wpfs-save-inline-subscription-form', array( $this, 'saveInlineSubscriptionForm' ) );
-		add_action( 'wp_ajax_wpfs-save-checkout-subscription-form', array( $this, 'saveCheckoutSubscriptionForm' ) );
+		add_action( 'wp_ajax_wpfs-save-inline-subscription-form', [ $this, 'saveInlineSubscriptionForm' ] );
+		add_action( 'wp_ajax_wpfs-save-checkout-subscription-form', [ $this, 'saveCheckoutSubscriptionForm' ] );
 
 		// actions for payment forms
-		add_action( 'wp_ajax_wpfs-save-inline-payment-form', array( $this, 'saveInlinePaymentForm' ) );
-		add_action( 'wp_ajax_wpfs-save-checkout-payment-form', array( $this, 'saveCheckoutPaymentForm' ) );
+		add_action( 'wp_ajax_wpfs-save-inline-payment-form', [ $this, 'saveInlinePaymentForm' ] );
+		add_action( 'wp_ajax_wpfs-save-checkout-payment-form', [ $this, 'saveCheckoutPaymentForm' ] );
 
 		// actions for save card forms
-		add_action( 'wp_ajax_wpfs-save-inline-save-card-form', array( $this, 'saveInlineSaveCardForm' ) );
-		add_action( 'wp_ajax_wpfs-save-checkout-save-card-form', array( $this, 'saveCheckoutSaveCardForm' ) );
+		add_action( 'wp_ajax_wpfs-save-inline-save-card-form', [ $this, 'saveInlineSaveCardForm' ] );
+		add_action( 'wp_ajax_wpfs-save-checkout-save-card-form', [ $this, 'saveCheckoutSaveCardForm' ] );
 
 		// actions for donation forms
-		add_action( 'wp_ajax_wpfs-save-inline-donation-form', array( $this, 'saveInlineDonationForm' ) );
-		add_action( 'wp_ajax_wpfs-save-checkout-donation-form', array( $this, 'saveCheckoutDonationForm' ) );
+		add_action( 'wp_ajax_wpfs-save-inline-donation-form', [ $this, 'saveInlineDonationForm' ] );
+		add_action( 'wp_ajax_wpfs-save-checkout-donation-form', [ $this, 'saveCheckoutDonationForm' ] );
 
 		// actions for payments
-		add_action( 'wp_ajax_wpfs-delete-payment', array( $this, 'deletePayment' ) );
-		add_action( 'wp_ajax_wpfs-capture-payment', array( $this, 'capturePayment' ) );
-		add_action( 'wp_ajax_wpfs-refund-payment', array( $this, 'refundPayment' ) );
-		add_action( 'wp_ajax_wpfs-get-payment-details', array( $this, 'getPaymentDetails' ) );
+		add_action( 'wp_ajax_wpfs-delete-payment', [ $this, 'deletePayment' ] );
+		add_action( 'wp_ajax_wpfs-capture-payment', [ $this, 'capturePayment' ] );
+		add_action( 'wp_ajax_wpfs-refund-payment', [ $this, 'refundPayment' ] );
+		add_action( 'wp_ajax_wpfs-get-payment-details', [ $this, 'getPaymentDetails' ] );
 
 		// actions for subscriptions
-		add_action( 'wp_ajax_wpfs-cancel-subscription', array( $this, 'cancelSubscription' ) );
-		add_action( 'wp_ajax_wpfs-delete-subscription', array( $this, 'deleteSubscription' ) );
-		add_action( 'wp_ajax_wpfs-get-subscription-details', array( $this, 'getSubscriptionDetails' ) );
+		add_action( 'wp_ajax_wpfs-cancel-subscription', [ $this, 'cancelSubscription' ] );
+		add_action( 'wp_ajax_wpfs-delete-subscription', [ $this, 'deleteSubscription' ] );
+		add_action( 'wp_ajax_wpfs-get-subscription-details', [ $this, 'getSubscriptionDetails' ] );
 
 		// actions for donations
-		add_action( 'wp_ajax_wpfs-refund-donation', array( $this, 'refundDonation' ) );
-		add_action( 'wp_ajax_wpfs-cancel-donation', array( $this, 'cancelDonation' ) );
-		add_action( 'wp_ajax_wpfs-delete-donation', array( $this, 'deleteDonation' ) );
-		add_action( 'wp_ajax_wpfs-get-donation-details', array( $this, 'getDonationDetails' ) );
+		add_action( 'wp_ajax_wpfs-refund-donation', [ $this, 'refundDonation' ] );
+		add_action( 'wp_ajax_wpfs-cancel-donation', [ $this, 'cancelDonation' ] );
+		add_action( 'wp_ajax_wpfs-delete-donation', [ $this, 'deleteDonation' ] );
+		add_action( 'wp_ajax_wpfs-get-donation-details', [ $this, 'getDonationDetails' ] );
 
 		// actions for saved cards
-		add_action( 'wp_ajax_wpfs-delete-saved-card', array( $this, 'deleteSavedCard' ) );
-		add_action( 'wp_ajax_wpfs-get-saved-card-details', array( $this, 'getSavedCardDetails' ) );
+		add_action( 'wp_ajax_wpfs-delete-saved-card', [ $this, 'deleteSavedCard' ] );
+		add_action( 'wp_ajax_wpfs-get-saved-card-details', [ $this, 'getSavedCardDetails' ] );
 
 		// actions for settings pages
-		add_action( 'wp_ajax_wpfs-save-stripe-account', array( $this, 'saveStripeAccount' ) );
-		add_action( 'wp_ajax_wpfs-create-stripe-connect-account', array( $this, 'createStripeConnectAccount' ) );
-		add_action( 'wp_ajax_wpfs-add-stripe-account', array( $this, 'addStripeAccount' ) );
-		add_action( 'wp_ajax_wpfs-clear-stripe-settings', array( $this, 'clearStripeSettings' ) );
-		add_action( 'wp_ajax_wpfs-save-my-account', array( $this, 'saveMyAccount' ) );
-		add_action( 'wp_ajax_wpfs-save-security', array( $this, 'saveSecurity' ) );
-		add_action( 'wp_ajax_wpfs-save-email-options', array( $this, 'saveEmailOptions' ) );
-		add_action( 'wp_ajax_wpfs-save-email-templates', array( $this, 'saveEmailTemplates' ) );
-		add_action( 'wp_ajax_wpfs-save-forms-options', array( $this, 'saveFormsOptions' ) );
-		add_action( 'wp_ajax_wpfs-save-forms-appearance', array( $this, 'saveFormsAppearance' ) );
-		add_action( 'wp_ajax_wpfs-save-wp-dashboard', array( $this, 'saveWordpressDashboard' ) );
-		add_action( 'wp_ajax_wpfs-save-logs', array( $this, 'saveLogs' ) );
-		add_action( 'wp_ajax_wpfs-empty-logs', array( $this, 'emptyLogs' ) );
-		add_action( 'wp_ajax_wpfs-toggle-license', array( $this, 'toggleLicense' ) );
+		add_action( 'wp_ajax_wpfs-save-stripe-account', [ $this, 'saveStripeAccount' ] );
+		add_action( 'wp_ajax_wpfs-create-stripe-connect-account', [ $this, 'createStripeConnectAccount' ] );
+		add_action( 'wp_ajax_wpfs-add-stripe-account', [ $this, 'addStripeAccount' ] );
+		add_action( 'wp_ajax_wpfs-clear-stripe-settings', [ $this, 'clearStripeSettings' ] );
+		add_action( 'wp_ajax_wpfs-save-my-account', [ $this, 'saveMyAccount' ] );
+		add_action( 'wp_ajax_wpfs-save-security', [ $this, 'saveSecurity' ] );
+		add_action( 'wp_ajax_wpfs-save-email-options', [ $this, 'saveEmailOptions' ] );
+		add_action( 'wp_ajax_wpfs-save-email-templates', [ $this, 'saveEmailTemplates' ] );
+		add_action( 'wp_ajax_wpfs-save-forms-options', [ $this, 'saveFormsOptions' ] );
+		add_action( 'wp_ajax_wpfs-save-forms-appearance', [ $this, 'saveFormsAppearance' ] );
+		add_action( 'wp_ajax_wpfs-save-wp-dashboard', [ $this, 'saveWordpressDashboard' ] );
+		add_action( 'wp_ajax_wpfs-save-logs', [ $this, 'saveLogs' ] );
+		add_action( 'wp_ajax_wpfs-empty-logs', [ $this, 'emptyLogs' ] );
+		add_action( 'wp_ajax_wpfs-toggle-license', [ $this, 'toggleLicense' ] );
 
 		// actions for in-form ajax requests
-		add_action( 'wp_ajax_wpfs-get-onetime-products', array( $this, 'getOnetimeProducts' ) );
-		add_action( 'wp_ajax_wpfs-get-recurring-products', array( $this, 'getRecurringProducts' ) );
-		add_action( 'wp_ajax_wpfs-create-new-product', array( $this, 'createProduct' ) );
-		add_action( 'wp_ajax_wpfs-get-tax-rates', array( $this, 'getTaxRates' ) );
-		add_action( 'wp_ajax_wpfs-send-test-email', array( $this, 'sendTestEmail' ) );
+		add_action( 'wp_ajax_wpfs-get-onetime-products', [ $this, 'getOnetimeProducts' ] );
+		add_action( 'wp_ajax_wpfs-get-recurring-products', [ $this, 'getRecurringProducts' ] );
+		add_action( 'wp_ajax_wpfs-create-new-product', [ $this, 'createProduct' ] );
+		add_action( 'wp_ajax_wpfs-get-tax-rates', [ $this, 'getTaxRates' ] );
+		add_action( 'wp_ajax_wpfs-send-test-email', [ $this, 'sendTestEmail' ] );
 
 		// actions for form preview
-		add_action( 'wp_ajax_wpfs-preview-form', array( $this, 'previewForm' ) );
+		add_action( 'wp_ajax_wpfs-preview-form', [ $this, 'previewForm' ] );
 
 		// handle stripe webhook events
 		add_action(
 			'admin_post_nopriv_handle_wpfs_event',
-			array(
+			[
 				$this,
 				'fullstripe_handle_wpfs_event'
-			)
+			]
 		);
 
 		// trigger webhook events
-		add_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, array( $this, 'triggerWebhook' ), 10, 2 );
+		add_action( MM_WPFS::ACTION_NAME_FIRE_WEBHOOK, [ $this, 'triggerWebhook' ], 10, 2 );
 
-		add_action( 'admin_init', array( $this->loggerService, 'downloadLog' ) );
+		add_action( 'admin_init', [ $this->loggerService, 'downloadLog' ] );
 
-		register_activation_hook( WP_FULL_STRIPE_BASENAME, array( $this, 'activate' ) );
-		add_action( 'admin_init', array( $this, 'maybeRedirect' ) );
+		register_activation_hook( WP_FULL_STRIPE_BASENAME, [ $this, 'activate' ] );
+		add_action( 'admin_init', [ $this, 'maybeRedirect' ] );
 
-		add_action( 'admin_bar_menu', array( $this, 'adminBarNotice' ), 1000, 1 );
-		add_action( 'admin_head', array( $this, 'adminBarNoticeCSS' ) );
-		add_action( 'wp_head', array( $this, 'adminBarNoticeCSS' ) );
+		add_action( 'admin_bar_menu', [ $this, 'adminBarNotice' ], 1000, 1 );
+		add_action( 'admin_head', [ $this, 'adminBarNoticeCSS' ] );
+		add_action( 'wp_head', [ $this, 'adminBarNoticeCSS' ] );
 	}
 
 	/**
@@ -197,7 +197,7 @@ class MM_WPFS_Admin {
 			</style>
 		</div>';
 
-		add_action( 'admin_footer',  array( __CLASS__, 'enqueue_inline_script' ) );
+		add_action( 'admin_footer',  [ __CLASS__, 'enqueue_inline_script' ] );
 	}
 
 	/**
@@ -207,7 +207,7 @@ class MM_WPFS_Admin {
 	 */
 	public function wpfp_dismiss_notice() {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid nonce.', 'wp-full-stripe-free' ) ) );
+			wp_send_json_error( [ 'message' => __( 'Invalid nonce.', 'wp-full-stripe-free' ) ] );
 		}
 
 		$options = new MM_WPFS_Options();
@@ -567,7 +567,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -583,21 +583,21 @@ class MM_WPFS_Admin {
 				$this->db->updateInlinePaymentForm( $inlineSaveCardFormModel->getId(), $inlineSaveCardFormModel->getData() );
 				$redirectUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_FORMS );
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a save card form is saved */
 						__( 'Save card form saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a save card form is saved */
 					__( 'There was an error saving the save card form:', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -619,7 +619,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -635,21 +635,21 @@ class MM_WPFS_Admin {
 				$this->db->updateInlinePaymentForm( $inlinePaymentFormModel->getId(), $inlinePaymentFormModel->getData() );
 				$redirectUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_FORMS );
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a payment form is saved */
 						__( 'Payment form saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a payment form is saved */
 					__( 'There was an error saving the payment form:', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -671,7 +671,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -687,21 +687,21 @@ class MM_WPFS_Admin {
 				$this->db->updateCheckoutPaymentForm( $checkoutPaymentFormModel->getId(), $checkoutPaymentFormModel->getData() );
 				$redirectUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_FORMS );
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a payment form is saved */
 						__( 'Payment form saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a payment form is saved */
 					__( 'There was an error saving the payment form:', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 		header( "Content-Type: application/json" );
 		echo json_encode( $return );
@@ -722,7 +722,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -737,21 +737,21 @@ class MM_WPFS_Admin {
 				$this->db->updateInlineSubscriptionForm( $inlineSubscriptionFormModel->getId(), $inlineSubscriptionFormModel->getData() );
 				$redirectUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_FORMS );
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a subscription form is saved */
 						__( 'Subscription form saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a subscription form is saved */
 					__( 'There was an error saving the subscription form: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -773,7 +773,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -789,21 +789,21 @@ class MM_WPFS_Admin {
 				$this->db->updateCheckoutSubscriptionForm( $checkoutSubscriptionFormModel->getId(), $checkoutSubscriptionFormModel->getData() );
 				$redirectUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_FORMS );
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a subscription form is saved */
 						__( 'Subscription form saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a subscription form is saved */
 					__( 'There was an error saving the subscription form: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -825,7 +825,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -840,21 +840,21 @@ class MM_WPFS_Admin {
 				$this->db->updateInlineDonationForm( $inlineDonationFormModel->getId(), $inlineDonationFormModel->getData() );
 				$redirectUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_FORMS );
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a donation form is saved */
 						__( 'Donation form saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a donation form is saved */
 					__( 'There was an error saving the donation form: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -876,7 +876,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -891,21 +891,21 @@ class MM_WPFS_Admin {
 				$this->db->updateCheckoutDonationForm( $checkoutDonationFormModel->getId(), $checkoutDonationFormModel->getData() );
 				$redirectUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_FORMS );
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a donation form is saved */
 						__( 'Donation form saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a donation form is saved */
 					__( 'There was an error saving the donation form: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 		header( "Content-Type: application/json" );
 		echo json_encode( $return );
@@ -917,7 +917,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -933,21 +933,21 @@ class MM_WPFS_Admin {
 				$this->db->updateCheckoutPaymentForm( $checkoutSaveCardFormModel->getId(), $checkoutSaveCardFormModel->getData() );
 				$redirectUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_FORMS );
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a save card form is saved */
 						__( 'Save card form saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a save card form is saved */
 					__( 'There was an error saving the save card form:', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -971,7 +971,7 @@ class MM_WPFS_Admin {
 
 		$stripePlan = $this->stripe->retrievePlan( $subscription->planID );
 
-		$subscriptionDetails = array(
+		$subscriptionDetails = [
 			'id' => $subscription->subscriberID,
 			'subscriptionId' => $stripeSubscriptionId,
 			'subscriptionUrl' => $this->buildStripeSubscriptionUrl( $stripeSubscriptionId, $liveMode ),
@@ -992,7 +992,7 @@ class MM_WPFS_Admin {
 			'coupon' => $subscription->coupon,
 			'ipAddress' => $subscription->ipAddressSubmit,
 			'customFields' => $this->decodeCustomFieldsJSON( $subscription )
-		);
+		];
 
 		if ( ! is_null( $stripePlan ) ) {
 			$subscriptionDetails['productName'] = $stripePlan->product->name;
@@ -1047,21 +1047,21 @@ class MM_WPFS_Admin {
 		try {
 			$subscriptionDetails = $this->gatherSubscriptionDetails( $id );
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'data' => $subscriptionDetails
-			);
+			];
 		} catch (WPFS_UserFriendlyException $e) {
-			$return = array(
+			$return = [
 				'success' => false,
-				'data' => array()
-			);
+				'data' => []
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Error while gathering subscriptiption details', $ex );
-			$return = array(
+			$return = [
 				'success' => false,
-				'data' => array()
-			);
+				'data' => []
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -1075,7 +1075,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		$id = $_POST['id'];
@@ -1088,36 +1088,36 @@ class MM_WPFS_Admin {
 				$this->db->cancelSubscription( $id );
 				$this->stripe->cancelSubscription( $subscriber->stripeCustomerID, $subscriber->stripeSubscriptionID );
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label after a subscription is canceled */
 						__( 'Subscription canceled.', 'wp-full-stripe-free' ),
 					'redirectURL' => add_query_arg(
-						array(
+						[
 							'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
 							'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS
-						),
+						],
 						admin_url( 'admin.php' )
 					)
-				);
+				];
 			} else {
-				$return = array( 'success' => false );
+				$return = [ 'success' => false ];
 			}
 		} catch (WPFS_UserFriendlyException $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' => $e->getMessage()
-			);
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Error while canceling subscription', $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a subscription is canceled */
 					__( 'There was an error canceling the subscription: ', 'wp-full-stripe-free' ) . $ex->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -1130,7 +1130,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		$id = $_POST['id'];
@@ -1144,33 +1144,33 @@ class MM_WPFS_Admin {
 				$this->stripe->cancelSubscription( $donation->stripeCustomerID, $donation->stripeSubscriptionID );
 			}
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label after a recurring donation is canceled */
 					__( 'Donation canceled.', 'wp-full-stripe-free' ),
 				'redirectURL' => add_query_arg(
-					array(
+					[
 						'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
 						'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS
-					),
+					],
 					admin_url( 'admin.php' )
 				)
-			);
+			];
 		} catch (WPFS_UserFriendlyException $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' => $e->getMessage()
-			);
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Error while canceling donation', $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a recurring donation is canceled */
 					__( 'There was an error canceling the donation: ', 'wp-full-stripe-free' ) . $ex->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -1183,7 +1183,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		$id = $_POST['id'];
@@ -1192,33 +1192,33 @@ class MM_WPFS_Admin {
 			do_action( 'fullstripe_admin_delete_subscription_record_action', $id );     // todo: review action name and signature
 			$this->db->deleteSubscriptionById( $id );
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label after a subscription is deleted */
 					__( 'Subscription deleted.', 'wp-full-stripe-free' ),
 				'redirectURL' => add_query_arg(
-					array(
+					[
 						'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
 						'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS
-					),
+					],
 					admin_url( 'admin.php' )
 				)
-			);
+			];
 		} catch (WPFS_UserFriendlyException $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' => $e->getMessage()
-			);
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Error while deleting subscription', $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a subscription is deleted */
 					__( 'There was an error deleting the subscription: ', 'wp-full-stripe-free' ) . $ex->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -1231,7 +1231,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		$id = $_POST['id'];
@@ -1240,33 +1240,33 @@ class MM_WPFS_Admin {
 			do_action( 'fullstripe_admin_delete_payment_action', $id ); // todo: revise action name and parameters
 			$this->db->deletePayment( $id );
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label after a one-time payment is deleted */
 					__( 'Payment deleted.', 'wp-full-stripe-free' ),
 				'redirectURL' => add_query_arg(
-					array(
+					[
 						'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
 						'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS
-					),
+					],
 					admin_url( 'admin.php' )
 				)
-			);
+			];
 		} catch (WPFS_UserFriendlyException $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' => $e->getMessage()
-			);
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Error while deleting payment', $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a one-time payment is deleted */
 					__( 'There was an error deleting the payment: ', 'wp-full-stripe-free' ) . $ex->getMessage()
-			);
+			];
 		}
 		header( "Content-Type: application/json" );
 		echo json_encode( $return );
@@ -1278,7 +1278,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		$id = $_POST['id'];
@@ -1287,33 +1287,33 @@ class MM_WPFS_Admin {
 			do_action( 'fullstripe_admin_delete_donation_action', $id );        // todo: review action name and signature
 			$this->db->deleteDonation( $id );
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label after a donaton is deleted */
 					__( 'Donation deleted.', 'wp-full-stripe-free' ),
 				'redirectURL' => add_query_arg(
-					array(
+					[
 						'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
 						'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS
-					),
+					],
 					admin_url( 'admin.php' )
 				)
-			);
+			];
 		} catch (WPFS_UserFriendlyException $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' => $e->getMessage()
-			);
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Error while deleting donation', $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label after a donaton is deleted */
 					__( 'There was an error deleting the donation: ', 'wp-full-stripe-free' ) . $ex->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -1409,117 +1409,117 @@ class MM_WPFS_Admin {
 
 
 	protected function getPaymentMethodStyleForPayment( $payment ) {
-		$return = array(
+		$return = [
 			'wpfs-credit-card wpfs-credit-card--generic wpfs-credit-card--lg',
 			/* translators: Label for the credit or debit card payment method */
 			__( 'Credit or debit card', 'wp-full-stripe-free' )
-		);
+		];
 		if ( isset( $payment->payment_method ) ) {
 			switch ( $payment->payment_method ) {
 				case 'alipay':
-					$return = array(
+					$return = [
 						'wpfs-credit-card wpfs-alipay wpfs-credit-card--lg',
 						/* translators: Label for the alipay payment method */
 						__( 'AliPay', 'wp-full-stripe-free' )
-					);
+					];
 					break;
 				case 'amazon_pay':
-					$return = array(
+					$return = [
 						'wpfs-credit-card wpfs-bancontact wpfs-credit-card--lg',
 						/* translators: Label for the amazonpay payment method */
 						__( 'Bancontact', 'wp-full-stripe-free' )
-					);
+					];
 					break;
 				case 'bancontact':
-					$return = array(
+					$return = [
 						'wpfs-credit-card wpfs-bancontact wpfs-credit-card--lg',
 						/* translators: Label for the bancontact payment method */
 						__( 'Bancontact', 'wp-full-stripe-free' )
-					);
+					];
 					break;
 				case 'blik':
-					$return = array(
+					$return = [
 						'wpfs-credit-card wpfs-blik wpfs-credit-card--lg',
 						/* translators: Label for the blik payment method */
 						__( 'BLIK', 'wp-full-stripe-free' )
-					);
+					];
 					break;
 				case 'cashapp':
-					$return = array(
+					$return = [
 						'wpfs-credit-card wpfs-cashapp wpfs-credit-card--lg',
 						/* translators: Label for the cashapp payment method */
 						__( 'Cash App Pay', 'wp-full-stripe-free' )
-					);
+					];
 					break;
 				case 'eps':
-					$return = array(
+					$return = [
 						'wpfs-credit-card wpfs-eps wpfs-credit-card--lg',
 						/* translators: Label for the eps payment method */
 						__( 'EPS', 'wp-full-stripe-free' )
-					);
+					];
 					break;
 				case 'grabpay':
-					$return = array(
+					$return = [
 						'wpfs-credit-card wpfs-grabpay wpfs-credit-card--lg',
 						/* translators: Label for the GrabPay payment method */
 						__( 'GrabPay', 'wp-full-stripe-free' )
-					);
+					];
 					break;
 				case 'ideal':
-					$return = array(
+					$return = [
 						'wpfs-credit-card wpfs-ideal wpfs-credit-card--lg',
 						/* translators: Label for the iDEAL payment method */
 						__( 'iDEAL', 'wp-full-stripe-free' )
-					);
+					];
 					break;
 				case 'klarna':
-					$return = array(
+					$return = [
 						'wpfs-credit-card wpfs-klarna wpfs-credit-card--lg',
 						/* translators: Label for the klarna payment method */
 						__( 'Klarna', 'wp-full-stripe-free' )
-					);
+					];
 					break;
 				case 'link':
-					$return = array(
+					$return = [
 						'wpfs-credit-card wpfs-link wpfs-credit-card--lg',
 						/* translators: Label for the eps payment method */
 						__( 'Link', 'wp-full-stripe-free' )
-					);
+					];
 					break;
 				case 'mobilepay':
-					$return = array(
+					$return = [
 						'wpfs-credit-card wpfs-mobilepay wpfs-credit-card--lg',
 						/* translators: Label for the mobilepay payment method */
 						__( 'MobilePay', 'wp-full-stripe-free' )
-					);
+					];
 					break;
 				case 'p24':
-					$return = array(
+					$return = [
 						'wpfs-credit-card wpfs-przelewy24 wpfs-credit-card--lg',
 						/* translators: Label for the przelewy24 payment method */
 						__( 'Przelewy24', 'wp-full-stripe-free' )
-					);
+					];
 					break;
 				case 'revolut_pay':
-					$return = array(
+					$return = [
 						'wpfs-credit-card wpfs-revolut wpfs-credit-card--lg',
 						/* translators: Label for the revolut payment method */
 						__( 'Revolut Pay', 'wp-full-stripe-free' )
-					);
+					];
 					break;
 				case 'twint':
-					$return = array(
+					$return = [
 						'wpfs-credit-card wpfs-twint wpfs-credit-card--lg',
 						/* translators: Label for the twint payment method */
 						__( 'TWINT', 'wp-full-stripe-free' )
-					);
+					];
 					break;
 				case 'wechat_pay':
-					$return = array(
+					$return = [
 						'wpfs-credit-card wpfs-wechat wpfs-credit-card--lg',
 						/* translators: Label for the wechat payment method */
 						__( 'WeChat Pay', 'wp-full-stripe-free' )
-					);
+					];
 					break;
 			}
 		}
@@ -1540,7 +1540,7 @@ class MM_WPFS_Admin {
 		$stripePaymentId = $payment->eventID;
 		list( $paymentMethodCssClass, $paymentMethodTooltip ) = $this->getPaymentMethodStyleForPayment( $payment );
 
-		$paymentDetails = array(
+		$paymentDetails = [
 			'id' => $payment->paymentID,
 			'paymentId' => $stripePaymentId,
 			'paymentUrl' => $this->buildStripePaymentUrl( $stripePaymentId, $liveMode ),
@@ -1563,7 +1563,7 @@ class MM_WPFS_Admin {
 			'coupon' => $payment->coupon,
 			'ipAddress' => $payment->ipAddressSubmit,
 			'customFields' => $this->decodeCustomFieldsJSON( $payment )
-		);
+		];
 
 		if ( ! empty( $payment->addressCountry ) ) {
 			$paymentDetails['billingName'] = ! empty( $payment->billingName ) ? $payment->billingName : null;
@@ -1610,22 +1610,22 @@ class MM_WPFS_Admin {
 		try {
 			$paymentDetails = $this->gatherPaymentDetails( $id );
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'data' => $paymentDetails
-			);
+			];
 		} catch (WPFS_UserFriendlyException $e) {
-			$return = array(
+			$return = [
 				'success' => false,
-				'data' => array()
-			);
+				'data' => []
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Error while gathering payment details', $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
-				'data' => array()
-			);
+				'data' => []
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -1650,7 +1650,7 @@ class MM_WPFS_Admin {
 
 		list( $paymentMethodCssClass, $paymentMethodTooltip ) = $this->getPaymentMethodStyleForPayment( $donation );
 
-		$paymentDetails = array(
+		$paymentDetails = [
 			'id' => $donation->donationID,
 			'paymentIntentId' => $stripePaymentIntentId,
 			'paymentIntentUrl' => $this->buildStripePaymentUrl( $stripePaymentIntentId, $liveMode ),
@@ -1675,7 +1675,7 @@ class MM_WPFS_Admin {
 			'localizedApiMode' => $this->getLocalizedApiMode( $liveMode ),
 			'ipAddress' => $donation->ipAddressSubmit,
 			'customFields' => $this->decodeCustomFieldsJSON( $donation )
-		);
+		];
 
 		if ( ! empty( $donation->addressCountry ) ) {
 			$paymentDetails['billingName'] = ! empty( $donation->billingName ) ? $donation->billingName : null;
@@ -1722,22 +1722,22 @@ class MM_WPFS_Admin {
 		try {
 			$donationDetails = $this->gatherDonationDetails( $id );
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'data' => $donationDetails
-			);
+			];
 		} catch (WPFS_UserFriendlyException $e) {
-			$return = array(
+			$return = [
 				'success' => false,
-				'data' => array()
-			);
+				'data' => []
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Error while gathering donation details', $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
-				'data' => array()
-			);
+				'data' => []
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -1750,7 +1750,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		$id = $_POST['id'];
@@ -1759,33 +1759,33 @@ class MM_WPFS_Admin {
 			do_action( 'fullstripe_admin_refund_payment_action', $id );     // todo: rethink action name and parameters
 			$success = $this->voidOrRefundPayment( $id );
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label for a successfully refunded payment */
 					__( 'Payment refunded.', 'wp-full-stripe-free' ),
 				'redirectURL' => add_query_arg(
-					array(
+					[
 						'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
 						'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS
-					),
+					],
 					admin_url( 'admin.php' )
 				)
-			);
+			];
 		} catch (WPFS_UserFriendlyException $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' => $e->getMessage()
-			);
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Error while refunding payment', $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for a payment that cannot be refunded */
 					__( 'There was an error refunding the payment: ', 'wp-full-stripe-free' ) . $ex->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -1798,7 +1798,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		$id = $_POST['id'];
@@ -1807,33 +1807,33 @@ class MM_WPFS_Admin {
 			do_action( 'fullstripe_admin_refund_donation_action', $id );        // todo: review action name and signature
 			$success = $this->voidOrRefundDonation( $id );
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label for a successfully refunded donation */
 					__( 'Donation refunded.', 'wp-full-stripe-free' ),
 				'redirectURL' => add_query_arg(
-					array(
+					[
 						'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
 						'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS
-					),
+					],
 					admin_url( 'admin.php' )
 				)
-			);
+			];
 		} catch (WPFS_UserFriendlyException $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' => $e->getMessage()
-			);
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Error while refunding donation', $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for a donation that cannot be refunded */
 					__( 'There was an error refunding the donation: ', 'wp-full-stripe-free' ) . $ex->getMessage()
-			);
+			];
 		}
 		header( "Content-Type: application/json" );
 		echo json_encode( $return );
@@ -1843,7 +1843,7 @@ class MM_WPFS_Admin {
 	/**
 	 * @param $id
 	 *
-	 * @return mixed|null|\StripeWPFS\ApiResource
+	 * @return mixed|null|\StripeWPFS\Stripe\ApiResource
 	 */
 	private function voidOrRefundDonation( $id ) {
 		$this->logger->debug( __FUNCTION__, 'CALLED, id=' . print_r( $id, true ) );
@@ -1864,7 +1864,7 @@ class MM_WPFS_Admin {
 				$refund = $this->stripe->cancelOrRefundPaymentIntent( $donation->stripePaymentIntentID );
 				if ( isset( $refund ) ) {
 					$paymentIntent = $refund;
-					if ( \StripeWPFS\PaymentIntent::STATUS_CANCELED === $paymentIntent->status ) {
+					if ( \StripeWPFS\Stripe\PaymentIntent::STATUS_CANCELED === $paymentIntent->status ) {
 						$refundedSuccessfully = true;
 					}
 					if ( MM_WPFS::REFUND_STATUS_SUCCEEDED === $refund->status ) {
@@ -1875,9 +1875,9 @@ class MM_WPFS_Admin {
 				if ( $refundedSuccessfully ) {
 					$this->db->updateDonationByPaymentIntentId(
 						$donation->stripePaymentIntentID,
-						array(
+						[
 							'refunded' => true
-						)
+						]
 					);
 				}
 
@@ -1893,7 +1893,7 @@ class MM_WPFS_Admin {
 	 * @param $paymentId
 	 *
 	 * @return bool
-	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 */
 	private function voidOrRefundPayment( $paymentId ) {
 		$this->logger->debug( __FUNCTION__, 'CALLED, id=' . print_r( $paymentId, true ) );
@@ -1924,7 +1924,7 @@ class MM_WPFS_Admin {
 					$refund = $this->stripe->cancelOrRefundPaymentIntent( $payment->eventID );
 					if ( isset( $refund ) ) {
 						$paymentIntent = $refund;
-						if ( \StripeWPFS\PaymentIntent::STATUS_CANCELED === $paymentIntent->status ) {
+						if ( \StripeWPFS\Stripe\PaymentIntent::STATUS_CANCELED === $paymentIntent->status ) {
 							$refundedSuccessfully = true;
 						}
 						if ( MM_WPFS::REFUND_STATUS_SUCCEEDED === $refund->status ) {
@@ -1935,9 +1935,9 @@ class MM_WPFS_Admin {
 				if ( $refundedSuccessfully ) {
 					$this->db->updatePaymentByEventId(
 						$payment->eventID,
-						array(
+						[
 							'refunded' => true
-						)
+						]
 					);
 				}
 
@@ -1953,7 +1953,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		$id = $_POST['id'];
@@ -1962,33 +1962,33 @@ class MM_WPFS_Admin {
 			do_action( 'fullstripe_admin_capture_payment_action', $id );        // todo: revise action name and params
 			$success = $this->captureChargeAndPaymentIntent( $id );
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label for an authorize & capture payment which has been captured successfully */
 					__( 'Payment captured.', 'wp-full-stripe-free' ),
 				'redirectURL' => add_query_arg(
-					array(
+					[
 						'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
 						'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS
-					),
+					],
 					admin_url( 'admin.php' )
 				)
-			);
+			];
 		} catch (WPFS_UserFriendlyException $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' => $e->getMessage()
-			);
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Error while capturing payment', $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for an authorize & capture payment which cannot be captured */
 					__( 'There was an error capturing the payment: ', 'wp-full-stripe-free' ) . $ex->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2000,7 +2000,7 @@ class MM_WPFS_Admin {
 	 * @param $paymentId
 	 *
 	 * @return bool
-	 * @throws \StripeWPFS\Exception\ApiErrorException
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 */
 	private function captureChargeAndPaymentIntent( $paymentId ) {
 		$this->logger->debug( __FUNCTION__, 'CALLED, payment_id=' . print_r( $paymentId, true ) );
@@ -2020,14 +2020,14 @@ class MM_WPFS_Admin {
 						if ( true === $charge->captured && MM_WPFS::STRIPE_CHARGE_STATUS_SUCCEEDED === $charge->status ) {
 							$this->db->updatePaymentByEventId(
 								$charge->id,
-								array(
+								[
 									'paid' => $charge->paid,
 									'captured' => $charge->captured,
 									'refunded' => $charge->refunded,
 									'last_charge_status' => $charge->status,
 									'failure_code' => $charge->failure_code,
 									'failure_message' => $charge->failure_message
-								)
+								]
 							);
 
 							return true;
@@ -2040,14 +2040,14 @@ class MM_WPFS_Admin {
 						if ( true === $lastCharge->captured && MM_WPFS::STRIPE_CHARGE_STATUS_SUCCEEDED === $lastCharge->status ) {
 							$this->db->updatePaymentByEventId(
 								$paymentIntent->id,
-								array(
+								[
 									'paid' => $lastCharge->paid,
 									'captured' => $lastCharge->captured,
 									'refunded' => $lastCharge->refunded,
 									'last_charge_status' => $lastCharge->status,
 									'failure_code' => $lastCharge->failure_code,
 									'failure_message' => $lastCharge->failure_message
-								)
+								]
 							);
 
 							return true;
@@ -2075,7 +2075,7 @@ class MM_WPFS_Admin {
 		$stripeCustomerId = $savedCard->stripeCustomerID;
 		list( $paymentMethodCssClass, $paymentMethodTooltip ) = $this->getPaymentMethodStyleForPayment( $savedCard );
 
-		$savedCardDetails = array(
+		$savedCardDetails = [
 			'id' => $savedCard->captureID,
 			'customerId' => $stripeCustomerId,
 			'customerUrl' => $this->buildStripeCustomerUrl( $stripeCustomerId, $liveMode ),
@@ -2089,7 +2089,7 @@ class MM_WPFS_Admin {
 			'localizedApiMode' => $this->getLocalizedApiMode( $liveMode ),
 			'ipAddress' => $savedCard->ipAddressSubmit,
 			'customFields' => $this->decodeCustomFieldsJSON( $savedCard )
-		);
+		];
 
 		if ( ! empty( $savedCard->addressCountry ) ) {
 			$savedCardDetails['billingName'] = ! empty( $savedCard->billingName ) ? $savedCard->billingName : null;
@@ -2136,22 +2136,22 @@ class MM_WPFS_Admin {
 		try {
 			$savedCardDetails = $this->gatherSavedCardDetails( $id );
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'data' => $savedCardDetails
-			);
+			];
 		} catch (WPFS_UserFriendlyException $e) {
-			$return = array(
+			$return = [
 				'success' => false,
-				'data' => array()
-			);
+				'data' => []
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Error reading save card details', $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
-				'data' => array()
-			);
+				'data' => []
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2165,7 +2165,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		$id = $_POST['id'];
@@ -2174,33 +2174,33 @@ class MM_WPFS_Admin {
 			do_action( 'fullstripe_admin_delete_card_capture_action', $id );        // todo: review action name and signature
 			$this->db->deleteSavedCard( $id );
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label for successfully deleted save card record */
 					__( 'Saved card deleted.', 'wp-full-stripe-free' ),
 				'redirectURL' => add_query_arg(
-					array(
+					[
 						'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
 						'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS
-					),
+					],
 					admin_url( 'admin.php' )
 				)
-			);
+			];
 		} catch (WPFS_UserFriendlyException $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' => $e->getMessage()
-			);
+			];
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Error deleting saved card', $ex );
 
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for save card record that cannot deleted */
 					__( 'There was an error deleting the saved card: ', 'wp-full-stripe-free' ) . $ex->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2213,7 +2213,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		$id = stripslashes( $_POST['id'] );
@@ -2230,25 +2230,25 @@ class MM_WPFS_Admin {
 				$redirectUrl = MM_WPFS_Utils::getFormEditUrl( $newFormId, $type, $layout );
 			}
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label for cloned form */
 					__( 'Form cloned.', 'wp-full-stripe-free' ),
 				'redirectURL' => $redirectUrl
-			);
+			];
 		} catch (WPFS_UserFriendlyException $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' => $e->getMessage()
-			);
+			];
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for a form that cannot be cloned */
 					__( 'There was an error cloning the form: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2262,7 +2262,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		$id = stripslashes( $_POST['id'] );
@@ -2272,20 +2272,20 @@ class MM_WPFS_Admin {
 		try {
 			( new MM_WPFS_Admin_DeleteFormFactory() )->deleteForm( $id, $type, $layout );
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label for a deleted form */
 					__( 'Form deleted.', 'wp-full-stripe-free' ),
 				'redirectURL' => admin_url( 'admin.php?page=' . MM_WPFS_Admin_Menu::SLUG_FORMS )
-			);
+			];
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for a form that cannot be deleted */
 					__( 'There was an error deleting the form: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2311,7 +2311,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -2324,21 +2324,21 @@ class MM_WPFS_Admin {
 				$this->saveStripeSettings( $stripeAccountModel );
 				$redirectUrl = admin_url( 'admin.php?page=' . MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE );
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the Stripe settings */
 						__( 'Stripe settings saved.', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to save the Stripe settings */
 					__( 'There was an error saving Stripe settings: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2351,7 +2351,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		$accountId = isset( $_POST['account_id'] ) ? sanitize_text_field( $_POST['account_id'] ) : '';
@@ -2371,74 +2371,32 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		$currentUrl = isset( $_POST['current_page_url'] ) ? sanitize_text_field( $_POST['current_page_url'] ) : '';
 		$mode = isset( $_POST['mode'] ) ? sanitize_text_field( $_POST['mode'] ) : '';
-		$accountLink = '';
-		$response = null;
 
-		// get the connect url to use
-		$options = new MM_WPFS_Options();
-		// TODO: refactor to use WPFS_Stripe::remoteRequest
-		if ( $mode == 'test' ) {
-			$apiUrl = $options->getFunctionsUrl() . '/account/link?mode=test';
-
-			$response = wp_remote_post(
-				$apiUrl,
-				array(
-					'method' => 'POST',
-					'headers' => array(
-						'Content-Type' => 'application/json; charset=utf-8'
-					),
-					'body' => json_encode(
-						array(
-							'returnUrl' => $currentUrl,
-						)
-					)
-				)
-			);
-		} else if ( $mode == 'live' ) {
-			$apiUrl = $options->getFunctionsUrl() . '/account/link?mode=live';
-
-			$response = wp_remote_post(
-				$apiUrl,
-				array(
-					'method' => 'POST',
-					'headers' => array(
-						'Content-Type' => 'application/json; charset=utf-8'
-					),
-					'body' => json_encode(
-						array(
-							'returnUrl' => $currentUrl
-						)
-					)
-				)
-			);
-
-		}
-		// if it's an error, we should show it to the user
-		if ( ! $response || is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
-			$error_message = $response->get_error_message();
-			echo json_encode(
-				array(
-					'success' => false,
-					'msg' => 'Something went wrong: ' . $error_message
-				)
-			);
-		} else {
-			$body = wp_remote_retrieve_body( $response );
-			$body = json_decode( $body );
-
-			$accountLink = $body->accountLink;
+		try {
+			$accountLink = $this->stripe->getAccountLink( $currentUrl, $mode );
 
 			echo json_encode(
-				array(
+				[
 					'success' => true,
 					'msg' => 'Connect account created successfully, redirecting to Stripe...',
 					'redirectURL' => $accountLink
-				)
+				]
+			);
+		} catch (Exception $e) {
+			$this->logger->error( __FUNCTION__, 'Error creating Stripe connect account', $e );
+
+			echo json_encode(
+				[
+					'success' => false,
+					'msg' =>
+						/* translators: Error banner label for not being able to create a Stripe connect account */
+						__( 'There was an error creating the Stripe connect account: ', 'wp-full-stripe-free' ) . $e->getMessage()
+				]
 			);
 		}
 
@@ -2451,7 +2409,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		$mode = isset( $_POST['mode'] ) ? sanitize_text_field( $_POST['mode'] ) : '';
@@ -2471,13 +2429,13 @@ class MM_WPFS_Admin {
 			] );
 		}
 
-		$return = array(
+		$return = [
 			'success' => true,
 			'msg' =>
 				/* translators: Success banner label for clearing the Stripe settings */
 				__( 'Stripe settings cleared.', 'wp-full-stripe-free' ),
 			'redirectURL' => admin_url( 'admin.php?page=' . MM_WPFS_Admin_Menu::SLUG_SETTINGS )
-		);
+		];
 
 		header( "Content-Type: application/json" );
 		echo json_encode( $return );
@@ -2507,7 +2465,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -2520,21 +2478,21 @@ class MM_WPFS_Admin {
 				$this->saveMyAccountSettings( $myAccountModel );
 				$redirectUrl = admin_url( 'admin.php?page=' . MM_WPFS_Admin_Menu::SLUG_SETTINGS );
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the Customer portal settings */
 						__( 'Customer portal settings saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to save the Customer portal settings */
 					__( 'There was an error saving Customer portal settings: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 		header( "Content-Type: application/json" );
 		echo json_encode( $return );
@@ -2567,7 +2525,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -2580,21 +2538,21 @@ class MM_WPFS_Admin {
 				$this->saveWordpressDashboardSettings( $wpDashboardModel );
 				$redirectUrl = admin_url( 'admin.php?page=' . MM_WPFS_Admin_Menu::SLUG_SETTINGS );
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the WordPress dashboard settings */
 						__( 'WordPress dashboard settings saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Success banner label for not being able to save the WordPress dashboard settings */
 					__( 'There was an error saving WordPress dashboard settings: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2618,7 +2576,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -2631,21 +2589,21 @@ class MM_WPFS_Admin {
 				$this->saveLogSettings( $logsModel );
 				$redirectUrl = admin_url( 'admin.php?page=' . MM_WPFS_Admin_Menu::SLUG_SETTINGS );
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the Log settings */
 						__( 'Log settings saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to save the Log settings */
 					__( 'There was an error saving log settings: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2658,27 +2616,27 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
 			$this->db->deleteLogs();
 			$redirectUrl = admin_url( 'admin.php?page=' . MM_WPFS_Admin_Menu::SLUG_SETTINGS );
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'msg' =>
 					/* translators: Success banner label for deleting the log entries */
 					__( 'Log entries deleted', 'wp-full-stripe-free' ),
 				'redirectURL' => $redirectUrl
-			);
+			];
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to delete logs */
 					__( 'There was an error emptying the log: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2691,7 +2649,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		$key    = isset( $_POST['key'] ) ? sanitize_text_field( $_POST['key'] ) : '';
@@ -2699,12 +2657,12 @@ class MM_WPFS_Admin {
 
 		// If key or action are empty, return an error
 		if ( empty( $key ) || empty( $action ) ) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to toggle the license */
 					__( 'There was an error toggling the license.', 'wp-full-stripe-free' )
-			);
+			];
 
 			header( "Content-Type: application/json" );
 			echo json_encode( $return );
@@ -2717,12 +2675,12 @@ class MM_WPFS_Admin {
 
 			$return['redirectURL'] = $redirectUrl;
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to toggle license */
 					__( 'There was an error toggling the license:', 'wp-full-stripe-free' ) . ' ' . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2751,7 +2709,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -2764,21 +2722,21 @@ class MM_WPFS_Admin {
 				$this->saveSecuritySettings( $securityModel );
 				$redirectUrl = admin_url( 'admin.php?page=' . MM_WPFS_Admin_Menu::SLUG_SETTINGS );
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the security settings */
 						__( 'Security settings saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to save the security settings */
 					__( 'There was an error saving Security settings: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2816,7 +2774,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -2829,26 +2787,26 @@ class MM_WPFS_Admin {
 				$this->saveEmailOptionsSettings( $optionsModel );
 				$redirectUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlugAndParams(
 					MM_WPFS_Admin_Menu::SLUG_SETTINGS_EMAIL_NOTIFICATIONS,
-					array(
+					[
 						MM_WPFS_Admin_Menu::PARAM_NAME_TAB => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS
-					)
+					]
 				);
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the email notification settings */
 						__( 'Email notification options saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to save the email notification settings */
 					__( 'There was an error saving Email notification options: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2872,7 +2830,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -2885,26 +2843,26 @@ class MM_WPFS_Admin {
 				$this->saveEmailTemplatesSettings( $templatesModel );
 				$redirectUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlugAndParams(
 					MM_WPFS_Admin_Menu::SLUG_SETTINGS_EMAIL_NOTIFICATIONS,
-					array(
+					[
 						MM_WPFS_Admin_Menu::PARAM_NAME_TAB => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_TEMPLATES
-					)
+					]
 				);
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the email templates */
 						__( 'Email templates saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to save the email templates */
 					__( 'There was an error saving the email templates: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -2931,7 +2889,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -2944,26 +2902,26 @@ class MM_WPFS_Admin {
 				$this->saveFormsOptionsSettings( $formsOptionsModel );
 				$redirectUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlugAndParams(
 					MM_WPFS_Admin_Menu::SLUG_SETTINGS_FORMS,
-					array(
+					[
 						MM_WPFS_Admin_Menu::PARAM_NAME_TAB => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS
-					)
+					]
 				);
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the form options */
 						__( 'Form options saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to save the form options */
 					__( 'There was an error saving Forms settings: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 		header( "Content-Type: application/json" );
 		echo json_encode( $return );
@@ -2985,7 +2943,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -2998,26 +2956,26 @@ class MM_WPFS_Admin {
 				$this->saveFormsAppearanceSettings( $formsAppearanceModel );
 				$redirectUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlugAndParams(
 					MM_WPFS_Admin_Menu::SLUG_SETTINGS_FORMS,
-					array(
+					[
 						MM_WPFS_Admin_Menu::PARAM_NAME_TAB => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE
-					)
+					]
 				);
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for saving the form appearance settings */
 						__( 'Form appearance settings saved', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to save the form appearance settings */
 					__( 'There was an error saving Form appearance settings: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 		header( "Content-Type: application/json" );
 		echo json_encode( $return );
@@ -3029,7 +2987,7 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
@@ -3042,21 +3000,21 @@ class MM_WPFS_Admin {
 				$formId = ( new MM_WPFS_Admin_CreateFormFactory() )->createForm( $createFormModel );
 				$redirectUrl = MM_WPFS_Utils::getFormEditUrl( $formId, $createFormModel->getType(), $createFormModel->getLayout() );
 
-				$return = array(
+				$return = [
 					'success' => true,
 					'msg' =>
 						/* translators: Success banner label for creating a new form */
 						__( 'Form created. Redirecting to edit form.', 'wp-full-stripe-free' ),
 					'redirectURL' => $redirectUrl
-				);
+				];
 			}
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error banner label for not being able to create a new form */
 					__( 'There was an error creating the form: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 		header( "Content-Type: application/json" );
 		echo json_encode( $return );
@@ -3064,7 +3022,7 @@ class MM_WPFS_Admin {
 	}
 
 	protected function getOnetimeProductsForSelector() {
-		$result = array();
+		$result = [];
 
 		$onetimePrices = $this->stripe->getOnetimePrices();
 
@@ -3086,17 +3044,17 @@ class MM_WPFS_Admin {
 		try {
 			$onetimeProducts = $this->getOnetimeProductsForSelector();
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'data' => $onetimeProducts
-			);
+			];
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error message for not being able to fetch one-time products from Stripe */
 					__( 'There was an error getting one-time products from Stripe: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -3105,7 +3063,7 @@ class MM_WPFS_Admin {
 	}
 
 	protected function getTaxRatesForSelector() {
-		$result = array();
+		$result = [];
 
 		$taxRates = $this->stripe->getTaxRates();
 
@@ -3132,17 +3090,17 @@ class MM_WPFS_Admin {
 		try {
 			$taxRates = $this->getTaxRatesForSelector();
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'data' => $taxRates
-			);
+			];
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error message for not being able to fetch tax rates from Stripe */
 					__( 'There was an error getting tax rates from Stripe: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -3155,26 +3113,26 @@ class MM_WPFS_Admin {
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
 			http_response_code( 400 );
-			echo json_encode( array( 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ) );
+			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
 			exit;
 		}
 		try {
 			$data = json_decode( rawurldecode( stripslashes( $_POST['data'] ) ) );
 			$this->mailer->sendTestEmail( $data->recipients, $data->subject, $data->body, $data->emailTemplateType );
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'msg' =>
 					/* translators: Error message for not being able to fetch tax rates from Stripe */
 					__( 'Test email sent successfully.', 'wp-full-stripe-free' )
-			);
+			];
 		} catch (Exception $ex) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error message for not being able to send the test email */
 					__( 'There was an error sending the test email: ', 'wp-full-stripe-free' ) . $ex->getMessage()
-			);
+			];
 
 			$this->logger->error( __FUNCTION__, 'Error sending test email', $ex );
 		}
@@ -3185,10 +3143,10 @@ class MM_WPFS_Admin {
 	}
 
 	/**
-	 * @param $recurringPrice \StripeWPFS\Price
+	 * @param $recurringPrice \StripeWPFS\Stripe\Price
 	 */
 	protected function isSupportedRecurringPrice( $recurringPrice ) {
-		if ( $recurringPrice->billing_scheme === \StripeWPFS\Price::BILLING_SCHEME_TIERED ) {
+		if ( $recurringPrice->billing_scheme === \StripeWPFS\Stripe\Price::BILLING_SCHEME_TIERED ) {
 			return false;
 		}
 		if ( $recurringPrice->recurring->usage_type === 'metered' ) {
@@ -3199,7 +3157,7 @@ class MM_WPFS_Admin {
 	}
 
 	protected function getRecurringProductsForSelector() {
-		$result = array();
+		$result = [];
 
 		$recurringPrices = $this->stripe->getRecurringPrices();
 		foreach ( $recurringPrices as $recurringPrice ) {
@@ -3228,11 +3186,11 @@ class MM_WPFS_Admin {
 		// check for nonce and return 400 error if not valid
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
 			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			wp_send_json_error( array( 'msg' => 'Invalid nonce in ' . __FUNCTION__ ), 400 );
+			wp_send_json_error( [ 'msg' => 'Invalid nonce in ' . __FUNCTION__ ], 400 );
 		}
 
 		if ( ! isset( $_POST['data'] ) || ! is_array( $_POST['data'] ) ) {
-			wp_send_json_error( array( 'msg' => 'Invalid data provided.' ) );
+			wp_send_json_error( [ 'msg' => 'Invalid data provided.' ] );
 		}
 
 		$data = json_decode( rawurldecode( stripslashes( json_encode( $_POST['data'] ) ) ) );
@@ -3245,7 +3203,7 @@ class MM_WPFS_Admin {
 
 		foreach ( $requiredFields as $field => $errorMessage ) {
 			if ( empty( $data->$field ) || ( $field === 'price' && ! is_numeric( $data->$field ) ) ) {
-				wp_send_json_error( array( 'msg' => $errorMessage ) );
+				wp_send_json_error( [ 'msg' => $errorMessage ] );
 			}
 		}
 
@@ -3253,10 +3211,10 @@ class MM_WPFS_Admin {
 			$data->price = $data->price * 100;
 			$this->stripe->createProduct( ...array_values( (array) $data ) );
 
-			wp_send_json_success( array( 'msg' => __( 'Product created.', 'wp-full-stripe-free' ) ) );
+			wp_send_json_success( [ 'msg' => __( 'Product created.', 'wp-full-stripe-free' ) ] );
 		} catch (Exception $ex) {
 			$this->logger->error( __FUNCTION__, 'Error creating product', $ex );
-			wp_send_json_error( array( 'msg' => __( 'There was an error in creating the product: ', 'wp-full-stripe-free' ) . $ex->getMessage() ) );
+			wp_send_json_error( [ 'msg' => __( 'There was an error in creating the product: ', 'wp-full-stripe-free' ) . $ex->getMessage() ] );
 		}
 	}
 
@@ -3264,17 +3222,17 @@ class MM_WPFS_Admin {
 		try {
 			$recurringProducts = $this->getRecurringProductsForSelector();
 
-			$return = array(
+			$return = [
 				'success' => true,
 				'data' => $recurringProducts
-			);
+			];
 		} catch (Exception $e) {
-			$return = array(
+			$return = [
 				'success' => false,
 				'msg' =>
 					/* translators: Error message for not being able to fetch recurring products from Stripe */
 					__( 'There was an error getting recurring products from Stripe: ', 'wp-full-stripe-free' ) . $e->getMessage()
-			);
+			];
 		}
 
 		header( "Content-Type: application/json" );
@@ -3374,7 +3332,7 @@ class MM_WPFS_Admin {
 	/**
 	 * @param $context MM_WPFS_StaticContext
 	 * @param $subscription
-	 * @param $stripePlan \StripeWPFS\Price|null
+	 * @param $stripePlan \StripeWPFS\Stripe\Price|null
 	 * @return string
 	 */
 	public static function getSubscriptionAmountLabel( $context, $subscription, $stripePlan ) {
@@ -3405,11 +3363,11 @@ class MM_WPFS_Admin {
 	 * @return mixed
 	 */
 	private function decodeCustomFieldsJSON( $record ) {
-		$rawCustomFields = array();
+		$rawCustomFields = [];
 		if ( isset( $record ) && isset( $record->customFields ) ) {
 			$rawCustomFields = json_decode( $record->customFields, true );
 			if ( json_last_error() !== JSON_ERROR_NONE ) {
-				$rawCustomFields = array();
+				$rawCustomFields = [];
 			}
 		}
 
@@ -3434,17 +3392,17 @@ class MM_WPFS_Admin {
 		}
 
 		$webhookUrl     = $webhook['url'];
-		$webhookHeaders = isset( $webhook['headers'] ) ? $webhook['headers'] : array();
+		$webhookHeaders = isset( $webhook['headers'] ) ? $webhook['headers'] : [];
 		$webhookData    = apply_filters( 'fullstripe_webhook_data', $data );
 
 		$webhookData = json_encode( $webhookData );
 
 		$webhookResponse = wp_remote_post(
 			$webhookUrl,
-			array(
+			[
 				'headers' => $webhookHeaders,
 				'body'    => $webhookData,
-			)
+			]
 		);
 
 		$webhookResponseCode = wp_remote_retrieve_response_code( $webhookResponse );
@@ -3546,40 +3504,40 @@ class MM_WPFS_Admin {
 		$is_test = MM_WPFS_Utils::isTestMode();
 
 		$menu->add_menu(
-			array(
+			[
 				'id'     => 'wpfs-menu-notice',
 				'parent' => 'top-secondary',
 				'title'  => __( 'WP Full Pay', 'wp-full-stripe-free' ) . ( $is_test ? ': ' . __( 'Test Mode', 'wp-full-stripe-free' ) : '' ),
-				'meta'   => array(
+				'meta'   => [
 					'class' => $is_test ? 'wpfs-test-mode' : '',
-				),
+				],
 				'href'   => MM_WPFS_Admin_Menu::getAdminUrlBySlug( $is_test ? MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE : MM_WPFS_Admin_Menu::SLUG_SETTINGS ),
-			)
+			]
 		);
 
-		$submenus = array(
-			'wpfs-menu-forms' => array(
+		$submenus = [
+			'wpfs-menu-forms' => [
 				'title' => __( 'Payment Forms', 'wp-full-stripe-free' ),
 				'href'  => MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_FORMS ),
-			),
-			'wpfs-menu-transactions' => array(
+			],
+			'wpfs-menu-transactions' => [
 				'title' => __( 'Transactions', 'wp-full-stripe-free' ),
 				'href'  => MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS ),
-			),
-			'wpfs-menu-settings' => array(
+			],
+			'wpfs-menu-settings' => [
 				'title' => __( 'Settings', 'wp-full-stripe-free' ),
 				'href'  => MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS ),
-			),
-		);
+			],
+		];
 
 		foreach ( $submenus as $id => $submenu ) {
 			$menu->add_menu(
-				array(
+				[
 					'parent' => 'wpfs-menu-notice',
 					'id'     => $id,
 					'title'  => $submenu['title'],
 					'href'   => $submenu['href'],
-				)
+				]
 			);
 		}
 	}
@@ -3947,7 +3905,7 @@ class MM_WPFS_Admin_CreateFormFactory {
 	 * @return array
 	 */
 	private function compileInlinePaymentFormData( $displayName, $name ) {
-		$form = array();
+		$form = [];
 
 		$form['name'] = $name;
 		$form['displayName'] = $displayName;
@@ -3958,7 +3916,7 @@ class MM_WPFS_Admin_CreateFormFactory {
 		$form['customAmount'] = self::CUSTOM_AMOUNT_LIST_OF_AMOUNTS;
 		$form['amountSelectorStyle'] = self::AMOUNT_SELECTOR_STYLE_DROPDOWN;
 		$form['vatRateType'] = MM_WPFS::FIELD_VALUE_TAX_RATE_NO_TAX;
-		$form['vatRates'] = json_encode( array() );
+		$form['vatRates'] = json_encode( [] );
 		$form['buttonTitle'] = MM_WPFS_Utils::getDefaultPaymentButtonTitle();
 		$form['customInputTitle'] = '';
 		$form['stripeDescription'] = MM_WPFS_Utils::getDefaultPaymentStripeDescription();
@@ -3993,7 +3951,7 @@ class MM_WPFS_Admin_CreateFormFactory {
 	 * @return array
 	 */
 	private function compileCheckoutPaymentFormData( $displayName, $name ) {
-		$form = array();
+		$form = [];
 
 		$form['name'] = $name;
 		$form['displayName'] = $displayName;
@@ -4038,7 +3996,7 @@ class MM_WPFS_Admin_CreateFormFactory {
 	 * @return array
 	 */
 	private function compileInlineSubscriptionFormData( $displayName, $name ) {
-		$form = array();
+		$form = [];
 
 		$form['name'] = $name;
 		$form['displayName'] = $displayName;
@@ -4050,9 +4008,9 @@ class MM_WPFS_Admin_CreateFormFactory {
 		$form['planSelectorStyle'] = self::PLAN_SELECTOR_STYLE_DROPDOWN;
 		$form['preferredLanguage'] = self::PREFERRED_LANGUAGE_AUTO;
 		$form['decimalSeparator'] = self::DECIMAL_SEPARATOR_DOT;
-		$form['decoratedPlans'] = json_encode( array() );
+		$form['decoratedPlans'] = json_encode( [] );
 		$form['vatRateType'] = MM_WPFS::FIELD_VALUE_TAX_RATE_NO_TAX;
-		$form['vatRates'] = json_encode( array() );
+		$form['vatRates'] = json_encode( [] );
 
 		return $form;
 	}
@@ -4079,7 +4037,7 @@ class MM_WPFS_Admin_CreateFormFactory {
 	 * @return array
 	 */
 	private function compileCheckoutSubscriptionFormData( $displayName, $name ) {
-		$form = array();
+		$form = [];
 
 		$form['name'] = $name;
 		$form['displayName'] = $displayName;
@@ -4093,9 +4051,9 @@ class MM_WPFS_Admin_CreateFormFactory {
 		$form['planSelectorStyle'] = self::PLAN_SELECTOR_STYLE_DROPDOWN;
 		$form['preferredLanguage'] = self::PREFERRED_LANGUAGE_AUTO;
 		$form['decimalSeparator'] = self::DECIMAL_SEPARATOR_DOT;
-		$form['decoratedPlans'] = json_encode( array() );
+		$form['decoratedPlans'] = json_encode( [] );
 		$form['vatRateType'] = MM_WPFS::FIELD_VALUE_TAX_RATE_NO_TAX;
-		$form['vatRates'] = json_encode( array() );
+		$form['vatRates'] = json_encode( [] );
 
 		return $form;
 	}
@@ -4121,12 +4079,12 @@ class MM_WPFS_Admin_CreateFormFactory {
 	 * @return array
 	 */
 	private function compileInlineDonationFormData( $displayName, $name ) {
-		$form = array();
+		$form = [];
 
 		$form['name'] = $name;
 		$form['displayName'] = $displayName;
 		$form['currency'] = self::CURRENCY_USD;
-		$form['donationAmounts'] = json_encode( array( '100', '200', '500', '1000', '2000', '5000', '10000' ) );
+		$form['donationAmounts'] = json_encode( [ '100', '200', '500', '1000', '2000', '5000', '10000' ] );
 		$form['allowCustomDonationAmount'] = 1;
 		$form['allowMonthlyRecurring'] = 1;
 		$form['allowAnnualRecurring'] = 1;
@@ -4164,12 +4122,12 @@ class MM_WPFS_Admin_CreateFormFactory {
 	 * @return array
 	 */
 	private function compileCheckoutDonationFormData( $displayName, $name ) {
-		$form = array();
+		$form = [];
 
 		$form['name'] = $name;
 		$form['displayName'] = $displayName;
 		$form['currency'] = self::CURRENCY_USD;
-		$form['donationAmounts'] = json_encode( array( '100', '200', '500', '1000', '2000', '5000', '10000' ) );
+		$form['donationAmounts'] = json_encode( [ '100', '200', '500', '1000', '2000', '5000', '10000' ] );
 		$form['allowCustomDonationAmount'] = 1;
 		$form['allowMonthlyRecurring'] = 1;
 		$form['allowAnnualRecurring'] = 1;
@@ -4209,7 +4167,7 @@ class MM_WPFS_Admin_CreateFormFactory {
 	 * @return array
 	 */
 	private function compileInlineSaveCardFormData( $displayName, $name ) {
-		$form = array();
+		$form = [];
 
 		$form['name'] = $name;
 		$form['displayName'] = $displayName;
@@ -4252,7 +4210,7 @@ class MM_WPFS_Admin_CreateFormFactory {
 	 * @return array
 	 */
 	private function compileCheckoutSaveCardFormData( $displayName, $name ) {
-		$form = array();
+		$form = [];
 
 		$form['name'] = $name;
 		$form['displayName'] = $displayName;
@@ -4355,7 +4313,7 @@ class MacroHelperTools {
 	 * @return array
 	 */
 	public static function getMacroDescriptions(): array {
-		$macros = array(
+		$macros = [
 			'%CUSTOMERNAME%' => __( "Customer's cardholder name", 'wp-full-stripe-free' ),
 			'%CUSTOMER_EMAIL%' => __( "Customer's email address", 'wp-full-stripe-free' ),
 			'%CUSTOMER_PHONE%' => __( "Customer's phone number", 'wp-full-stripe-free' ),
@@ -4415,7 +4373,7 @@ class MacroHelperTools {
 			'%CUSTOMFIELD1%' => __( "Custom field 1 value", 'wp-full-stripe-free' ),
 			'%CARD_UPDATE_SECURITY_CODE%' => __( "Login code generated by the Customer Portal page", 'wp-full-stripe-free' ),
 			'%IP_ADDRESS%' => __( "Customer's IP address", 'wp-full-stripe-free' )
-		);
+		];
 
 		return $macros;
 	}

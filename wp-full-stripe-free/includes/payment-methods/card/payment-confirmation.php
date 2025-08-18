@@ -33,9 +33,9 @@ function update_payment_method_message( $message, $payment_method, $subscription
 				get_option( 'date_format' )
 			)
 		),
-		array(
+		[
 			'strong' => true,
-		)
+		]
 	);
 }
 add_filter( 'wpfs_update_payment_method_message', __NAMESPACE__ . '\\update_payment_method_message', 10, 4 );

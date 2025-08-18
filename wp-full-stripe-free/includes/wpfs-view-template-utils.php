@@ -17,11 +17,11 @@ class MM_WPFS_ViewTemplateUtils {
 			$headerContent = apply_filters(
 				MM_WPFS::FILTER_NAME_CUSTOMER_PORTAL_HEADER,
 				$headerContent,
-				array(
+				[
 					'email'            => $model->getCustomerEmail(),
 					'stripeCustomerId' => $model->getStripeCustomer()->id,
 					'stripeClient'     => $model->getStripeClient()->getStripeClient()
-				)
+				]
 			);
 		} catch ( Exception $e ) {
 			MM_WPFS_Utils::logException( $e );
@@ -38,11 +38,11 @@ class MM_WPFS_ViewTemplateUtils {
 			$footerContent = apply_filters(
 				MM_WPFS::FILTER_NAME_CUSTOMER_PORTAL_FOOTER,
 				$footerContent,
-				array(
+				[
 					'email'            => $model->getCustomerEmail(),
 					'stripeCustomerId' => $model->getStripeCustomer()->id,
 					'stripeClient'     => $model->getStripeClient()->getStripeClient()
-				)
+				]
 			);
 		} catch ( Exception $e ) {
 			MM_WPFS_Utils::logException( $e );

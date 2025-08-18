@@ -10,16 +10,16 @@
     }
 
     if ( ! empty( $webhook ) && empty( $webhook['headers'] ) ) {
-        $webhook['headers'] = array();
+        $webhook['headers'] = [];
     }
 
     if ( empty( $webhook ) ) {
-        $webhook = array(
+        $webhook = [
             'url'    => '',
-            'headers' => array(
+            'headers' => [
                 'Content-Type' => 'application/json',
-            ),
-        );
+            ],
+        ];
     }
 ?>
 

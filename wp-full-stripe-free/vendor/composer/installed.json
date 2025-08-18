@@ -2,24 +2,24 @@
     "packages": [
         {
             "name": "codeinwp/themeisle-sdk",
-            "version": "3.3.46",
-            "version_normalized": "3.3.46.0",
+            "version": "3.3.47",
+            "version_normalized": "3.3.47.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Codeinwp/themeisle-sdk.git",
-                "reference": "af2e7360bbe3af6a1bd2c3779fc33b7765104461"
+                "reference": "59499ba103c0369c98b9e0d878826939e3e8e408"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Codeinwp/themeisle-sdk/zipball/af2e7360bbe3af6a1bd2c3779fc33b7765104461",
-                "reference": "af2e7360bbe3af6a1bd2c3779fc33b7765104461",
+                "url": "https://api.github.com/repos/Codeinwp/themeisle-sdk/zipball/59499ba103c0369c98b9e0d878826939e3e8e408",
+                "reference": "59499ba103c0369c98b9e0d878826939e3e8e408",
                 "shasum": ""
             },
             "require-dev": {
                 "codeinwp/phpcs-ruleset": "dev-main",
                 "yoast/phpunit-polyfills": "^2.0"
             },
-            "time": "2025-05-16T15:38:02+00:00",
+            "time": "2025-07-21T14:06:29+00:00",
             "type": "library",
             "installation-source": "dist",
             "notification-url": "https://packagist.org/downloads/",
@@ -40,7 +40,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Codeinwp/themeisle-sdk/issues",
-                "source": "https://github.com/Codeinwp/themeisle-sdk/tree/v3.3.46"
+                "source": "https://github.com/Codeinwp/themeisle-sdk/tree/v3.3.47"
             },
             "install-path": "../codeinwp/themeisle-sdk"
         },
@@ -331,6 +331,68 @@
                 "source": "https://github.com/php-fig/event-dispatcher/tree/1.0.0"
             },
             "install-path": "../psr/event-dispatcher"
+        },
+        {
+            "name": "stripe/stripe-php",
+            "version": "v17.5.0",
+            "version_normalized": "17.5.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/stripe/stripe-php.git",
+                "reference": "313c7e3ed6af1d6948dc4262d2b9c6ee6b30394b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/stripe/stripe-php/zipball/313c7e3ed6af1d6948dc4262d2b9c6ee6b30394b",
+                "reference": "313c7e3ed6af1d6948dc4262d2b9c6ee6b30394b",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "php": ">=5.6.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "3.72.0",
+                "phpstan/phpstan": "^1.2",
+                "phpunit/phpunit": "^5.7 || ^9.0"
+            },
+            "time": "2025-07-30T17:16:57+00:00",
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0-dev"
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "StripeWPFS\\Stripe\\": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Stripe and contributors",
+                    "homepage": "https://github.com/stripe/stripe-php/contributors"
+                }
+            ],
+            "description": "Stripe PHP Library",
+            "homepage": "https://stripe.com/",
+            "keywords": [
+                "api",
+                "payment processing",
+                "stripe"
+            ],
+            "support": {
+                "issues": "https://github.com/stripe/stripe-php/issues",
+                "source": "https://github.com/stripe/stripe-php/tree/v17.5.0"
+            },
+            "install-path": "../stripe/stripe-php"
         }
     ],
     "dev": false,

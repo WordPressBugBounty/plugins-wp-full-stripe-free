@@ -47,818 +47,818 @@ class MM_WPFS_Currencies {
 	 * @return array
 	 */
 	public static function getAvailableCurrencies() {
-		return array(
-			'aed' => array(
+		return [
+			'aed' => [
 				'code'               => 'AED',
 				'name'               => 'United Arab Emirates Dirham',
 				'symbol'             => 'DH',
 				'zeroDecimalSupport' => false
-			),
-			'afn' => array(
+			],
+			'afn' => [
 				'code'               => 'AFN',
 				'name'               => 'Afghan Afghani',
 				'symbol'             => '؋',
 				'zeroDecimalSupport' => false
-			),
-			'all' => array(
+			],
+			'all' => [
 				'code'               => 'ALL',
 				'name'               => 'Albanian Lek',
 				'symbol'             => 'L',
 				'zeroDecimalSupport' => false
-			),
-			'amd' => array(
+			],
+			'amd' => [
 				'code'               => 'AMD',
 				'name'               => 'Armenian Dram',
 				'symbol'             => '֏',
 				'zeroDecimalSupport' => false
-			),
-			'ang' => array(
+			],
+			'ang' => [
 				'code'               => 'ANG',
 				'name'               => 'Netherlands Antillean Gulden',
 				'symbol'             => 'ƒ',
 				'zeroDecimalSupport' => false
-			),
-			'aoa' => array(
+			],
+			'aoa' => [
 				'code'               => 'AOA',
 				'name'               => 'Angolan Kwanza',
 				'symbol'             => 'Kz',
 				'zeroDecimalSupport' => false
-			),
-			'ars' => array(
+			],
+			'ars' => [
 				'code'               => 'ARS',
 				'name'               => 'Argentine Peso',
 				'symbol'             => '$',
 				'zeroDecimalSupport' => false
-			),
-			'aud' => array(
+			],
+			'aud' => [
 				'code'               => 'AUD',
 				'name'               => 'Australian Dollar',
 				'symbol'             => '$',
 				'zeroDecimalSupport' => false
-			),
-			'awg' => array(
+			],
+			'awg' => [
 				'code'               => 'AWG',
 				'name'               => 'Aruban Florin',
 				'symbol'             => 'ƒ',
 				'zeroDecimalSupport' => false
-			),
-			'azn' => array(
+			],
+			'azn' => [
 				'code'               => 'AZN',
 				'name'               => 'Azerbaijani Manat',
 				'symbol'             => 'm.',
 				'zeroDecimalSupport' => false
-			),
-			'bam' => array(
+			],
+			'bam' => [
 				'code'               => 'BAM',
 				'name'               => 'Bosnia & Herzegovina Convertible Mark',
 				'symbol'             => 'KM',
 				'zeroDecimalSupport' => false
-			),
-			'bbd' => array(
+			],
+			'bbd' => [
 				'code'               => 'BBD',
 				'name'               => 'Barbadian Dollar',
 				'symbol'             => 'Bds$',
 				'zeroDecimalSupport' => false
-			),
-			'bdt' => array(
+			],
+			'bdt' => [
 				'code'               => 'BDT',
 				'name'               => 'Bangladeshi Taka',
 				'symbol'             => '৳',
 				'zeroDecimalSupport' => false
-			),
-			'bgn' => array(
+			],
+			'bgn' => [
 				'code'               => 'BGN',
 				'name'               => 'Bulgarian Lev',
 				'symbol'             => 'лв',
 				'zeroDecimalSupport' => false
-			),
-			'bif' => array(
+			],
+			'bif' => [
 				'code'               => 'BIF',
 				'name'               => 'Burundian Franc',
 				'symbol'             => 'FBu',
 				'zeroDecimalSupport' => true
-			),
-			'bmd' => array(
+			],
+			'bmd' => [
 				'code'               => 'BMD',
 				'name'               => 'Bermudian Dollar',
 				'symbol'             => 'BD$',
 				'zeroDecimalSupport' => false
-			),
-			'bnd' => array(
+			],
+			'bnd' => [
 				'code'               => 'BND',
 				'name'               => 'Brunei Dollar',
 				'symbol'             => 'B$',
 				'zeroDecimalSupport' => false
-			),
-			'bob' => array(
+			],
+			'bob' => [
 				'code'               => 'BOB',
 				'name'               => 'Bolivian Boliviano',
 				'symbol'             => 'Bs.',
 				'zeroDecimalSupport' => false
-			),
-			'brl' => array(
+			],
+			'brl' => [
 				'code'               => 'BRL',
 				'name'               => 'Brazilian Real',
 				'symbol'             => 'R$',
 				'zeroDecimalSupport' => false
-			),
-			'bsd' => array(
+			],
+			'bsd' => [
 				'code'               => 'BSD',
 				'name'               => 'Bahamian Dollar',
 				'symbol'             => 'B$',
 				'zeroDecimalSupport' => false
-			),
-			'bwp' => array(
+			],
+			'bwp' => [
 				'code'               => 'BWP',
 				'name'               => 'Botswana Pula',
 				'symbol'             => 'P',
 				'zeroDecimalSupport' => false
-			),
-			'bzd' => array(
+			],
+			'bzd' => [
 				'code'               => 'BZD',
 				'name'               => 'Belize Dollar',
 				'symbol'             => 'BZ$',
 				'zeroDecimalSupport' => false
-			),
-			'cad' => array(
+			],
+			'cad' => [
 				'code'               => 'CAD',
 				'name'               => 'Canadian Dollar',
 				'symbol'             => '$',
 				'zeroDecimalSupport' => false
-			),
-			'cdf' => array(
+			],
+			'cdf' => [
 				'code'               => 'CDF',
 				'name'               => 'Congolese Franc',
 				'symbol'             => 'CF',
 				'zeroDecimalSupport' => false
-			),
-			'chf' => array(
+			],
+			'chf' => [
 				'code'               => 'CHF',
 				'name'               => 'Swiss Franc',
 				'symbol'             => 'Fr',
 				'zeroDecimalSupport' => false
-			),
-			'clp' => array(
+			],
+			'clp' => [
 				'code'               => 'CLP',
 				'name'               => 'Chilean Peso',
 				'symbol'             => 'CLP$',
 				'zeroDecimalSupport' => true
-			),
-			'cny' => array(
+			],
+			'cny' => [
 				'code'               => 'CNY',
 				'name'               => 'Chinese Renminbi Yuan',
 				'symbol'             => '¥',
 				'zeroDecimalSupport' => false
-			),
-			'cop' => array(
+			],
+			'cop' => [
 				'code'               => 'COP',
 				'name'               => 'Colombian Peso',
 				'symbol'             => 'COL$',
 				'zeroDecimalSupport' => false
-			),
-			'crc' => array(
+			],
+			'crc' => [
 				'code'               => 'CRC',
 				'name'               => 'Costa Rican Colón',
 				'symbol'             => '₡',
 				'zeroDecimalSupport' => false
-			),
-			'cve' => array(
+			],
+			'cve' => [
 				'code'               => 'CVE',
 				'name'               => 'Cape Verdean Escudo',
 				'symbol'             => 'Esc',
 				'zeroDecimalSupport' => false
-			),
-			'czk' => array(
+			],
+			'czk' => [
 				'code'               => 'CZK',
 				'name'               => 'Czech Koruna',
 				'symbol'             => 'Kč',
 				'zeroDecimalSupport' => false
-			),
-			'djf' => array(
+			],
+			'djf' => [
 				'code'               => 'DJF',
 				'name'               => 'Djiboutian Franc',
 				'symbol'             => 'Fr',
 				'zeroDecimalSupport' => true
-			),
-			'dkk' => array(
+			],
+			'dkk' => [
 				'code'               => 'DKK',
 				'name'               => 'Danish Krone',
 				'symbol'             => 'kr',
 				'zeroDecimalSupport' => false
-			),
-			'dop' => array(
+			],
+			'dop' => [
 				'code'               => 'DOP',
 				'name'               => 'Dominican Peso',
 				'symbol'             => 'RD$',
 				'zeroDecimalSupport' => false
-			),
-			'dzd' => array(
+			],
+			'dzd' => [
 				'code'               => 'DZD',
 				'name'               => 'Algerian Dinar',
 				'symbol'             => 'DA',
 				'zeroDecimalSupport' => false
-			),
-			'egp' => array(
+			],
+			'egp' => [
 				'code'               => 'EGP',
 				'name'               => 'Egyptian Pound',
 				'symbol'             => 'L.E.',
 				'zeroDecimalSupport' => false
-			),
-			'etb' => array(
+			],
+			'etb' => [
 				'code'               => 'ETB',
 				'name'               => 'Ethiopian Birr',
 				'symbol'             => 'Br',
 				'zeroDecimalSupport' => false
-			),
-			'eur' => array(
+			],
+			'eur' => [
 				'code'               => 'EUR',
 				'name'               => 'Euro',
 				'symbol'             => '€',
 				'zeroDecimalSupport' => false
-			),
-			'fjd' => array(
+			],
+			'fjd' => [
 				'code'               => 'FJD',
 				'name'               => 'Fijian Dollar',
 				'symbol'             => 'FJ$',
 				'zeroDecimalSupport' => false
-			),
-			'fkp' => array(
+			],
+			'fkp' => [
 				'code'               => 'FKP',
 				'name'               => 'Falkland Islands Pound',
 				'symbol'             => 'FK£',
 				'zeroDecimalSupport' => false
-			),
-			'gbp' => array(
+			],
+			'gbp' => [
 				'code'               => 'GBP',
 				'name'               => 'British Pound',
 				'symbol'             => '£',
 				'zeroDecimalSupport' => false
-			),
-			'gel' => array(
+			],
+			'gel' => [
 				'code'               => 'GEL',
 				'name'               => 'Georgian Lari',
 				'symbol'             => 'ლ',
 				'zeroDecimalSupport' => false
-			),
-			'gip' => array(
+			],
+			'gip' => [
 				'code'               => 'GIP',
 				'name'               => 'Gibraltar Pound',
 				'symbol'             => '£',
 				'zeroDecimalSupport' => false
-			),
-			'gmd' => array(
+			],
+			'gmd' => [
 				'code'               => 'GMD',
 				'name'               => 'Gambian Dalasi',
 				'symbol'             => 'D',
 				'zeroDecimalSupport' => false
-			),
-			'gnf' => array(
+			],
+			'gnf' => [
 				'code'               => 'GNF',
 				'name'               => 'Guinean Franc',
 				'symbol'             => 'FG',
 				'zeroDecimalSupport' => true
-			),
-			'gtq' => array(
+			],
+			'gtq' => [
 				'code'               => 'GTQ',
 				'name'               => 'Guatemalan Quetzal',
 				'symbol'             => 'Q',
 				'zeroDecimalSupport' => false
-			),
-			'gyd' => array(
+			],
+			'gyd' => [
 				'code'               => 'GYD',
 				'name'               => 'Guyanese Dollar',
 				'symbol'             => 'G$',
 				'zeroDecimalSupport' => false
-			),
-			'hkd' => array(
+			],
+			'hkd' => [
 				'code'               => 'HKD',
 				'name'               => 'Hong Kong Dollar',
 				'symbol'             => 'HK$',
 				'zeroDecimalSupport' => false
-			),
-			'hnl' => array(
+			],
+			'hnl' => [
 				'code'               => 'HNL',
 				'name'               => 'Honduran Lempira',
 				'symbol'             => 'L',
 				'zeroDecimalSupport' => false
-			),
-			'hrk' => array(
+			],
+			'hrk' => [
 				'code'               => 'HRK',
 				'name'               => 'Croatian Kuna',
 				'symbol'             => 'kn',
 				'zeroDecimalSupport' => false
-			),
-			'htg' => array(
+			],
+			'htg' => [
 				'code'               => 'HTG',
 				'name'               => 'Haitian Gourde',
 				'symbol'             => 'G',
 				'zeroDecimalSupport' => false
-			),
-			'huf' => array(
+			],
+			'huf' => [
 				'code'               => 'HUF',
 				'name'               => 'Hungarian Forint',
 				'symbol'             => 'Ft',
 				'zeroDecimalSupport' => false
-			),
-			'idr' => array(
+			],
+			'idr' => [
 				'code'               => 'IDR',
 				'name'               => 'Indonesian Rupiah',
 				'symbol'             => 'Rp',
 				'zeroDecimalSupport' => false
-			),
-			'ils' => array(
+			],
+			'ils' => [
 				'code'               => 'ILS',
 				'name'               => 'Israeli New Sheqel',
 				'symbol'             => '₪',
 				'zeroDecimalSupport' => false
-			),
-			'inr' => array(
+			],
+			'inr' => [
 				'code'               => 'INR',
 				'name'               => 'Indian Rupee',
 				'symbol'             => '₹',
 				'zeroDecimalSupport' => false
-			),
-			'isk' => array(
+			],
+			'isk' => [
 				'code'               => 'ISK',
 				'name'               => 'Icelandic Króna',
 				'symbol'             => 'ikr',
 				'zeroDecimalSupport' => false
-			),
-			'jmd' => array(
+			],
+			'jmd' => [
 				'code'               => 'JMD',
 				'name'               => 'Jamaican Dollar',
 				'symbol'             => 'J$',
 				'zeroDecimalSupport' => false
-			),
-			'jpy' => array(
+			],
+			'jpy' => [
 				'code'               => 'JPY',
 				'name'               => 'Japanese Yen',
 				'symbol'             => '¥',
 				'zeroDecimalSupport' => true
-			),
-			'kes' => array(
+			],
+			'kes' => [
 				'code'               => 'KES',
 				'name'               => 'Kenyan Shilling',
 				'symbol'             => 'Ksh',
 				'zeroDecimalSupport' => false
-			),
-			'kgs' => array(
+			],
+			'kgs' => [
 				'code'               => 'KGS',
 				'name'               => 'Kyrgyzstani Som',
 				'symbol'             => 'COM',
 				'zeroDecimalSupport' => false
-			),
-			'khr' => array(
+			],
+			'khr' => [
 				'code'               => 'KHR',
 				'name'               => 'Cambodian Riel',
 				'symbol'             => '៛',
 				'zeroDecimalSupport' => false
-			),
-			'kmf' => array(
+			],
+			'kmf' => [
 				'code'               => 'KMF',
 				'name'               => 'Comorian Franc',
 				'symbol'             => 'CF',
 				'zeroDecimalSupport' => true
-			),
-			'krw' => array(
+			],
+			'krw' => [
 				'code'               => 'KRW',
 				'name'               => 'South Korean Won',
 				'symbol'             => '₩',
 				'zeroDecimalSupport' => true
-			),
-			'kyd' => array(
+			],
+			'kyd' => [
 				'code'               => 'KYD',
 				'name'               => 'Cayman Islands Dollar',
 				'symbol'             => 'CI$',
 				'zeroDecimalSupport' => false
-			),
-			'kzt' => array(
+			],
+			'kzt' => [
 				'code'               => 'KZT',
 				'name'               => 'Kazakhstani Tenge',
 				'symbol'             => '₸',
 				'zeroDecimalSupport' => false
-			),
-			'lak' => array(
+			],
+			'lak' => [
 				'code'               => 'LAK',
 				'name'               => 'Lao Kip',
 				'symbol'             => '₭',
 				'zeroDecimalSupport' => false
-			),
-			'lbp' => array(
+			],
+			'lbp' => [
 				'code'               => 'LBP',
 				'name'               => 'Lebanese Pound',
 				'symbol'             => 'LL',
 				'zeroDecimalSupport' => false
-			),
-			'lkr' => array(
+			],
+			'lkr' => [
 				'code'               => 'LKR',
 				'name'               => 'Sri Lankan Rupee',
 				'symbol'             => 'SLRs',
 				'zeroDecimalSupport' => false
-			),
-			'lrd' => array(
+			],
+			'lrd' => [
 				'code'               => 'LRD',
 				'name'               => 'Liberian Dollar',
 				'symbol'             => 'L$',
 				'zeroDecimalSupport' => false
-			),
-			'lsl' => array(
+			],
+			'lsl' => [
 				'code'               => 'LSL',
 				'name'               => 'Lesotho Loti',
 				'symbol'             => 'M',
 				'zeroDecimalSupport' => false
-			),
-			'mad' => array(
+			],
+			'mad' => [
 				'code'               => 'MAD',
 				'name'               => 'Moroccan Dirham',
 				'symbol'             => 'DH',
 				'zeroDecimalSupport' => false
-			),
-			'mdl' => array(
+			],
+			'mdl' => [
 				'code'               => 'MDL',
 				'name'               => 'Moldovan Leu',
 				'symbol'             => 'MDL',
 				'zeroDecimalSupport' => false
-			),
-			'mga' => array(
+			],
+			'mga' => [
 				'code'               => 'MGA',
 				'name'               => 'Malagasy Ariary',
 				'symbol'             => 'Ar',
 				'zeroDecimalSupport' => true
-			),
-			'mkd' => array(
+			],
+			'mkd' => [
 				'code'               => 'MKD',
 				'name'               => 'Macedonian Denar',
 				'symbol'             => 'ден',
 				'zeroDecimalSupport' => false
-			),
-			'mnt' => array(
+			],
+			'mnt' => [
 				'code'               => 'MNT',
 				'name'               => 'Mongolian Tögrög',
 				'symbol'             => '₮',
 				'zeroDecimalSupport' => false
-			),
-			'mop' => array(
+			],
+			'mop' => [
 				'code'               => 'MOP',
 				'name'               => 'Macanese Pataca',
 				'symbol'             => 'MOP$',
 				'zeroDecimalSupport' => false
-			),
-			'mro' => array(
+			],
+			'mro' => [
 				'code'               => 'MRO',
 				'name'               => 'Mauritanian Ouguiya',
 				'symbol'             => 'UM',
 				'zeroDecimalSupport' => false
-			),
-			'mur' => array(
+			],
+			'mur' => [
 				'code'               => 'MUR',
 				'name'               => 'Mauritian Rupee',
 				'symbol'             => 'Rs',
 				'zeroDecimalSupport' => false
-			),
-			'mvr' => array(
+			],
+			'mvr' => [
 				'code'               => 'MVR',
 				'name'               => 'Maldivian Rufiyaa',
 				'symbol'             => 'Rf.',
 				'zeroDecimalSupport' => false
-			),
-			'mwk' => array(
+			],
+			'mwk' => [
 				'code'               => 'MWK',
 				'name'               => 'Malawian Kwacha',
 				'symbol'             => 'MK',
 				'zeroDecimalSupport' => false
-			),
-			'mxn' => array(
+			],
+			'mxn' => [
 				'code'               => 'MXN',
 				'name'               => 'Mexican Peso',
 				'symbol'             => '$',
 				'zeroDecimalSupport' => false
-			),
-			'myr' => array(
+			],
+			'myr' => [
 				'code'               => 'MYR',
 				'name'               => 'Malaysian Ringgit',
 				'symbol'             => 'RM',
 				'zeroDecimalSupport' => false
-			),
-			'mzn' => array(
+			],
+			'mzn' => [
 				'code'               => 'MZN',
 				'name'               => 'Mozambican Metical',
 				'symbol'             => 'MT',
 				'zeroDecimalSupport' => false
-			),
-			'nad' => array(
+			],
+			'nad' => [
 				'code'               => 'NAD',
 				'name'               => 'Namibian Dollar',
 				'symbol'             => 'N$',
 				'zeroDecimalSupport' => false
-			),
-			'ngn' => array(
+			],
+			'ngn' => [
 				'code'               => 'NGN',
 				'name'               => 'Nigerian Naira',
 				'symbol'             => '₦',
 				'zeroDecimalSupport' => false
-			),
-			'nio' => array(
+			],
+			'nio' => [
 				'code'               => 'NIO',
 				'name'               => 'Nicaraguan Córdoba',
 				'symbol'             => 'C$',
 				'zeroDecimalSupport' => false
-			),
-			'nok' => array(
+			],
+			'nok' => [
 				'code'               => 'NOK',
 				'name'               => 'Norwegian Krone',
 				'symbol'             => 'kr',
 				'zeroDecimalSupport' => false
-			),
-			'npr' => array(
+			],
+			'npr' => [
 				'code'               => 'NPR',
 				'name'               => 'Nepalese Rupee',
 				'symbol'             => 'NRs',
 				'zeroDecimalSupport' => false
-			),
-			'nzd' => array(
+			],
+			'nzd' => [
 				'code'               => 'NZD',
 				'name'               => 'New Zealand Dollar',
 				'symbol'             => 'NZ$',
 				'zeroDecimalSupport' => false
-			),
-			'pab' => array(
+			],
+			'pab' => [
 				'code'               => 'PAB',
 				'name'               => 'Panamanian Balboa',
 				'symbol'             => 'B/.',
 				'zeroDecimalSupport' => false
-			),
-			'pen' => array(
+			],
+			'pen' => [
 				'code'               => 'PEN',
 				'name'               => 'Peruvian Nuevo Sol',
 				'symbol'             => 'S/.',
 				'zeroDecimalSupport' => false
-			),
-			'pgk' => array(
+			],
+			'pgk' => [
 				'code'               => 'PGK',
 				'name'               => 'Papua New Guinean Kina',
 				'symbol'             => 'K',
 				'zeroDecimalSupport' => false
-			),
-			'php' => array(
+			],
+			'php' => [
 				'code'               => 'PHP',
 				'name'               => 'Philippine Peso',
 				'symbol'             => '₱',
 				'zeroDecimalSupport' => false
-			),
-			'pkr' => array(
+			],
+			'pkr' => [
 				'code'               => 'PKR',
 				'name'               => 'Pakistani Rupee',
 				'symbol'             => 'PKR',
 				'zeroDecimalSupport' => false
-			),
-			'pln' => array(
+			],
+			'pln' => [
 				'code'               => 'PLN',
 				'name'               => 'Polish Złoty',
 				'symbol'             => 'zł',
 				'zeroDecimalSupport' => false
-			),
-			'pyg' => array(
+			],
+			'pyg' => [
 				'code'               => 'PYG',
 				'name'               => 'Paraguayan Guaraní',
 				'symbol'             => '₲',
 				'zeroDecimalSupport' => true
-			),
-			'qar' => array(
+			],
+			'qar' => [
 				'code'               => 'QAR',
 				'name'               => 'Qatari Riyal',
 				'symbol'             => 'QR',
 				'zeroDecimalSupport' => false
-			),
-			'ron' => array(
+			],
+			'ron' => [
 				'code'               => 'RON',
 				'name'               => 'Romanian Leu',
 				'symbol'             => 'RON',
 				'zeroDecimalSupport' => false
-			),
-			'rsd' => array(
+			],
+			'rsd' => [
 				'code'               => 'RSD',
 				'name'               => 'Serbian Dinar',
 				'symbol'             => 'дин',
 				'zeroDecimalSupport' => false
-			),
-			'rub' => array(
+			],
+			'rub' => [
 				'code'               => 'RUB',
 				'name'               => 'Russian Ruble',
 				'symbol'             => 'руб',
 				'zeroDecimalSupport' => false
-			),
-			'rwf' => array(
+			],
+			'rwf' => [
 				'code'               => 'RWF',
 				'name'               => 'Rwandan Franc',
 				'symbol'             => 'FRw',
 				'zeroDecimalSupport' => true
-			),
-			'sar' => array(
+			],
+			'sar' => [
 				'code'               => 'SAR',
 				'name'               => 'Saudi Riyal',
 				'symbol'             => 'SR',
 				'zeroDecimalSupport' => false
-			),
-			'sbd' => array(
+			],
+			'sbd' => [
 				'code'               => 'SBD',
 				'name'               => 'Solomon Islands Dollar',
 				'symbol'             => 'SI$',
 				'zeroDecimalSupport' => false
-			),
-			'scr' => array(
+			],
+			'scr' => [
 				'code'               => 'SCR',
 				'name'               => 'Seychellois Rupee',
 				'symbol'             => 'SRe',
 				'zeroDecimalSupport' => false
-			),
-			'sek' => array(
+			],
+			'sek' => [
 				'code'               => 'SEK',
 				'name'               => 'Swedish Krona',
 				'symbol'             => 'kr',
 				'zeroDecimalSupport' => false
-			),
-			'sgd' => array(
+			],
+			'sgd' => [
 				'code'               => 'SGD',
 				'name'               => 'Singapore Dollar',
 				'symbol'             => 'S$',
 				'zeroDecimalSupport' => false
-			),
-			'shp' => array(
+			],
+			'shp' => [
 				'code'               => 'SHP',
 				'name'               => 'Saint Helenian Pound',
 				'symbol'             => '£',
 				'zeroDecimalSupport' => false
-			),
-			'sll' => array(
+			],
+			'sll' => [
 				'code'               => 'SLL',
 				'name'               => 'Sierra Leonean Leone',
 				'symbol'             => 'Le',
 				'zeroDecimalSupport' => false
-			),
-			'sos' => array(
+			],
+			'sos' => [
 				'code'               => 'SOS',
 				'name'               => 'Somali Shilling',
 				'symbol'             => 'Sh.So.',
 				'zeroDecimalSupport' => false
-			),
-			'std' => array(
+			],
+			'std' => [
 				'code'               => 'STD',
 				'name'               => 'São Tomé and Príncipe Dobra',
 				'symbol'             => 'Db',
 				'zeroDecimalSupport' => false
-			),
-			'srd' => array(
+			],
+			'srd' => [
 				'code'               => 'SRD',
 				'name'               => 'Surinamese Dollar',
 				'symbol'             => 'SRD',
 				'zeroDecimalSupport' => false
-			),
-			'svc' => array(
+			],
+			'svc' => [
 				'code'               => 'SVC',
 				'name'               => 'Salvadoran Colón',
 				'symbol'             => '₡',
 				'zeroDecimalSupport' => false
-			),
-			'szl' => array(
+			],
+			'szl' => [
 				'code'               => 'SZL',
 				'name'               => 'Swazi Lilangeni',
 				'symbol'             => 'E',
 				'zeroDecimalSupport' => false
-			),
-			'thb' => array(
+			],
+			'thb' => [
 				'code'               => 'THB',
 				'name'               => 'Thai Baht',
 				'symbol'             => '฿',
 				'zeroDecimalSupport' => false
-			),
-			'tjs' => array(
+			],
+			'tjs' => [
 				'code'               => 'TJS',
 				'name'               => 'Tajikistani Somoni',
 				'symbol'             => 'TJS',
 				'zeroDecimalSupport' => false
-			),
-			'top' => array(
+			],
+			'top' => [
 				'code'               => 'TOP',
 				'name'               => 'Tongan Paʻanga',
 				'symbol'             => '$',
 				'zeroDecimalSupport' => false
-			),
-			'try' => array(
+			],
+			'try' => [
 				'code'               => 'TRY',
 				'name'               => 'Turkish Lira',
 				'symbol'             => '₺',
 				'zeroDecimalSupport' => false
-			),
-			'ttd' => array(
+			],
+			'ttd' => [
 				'code'               => 'TTD',
 				'name'               => 'Trinidad and Tobago Dollar',
 				'symbol'             => 'TT$',
 				'zeroDecimalSupport' => false
-			),
-			'twd' => array(
+			],
+			'twd' => [
 				'code'               => 'TWD',
 				'name'               => 'New Taiwan Dollar',
 				'symbol'             => 'NT$',
 				'zeroDecimalSupport' => false
-			),
-			'tzs' => array(
+			],
+			'tzs' => [
 				'code'               => 'TZS',
 				'name'               => 'Tanzanian Shilling',
 				'symbol'             => 'TSh',
 				'zeroDecimalSupport' => false
-			),
-			'uah' => array(
+			],
+			'uah' => [
 				'code'               => 'UAH',
 				'name'               => 'Ukrainian Hryvnia',
 				'symbol'             => '₴',
 				'zeroDecimalSupport' => false
-			),
-			'ugx' => array(
+			],
+			'ugx' => [
 				'code'               => 'UGX',
 				'name'               => 'Ugandan Shilling',
 				'symbol'             => 'USh',
 				'zeroDecimalSupport' => false
-			),
-			'usd' => array(
+			],
+			'usd' => [
 				'code'               => 'USD',
 				'name'               => 'United States Dollar',
 				'symbol'             => '$',
 				'zeroDecimalSupport' => false
-			),
-			'uyu' => array(
+			],
+			'uyu' => [
 				'code'               => 'UYU',
 				'name'               => 'Uruguayan Peso',
 				'symbol'             => '$U',
 				'zeroDecimalSupport' => false
-			),
-			'uzs' => array(
+			],
+			'uzs' => [
 				'code'               => 'UZS',
 				'name'               => 'Uzbekistani Som',
 				'symbol'             => 'UZS',
 				'zeroDecimalSupport' => false
-			),
-			'vnd' => array(
+			],
+			'vnd' => [
 				'code'               => 'VND',
 				'name'               => 'Vietnamese Đồng',
 				'symbol'             => '₫',
 				'zeroDecimalSupport' => true
-			),
-			'vuv' => array(
+			],
+			'vuv' => [
 				'code'               => 'VUV',
 				'name'               => 'Vanuatu Vatu',
 				'symbol'             => 'VT',
 				'zeroDecimalSupport' => true
-			),
-			'wst' => array(
+			],
+			'wst' => [
 				'code'               => 'WST',
 				'name'               => 'Samoan Tala',
 				'symbol'             => 'WS$',
 				'zeroDecimalSupport' => false
-			),
-			'xaf' => array(
+			],
+			'xaf' => [
 				'code'               => 'XAF',
 				'name'               => 'Central African Cfa Franc',
 				'symbol'             => 'FCFA',
 				'zeroDecimalSupport' => true
-			),
-			'xcd' => array(
+			],
+			'xcd' => [
 				'code'               => 'XCD',
 				'name'               => 'East Caribbean Dollar',
 				'symbol'             => 'EC$',
 				'zeroDecimalSupport' => false
-			),
-			'xof' => array(
+			],
+			'xof' => [
 				'code'               => 'XOF',
 				'name'               => 'West African Cfa Franc',
 				'symbol'             => 'CFA',
 				'zeroDecimalSupport' => true
-			),
-			'xpf' => array(
+			],
+			'xpf' => [
 				'code'               => 'XPF',
 				'name'               => 'Cfp Franc',
 				'symbol'             => 'F',
 				'zeroDecimalSupport' => true
-			),
-			'yer' => array(
+			],
+			'yer' => [
 				'code'               => 'YER',
 				'name'               => 'Yemeni Rial',
 				'symbol'             => '﷼',
 				'zeroDecimalSupport' => false
-			),
-			'zar' => array(
+			],
+			'zar' => [
 				'code'               => 'ZAR',
 				'name'               => 'South African Rand',
 				'symbol'             => 'R',
 				'zeroDecimalSupport' => false
-			),
-			'zmw' => array(
+			],
+			'zmw' => [
 				'code'               => 'ZMW',
 				'name'               => 'Zambian Kwacha',
 				'symbol'             => 'ZK',
 				'zeroDecimalSupport' => false
-			)
-		);
+			]
+		];
 	}
 
     /**

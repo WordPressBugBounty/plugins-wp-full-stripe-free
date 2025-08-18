@@ -12,11 +12,11 @@ trait MM_WPFS_InlineFormView {
 	/** @var $this->fieldConfiguration array */
 
 	public static function getInlineFields() {
-		$fields = array(
+		$fields = [
 			MM_WPFS_InlineFormViewConstants::FIELD_CARD_HOLDER_NAME => MM_WPFS_ControlUtils::input( MM_WPFS_InlineFormViewConstants::FIELD_CARD_HOLDER_NAME ),
 			MM_WPFS_InlineFormViewConstants::FIELD_CARD_HOLDER_EMAIL => MM_WPFS_ControlUtils::input( MM_WPFS_InlineFormViewConstants::FIELD_CARD_HOLDER_EMAIL ),
 			MM_WPFS_InlineFormViewConstants::FIELD_CARD_NUMBER => MM_WPFS_ControlUtils::cardInput( MM_WPFS_InlineFormViewConstants::FIELD_CARD_NUMBER )
-		);
+		];
 
 		return $fields;
 	}
@@ -75,7 +75,7 @@ trait MM_WPFS_InlineFormView {
 	 * @return array
 	 */
 	protected function getInlineFormAttributes( $form ) {
-		$attributes = array();
+		$attributes = [];
 
 		$attributes[ MM_WPFS_InlineFormViewConstants::ATTR_DATA_WPFS_PREFERRED_LANGUAGE ] = $form->preferredLanguage;
 
@@ -87,7 +87,7 @@ trait MM_WPFS_InlineFormView {
 trait MM_WPFS_CheckoutFormView {
 
 	protected function getCheckoutFormAttributes( $form ) {
-		$attributes = array();
+		$attributes = [];
 
 		$attributes[ MM_WPFS_PopupFormViewConstants::ATTR_DATA_WPFS_COMPANY_NAME ] = $form->companyName;
 		$attributes[ MM_WPFS_PopupFormViewConstants::ATTR_DATA_WPFS_PRODUCT_DESCRIPTION ] = MM_WPFS_Localization::translateLabel( $form->productDesc );
@@ -318,7 +318,7 @@ class MM_WPFS_ControlUtils {
 	 * @return array
 	 */
 	public static final function descriptor( $type, $name, $class, $selector, $errorClass, $errorSelector, $hidden = false ) {
-		return array(
+		return [
 			'type' => $type,
 			'name' => $name,
 			'class' => $class,
@@ -326,7 +326,7 @@ class MM_WPFS_ControlUtils {
 			'errorClass' => $errorClass,
 			'errorSelector' => $errorSelector,
 			'hidden' => $hidden
-		);
+		];
 	}
 
 	/**
@@ -484,10 +484,10 @@ class MM_WPFS_Control {
 	protected $tooltip;
 	protected $label;
 	protected $labelEscape = self::ESCAPE_TYPE_HTML;
-	protected $labelAttributes = array();
-	protected $options = array();
-	protected $attributes = array();
-	protected $metadata = array();
+	protected $labelAttributes = [];
+	protected $options = [];
+	protected $attributes = [];
+	protected $metadata = [];
 	/** @var  boolean $multiValue */
 	protected $multiValue = false;
 
@@ -938,7 +938,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 
 	protected $form;
 	protected $formHash;
-	protected $attributes = array();
+	protected $attributes = [];
 
 	protected $defaultBillingCountry;
 	protected $defaultShippingCountry;
@@ -995,7 +995,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 			__( 'Coupon', 'wp-full-stripe-free' ),
 			null
 		);
-		$this->customInputs = array();
+		$this->customInputs = [];
 		$feeRecovery = MM_WPFS_Utils::getFeeRecoveryData( $this->form );
 		$feeRecoveryLabel = '';
 
@@ -1030,20 +1030,20 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 		);
 
 		$this->action->setAttributes(
-			array(
+			[
 				'type' => 'hidden'
-			)
+			]
 		);
 		$this->formName->setAttributes(
-			array(
+			[
 				'type' => 'hidden'
-			)
+			]
 		);
 		$this->formName->setValue( $this->form->name );
 		$this->formGetParameters->setAttributes(
-			array(
+			[
 				'type' => 'hidden'
-			)
+			]
 		);
 		$this->feeRecoveryAccepted->setLabelEscape( MM_WPFS_Control::ESCAPE_TYPE_NONE );
 		$this->termsOfUseAccepted->setLabelEscape( MM_WPFS_Control::ESCAPE_TYPE_NONE );
@@ -1081,7 +1081,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 	 * @return array
 	 */
 	protected function getFormAttributes() {
-		$attributes = array();
+		$attributes = [];
 
 		$attributes[ self::ATTR_ACTION ] = '';
 		$attributes[ self::ATTR_METHOD ] = self::ATTR_METHOD_VALUE_POST;
@@ -1198,10 +1198,10 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 					$control = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_CUSTOM_INPUT, null, null, $customInputLabel, $index );
 					$control->setMultiValue( true );
 					$control->setAttributes(
-						array(
+						[
 							self::ATTR_DATA_WPFS_CUSTOM_INPUT_FIELD => 'input',
 							self::ATTR_DATA_WPFS_CUSTOM_INPUT_LABEL => $customInputLabel
-						)
+						]
 					);
 
 					/** @var MM_WPFS_FormFieldConfiguration $customFieldConfig */
@@ -1260,7 +1260,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 	protected function prepareCountryOptions( $countryCodes, $selectedCountryCode ) {
 		$locallySelectedCountryCode = $selectedCountryCode;
 		$availableCountries = MM_WPFS_Countries::getCountriesByCode( $countryCodes );
-		$countryOptions = array();
+		$countryOptions = [];
 		$defaultCountrySelected = false;
 
 		if ( count( $availableCountries ) > 1 ) {
@@ -1274,17 +1274,17 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 				null
 			);
 			$selectCountryOption->setAttributes(
-				array(
+				[
 					'disabled' => 'disabled'
-				)
+				]
 			);
 
 			if ( ! array_key_exists( $locallySelectedCountryCode, $availableCountries ) ) {
 				$selectCountryOption->setAttributes(
-					array(
+					[
 						'disabled' => 'disabled',
 						'selected' => 'selected'
-					)
+					]
 				);
 
 				$defaultCountrySelected = true;
@@ -1299,7 +1299,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 			$option = MM_WPFS_ControlUtils::createControl( $this->formHash, null, null, MM_WPFS_Localization::translateLabel( $country['name'] ), null, null );
 			if ( ! $defaultCountrySelected && isset( $locallySelectedCountryCode ) && $locallySelectedCountryCode === $country['alpha-2'] ) {
 				$defaultCountrySelected = true;
-				$option->setAttributes( array( 'selected' => 'selected' ) );
+				$option->setAttributes( [ 'selected' => 'selected' ] );
 			}
 			$option->setValue( $countryKey );
 			array_push( $countryOptions, $option );
@@ -1309,7 +1309,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 	}
 
 	protected function prepareStateOptions( $selectedStateCode ) {
-		$stateOptions = array();
+		$stateOptions = [];
 
 		$selectStateOption = MM_WPFS_ControlUtils::createControl(
 			$this->formHash,
@@ -1321,9 +1321,9 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 			null
 		);
 		$selectStateOption->setAttributes(
-			array(
+			[
 				'disabled' => 'disabled'
-			)
+			]
 		);
 		array_push( $stateOptions, $selectStateOption );
 		$defaultStateSelected = false;
@@ -1331,17 +1331,17 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 			$option = MM_WPFS_ControlUtils::createControl( $this->formHash, null, null, MM_WPFS_Localization::translateLabel( $state['name'] ), null, null );
 			if ( isset( $selectedStateCode ) && $selectedStateCode === $state['code'] ) {
 				$defaultStateSelected = true;
-				$option->setAttributes( array( 'selected' => 'selected' ) );
+				$option->setAttributes( [ 'selected' => 'selected' ] );
 			}
 			$option->setValue( $stateKey );
 			array_push( $stateOptions, $option );
 		}
 		if ( false === $defaultStateSelected ) {
 			$selectStateOption->setAttributes(
-				array(
+				[
 					'disabled' => 'disabled',
 					'selected' => 'selected'
-				)
+				]
 			);
 		}
 
@@ -1510,7 +1510,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 			$this->billingAddressCountry->setOptions( $countryOptions );
 
 			if ( isset( $this->form->vatRateType ) ) {
-				$this->billingAddressCountry->setAttributes( array( self::ATTR_DATA_WPFS_VAT_RATE_TYPE => $this->form->vatRateType ) );
+				$this->billingAddressCountry->setAttributes( [ self::ATTR_DATA_WPFS_VAT_RATE_TYPE => $this->form->vatRateType ] );
 			}
 		}
 		if ( isset( $this->form->showShippingAddress ) && 1 == $this->form->showShippingAddress ) {
@@ -1672,7 +1672,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 	 * @return array
 	 */
 	public static function getFields() {
-		$fields = array(
+		$fields = [
 			self::FIELD_ACTION => MM_WPFS_ControlUtils::inputHidden( self::FIELD_ACTION ),
 			self::FIELD_FORM_NAME => MM_WPFS_ControlUtils::inputHidden( self::FIELD_FORM_NAME ),
 			self::FIELD_CUSTOM_INPUT => MM_WPFS_ControlUtils::customInput( self::FIELD_CUSTOM_INPUT ),
@@ -1681,32 +1681,32 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 			self::FIELD_FEE_RECOVERY_ACCEPTED => MM_WPFS_ControlUtils::checkbox( self::FIELD_FEE_RECOVERY_ACCEPTED ),
 			self::FIELD_GOOGLE_RECAPTCHA_RESPONSE => MM_WPFS_ControlUtils::captcha( self::FIELD_GOOGLE_RECAPTCHA_RESPONSE ),
 			self::FIELD_NONCE => MM_WPFS_ControlUtils::inputHidden( self::FIELD_NONCE )
-		);
+		];
 
 		return $fields;
 	}
 
 	protected static function getPopupBillingAddressFields() {
-		$fields = array(
+		$fields = [
 			self::FIELD_BILLING_ADDRESS_LINE1 => MM_WPFS_ControlUtils::inputHidden( self::FIELD_BILLING_ADDRESS_LINE1 ),
 			self::FIELD_BILLING_ADDRESS_LINE2 => MM_WPFS_ControlUtils::inputHidden( self::FIELD_BILLING_ADDRESS_LINE2 ),
 			self::FIELD_BILLING_ADDRESS_ZIP => MM_WPFS_ControlUtils::inputHidden( self::FIELD_BILLING_ADDRESS_ZIP ),
 			self::FIELD_BILLING_ADDRESS_STATE => MM_WPFS_ControlUtils::inputHidden( self::FIELD_BILLING_ADDRESS_STATE ),
 			self::FIELD_BILLING_ADDRESS_CITY => MM_WPFS_ControlUtils::inputHidden( self::FIELD_BILLING_ADDRESS_CITY ),
 			self::FIELD_BILLING_ADDRESS_COUNTRY => MM_WPFS_ControlUtils::inputHidden( self::FIELD_BILLING_ADDRESS_COUNTRY ),
-		);
+		];
 
 		return $fields;
 	}
 
 	protected static function getInlineSameBillingAndShippingAddressField() {
-		return array(
+		return [
 			self::FIELD_SAME_BILLING_AND_SHIPPING_ADDRESS => MM_WPFS_ControlUtils::checkbox( self::FIELD_SAME_BILLING_AND_SHIPPING_ADDRESS )
-		);
+		];
 	}
 
 	protected static function getInlineBillingAddressFields() {
-		$fields = array(
+		$fields = [
 			self::FIELD_BILLING_NAME => MM_WPFS_ControlUtils::input( self::FIELD_BILLING_NAME ),
 			self::FIELD_BILLING_ADDRESS_LINE1 => MM_WPFS_ControlUtils::input( self::FIELD_BILLING_ADDRESS_LINE1 ),
 			self::FIELD_BILLING_ADDRESS_LINE2 => MM_WPFS_ControlUtils::input( self::FIELD_BILLING_ADDRESS_LINE2 ),
@@ -1715,13 +1715,13 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 			self::FIELD_BILLING_ADDRESS_STATE_SELECT => MM_WPFS_ControlUtils::selectMenu( self::FIELD_BILLING_ADDRESS_STATE_SELECT ),
 			self::FIELD_BILLING_ADDRESS_CITY => MM_WPFS_ControlUtils::input( self::FIELD_BILLING_ADDRESS_CITY ),
 			self::FIELD_BILLING_ADDRESS_COUNTRY => MM_WPFS_ControlUtils::selectMenu( self::FIELD_BILLING_ADDRESS_COUNTRY ),
-		);
+		];
 
 		return $fields;
 	}
 
 	protected static function getInlineShippingAddressFields() {
-		$fields = array(
+		$fields = [
 			self::FIELD_SHIPPING_NAME => MM_WPFS_ControlUtils::input( self::FIELD_SHIPPING_NAME ),
 			self::FIELD_SHIPPING_ADDRESS_LINE1 => MM_WPFS_ControlUtils::input( self::FIELD_SHIPPING_ADDRESS_LINE1 ),
 			self::FIELD_SHIPPING_ADDRESS_LINE2 => MM_WPFS_ControlUtils::input( self::FIELD_SHIPPING_ADDRESS_LINE2 ),
@@ -1730,7 +1730,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 			self::FIELD_SHIPPING_ADDRESS_STATE_SELECT => MM_WPFS_ControlUtils::selectMenu( self::FIELD_SHIPPING_ADDRESS_STATE_SELECT ),
 			self::FIELD_SHIPPING_ADDRESS_CITY => MM_WPFS_ControlUtils::input( self::FIELD_SHIPPING_ADDRESS_CITY ),
 			self::FIELD_SHIPPING_ADDRESS_COUNTRY => MM_WPFS_ControlUtils::selectMenu( self::FIELD_SHIPPING_ADDRESS_COUNTRY ),
-		);
+		];
 
 		return $fields;
 	}
@@ -2102,9 +2102,9 @@ abstract class MM_WPFS_SubscriptionFormView extends MM_WPFS_FormView implements 
 			null
 		);
 		$this->plans->setAttributes(
-			array(
+			[
 				self::ATTR_DATA_WPFS_FORM_ID => $this->form->name
-			)
+			]
 		);
 
 		$this->preparePlans();
@@ -2215,7 +2215,7 @@ abstract class MM_WPFS_SubscriptionFormView extends MM_WPFS_FormView implements 
 
 	protected function preparePlans() {
 		if ( ! empty( $this->stripePlans ) ) {
-			$planOptions = array();
+			$planOptions = [];
 			$this->selectedStripePlans = MM_WPFS_Utils::getSortedFormPlans( $this->stripePlans, $this->form->decoratedPlans );
 
 			/** @var MM_WPFS_FormFieldConfiguration $priceFieldConfig */
@@ -2250,7 +2250,7 @@ abstract class MM_WPFS_SubscriptionFormView extends MM_WPFS_FormView implements 
 				$plan = MM_WPFS_ControlUtils::createControl( $this->formHash, $name, null, null, null, $planIndex );
 				$plan->setValue( $planId );
 
-				$planAttributes = array(
+				$planAttributes = [
 					self::ATTR_DATA_WPFS_VALUE => $planId,
 					self::ATTR_DATA_WPFS_PLAN_AMOUNT => MM_WPFS_Currencies::formatAmount( $planCurrency, $planAmount, true ),
 					self::ATTR_DATA_WPFS_PLAN_AMOUNT_IN_SMALLEST_COMMON_CURRENCY => $planAmount,
@@ -2263,7 +2263,7 @@ abstract class MM_WPFS_SubscriptionFormView extends MM_WPFS_FormView implements 
 					self::ATTR_DATA_WPFS_CURRENCY => $planCurrency,
 					self::ATTR_DATA_WPFS_ZERO_DECIMAL_SUPPORT => $currencyArray['zeroDecimalSupport'] ? 'true' : 'false',
 					self::ATTR_DATA_WPFS_CURRENCY_SYMBOL => MM_WPFS_Currencies::getCurrencySymbolFor( $planCurrency )
-				);
+				];
 				if ( $isPriceConfigurable && $planId == $selectedPriceId ) {
 					$planAttributes[ $selectedAttribute ] = $selectedAttribute;
 				}
@@ -2281,7 +2281,7 @@ abstract class MM_WPFS_SubscriptionFormView extends MM_WPFS_FormView implements 
 				$this->submitButton->setAttributes(
 					array_merge(
 						$this->submitButton->attributes( false ),
-						array( 'disabled' => true )
+						[ 'disabled' => true ]
 					)
 				);
 			}
@@ -2310,7 +2310,7 @@ abstract class MM_WPFS_SubscriptionFormView extends MM_WPFS_FormView implements 
 			$this->firstPlan = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_PLAN, null, null, null, null );
 			$this->firstPlan->setValue( $planId );
 			$this->firstPlan->setAttributes(
-				array(
+				[
 					'type' => 'hidden',
 					self::ATTR_DATA_WPFS_VALUE => $planId,
 					self::ATTR_DATA_WPFS_PLAN_AMOUNT => MM_WPFS_Currencies::formatAmount( $planCurrency, $planAmount, true ),
@@ -2324,17 +2324,17 @@ abstract class MM_WPFS_SubscriptionFormView extends MM_WPFS_FormView implements 
 					self::ATTR_DATA_WPFS_CURRENCY => $planCurrency,
 					self::ATTR_DATA_WPFS_ZERO_DECIMAL_SUPPORT => $currencyArray['zeroDecimalSupport'] ? 'true' : 'false',
 					self::ATTR_DATA_WPFS_CURRENCY_SYMBOL => MM_WPFS_Currencies::getCurrencySymbolFor( $planCurrency )
-				)
+				]
 			);
 		}
 	}
 
 	protected function preparePlanQuantity() {
-		$attributes = array(
+		$attributes = [
 			self::ATTR_DATA_WPFS_STEPPER => self::FIELD_PLAN_QUANTITY,
 			self::ATTR_DATA_DEFAULT_VALUE => 1,
 			self::ATTR_DATA_MINIMUM_VALUE => 1
-		);
+		];
 		if ( isset( $this->form->minimumQuantityOfSubscriptions ) && $this->form->minimumQuantityOfSubscriptions > 0 ) {
 			$attributes[ self::ATTR_DATA_MINIMUM_VALUE ] = $this->form->minimumQuantityOfSubscriptions;
 			$attributes[ self::ATTR_DATA_DEFAULT_VALUE ] = $this->form->minimumQuantityOfSubscriptions;
@@ -2350,10 +2350,10 @@ abstract class MM_WPFS_SubscriptionFormView extends MM_WPFS_FormView implements 
 	 */
 	public static function getFields() {
 
-		$fields = array(
+		$fields = [
 			self::FIELD_PLAN => MM_WPFS_ControlUtils::selectMenu( self::FIELD_PLAN ),
 			self::FIELD_PLAN_QUANTITY => MM_WPFS_ControlUtils::stepper( self::FIELD_PLAN_QUANTITY )
-		);
+		];
 
 		return array_merge( $fields, parent::getFields() );
 	}
@@ -2362,7 +2362,7 @@ abstract class MM_WPFS_SubscriptionFormView extends MM_WPFS_FormView implements 
 	 * @return array
 	 */
 	public function getSelectedStripePlanIds() {
-		$planList = array();
+		$planList = [];
 
 		foreach ( $this->selectedStripePlans as $plan ) {
 			$planList[ $plan->stripePlan->id ] = $plan->stripePlan->id;
@@ -2375,7 +2375,7 @@ abstract class MM_WPFS_SubscriptionFormView extends MM_WPFS_FormView implements 
 	 * @return array
 	 */
 	protected function getFormAttributes() {
-		$attributes = array();
+		$attributes = [];
 
 		$attributes[ self::ATTR_DATA_WPFS_TAX_RATE_TYPE ] = $this->form->vatRateType;
 		$attributes[ self::ATTR_DATA_WPFS_SHOW_COUPON_FIELD ] = $this->isCouponFieldVisible() ? 'true' : 'false';
@@ -2695,14 +2695,14 @@ trait MM_WPFS_FormView_CouponAddOn {
 					$result = $coupon;
 
 					$discountedPriceIds = MM_WPFS::getInstance()->getDiscountedPriceIdsByCouponAndForm( $coupon, $formType, $formId );
-					$this->couponData = array(
+					$this->couponData = [
 						'id' => $coupon->id,
 						'name' => $couponCode,
 						'currency' => $coupon->currency,
 						'percent_off' => $coupon->percent_off,
 						'amount_off' => $coupon->amount_off,
 						'discounted_price_ids' => $discountedPriceIds
-					);
+					];
 
 					$this->logger->debug( __FUNCTION__, "Coupon code {$couponCode} is applicable to form" );
 				}
@@ -2918,7 +2918,7 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 		$isAmountConfigured = false;
 
 		$amountButtonTitle = $this->getAmountButtonTitle();
-		$attributes = array(
+		$attributes = [
 			self::ATTR_DATA_WPFS_BUTTON_TITLE => MM_WPFS_Localization::translateLabel( $amountButtonTitle ),
 			self::ATTR_DATA_WPFS_CURRENCY => $this->currencyCode,
 			self::ATTR_DATA_WPFS_ZERO_DECIMAL_SUPPORT => $this->currencyZeroDecimalSupport ? 'true' : 'false',
@@ -2927,7 +2927,7 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 			self::ATTR_DATA_WPFS_SELECTOR_STYLE => $this->form->amountSelectorStyle,
 			self::ATTR_DATA_WPFS_PRODUCT_NAME => MM_WPFS_Utils::getDefaultProductDescription(),
 
-		);
+		];
 		if ( MM_WPFS::PAYMENT_TYPE_CUSTOM_AMOUNT == $this->form->customAmount ) {
 			$this->customAmount = MM_WPFS_ControlUtils::createControl(
 				$this->formHash,
@@ -2938,14 +2938,14 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 				__( 'Amount', 'wp-full-stripe-free' ),
 				null
 			);
-			$customAmountOptionAttributes = array(
+			$customAmountOptionAttributes = [
 				self::ATTR_DATA_WPFS_AMOUNT_PRICE_ID => 'customAmount',
-			);
+			];
 			$this->customAmount->setAttributes( array_merge( $attributes, $customAmountOptionAttributes ) );
 			$this->customAmount->setLabelAttributes(
-				array(
+				[
 					'class' => 'wpfs-form-label'
-				)
+				]
 			);
 			if ( $isAmountConfigurable ) {
 				$this->configureCustomAmountControl( $this->customAmount, $amountFieldConfig );
@@ -2974,7 +2974,7 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 				$this->form->customAmount = MM_WPFS::PAYMENT_TYPE_SPECIFIED_AMOUNT;
 			}
 
-			$customAmountOptions = array();
+			$customAmountOptions = [];
 			$lastIndex = -1;
 			$index = 0;
 			$selectedAttribute = $this->getOptionSelectedAttribute();
@@ -2992,13 +2992,13 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 					$index
 				);
 				$customAmountOption->setValue( MM_WPFS_Currencies::formatAmount( $this->currencyCode, $amount ) );
-				$optionAttributes = array(
+				$optionAttributes = [
 					self::ATTR_DATA_WPFS_AMOUNT_IN_SMALLEST_COMMON_CURRENCY => $amount,
 					self::ATTR_DATA_WPFS_AMOUNT_INDEX => $index,
 					self::ATTR_DATA_WPFS_AMOUNT_DESCRIPTION => $descriptionLabel,
 					self::ATTR_DATA_WPFS_AMOUNT_PRICE_ID => $product->stripePriceId,
 					self::ATTR_DATA_WPFS_PRODUCT_NAME => MM_WPFS_Localization::translateLabel( $product->name ),
-				);
+				];
 				if ( ! $isAmountConfigurable && $isPriceConfigurable && $product->stripePriceId == $selectedPriceId ) {
 					$optionAttributes[ $selectedAttribute ] = $selectedAttribute;
 				}
@@ -3025,9 +3025,9 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 				}
 				$this->customAmount->setAttributes( $customAmountAttributes );
 				$this->customAmount->setLabelAttributes(
-					array(
+					[
 						'class' => 'wpfs-sr-only'
-					)
+					]
 				);
 
 				$customAmountOption = MM_WPFS_ControlUtils::createControl(
@@ -3040,7 +3040,7 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 					$lastIndex + 1
 				);
 				$customAmountOption->setValue( 'other' );
-				$customAmountOptionAttributes = array_merge( $attributes, array( self::ATTR_DATA_WPFS_AMOUNT_PRICE_ID => 'customAmount' ) );
+				$customAmountOptionAttributes = array_merge( $attributes, [ self::ATTR_DATA_WPFS_AMOUNT_PRICE_ID => 'customAmount' ] );
 				$customAmountOption->setAttributes( $customAmountOptionAttributes );
 
 				if ( $isAmountConfigurable ) {
@@ -3060,7 +3060,7 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 				$this->submitButton->setAttributes(
 					array_merge(
 						$this->submitButton->attributes( false ),
-						array( 'disabled' => true )
+						[ 'disabled' => true ]
 					)
 				);
 			}
@@ -3071,7 +3071,7 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 	 * @return array
 	 */
 	protected function getFormAttributes() {
-		$attributes = array();
+		$attributes = [];
 
 		$attributes[ self::ATTR_DATA_WPFS_AMOUNT_TYPE ] = $this->form->customAmount;
 		if ( MM_WPFS::PAYMENT_TYPE_SPECIFIED_AMOUNT === $this->form->customAmount || MM_WPFS::PAYMENT_TYPE_CARD_CAPTURE === $this->form->customAmount ) {
@@ -3093,9 +3093,9 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 	 * @return array
 	 */
 	public static function getFields() {
-		$fields = array(
+		$fields = [
 			self::FIELD_CUSTOM_AMOUNT_UNIQUE => MM_WPFS_ControlUtils::inputGroup( self::FIELD_CUSTOM_AMOUNT_UNIQUE ),
-		);
+		];
 
 		return array_merge( $fields, parent::getFields() );
 	}
@@ -3203,7 +3203,7 @@ class MM_WPFS_InlinePaymentFormView extends MM_WPFS_PaymentFormView implements M
 	 * @return array
 	 */
 	public function getFormAttributes() {
-		$attributes = array();
+		$attributes = [];
 
 		$attributes[ self::ATTR_DATA_WPFS_FORM_TYPE ] = MM_WPFS::FORM_TYPE_INLINE_PAYMENT;
 		$attributes = array_merge( $attributes, parent::getFormAttributes() );
@@ -3250,7 +3250,7 @@ class MM_WPFS_InlineSubscriptionFormView extends MM_WPFS_SubscriptionFormView im
 	 */
 	public function getFormAttributes() {
 
-		$attributes = array();
+		$attributes = [];
 
 		$attributes[ self::ATTR_DATA_WPFS_FORM_TYPE ] = MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION;
 		$attributes = array_merge( $attributes, parent::getFormAttributes() );
@@ -3339,7 +3339,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 	protected function createDonationFrequencyOption( $label, $value, $index ) {
 		$frequencyOption = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_DONATION_FREQUENCY, null, null, $label, $index );
 		$frequencyOption->setValue( $value );
-		$frequencyAttributes = array();
+		$frequencyAttributes = [];
 		$frequencyOption->setAttributes( $frequencyAttributes );
 		$frequencyOption->setLabel( $label );
 
@@ -3405,7 +3405,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 	}
 
 	protected function prepareDonationFrequencyOptions() {
-		$donationFrequencyAttributes = array();
+		$donationFrequencyAttributes = [];
 
 		$this->donationFrequencyOptions = MM_WPFS_ControlUtils::createControl(
 			$this->formHash,
@@ -3418,7 +3418,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 		);
 		$this->donationFrequencyOptions->setAttributes( $donationFrequencyAttributes );
 
-		$donationFrequencyOptions = array();
+		$donationFrequencyOptions = [];
 		$frequencyOptionIndex = 0;
 
 		if ( $this->form->allowOneTimeDonation == 1 ) {
@@ -3485,7 +3485,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 		$isAmountConfigurable = $amountFieldConfig->isConfigurable() && ! is_null( $amountFieldConfig->getValue() );
 		$isAmountConfigured = false;
 
-		$attributes = array(
+		$attributes = [
 			self::ATTR_DATA_WPFS_BUTTON_TITLE => MM_WPFS_Localization::translateLabel( $amountButtonTitle ),
 			self::ATTR_DATA_WPFS_CURRENCY => $this->currencyCode,
 			self::ATTR_DATA_WPFS_ZERO_DECIMAL_SUPPORT => $this->currencyZeroDecimalSupport ? 'true' : 'false',
@@ -3493,7 +3493,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 			self::ATTR_DATA_WPFS_FORM_ID => $this->formHash,
 			self::ATTR_DATA_WPFS_SHOW_AMOUNT => $this->containsAmountMacro( $amountButtonTitle ) ? 1 : 0,
 
-		);
+		];
 
 		$this->donationAmountOptions = MM_WPFS_ControlUtils::createControl(
 			$this->formHash,
@@ -3506,7 +3506,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 		);
 		$this->donationAmountOptions->setAttributes( $attributes );
 
-		$donationAmountOptions = array();
+		$donationAmountOptions = [];
 		$donationAmountsArray = MM_WPFS_Utils::decodeJsonArray( $this->form->donationAmounts );
 		$selectedAttribute = $this->getOptionSelectedAttribute();
 		$lastIndex = -1;
@@ -3519,10 +3519,10 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 				$customAmountOption = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_CUSTOM_AMOUNT, null, null, $amountLabel, $index );
 				$formattedAmount = MM_WPFS_Currencies::formatAmount( $this->currencyCode, $donationAmount );
 				$customAmountOption->setValue( $formattedAmount );
-				$optionAttributes = array(
+				$optionAttributes = [
 					self::ATTR_DATA_WPFS_AMOUNT_IN_SMALLEST_COMMON_CURRENCY => $donationAmount,
 					self::ATTR_DATA_WPFS_AMOUNT_INDEX => $index,
-				);
+				];
 
 				if ( $isAmountConfigurable && $donationAmount == $amountFieldConfig->getValue() ) {
 					$optionAttributes[ $selectedAttribute ] = $selectedAttribute;
@@ -3548,13 +3548,13 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 			);
 			$customAmountAttributes = $attributes;
 			if ( count( $donationAmountOptions ) > 0 && $isAmountConfigured ) {
-				$customAmountAttributes = array_merge( $customAmountAttributes, array( 'disabled' => true ) );
+				$customAmountAttributes = array_merge( $customAmountAttributes, [ 'disabled' => true ] );
 			}
 			$this->customAmount->setAttributes( $customAmountAttributes );
 			$this->customAmount->setLabelAttributes(
-				array(
+				[
 					'class' => 'wpfs-sr-only'
-				)
+				]
 			);
 			$customAmountOption = MM_WPFS_ControlUtils::createControl(
 				$this->formHash,
@@ -3609,7 +3609,7 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 	 * @return array
 	 */
 	protected function getFormAttributes() {
-		$attributes = array();
+		$attributes = [];
 
 		$attributes[ self::ATTR_DATA_WPFS_CURRENCY ] = $this->currencyCode;
 		$attributes[ self::ATTR_DATA_WPFS_ZERO_DECIMAL_SUPPORT ] = $this->currencyZeroDecimalSupport ? 'true' : 'false';
@@ -3625,9 +3625,9 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 	 * @return array
 	 */
 	public static function getFields() {
-		$fields = array(
+		$fields = [
 			self::FIELD_CUSTOM_AMOUNT_UNIQUE => MM_WPFS_ControlUtils::inputGroup( self::FIELD_CUSTOM_AMOUNT_UNIQUE )
-		);
+		];
 
 		return array_merge( $fields, parent::getFields() );
 	}
@@ -3716,7 +3716,7 @@ class MM_WPFS_InlineDonationFormView extends MM_WPFS_DonationFormView {
 	 * @return array
 	 */
 	public function getFormAttributes() {
-		$attributes = array();
+		$attributes = [];
 
 		$attributes[ self::ATTR_DATA_WPFS_FORM_TYPE ] = MM_WPFS::FORM_TYPE_INLINE_DONATION;
 		$attributes = array_merge( $attributes, parent::getFormAttributes() );
@@ -3750,7 +3750,7 @@ class MM_WPFS_CheckoutDonationFormView extends MM_WPFS_DonationFormView {
 	}
 
 	protected function getFormAttributes() {
-		$attributes = array();
+		$attributes = [];
 
 		$attributes[ self::ATTR_DATA_WPFS_FORM_TYPE ] = MM_WPFS::FORM_TYPE_CHECKOUT_DONATION;
 		$attributes = array_merge( $attributes, parent::getFormAttributes() );
@@ -3771,12 +3771,12 @@ abstract class MM_WPFS_SaveCardFormView extends MM_WPFS_FormView implements MM_W
 	}
 
 	protected function getFormAttributes() {
-		$attributes = array();
+		$attributes = [];
 		return array_merge( $attributes, parent::getFormAttributes() );
 	}
 
 	public static function getFields() {
-		$fields = array();
+		$fields = [];
 
 		return array_merge( $fields, parent::getFields() );
 	}
@@ -3809,7 +3809,7 @@ class MM_WPFS_InlineSaveCardFormView extends MM_WPFS_SaveCardFormView {
 	}
 
 	public function getFormAttributes() {
-		$attributes = array();
+		$attributes = [];
 
 		$attributes[ self::ATTR_DATA_WPFS_FORM_TYPE ] = MM_WPFS::FORM_TYPE_INLINE_SAVE_CARD;
 		$attributes = array_merge( $attributes, parent::getFormAttributes() );
@@ -3843,7 +3843,7 @@ class MM_WPFS_CheckoutPaymentFormView extends MM_WPFS_PaymentFormView {
 	}
 
 	protected function getFormAttributes() {
-		$attributes = array();
+		$attributes = [];
 
 		$attributes[ self::ATTR_DATA_WPFS_FORM_TYPE ] = MM_WPFS::FORM_TYPE_CHECKOUT_PAYMENT;
 		$attributes = array_merge( $attributes, parent::getFormAttributes() );
@@ -3872,8 +3872,8 @@ class MM_WPFS_CheckoutSubscriptionFormView extends MM_WPFS_SubscriptionFormView 
 	}
 
 	public static function getFields() {
-		$fields = array(
-		);
+		$fields = [
+		];
 		$fields = array_merge( $fields, self::getPopupBillingAddressFields() );
 
 		return array_merge( $fields, parent::getFields() );
@@ -3884,7 +3884,7 @@ class MM_WPFS_CheckoutSubscriptionFormView extends MM_WPFS_SubscriptionFormView 
 	 */
 	public function getFormAttributes() {
 
-		$attributes = array();
+		$attributes = [];
 
 		$attributes[ self::ATTR_DATA_WPFS_FORM_TYPE ] = MM_WPFS::FORM_TYPE_CHECKOUT_SUBSCRIPTION;
 		$attributes[ self::ATTR_DATA_WPFS_SIMPLE_BUTTON_LAYOUT ] = $this->form->simpleButtonLayout;
@@ -3938,7 +3938,7 @@ class MM_WPFS_CheckoutSaveCardFormView extends MM_WPFS_SaveCardFormView {
 	}
 
 	protected function getFormAttributes() {
-		$attributes = array();
+		$attributes = [];
 
 		$attributes[ self::ATTR_DATA_WPFS_FORM_TYPE ] = MM_WPFS::FORM_TYPE_CHECKOUT_SAVE_CARD;
 		$attributes = array_merge( $attributes, parent::getFormAttributes() );

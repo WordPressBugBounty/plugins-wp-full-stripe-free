@@ -14,9 +14,9 @@ function add_shipping_address_collection( $args ): array
 		return $args;
 	}
 
-	$args['shipping_address_collection'] = array(
+	$args['shipping_address_collection'] = [
 		'allowed_countries' => []
-	);
+	];
 
 	return $args;
 }

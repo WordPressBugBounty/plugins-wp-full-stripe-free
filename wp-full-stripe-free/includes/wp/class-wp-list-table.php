@@ -29,7 +29,7 @@ class WPFS_List_Table {
 	 * @since 3.1.0
 	 * @var array
 	 */
-	protected $_pagination_args = array();
+	protected $_pagination_args = [];
 
 	/**
 	 * The current screen.
@@ -61,7 +61,7 @@ class WPFS_List_Table {
 	 * @since 4.1.0
 	 * @var array
 	 */
-	protected $modes = array();
+	protected $modes = [];
 
 	/**
 	 * Stores the value returned by ->get_column_info().
@@ -76,17 +76,17 @@ class WPFS_List_Table {
 	 *
 	 * @var array
 	 */
-	protected $compat_fields = array( '_args', '_pagination_args', 'screen', '_actions', '_pagination' );
+	protected $compat_fields = [ '_args', '_pagination_args', 'screen', '_actions', '_pagination' ];
 
 	/**
 	 * {@internal Missing Summary}
 	 *
 	 * @var array
 	 */
-	protected $compat_methods = array( 'set_pagination_args', 'get_views', 'get_bulk_actions', 'bulk_actions',
+	protected $compat_methods = [ 'set_pagination_args', 'get_views', 'get_bulk_actions', 'bulk_actions',
 		'row_actions', 'months_dropdown', 'view_switcher', 'comments_bubble', 'get_items_per_page', 'pagination',
 		'get_sortable_columns', 'get_column_info', 'get_table_classes', 'display_tablenav', 'extra_tablenav',
-		'single_row_columns' );
+		'single_row_columns' ];
 
 	/**
 	 * Constructor.
@@ -113,17 +113,17 @@ class WPFS_List_Table {
 	 *                            Default null.
 	 * }
 	 */
-	public function __construct( $args = array() ) {
-		$args = wp_parse_args( $args, array(
+	public function __construct( $args = [] ) {
+		$args = wp_parse_args( $args, [
 			'plural' => '',
 			'singular' => '',
 			'ajax' => false,
 			'screen' => null,
-		) );
+		] );
 
 		$this->screen = convert_to_screen( $args['screen'] );
 
-		add_filter( "manage_{$this->screen->id}_columns", array( $this, 'get_columns' ), 0 );
+		add_filter( "manage_{$this->screen->id}_columns", [ $this, 'get_columns' ], 0 );
 
 		if ( !$args['plural'] )
 			$args['plural'] = $this->screen->base;
@@ -135,14 +135,14 @@ class WPFS_List_Table {
 
 		if ( $args['ajax'] ) {
 			// wp_enqueue_script( 'list-table' );
-			add_action( 'admin_footer', array( $this, '_js_vars' ) );
+			add_action( 'admin_footer', [ $this, '_js_vars' ] );
 		}
 
 		if ( empty( $this->modes ) ) {
-			$this->modes = array(
+			$this->modes = [
 				'list'    => __( 'List View', 'wp-full-stripe-free' ),
 				'excerpt' => __( 'Excerpt View', 'wp-full-stripe-free' )
-			);
+			];
 		}
 	}
 
@@ -213,7 +213,7 @@ class WPFS_List_Table {
 	 */
 	public function __call( $name, $arguments ) {
 		if ( in_array( $name, $this->compat_methods ) ) {
-			return call_user_func_array( array( $this, $name ), $arguments );
+			return call_user_func_array( [ $this, $name ], $arguments );
 		}
 		return false;
 	}
@@ -247,11 +247,11 @@ class WPFS_List_Table {
 	 * @param array|string $args Array or string of arguments with information about the pagination.
 	 */
 	protected function set_pagination_args( $args ) {
-		$args = wp_parse_args( $args, array(
+		$args = wp_parse_args( $args, [
 			'total_items' => 0,
 			'total_pages' => 0,
 			'per_page' => 0,
-		) );
+		] );
 
 		if ( !$args['total_pages'] && $args['per_page'] > 0 )
 			$args['total_pages'] = ceil( $args['total_items'] / $args['per_page'] );
@@ -330,7 +330,7 @@ class WPFS_List_Table {
 <p class="search-box">
 	<label class="screen-reader-text" for="<?php echo esc_attr( $input_id ); ?>"><?php echo $text; ?>:</label>
 	<input type="search" id="<?php echo esc_attr( $input_id ); ?>" name="s" value="<?php _admin_search_query(); ?>" />
-	<?php submit_button( $text, '', '', false, array( 'id' => 'search-submit' ) ); ?>
+	<?php submit_button( $text, '', '', false, [ 'id' => 'search-submit' ] ); ?>
 </p>
 <?php
 	}
@@ -344,7 +344,7 @@ class WPFS_List_Table {
 	 * @return array
 	 */
 	protected function get_views() {
-		return array();
+		return [];
 	}
 
 	/**
@@ -388,7 +388,7 @@ class WPFS_List_Table {
 	 * @return array
 	 */
 	protected function get_bulk_actions() {
-		return array();
+		return [];
 	}
 
 	/**
@@ -435,7 +435,7 @@ class WPFS_List_Table {
 
 		echo "</select>\n";
 
-		submit_button( __( 'Apply', 'wp-full-stripe-free' ), 'action', '', false, array( 'id' => "doaction$two" ) );
+		submit_button( __( 'Apply', 'wp-full-stripe-free' ), 'action', '', false, [ 'id' => "doaction$two" ] );
 		echo "\n";
 	}
 
@@ -581,7 +581,7 @@ class WPFS_List_Table {
 		<div class="view-switch">
 <?php
 			foreach ( $this->modes as $mode => $title ) {
-				$classes = array( 'view-' . $mode );
+				$classes = [ 'view-' . $mode ];
 				if ( $current_mode === $mode )
 					$classes[] = 'current';
 				printf(
@@ -622,7 +622,7 @@ class WPFS_List_Table {
 		// Approved comments have different display depending on some conditions.
 		} elseif ( $approved_comments ) {
 			printf( '<a href="%s" class="post-com-count post-com-count-approved"><span class="comment-count-approved" aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></a>',
-				esc_url( add_query_arg( array( 'p' => $post_id, 'comment_status' => 'approved' ), admin_url( 'edit-comments.php' ) ) ),
+				esc_url( add_query_arg( [ 'p' => $post_id, 'comment_status' => 'approved' ], admin_url( 'edit-comments.php' ) ) ),
 				$approved_comments_number,
 				$pending_comments ? $approved_phrase : $approved_only_phrase
 			);
@@ -635,7 +635,7 @@ class WPFS_List_Table {
 
 		if ( $pending_comments ) {
 			printf( '<a href="%s" class="post-com-count post-com-count-pending"><span class="comment-count-pending" aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></a>',
-				esc_url( add_query_arg( array( 'p' => $post_id, 'comment_status' => 'moderated' ), admin_url( 'edit-comments.php' ) ) ),
+				esc_url( add_query_arg( [ 'p' => $post_id, 'comment_status' => 'moderated' ], admin_url( 'edit-comments.php' ) ) ),
 				$pending_comments_number,
 				$pending_phrase
 			);
@@ -725,7 +725,7 @@ class WPFS_List_Table {
 
 		$current_url = remove_query_arg( $removable_query_args, $current_url );
 
-		$page_links = array();
+		$page_links = [];
 
 		$total_pages_before = '<span class="paging-input">';
 		$total_pages_after  = '</span></span>';
@@ -842,7 +842,7 @@ class WPFS_List_Table {
 	 * @return array
 	 */
 	protected function get_sortable_columns() {
-		return array();
+		return [];
 	}
 
 	/**
@@ -931,7 +931,7 @@ class WPFS_List_Table {
 		if ( isset( $this->_column_headers ) && is_array( $this->_column_headers ) ) {
 			// Back-compat for list tables that have been manually setting $_column_headers for horse reasons.
 			// In 4.3, we added a fourth argument for primary column.
-			$column_headers = array( array(), array(), array(), $this->get_primary_column_name() );
+			$column_headers = [ [], [], [], $this->get_primary_column_name() ];
 			foreach ( $this->_column_headers as $key => $value ) {
 				$column_headers[ $key ] = $value;
 			}
@@ -955,7 +955,7 @@ class WPFS_List_Table {
 		 */
 		$_sortable = apply_filters( "manage_{$this->screen->id}_sortable_columns", $sortable_columns );
 
-		$sortable = array();
+		$sortable = [];
 		foreach ( $_sortable as $id => $data ) {
 			if ( empty( $data ) )
 				continue;
@@ -968,7 +968,7 @@ class WPFS_List_Table {
 		}
 
 		$primary = $this->get_primary_column_name();
-		$this->_column_headers = array( $columns, $hidden, $sortable, $primary );
+		$this->_column_headers = [ $columns, $hidden, $sortable, $primary ];
 
 		return $this->_column_headers;
 	}
@@ -1021,7 +1021,7 @@ class WPFS_List_Table {
 		}
 
 		foreach ( $columns as $column_key => $column_display_name ) {
-			$class = array( 'manage-column', "column-$column_key" );
+			$class = [ 'manage-column', "column-$column_key" ];
 
 			if ( in_array( $column_key, $hidden ) ) {
 				$class[] = 'hidden';
@@ -1029,7 +1029,7 @@ class WPFS_List_Table {
 
 			if ( 'cb' === $column_key )
 				$class[] = 'check-column';
-			elseif ( in_array( $column_key, array( 'posts', 'comments', 'links' ) ) )
+			elseif ( in_array( $column_key, [ 'posts', 'comments', 'links' ] ) )
 				$class[] = 'num';
 
 			if ( $column_key === $primary ) {
@@ -1108,7 +1108,7 @@ class WPFS_List_Table {
 	 * @return array List of CSS classes for the table tag.
 	 */
 	protected function get_table_classes() {
-		return array( 'widefat', 'fixed', 'striped', $this->_args['plural'] );
+		return [ 'widefat', 'fixed', 'striped', $this->_args['plural'] ];
 	}
 
 	/**
@@ -1230,7 +1230,7 @@ class WPFS_List_Table {
 				echo '</th>';
 			} elseif ( method_exists( $this, '_column_' . $column_name ) ) {
 				echo call_user_func(
-					array( $this, '_column_' . $column_name ),
+					[ $this, '_column_' . $column_name ],
 					$item,
 					$classes,
 					$data,
@@ -1238,7 +1238,7 @@ class WPFS_List_Table {
 				);
 			} elseif ( method_exists( $this, 'column_' . $column_name ) ) {
 				echo "<td $attributes>";
-				echo call_user_func( array( $this, 'column_' . $column_name ), $item );
+				echo call_user_func( [ $this, 'column_' . $column_name ], $item );
 				echo $this->handle_row_actions( $item, $column_name, $primary );
 				echo "</td>";
 			} else {
@@ -1281,7 +1281,7 @@ class WPFS_List_Table {
 
 		$rows = ob_get_clean();
 
-		$response = array( 'rows' => $rows );
+		$response = [ 'rows' => $rows ];
 
 		if ( isset( $this->_pagination_args['total_items'] ) ) {
 			$response['total_items_i18n'] = sprintf(
@@ -1302,13 +1302,13 @@ class WPFS_List_Table {
 	 *
 	 */
 	public function _js_vars() {
-		$args = array(
+		$args = [
 			'class'  => get_class( $this ),
-			'screen' => array(
+			'screen' => [
 				'id'   => $this->screen->id,
 				'base' => $this->screen->base,
-			)
-		);
+			]
+		];
 
 		printf( "<script type='text/javascript'>list_args = %s;</script>\n", wp_json_encode( $args ) );
 	}

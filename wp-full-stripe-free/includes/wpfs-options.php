@@ -17,8 +17,8 @@ class MM_WPFS_Options {
 	const OPTION_TEST_ACCOUNT_STATUS = 'test_account_status';
 	const OPTION_USE_WP_TEST_PLATFORM = 'use_wp_test_platform';
 	const OPTION_USE_WP_LIVE_PLATFORM = 'use_wp_live_platform';
-	const OPTION_GOOGLE_CLOUD_FUNCTIONS_URL = 'https://us-central1-wpfs-functions-themeisle.cloudfunctions.net';
-	const OPTION_GOOGLE_CLOUD_FUNCTIONS_STAGE_URL = 'https://us-central1-wpfp-functions-stage.cloudfunctions.net';
+	const OPTION_CLOUD_FUNCTIONS_URL = 'https://api.paymentsplugin.com';
+	const OPTION_CLOUD_FUNCTIONS_STAGE_URL = 'https://staging-api.paymentsplugin.com';
 	const OPTION_CONNECT_MODE = 'connect_mode';
 	const OPTION_ACCOUNT_STATUS_REJECTED = 'REJECTED';
 	const OPTION_ACCOUNT_STATUS_RESTRICTED = 'RESTRICTED';
@@ -138,9 +138,9 @@ class MM_WPFS_Options {
 	public function getFunctionsUrl() {
 		$target = $this->get( self::OPTION_CONNECT_MODE );
 		if ( isset( $target ) && $target === 'stage' ) {
-			return self::OPTION_GOOGLE_CLOUD_FUNCTIONS_STAGE_URL;
+			return self::OPTION_CLOUD_FUNCTIONS_STAGE_URL;
 		} else {
-			return self::OPTION_GOOGLE_CLOUD_FUNCTIONS_URL;
+			return self::OPTION_CLOUD_FUNCTIONS_URL;
 		}
 	}
 }

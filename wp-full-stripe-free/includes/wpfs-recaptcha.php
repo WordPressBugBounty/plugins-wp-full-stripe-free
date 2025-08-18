@@ -13,18 +13,18 @@ class MM_WPFS_ReCaptcha {
         $googleReCAPTCHASecretKey = self::getSecretKey( $context );
 
         if (!is_null($googleReCAPTCHASecretKey) && !is_null($googleReCAPTCHAResponse)) {
-            $inputArray = array(
+            $inputArray = [
                 'secret' => $googleReCAPTCHASecretKey,
                 'response' => $googleReCAPTCHAResponse,
                 'remoteip' => $_SERVER['REMOTE_ADDR']
-            );
+            ];
             $request = wp_remote_post(
                 self::URL_RECAPTCHA_API_SITEVERIFY,
-                array(
+                [
                     'timeout' => 10,
                     'sslverify' => true,
                     'body' => $inputArray
-                )
+                ]
             );
             if (!is_wp_error($request)) {
                 $request = json_decode(wp_remote_retrieve_body($request));

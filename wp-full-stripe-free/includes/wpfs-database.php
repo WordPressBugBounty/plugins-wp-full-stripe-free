@@ -753,8 +753,8 @@ class MM_WPFS_Database {
 
 	/**
 	 * @param MM_WPFS_Public_DonationFormModel $donationFormModel
-	 * @param \StripeWPFS\PaymentIntent $paymentIntent
-	 * @param \StripeWPFS\Subscription $subscription
+	 * @param \StripeWPFS\Stripe\PaymentIntent $paymentIntent
+	 * @param \StripeWPFS\Stripe\Subscription $subscription
 	 *
 	 * @return mixed
 	 * @throws Exception
@@ -768,7 +768,7 @@ class MM_WPFS_Database {
 		$shippingAddress = $donationFormModel->getShippingAddress();
 
 		$description = $this->getTruncatedDescriptionFromPaymentIntent( $paymentIntent );
-		$data = array(
+		$data = [
 			'stripeCustomerID' => $stripeCustomerID,
 			'stripeSubscriptionID' => $stripeSubscriptionID,
 			'stripePaymentIntentID' => $paymentIntent->id,
@@ -813,7 +813,7 @@ class MM_WPFS_Database {
 			'ipAddressSubmit' => $donationFormModel->getIpAddress(),
 			'customFields' => $donationFormModel->getCustomFieldsJSON(),
 			'phoneNumber' => empty( $donationFormModel->getCardHolderPhone() ) ? null : $donationFormModel->getCardHolderPhone()
-		);
+		];
 
 		$insertResult = $wpdb->insert( $wpdb->prefix . 'fullstripe_donations', apply_filters( 'fullstripe_insert_donation_data', $data ) );
 		self::handleDbError( $insertResult, __FUNCTION__ . '(): an error occurred during insert!' );
@@ -825,16 +825,16 @@ class MM_WPFS_Database {
 		$report = $this->getReportByPaymentIntentID( $lastCharge->payment_intent );
 
 		if ( $report ) {
-			$this->updateReport( $report->id, array(
+			$this->updateReport( $report->id, [
 				'updated_at'            => date( 'Y-m-d H:i:s', time() ),
 				'currency'              => $data['currency'] ?? null,
 				'amount'                => $data['amount'] ?? null,
 				'stripeCustomerID'      => $data['stripeCustomerID'] ?? null,
 				'status'                => $this->getPaymentStatus( $lastCharge ),
 				'mode'				    => $lastCharge->livemode ? 'live' : 'test',
-			) );
+			] );
 		} else {
-			$this->addReport( array(
+			$this->addReport( [
 				'created_at'            => date( 'Y-m-d H:i:s', $lastCharge->created ),
 				'updated_at'            => date( 'Y-m-d H:i:s', $lastCharge->created ),
 				'currency'              => $data['currency'] ?? null,
@@ -846,7 +846,7 @@ class MM_WPFS_Database {
 				'stripeSubscriptionID'  => $data['stripeSubscriptionID'] ?? null,
 				'status'                => $this->getPaymentStatus( $lastCharge ),
 				'mode'				    => $lastCharge->livemode ? 'live' : 'test',
-			) );
+			] );
 		}
 
 		return $insertResult;
@@ -854,8 +854,8 @@ class MM_WPFS_Database {
 
 	/**
 	 * @param MM_WPFS_Public_DonationFormModel $donationFormModel
-	 * @param \StripeWPFS\PaymentIntent $paymentIntent
-	 * @param \StripeWPFS\Subscription $subscription
+	 * @param \StripeWPFS\Stripe\PaymentIntent $paymentIntent
+	 * @param \StripeWPFS\Stripe\Subscription $subscription
 	 *
 	 * @return mixed
 	 * @throws Exception
@@ -870,7 +870,7 @@ class MM_WPFS_Database {
 		$shippingAddress = $donationFormModel->getShippingAddress();
 
 		$description = $this->getTruncatedDescriptionFromPaymentIntent( $paymentIntent );
-		$data = array(
+		$data = [
 			'stripeCustomerID' => $stripeCustomerID,
 			'stripeSubscriptionID' => $stripeSubscriptionID,
 			'stripePaymentIntentID' => $paymentIntent->id,
@@ -915,7 +915,7 @@ class MM_WPFS_Database {
 			'ipAddressSubmit' => $donationFormModel->getIpAddress(),
 			'customFields' => $donationFormModel->getCustomFieldsJSON(),
 			'phoneNumber' => empty( $donationFormModel->getCardHolderPhone() ) ? null : $donationFormModel->getCardHolderPhone()
-		);
+		];
 
 		$insertResult = $wpdb->insert( $wpdb->prefix . 'fullstripe_donations', apply_filters( 'fullstripe_insert_checkout_donation_data', $data ) );
 		self::handleDbError( $insertResult, __FUNCTION__ . '(): an error occurred during insert!' );
@@ -927,16 +927,16 @@ class MM_WPFS_Database {
 		$report = $this->getReportByPaymentIntentID( $lastCharge->payment_intent );
 
 		if ( $report ) {
-			$this->updateReport( $report->id, array(
+			$this->updateReport( $report->id, [
 				'updated_at'            => date( 'Y-m-d H:i:s', time() ),
 				'currency'              => $data['currency'] ?? null,
 				'amount'                => $data['amount'] ?? null,
 				'stripeCustomerID'      => $data['stripeCustomerID'] ?? null,
 				'status'                => $this->getPaymentStatus( $lastCharge ),
 				'mode'				    => $lastCharge->livemode ? 'live' : 'test',
-			) );
+			] );
 		} else {
-			$this->addReport( array(
+			$this->addReport( [
 				'created_at'            => date( 'Y-m-d H:i:s', $lastCharge->created ),
 				'updated_at'            => date( 'Y-m-d H:i:s', $lastCharge->created ),
 				'currency'              => $data['currency'] ?? null,
@@ -948,7 +948,7 @@ class MM_WPFS_Database {
 				'stripeSubscriptionID'  => $data['stripeSubscriptionID'] ?? null,
 				'status'                => $this->getPaymentStatus( $lastCharge ),
 				'mode'				    => $lastCharge->livemode ? 'live' : 'test',
-			) );
+			] );
 		}
 
 		return $insertResult;
@@ -969,14 +969,14 @@ class MM_WPFS_Database {
 	public function insertOrUpdatePayment( $paymentFormModel, $transactionData, $lastCharge ) {
 		global $wpdb;
 
-		/** @var \StripeWPFS\PaymentIntent */
+		/** @var \StripeWPFS\Stripe\PaymentIntent */
 		$paymentIntent = $paymentFormModel->getStripePaymentIntent();
 		$billingAddress = $paymentFormModel->getBillingAddress( false );
 		$shippingAddress = $paymentFormModel->getShippingAddress( false );
 		$description = $this->getTruncatedDescriptionFromPaymentIntent( $paymentIntent );
 		$paymentMethodType = $paymentFormModel->getStripePaymentMethodType() ? $paymentFormModel->getStripePaymentMethodType() : 'card';
 
-		$data = array(
+		$data = [
 			'eventID' => $paymentIntent->id,
 			'description' => $description,
 			'payment_method' => $paymentMethodType,
@@ -1019,7 +1019,7 @@ class MM_WPFS_Database {
 			'ipAddressSubmit' => $paymentFormModel->getIpAddress(),
 			'customFields' => $paymentFormModel->getCustomFieldsJSON(),
 			'phoneNumber' => empty( $paymentFormModel->getCardHolderPhone() ) ? null : $paymentFormModel->getCardHolderPhone()
-		);
+		];
 		// see if a payment with the same event ID already exists
 		$existingPayment = $wpdb->get_row(
 			$wpdb->prepare(
@@ -1033,7 +1033,7 @@ class MM_WPFS_Database {
 			$result = $wpdb->update(
 				$wpdb->prefix . 'fullstripe_payments',
 				apply_filters( 'fullstripe_update_payment_data', $data ),
-				array( 'eventID' => $paymentIntent->id )
+				[ 'eventID' => $paymentIntent->id ]
 			);
 			self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during update!' );
 
@@ -1050,16 +1050,16 @@ class MM_WPFS_Database {
 		$report = $this->getReportByPaymentIntentID( $lastCharge->payment_intent );
 
 		if ( $report ) {
-			$this->updateReport( $report->id, array(
+			$this->updateReport( $report->id, [
 				'updated_at'            => date( 'Y-m-d H:i:s', time() ),
 				'currency'              => $data['currency'] ?? null,
 				'amount'                => $data['amount'] ?? null,
 				'stripeCustomerID'      => $data['stripeCustomerID'] ?? null,
 				'status'                => $this->getPaymentStatus( $lastCharge ),
 				'mode'				    => $lastCharge->livemode ? 'live' : 'test',
-			) );
+			] );
 		} else {
-			$this->addReport( array(
+			$this->addReport( [
 				'created_at'            => date( 'Y-m-d H:i:s', $lastCharge->created ),
 				'updated_at'            => date( 'Y-m-d H:i:s', $lastCharge->created ),
 				'currency'              => $data['currency'] ?? null,
@@ -1070,7 +1070,7 @@ class MM_WPFS_Database {
 				'stripeCustomerID'      => $data['stripeCustomerID'] ?? null,
 				'status'                => $this->getPaymentStatus( $lastCharge ),
 				'mode'				    => $lastCharge->livemode ? 'live' : 'test',
-			) );
+			] );
 		}
 
 		return $result;
@@ -1098,7 +1098,7 @@ class MM_WPFS_Database {
 			$planId = $stripeSubscription->items->data[0]->plan->id;
 		}
 
-		$data = array(
+		$data = [
 			'stripeCustomerID' => $stripeCustomer->id,
 			'stripeSubscriptionID' => $transactionData->getTransactionId(),
 			'stripePaymentIntentID' => isset( $stripePaymentIntent ) ? $stripePaymentIntent->id : null,
@@ -1135,7 +1135,7 @@ class MM_WPFS_Database {
 			'ipAddressSubmit' => $subscriptionFormModel->getIpAddress(),
 			'customFields' => $subscriptionFormModel->getCustomFieldsJSON(),
 			'phoneNumber' => empty( $subscriptionFormModel->getCardHolderPhone() ) ? null : $subscriptionFormModel->getCardHolderPhone()
-		);
+		];
 
 		global $wpdb;
 		$insertResult = $wpdb->insert( $wpdb->prefix . 'fullstripe_subscribers', apply_filters( 'fullstripe_insert_subscriber_data', $data ) );
@@ -1148,16 +1148,16 @@ class MM_WPFS_Database {
 		$report = $this->getReportByPaymentIntentID( $data['stripePaymentIntentID'] ?? null );
 
 		if ( $report ) {
-			$this->updateReport( $report->id, array(
+			$this->updateReport( $report->id, [
 				'updated_at'            => date( 'Y-m-d H:i:s', time() ),
 				'formId'                => $data['formId'] ?? null,
 				'formType'              => MM_WPFS_Utils::getFormType( $subscriptionFormModel->getForm() ),
 				'stripeCustomerID'      => $data['stripeCustomerID'] ?? null,
 				'status'                => 'succeeded',
 				'mode'				    => $stripeSubscription->livemode ? 'live' : 'test',
-			) );
+			] );
 		} else {
-			$this->addReport( array(
+			$this->addReport( [
 				'created_at'            => date( 'Y-m-d H:i:s', $stripeSubscription->created ),
 				'updated_at'            => date( 'Y-m-d H:i:s', $stripeSubscription->created ),
 				'formId'                => $data['formId'] ?? null,
@@ -1167,7 +1167,7 @@ class MM_WPFS_Database {
 				'stripeSubscriptionID'  => $data['stripeSubscriptionID'] ?? null,
 				'status'                => 'succeeded',
 				'mode'				    => $stripeSubscription->livemode ? 'live' : 'test',
-			) );
+			] );
 		}
 
 		return $insertResult;
@@ -1222,7 +1222,7 @@ class MM_WPFS_Database {
 	 */
 	function updateSubscriber( $id, $subscriber ) {
 		global $wpdb;
-		$updateResult = $wpdb->update( $wpdb->prefix . 'fullstripe_subscribers', $subscriber, array( 'subscriberID' => $id ) );
+		$updateResult = $wpdb->update( $wpdb->prefix . 'fullstripe_subscribers', $subscriber, [ 'subscriberID' => $id ] );
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
 
 		return $updateResult;
@@ -1253,7 +1253,7 @@ class MM_WPFS_Database {
 	 */
 	public function updateInlineSubscriptionForm( $id, $form ) {
 		global $wpdb;
-		$updateResult = $wpdb->update( $wpdb->prefix . 'fullstripe_subscription_forms', $form, array( 'subscriptionFormID' => $id ) );
+		$updateResult = $wpdb->update( $wpdb->prefix . 'fullstripe_subscription_forms', $form, [ 'subscriptionFormID' => $id ] );
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
 
 		return $updateResult;
@@ -1284,7 +1284,7 @@ class MM_WPFS_Database {
 		global $wpdb;
 		unset( $form['stripeElementsTheme'] );
 		unset( $form['stripeElementsFont'] );
-		$updateResult = $wpdb->update( $wpdb->prefix . 'fullstripe_checkout_subscription_forms', $form, array( 'checkoutSubscriptionFormID' => $id ) );
+		$updateResult = $wpdb->update( $wpdb->prefix . 'fullstripe_checkout_subscription_forms', $form, [ 'checkoutSubscriptionFormID' => $id ] );
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
 
 		return $updateResult;
@@ -1363,7 +1363,7 @@ class MM_WPFS_Database {
 	function updateInlineDonationForm( $id, $form ) {
 		global $wpdb;
 
-		$updateResult = $wpdb->update( $wpdb->prefix . 'fullstripe_donation_forms', $form, array( 'donationFormID' => $id ) );
+		$updateResult = $wpdb->update( $wpdb->prefix . 'fullstripe_donation_forms', $form, [ 'donationFormID' => $id ] );
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
 
 		return $updateResult;
@@ -1382,7 +1382,7 @@ class MM_WPFS_Database {
 		unset( $form['stripeElementsTheme'] );
 		unset( $form['stripeElementsFont'] );
 
-		$updateResult = $wpdb->update( $wpdb->prefix . 'fullstripe_checkout_donation_forms', $form, array( 'checkoutDonationFormID' => $id ) );
+		$updateResult = $wpdb->update( $wpdb->prefix . 'fullstripe_checkout_donation_forms', $form, [ 'checkoutDonationFormID' => $id ] );
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
 
 		return $updateResult;
@@ -1400,7 +1400,7 @@ class MM_WPFS_Database {
 	function updateInlinePaymentForm( $id, $form ) {
 		global $wpdb;
 
-		$updateResult = $wpdb->update( $wpdb->prefix . 'fullstripe_payment_forms', $form, array( 'paymentFormID' => $id ) );
+		$updateResult = $wpdb->update( $wpdb->prefix . 'fullstripe_payment_forms', $form, [ 'paymentFormID' => $id ] );
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
 
 		return $updateResult;
@@ -1437,7 +1437,7 @@ class MM_WPFS_Database {
 		unset( $form['paymentMethods'] );
 		file_put_contents( 'checout.json', json_encode( $form, JSON_PRETTY_PRINT ) );
 
-		$updateResult = $wpdb->update( $wpdb->prefix . 'fullstripe_checkout_forms', $form, array( 'checkoutFormID' => $id ) );
+		$updateResult = $wpdb->update( $wpdb->prefix . 'fullstripe_checkout_forms', $form, [ 'checkoutFormID' => $id ] );
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
 
 		return $updateResult;
@@ -2230,13 +2230,13 @@ class MM_WPFS_Database {
 	public function insertSavedCard( $paymentFormModel, $transactionData ) {
 		global $wpdb;
 
-		/** @var $stripeCustomer \StripeWPFS\Customer */
+		/** @var $stripeCustomer \StripeWPFS\Stripe\Customer */
 		$stripeCustomer = $paymentFormModel->getStripeCustomer();
 
 		$billingAddress = $paymentFormModel->getBillingAddress( false );
 		$shippingAddress = $paymentFormModel->getShippingAddress( false );
 
-		$data = array(
+		$data = [
 			'livemode' => $stripeCustomer->livemode,
 			'billingName' => $paymentFormModel->getBillingName(),
 			'addressLine1' => $billingAddress['line1'],
@@ -2263,7 +2263,7 @@ class MM_WPFS_Database {
 			'formName' => $paymentFormModel->getFormName(),
 			'ipAddressSubmit' => $paymentFormModel->getIpAddress(),
 			'customFields' => $paymentFormModel->getCustomFieldsJSON()
-		);
+		];
 
 		$insertResult = $wpdb->insert( $wpdb->prefix . 'fullstripe_card_captures', apply_filters( 'fullstripe_insert_card_data', $data ) );
 		self::handleDbError( $insertResult, __FUNCTION__ . '(): an error occurred during insert!' );
@@ -2285,14 +2285,14 @@ class MM_WPFS_Database {
 	public function insertCustomerPortalSession( $email, $liveMode, $stripeCustomerId, $cardUpdateSessionHash ) {
 		global $wpdb;
 
-		$insertResult = $wpdb->insert( "{$wpdb->prefix}fullstripe_card_update_session", array(
+		$insertResult = $wpdb->insert( "{$wpdb->prefix}fullstripe_card_update_session", [
 			'hash' => $cardUpdateSessionHash,
 			'email' => $email,
 			'liveMode' => $liveMode,
 			'stripeCustomerId' => $stripeCustomerId,
 			'created' => current_time( 'mysql' ),
 			'status' => MM_WPFS_CustomerPortalService::SESSION_STATUS_WAITING_FOR_CONFIRMATION
-		) );
+		] );
 
 		self::handleDbError( $insertResult, __FUNCTION__ . '(): an error occurred during insert!' );
 
@@ -2317,7 +2317,7 @@ class MM_WPFS_Database {
 	public function insertCheckoutFormSubmit( $hash, $formHash, $formType, $referrer, $postData, $liveMode ) {
 		global $wpdb;
 
-		$insertResult = $wpdb->insert( "{$wpdb->prefix}fullstripe_checkout_form_submit", array(
+		$insertResult = $wpdb->insert( "{$wpdb->prefix}fullstripe_checkout_form_submit", [
 			'hash' => $hash,
 			'formHash' => $formHash,
 			'formType' => $formType,
@@ -2326,7 +2326,7 @@ class MM_WPFS_Database {
 			'liveMode' => $liveMode,
 			'created' => current_time( 'mysql' ),
 			'status' => MM_WPFS_CheckoutSubmissionService::POPUP_FORM_SUBMIT_STATUS_CREATED
-		)
+		]
 		);
 
 		self::handleDbError( $insertResult, __FUNCTION__ . '(): an error occurred during insert!' );
@@ -2409,7 +2409,7 @@ class MM_WPFS_Database {
 		$whereStatement = ' WHERE id IN (' . implode( ', ', array_fill( 0, sizeof( $idsToUpdate ), '%s' ) ) . ')';
 		$preparedQuery = $wpdb->prepare(
 			"UPDATE {$wpdb->prefix}fullstripe_checkout_form_submit SET status=%s" . $whereStatement,
-			array_merge( array( $status ), $idsToUpdate )
+			array_merge( [ $status ], $idsToUpdate )
 		);
 		$updateResult = $wpdb->query( $preparedQuery );
 
@@ -2428,7 +2428,7 @@ class MM_WPFS_Database {
 	public function update_popup_form_submit_by_hash( $popupFormSubmitHash, $data ) {
 		global $wpdb;
 
-		$updateResult = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_form_submit", $data, array( 'hash' => $popupFormSubmitHash ) );
+		$updateResult = $wpdb->update( "{$wpdb->prefix}fullstripe_checkout_form_submit", $data, [ 'hash' => $popupFormSubmitHash ] );
 
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
 
@@ -2446,7 +2446,7 @@ class MM_WPFS_Database {
 
 		global $wpdb;
 
-		$updateResult = $wpdb->update( "{$wpdb->prefix}fullstripe_card_update_session", $data, array( 'id' => $cardUpdateSessionId ) );
+		$updateResult = $wpdb->update( "{$wpdb->prefix}fullstripe_card_update_session", $data, [ 'id' => $cardUpdateSessionId ] );
 
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
 
@@ -2486,12 +2486,12 @@ class MM_WPFS_Database {
 	public function insert_security_code( $cardUpdateSessionId, $securityCode ) {
 		global $wpdb;
 
-		$insertResult = $wpdb->insert( "{$wpdb->prefix}fullstripe_security_code", array(
+		$insertResult = $wpdb->insert( "{$wpdb->prefix}fullstripe_security_code", [
 			'sessionId' => $cardUpdateSessionId,
 			'securityCode' => $securityCode,
 			'created' => current_time( 'mysql' ),
 			'status' => MM_WPFS_CustomerPortalService::SECURITY_CODE_STATUS_PENDING
-		) );
+		] );
 
 		self::handleDbError( $insertResult, __FUNCTION__ . '(): an error occurred during insert!' );
 
@@ -2521,7 +2521,7 @@ class MM_WPFS_Database {
 
 		global $wpdb;
 
-		$updateResult = $wpdb->update( "{$wpdb->prefix}fullstripe_security_code", $data, array( 'id' => $securityCodeId ) );
+		$updateResult = $wpdb->update( "{$wpdb->prefix}fullstripe_security_code", $data, [ 'id' => $securityCodeId ] );
 
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
 
@@ -2631,7 +2631,7 @@ class MM_WPFS_Database {
 	public function updatePaymentByEventId( $event_id, $data ) {
 		global $wpdb;
 
-		$update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_payments", $data, array( 'eventID' => $event_id ) );
+		$update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_payments", $data, [ 'eventID' => $event_id ] );
 
 		self::handleDbError( $update_result, __FUNCTION__ . '(): an error occurred during update!' );
 
@@ -2659,7 +2659,7 @@ class MM_WPFS_Database {
 	public function updateDonationByPaymentIntentId( $paymentIntentId, $data ) {
 		global $wpdb;
 
-		$update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_donations", $data, array( 'stripePaymentIntentID' => $paymentIntentId ) );
+		$update_result = $wpdb->update( "{$wpdb->prefix}fullstripe_donations", $data, [ 'stripePaymentIntentID' => $paymentIntentId ] );
 
 		self::handleDbError( $update_result, __FUNCTION__ . '(): an error occurred during update!' );
 
@@ -2917,7 +2917,7 @@ class MM_WPFS_Database {
 		global $wpdb;
 		$insertResult = $wpdb->insert(
 			"{$wpdb->prefix}fullstripe_log",
-			array(
+			[
 				'created' => current_time( 'mysql' ),
 				'module' => $module,
 				'class' => $class,
@@ -2925,7 +2925,7 @@ class MM_WPFS_Database {
 				'level' => $level,
 				'message' => substr( $message, 0, 512 ),
 				'exception' => $exceptionStackTrace
-			)
+			]
 		);
 
 		self::handleDbError( $insertResult, __FUNCTION__ . '(): an error occurred during insert!' );
@@ -3240,12 +3240,12 @@ class MM_WPFS_Database {
 
 		$updateResult = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_subscription_forms",
-			array(
+			[
 				'planSelectorStyle' => 'radio-buttons'
-			),
-			array(
+			],
+			[
 				'planSelectorStyle' => 'list'
-			)
+			]
 		);
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
 
@@ -3262,12 +3262,12 @@ class MM_WPFS_Database {
 
 		$updateResult = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_checkout_subscription_forms",
-			array(
+			[
 				'planSelectorStyle' => 'radio-buttons'
-			),
-			array(
+			],
+			[
 				'planSelectorStyle' => 'list'
-			)
+			]
 		);
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
 
@@ -3285,13 +3285,13 @@ class MM_WPFS_Database {
 
 		$updateResult = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_payment_forms",
-			array(
+			[
 				'vatRateType' => $taxTypeDefault,
 				'vatRates' => $taxRateDefault
-			),
-			array(
+			],
+			[
 				'vatRateType' => NULL
-			)
+			]
 		);
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
 
@@ -3308,13 +3308,13 @@ class MM_WPFS_Database {
 
 		$updateResult = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_checkout_forms",
-			array(
+			[
 				'vatRateType' => $taxTypeDefault,
 				'vatRates' => $taxRateDefault
-			),
-			array(
+			],
+			[
 				'vatRateType' => NULL
-			)
+			]
 		);
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
 
@@ -3371,12 +3371,12 @@ class MM_WPFS_Database {
 
 		$updateResult = $wpdb->update(
 			"{$wpdb->prefix}fullstripe_donation_forms",
-			array(
+			[
 				'productDesc' => 'Donation'
-			),
-			array(
+			],
+			[
 				'productDesc' => NULL
-			)
+			]
 		);
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
 
@@ -3437,7 +3437,7 @@ class MM_WPFS_Database {
 	 */
 	public function updateReport( $id, $data ) {
 		global $wpdb;
-		$updateResult = $wpdb->update( $wpdb->prefix . 'fullstripe_reports', $data, array( 'id' => $id ) );
+		$updateResult = $wpdb->update( $wpdb->prefix . 'fullstripe_reports', $data, [ 'id' => $id ] );
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
 
 		return $updateResult;
