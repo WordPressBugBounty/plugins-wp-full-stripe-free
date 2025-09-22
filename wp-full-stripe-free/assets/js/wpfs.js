@@ -1212,14 +1212,14 @@ jQuery.noConflict();
 		function addPaymentMethodIdInput( $form, result ) {
 			if (
 				typeof result !== 'undefined' &&
-				result.hasOwnProperty( 'paymentMethod' ) &&
-				result.paymentMethod.hasOwnProperty( 'id' )
+				result.hasOwnProperty( 'setupIntent' ) &&
+				result.setupIntent.hasOwnProperty( 'payment_method' )
 			) {
 				$( '<input>' )
 					.attr( {
 						type: 'hidden',
 						name: 'wpfs-stripe-payment-method-id',
-						value: result.paymentMethod.id,
+						value: result.setupIntent.payment_method,
 					} )
 					.appendTo( $form );
 			}
@@ -3757,11 +3757,14 @@ jQuery.noConflict();
 							} );
 						} else if ( intentType === 'setup' ) {
 							stripe
-								.createPaymentMethod(
-									'card',
-									cardElement,
-									paymentMethodData
-								)
+								.confirmSetup({
+									elements,
+									confirmParams: {
+										return_url: return_url,
+										payment_method_data: paymentMethodData
+									},
+									redirect: 'if_required'
+								})
 								.then( function ( createPaymentMethodResult ) {
 									if ( debugLog ) {
 										console.log(

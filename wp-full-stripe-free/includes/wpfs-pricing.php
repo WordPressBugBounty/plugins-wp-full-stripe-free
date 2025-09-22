@@ -626,7 +626,11 @@ abstract class MM_WPFS_SubscriptionPriceCalculator extends MM_WPFS_PriceCalculat
 		$result = parent::prepareStripeInvoiceParams( $pricingData, $products, $taxRateIds );
 
 		if ( ! empty( $pricingData->couponCode ) ) {
-			$result['coupon'] = $pricingData->couponCode;
+			$result['discounts'] = [ 
+				[ 
+					'coupon' => $pricingData->couponCode
+				]
+			];
 		}
 
 		$invoiceItems = [];

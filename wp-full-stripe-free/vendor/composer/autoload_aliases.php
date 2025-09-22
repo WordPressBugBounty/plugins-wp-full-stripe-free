@@ -174,7 +174,7 @@ namespace StripeWPFS {
     'classname' => 'BaseStripeClient',
     'isabstract' => false,
     'namespace' => 'Stripe',
-    'extends' => 'StripeWPFS\\Stripe\\BaseStripeWPFS\\StripeClient',
+    'extends' => 'StripeWPFS\\Stripe\\BaseStripeClient',
     'implements' => 
     array (
       0 => 'Stripe\\StripeClientInterface',
@@ -3322,7 +3322,7 @@ namespace StripeWPFS {
     'classname' => 'Stripe',
     'isabstract' => false,
     'namespace' => 'Stripe',
-    'extends' => 'StripeWPFS\\Stripe\\StripeWPFS\\Stripe',
+    'extends' => 'StripeWPFS\\Stripe\\Stripe',
     'implements' => 
     array (
     ),
@@ -3333,7 +3333,7 @@ namespace StripeWPFS {
     'classname' => 'StripeClient',
     'isabstract' => false,
     'namespace' => 'Stripe',
-    'extends' => 'StripeWPFS\\Stripe\\StripeWPFS\\StripeClient',
+    'extends' => 'StripeWPFS\\Stripe\\StripeClient',
     'implements' => 
     array (
     ),
@@ -3344,7 +3344,7 @@ namespace StripeWPFS {
     'classname' => 'StripeObject',
     'isabstract' => false,
     'namespace' => 'Stripe',
-    'extends' => 'StripeWPFS\\Stripe\\StripeWPFS\\StripeObject',
+    'extends' => 'StripeWPFS\\Stripe\\StripeObject',
     'implements' => 
     array (
       0 => 'ArrayAccess',
@@ -4028,7 +4028,7 @@ namespace StripeWPFS {
     'namespace' => 'Stripe',
     'extends' => 
     array (
-      0 => 'StripeWPFS\\Stripe\\BaseStripeWPFS\\StripeClientInterface',
+      0 => 'StripeWPFS\\Stripe\\BaseStripeClientInterface',
     ),
   ),
   'Stripe\\Exception\\ExceptionInterface' => 
@@ -4078,7 +4078,7 @@ namespace StripeWPFS {
     'namespace' => 'Stripe',
     'extends' => 
     array (
-      0 => 'StripeWPFS\\Stripe\\StripeWPFS\\StripeClientInterface',
+      0 => 'StripeWPFS\\Stripe\\StripeClientInterface',
     ),
   ),
   'Stripe\\StripeStreamingClientInterface' => 
@@ -4088,7 +4088,7 @@ namespace StripeWPFS {
     'namespace' => 'Stripe',
     'extends' => 
     array (
-      0 => 'StripeWPFS\\Stripe\\StripeWPFS\\StripeStreamingClientInterface',
+      0 => 'StripeWPFS\\Stripe\\StripeStreamingClientInterface',
     ),
   ),
   'Stripe\\Util\\LoggerInterface' => 
