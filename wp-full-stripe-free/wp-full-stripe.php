@@ -5,7 +5,7 @@ Plugin Name: WP Full Pay
 Plugin URI: https://paymentsplugin.com
 Description: Use WP Full Pay to accept Stripe payments on your WordPress. Prebuilt forms to accept payments, donations and subscriptions. 
 Author: Themeisle
-Version: 8.3.1
+Version: 8.3.4
 Author URI: https://themeisle.com
 Text Domain: wp-full-stripe-free
 Domain Path: /languages
@@ -75,19 +75,23 @@ function wpfsIsMbStringAvailable() {
 }
 
 function wpfsShowAdminNotices() {
-    if ( ! wpfsIsPhpCompatible() ) {
-        wpfsShowAdminNotice( sprintf( __( 'PHP version required is %1$s but %2$s found.', 'wp-full-stripe-free' ), WP_FULL_STRIPE_MIN_PHP_VERSION, PHP_VERSION ));
-    }
-    if ( ! wpfsIsWordpressCompatible() ) {
-        wpfsShowAdminNotice( sprintf( __( 'WordPress version required is %1$s but %2$s found.', 'wp-full-stripe-free' ), WP_FULL_STRIPE_MIN_WP_VERSION, get_bloginfo( 'version' )));
-    }
-    if ( ! wpfsIsCurlAvailable() ) {
-        wpfsShowAdminNotice( sprintf( __( 'Required PHP extension called "%1$s" is missing.', 'wp-full-stripe-free' ), 'cURL' ));
-    }
-    if ( ! wpfsIsMbStringAvailable() ) {
-        wpfsShowAdminNotice( sprintf( __( 'Required PHP extension called "%1$s" is missing.', 'wp-full-stripe-free' ), 'MBString' ));
-    }
-}
+     if ( ! wpfsIsPhpCompatible() ) {
+         /* translators: %1$s is the required PHP version and %2$s is the currently installed version. */
+         wpfsShowAdminNotice( sprintf( __( 'PHP version required is %1$s but %2$s found.', 'wp-full-stripe-free' ), WP_FULL_STRIPE_MIN_PHP_VERSION, PHP_VERSION ));
+     }
+     if ( ! wpfsIsWordpressCompatible() ) {
+          /* translators: %1$s is the required PHP version and %2$s is the currently installed version. */
+         wpfsShowAdminNotice( sprintf( __( 'WordPress version required is %1$s but %2$s found.', 'wp-full-stripe-free' ), WP_FULL_STRIPE_MIN_WP_VERSION, get_bloginfo( 'version' )));
+     }
+     if ( ! wpfsIsCurlAvailable() ) {
+         /* translators: %1$s is the PHP extension name. */
+         wpfsShowAdminNotice( sprintf( __( 'Required PHP extension called "%1$s" is missing.', 'wp-full-stripe-free' ), 'cURL' ));
+     }
+     if ( ! wpfsIsMbStringAvailable() ) {
+         /* translators: %1$s is the PHP extension name. */
+         wpfsShowAdminNotice( sprintf( __( 'Required PHP extension called "%1$s" is missing.', 'wp-full-stripe-free' ), 'MBString' ));
+     }
+ }
 
 $wpfsDiagCheck = true;
 $wpfsDiagCheck = $wpfsDiagCheck && wpfsIsPhpCompatible();
@@ -149,6 +153,17 @@ if ( $wpfsDiagCheck ) {
     \StripeWPFS\Stripe\Stripe::setAppInfo( 'WP Full Pay', MM_WPFS::VERSION, 'https://paymentsplugin.com', 'pp_partner_FnULHViL0IqHp6' );
 
     add_filter( 'cron_schedules', 'wp_full_stripe_prepare_cron_schedules' );
+    add_filter( 'themeisle_sdk_enable_telemetry', '__return_true' );
+    add_filter( 'themeisle_sdk_telemetry_products', function ( $products ) {
+        if ( is_array( $products ) ) {
+            foreach ( $products as $key => &$product ) {
+                if ( isset( $product['slug'] ) && $product['slug'] === 'wp' ) {
+                    $product['slug'] = 'wp_full_stripe';
+                }
+            }
+        }
+        return $products;
+    } );
 } else {
     add_action( 'admin_notices', 'wpfsShowAdminNotices' );
 }

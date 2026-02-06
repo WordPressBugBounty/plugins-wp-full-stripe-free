@@ -63,6 +63,7 @@
                                 <p>
                                     <?php
                                         printf(
+                                            /* translators: %1$s: opening anchor tag, %2$s: closing anchor tag */
                                             esc_html__( 'Enter your license from %1$sThemeisle purchase history%2$s in order to get plugin updates.', 'wp-full-stripe-free' ),
                                             '<a href="https://store.themeisle.com/" target="_blank">',
                                             '</a>'
@@ -71,12 +72,12 @@
                                 </p>
 
                                 <p>
-                                    <?php 
-                                    // translators: 1: opening anchor tag, 2: closing anchor tag
+                                    <?php
                                     echo sprintf(
-                                        __( '%1$sUpgrade to Pro%2$s for no added fee and priority support.', 'wp-full-stripe-free' ), 
+                                        /* translators: 1: opening anchor tag, 2: closing anchor tag */
+                                        __( '%1$sUpgrade to Pro%2$s for no added fee and priority support.', 'wp-full-stripe-free' ),
                                         '<a href="' . esc_url( tsdk_utmify( 'https://paymentsplugin.com/pricing/', 'admin-connection' ) ) . '" target="_blank">',
-                                        '</a>' 
+                                        '</a>'
                                     );
                                     ?>
                                 </p>

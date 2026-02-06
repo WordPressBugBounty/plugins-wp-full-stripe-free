@@ -1711,6 +1711,7 @@ jQuery.noConflict();
 
         var $form = $(this);
         WPFS.makeAjaxCallWithForm($form);
+        trackFormTypeSelection();
       });
     }
 
@@ -5961,7 +5962,49 @@ jQuery.noConflict();
       nextButtons.forEach( ( button ) => {
           button.addEventListener( 'click', nextStep );
       });
+
+      const trackingStepContainer = document.querySelector( '#wpfs-step2' );
+      trackingStepContainer?.querySelector('.wpfs-actions')?.querySelectorAll('button').forEach( button => {
+        button.addEventListener( 'click', () => {
+          tryEnablingTracking();
+        });
+      });
     };
+
+    function tryEnablingTracking() {
+      /**
+       * The tracking consent checkbox element.
+       * 
+       * @type {HTMLInputElement}
+       */
+      const trackingCheckbox = document.querySelector( '#wpfs-tracking-consent' );
+      if ( ! trackingCheckbox || ! trackingCheckbox.checked ) {
+        return;
+      }
+      
+      enableTracking();
+    }
+
+    function enableTracking() {
+      fetch( window.wpfsAdminSettings.trackingEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+          enabled: true,
+          nonce: window.wpApiSettings.nonce
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-WP-Nonce': window.wpApiSettings.nonce
+        }
+      }).then(function(response) {
+        if (!response.ok) {  
+          console.error('Failed to enable tracking:', response.status, response.statusText);
+        }
+      })
+      .catch(function(error) {  
+        console.error('Error enabling tracking:', error);  
+      });
+    }
 
     function onReportsPage() {
       return $("#wpfs-reports") && $("#wpfs-reports").length > 0;
@@ -6645,3 +6688,33 @@ function initCharts() {
 
 // Initialize charts when the DOM is fully loaded
 document.addEventListener( 'DOMContentLoaded', initCharts );
+
+/**
+ * Track form type selection on form creation.
+ * @returns {void}
+ */
+function trackFormTypeSelection() {
+  const formCreation = document.querySelector('#wpfs-create-form');
+  if ( ! formCreation ) {
+    return;
+  }
+
+  const formData = new FormData( formCreation );
+  const selectedFormType = formData.get( 'wpfs-form-type' );
+  let selectedFormLayout = formData.get( 'wpfs-form-layout' ) ?? 'none';
+
+  if ( 'save_card' === selectedFormType ) {
+    selectedFormLayout = 'none'; // Save Card forms do not have layouts to choose from.
+  }
+
+  window?.tiTrk?.with('wp_full_stripe').add({
+    feature: 'created_form_type',
+    featureValue: {
+      formType: selectedFormType,
+      formLayout: selectedFormLayout
+    }
+  });
+  window?.tiTrk?.uploadEvents();
+}
+
+document.addEventListener( 'DOMContentLoaded', trackFormTypeSelection );

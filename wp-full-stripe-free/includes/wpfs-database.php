@@ -135,11 +135,11 @@ class MM_WPFS_Database {
 
 		$paymentType = MM_WPFS::PAYMENT_TYPE_SPECIFIED_AMOUNT;
 		// tnagy migrate old values
-		$queryResult = $wpdb->query( $wpdb->prepare( "UPDATE $table SET customAmount = %s WHERE customAmount = %s", $paymentType, '0' ) );
+		$queryResult = $wpdb->update( $table, [ 'customAmount' => $paymentType ], [ 'customAmount' => '0' ], [ '%s' ], [ '%s' ] );
 		self::handleDbError( $queryResult, 'Migration of fullstripe_payment_forms/customAmount failed!' );
 
 		$paymentType = MM_WPFS::PAYMENT_TYPE_CUSTOM_AMOUNT;
-		$queryResult = $wpdb->query( $wpdb->prepare( "UPDATE $table SET customAmount = %s WHERE customAmount = %s", $paymentType, '1' ) );
+		$queryResult = $wpdb->update( $table, [ 'customAmount' => $paymentType ], [ 'customAmount' => '1' ], [ '%s' ], [ '%s' ] );
 		self::handleDbError( $queryResult, 'Migration of fullstripe_payment_forms/customAmount failed!' );
 
 		$table = $wpdb->prefix . 'fullstripe_subscription_forms';
@@ -1077,8 +1077,8 @@ class MM_WPFS_Database {
 	}
 
 	/**
-	 * @param $subscriptionFormModel MM_WPFS_Public_SubscriptionFormModel
-	 * @param $transactionData MM_WPFS_SubscriptionTransactionData
+	 * @param MM_WPFS_Public_SubscriptionFormModel $subscriptionFormModel
+	 * @param MM_WPFS_SubscriptionTransactionData $transactionData
 	 * @return bool|int
 	 *
 	 * @throws Exception
@@ -1098,6 +1098,11 @@ class MM_WPFS_Database {
 			$planId = $stripeSubscription->items->data[0]->plan->id;
 		}
 
+		$customerName = $subscriptionFormModel->getBillingName();
+		if ( empty( $customerName ) ) {
+			$customerName = $subscriptionFormModel->getCardHolderName();
+		}
+
 		$data = [
 			'stripeCustomerID' => $stripeCustomer->id,
 			'stripeSubscriptionID' => $transactionData->getTransactionId(),
@@ -1107,7 +1112,7 @@ class MM_WPFS_Database {
 			'chargeCurrentCount' => 0,
 			'invoiceCreatedCount' => 0,
 			'status' => MM_WPFS::SUBSCRIBER_STATUS_INCOMPLETE,
-			'name' => $subscriptionFormModel->getCardHolderName(),
+			'name' => $customerName,
 			'email' => $stripeCustomer->email,
 			'planID' => $planId,
 			'quantity' => $stripeSubscription->quantity,
@@ -1145,14 +1150,14 @@ class MM_WPFS_Database {
 			return $insertResult;
 		}
 
-		$report = $this->getReportByPaymentIntentID( $data['stripePaymentIntentID'] ?? null );
+		$report = $this->getReportByPaymentIntentID( $data['stripePaymentIntentID'] );
 
 		if ( $report ) {
 			$this->updateReport( $report->id, [
 				'updated_at'            => date( 'Y-m-d H:i:s', time() ),
 				'formId'                => $data['formId'] ?? null,
 				'formType'              => MM_WPFS_Utils::getFormType( $subscriptionFormModel->getForm() ),
-				'stripeCustomerID'      => $data['stripeCustomerID'] ?? null,
+				'stripeCustomerID'      => $data['stripeCustomerID'],
 				'status'                => 'succeeded',
 				'mode'				    => $stripeSubscription->livemode ? 'live' : 'test',
 			] );
@@ -1162,8 +1167,8 @@ class MM_WPFS_Database {
 				'updated_at'            => date( 'Y-m-d H:i:s', $stripeSubscription->created ),
 				'formId'                => $data['formId'] ?? null,
 				'formType'              => MM_WPFS_Utils::getFormType( $subscriptionFormModel->getForm() ),
-				'stripePaymentIntentID' => $data['stripePaymentIntentID'] ?? null,
-				'stripeCustomerID'      => $data['stripeCustomerID'] ?? null,
+				'stripePaymentIntentID' => $data['stripePaymentIntentID'],
+				'stripeCustomerID'      => $data['stripeCustomerID'],
 				'stripeSubscriptionID'  => $data['stripeSubscriptionID'] ?? null,
 				'status'                => 'succeeded',
 				'mode'				    => $stripeSubscription->livemode ? 'live' : 'test',
@@ -1452,7 +1457,7 @@ class MM_WPFS_Database {
 	 */
 	function deleteInlinePaymentForm( $id ) {
 		global $wpdb;
-		$queryResult = $wpdb->query( 'DELETE FROM ' . $wpdb->prefix . 'fullstripe_payment_forms' . " WHERE paymentFormID='" . $id . "';" );
+		$queryResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_payment_forms WHERE paymentFormID=%d", $id ) );
 		self::handleDbError( $queryResult, __FUNCTION__ . '(): an error occurred during delete!' );
 
 		return $queryResult;
@@ -1467,7 +1472,7 @@ class MM_WPFS_Database {
 	 */
 	function deleteInlineDonationForm( $id ) {
 		global $wpdb;
-		$queryResult = $wpdb->query( 'DELETE FROM ' . $wpdb->prefix . 'fullstripe_donation_forms' . " WHERE donationFormID='" . $id . "';" );
+		$queryResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_donation_forms WHERE paymentFormID=%d", $id ) );
 		self::handleDbError( $queryResult, __FUNCTION__ . '(): an error occurred during delete!' );
 
 		return $queryResult;
@@ -1482,7 +1487,7 @@ class MM_WPFS_Database {
 	 */
 	function deleteCheckoutDonationForm( $id ) {
 		global $wpdb;
-		$queryResult = $wpdb->query( 'DELETE FROM ' . $wpdb->prefix . 'fullstripe_checkout_donation_forms' . " WHERE checkoutDonationFormID='" . $id . "';" );
+		$queryResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_checkout_donation_forms WHERE paymentFormID=%d", $id ) );
 		self::handleDbError( $queryResult, __FUNCTION__ . '(): an error occurred during delete!' );
 
 		return $queryResult;
@@ -1497,7 +1502,7 @@ class MM_WPFS_Database {
 	 */
 	function deleteInlineSubscriptionForm( $id ) {
 		global $wpdb;
-		$queryResult = $wpdb->query( 'DELETE FROM ' . $wpdb->prefix . 'fullstripe_subscription_forms' . " WHERE subscriptionFormID='" . $id . "';" );
+		$queryResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_subscription_forms WHERE subscriptionFormID=%d", $id ) );
 		self::handleDbError( $queryResult, __FUNCTION__ . '(): an error occurred during delete!' );
 
 		return $queryResult;
@@ -1512,7 +1517,7 @@ class MM_WPFS_Database {
 	 */
 	function deleteCheckoutPaymentForm( $id ) {
 		global $wpdb;
-		$queryResult = $wpdb->query( 'DELETE FROM ' . $wpdb->prefix . 'fullstripe_checkout_forms' . " WHERE checkoutFormID='" . $id . "';" );
+		$queryResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_checkout_forms WHERE checkoutFormID=%d", $id ) );
 		self::handleDbError( $queryResult, __FUNCTION__ . '(): an error occurred during delete!' );
 
 		return $queryResult;
@@ -1526,7 +1531,7 @@ class MM_WPFS_Database {
 	 */
 	function deleteCheckoutSubscriptionForm( $id ) {
 		global $wpdb;
-		$queryResult = $wpdb->query( 'DELETE FROM ' . $wpdb->prefix . 'fullstripe_checkout_subscription_forms' . " WHERE checkoutSubscriptionFormID='" . $id . "';" );
+		$queryResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_checkout_subscription_forms WHERE checkoutSubscriptionFormID=%d", $id ) );
 		self::handleDbError( $queryResult, __FUNCTION__ . '(): an error occurred during delete!' );
 
 		return $queryResult;
@@ -1748,7 +1753,7 @@ class MM_WPFS_Database {
 	 */
 	function deletePayment( $id ) {
 		global $wpdb;
-		$queryResult = $wpdb->query( 'DELETE FROM ' . $wpdb->prefix . 'fullstripe_payments' . " WHERE paymentID='" . $id . "';" );
+		$queryResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_payments WHERE paymentID=%d", $id ) );
 		self::handleDbError( $queryResult, __FUNCTION__ . '(): an error occurred during delete!' );
 
 		return $queryResult;
@@ -1763,7 +1768,7 @@ class MM_WPFS_Database {
 	 */
 	function deleteDonation( $id ) {
 		global $wpdb;
-		$queryResult = $wpdb->query( 'DELETE FROM ' . $wpdb->prefix . 'fullstripe_donations' . " WHERE donationID='" . $id . "';" );
+		$queryResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_donations WHERE donationID=%d", $id ) );
 		self::handleDbError( $queryResult, __FUNCTION__ . '(): an error occurred during delete!' );
 
 		return $queryResult;
@@ -1821,7 +1826,7 @@ class MM_WPFS_Database {
 	function getInlinePaymentFormByName( $name ) {
 		global $wpdb;
 
-		return $wpdb->get_row( "SELECT * FROM " . $wpdb->prefix . "fullstripe_payment_forms" . " WHERE name='" . $name . "';" );
+		return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}fullstripe_payment_forms  WHERE name=%s", $name ) );
 	}
 
 	/**
@@ -1871,7 +1876,7 @@ class MM_WPFS_Database {
 	function getInlineSubscriptionFormByName( $name ) {
 		global $wpdb;
 
-		return $wpdb->get_row( "SELECT * FROM " . $wpdb->prefix . "fullstripe_subscription_forms" . " WHERE name='" . $name . "';" );
+		return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}fullstripe_subscription_forms  WHERE name=%s", $name ) );
 	}
 
 	/**
@@ -2103,7 +2108,7 @@ class MM_WPFS_Database {
 	public function get_customer_id_from_payments( $email, $livemode ) {
 		global $wpdb;
 		$id = null;
-		$payment = $wpdb->get_row( "SELECT * FROM " . $wpdb->prefix . "fullstripe_payments" . " WHERE email='" . $email . "' AND livemode=" . ( $livemode ? '1' : '0' ) . ";" );
+		$payment = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}fullstripe_payments WHERE email=%s AND livemode=%s", $email, $livemode ? '1' : '0' ) );
 		if ( $payment ) {
 			// if no ID set, will be set to null.
 			$id = $payment->stripeCustomerID;
@@ -2123,13 +2128,13 @@ class MM_WPFS_Database {
 	 */
 	public function find_existing_stripe_customer_by_email( $email, $livemode ) {
 		global $wpdb;
-		$subscriber = $wpdb->get_row( "SELECT * FROM " . $wpdb->prefix . "fullstripe_subscribers" . " WHERE email='" . $email . "' AND livemode=" . ( $livemode ? '1' : '0' ) . ";", ARRAY_A );
+		$subscriber = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}fullstripe_subscribers WHERE email=%s AND livemode=%s", $email, $livemode ? '1' : '0' ), ARRAY_A );
 		if ( $subscriber ) {
 			$subscriber['is_subscriber'] = true;
 
 			return $subscriber;
 		} else {
-			$payment = $wpdb->get_row( "SELECT * FROM " . $wpdb->prefix . "fullstripe_payments" . " WHERE email='" . $email . "' AND livemode=" . ( $livemode ? '1' : '0' ) . ";", ARRAY_A );
+			$payment = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}fullstripe_payments WHERE email=%s AND livemode=%s", $email, $livemode ? '1' : '0' ), ARRAY_A );
 			if ( $payment ) {
 				$subscriber['is_subscriber'] = false;
 
@@ -2221,8 +2226,8 @@ class MM_WPFS_Database {
 	}
 
 	/**
-	 * @param $paymentFormModel MM_WPFS_Public_PaymentFormModel
-	 * @param $transactionData MM_WPFS_SaveCardTransactionData
+	 * @param MM_WPFS_Public_PaymentFormModel $paymentFormModel 
+	 * @param MM_WPFS_SaveCardTransactionData $transactionData 
 	 *
 	 * @return bool|int
 	 * @throws Exception
@@ -2230,7 +2235,7 @@ class MM_WPFS_Database {
 	public function insertSavedCard( $paymentFormModel, $transactionData ) {
 		global $wpdb;
 
-		/** @var $stripeCustomer \StripeWPFS\Stripe\Customer */
+		/** @var \StripeWPFS\Stripe\Customer $stripeCustomer */
 		$stripeCustomer = $paymentFormModel->getStripeCustomer();
 
 		$billingAddress = $paymentFormModel->getBillingAddress( false );
@@ -2361,20 +2366,23 @@ class MM_WPFS_Database {
 		global $wpdb;
 
 		if ( is_null( $limit ) ) {
-			$preparedQuery = $wpdb->prepare(
-				"SELECT * FROM {$wpdb->prefix}fullstripe_checkout_form_submit WHERE liveMode=%d AND status<>%s",
-				$liveMode,
-				MM_WPFS_CheckoutSubmissionService::POPUP_FORM_SUBMIT_STATUS_INTERNAL_ERROR
+			$popupFormSubmits = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT * FROM {$wpdb->prefix}fullstripe_checkout_form_submit WHERE liveMode=%d AND status<>%s",
+					$liveMode,
+					MM_WPFS_CheckoutSubmissionService::POPUP_FORM_SUBMIT_STATUS_INTERNAL_ERROR
+				)
 			);
 		} else {
-			$preparedQuery = $wpdb->prepare(
-				"SELECT * FROM {$wpdb->prefix}fullstripe_checkout_form_submit WHERE liveMode=%d AND status<>%s LIMIT %d",
-				$liveMode,
-				MM_WPFS_CheckoutSubmissionService::POPUP_FORM_SUBMIT_STATUS_INTERNAL_ERROR,
-				$limit
+			$popupFormSubmits = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT * FROM {$wpdb->prefix}fullstripe_checkout_form_submit WHERE liveMode=%d AND status<>%s LIMIT %d",
+					$liveMode,
+					MM_WPFS_CheckoutSubmissionService::POPUP_FORM_SUBMIT_STATUS_INTERNAL_ERROR,
+					$limit
+				)
 			);
 		}
-		$popupFormSubmits = $wpdb->get_results( $preparedQuery );
 
 		return $popupFormSubmits;
 	}
@@ -2389,7 +2397,7 @@ class MM_WPFS_Database {
 
 		$whereStatement = ' WHERE id IN (' . implode( ', ', array_fill( 0, sizeof( $idsToDelete ), '%s' ) ) . ')';
 
-		$updateResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_checkout_form_submit" . $whereStatement, $idsToDelete ) );
+		$updateResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_checkout_form_submit" . $whereStatement, $idsToDelete ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during delete!' );
 
@@ -2407,11 +2415,11 @@ class MM_WPFS_Database {
 		global $wpdb;
 
 		$whereStatement = ' WHERE id IN (' . implode( ', ', array_fill( 0, sizeof( $idsToUpdate ), '%s' ) ) . ')';
-		$preparedQuery = $wpdb->prepare(
-			"UPDATE {$wpdb->prefix}fullstripe_checkout_form_submit SET status=%s" . $whereStatement,
-			array_merge( [ $status ], $idsToUpdate )
+		$updateResult = $wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$wpdb->prefix}fullstripe_checkout_form_submit SET status=%s" . $whereStatement,array_merge( [ $status ], $idsToUpdate ) // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			)
 		);
-		$updateResult = $wpdb->query( $preparedQuery );
 
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during update!' );
 
@@ -2591,7 +2599,7 @@ class MM_WPFS_Database {
 
 		$whereStatement = ' WHERE sessionId IN (' . implode( ', ', array_fill( 0, sizeof( $invalidatedSessionIds ), '%s' ) ) . ')';
 
-		$updateResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_security_code" . $whereStatement, $invalidatedSessionIds ) );
+		$updateResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_security_code" . $whereStatement, $invalidatedSessionIds ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during delete!' );
 
@@ -2603,7 +2611,7 @@ class MM_WPFS_Database {
 
 		$whereStatement = ' WHERE id IN (' . implode( ', ', array_fill( 0, sizeof( $invalidatedSessionIds ), '%s' ) ) . ')';
 
-		$updateResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_card_update_session" . $whereStatement, $invalidatedSessionIds ) );
+		$updateResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_card_update_session" . $whereStatement, $invalidatedSessionIds ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 		self::handleDbError( $updateResult, __FUNCTION__ . '(): an error occurred during delete!' );
 
@@ -3144,7 +3152,7 @@ class MM_WPFS_Database {
 	public function getResults( $query ) {
 		global $wpdb;
 
-		$result = $wpdb->get_results( $query, OBJECT );
+		$result = $wpdb->get_results( $query, OBJECT ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during select!' );
 
 		return $result;
@@ -3159,7 +3167,7 @@ class MM_WPFS_Database {
 	public function runQuery( $query ) {
 		global $wpdb;
 
-		$result = $wpdb->query( $query );
+		$result = $wpdb->query( $query ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during select!' );
 
 		return $result;
@@ -3399,7 +3407,8 @@ class MM_WPFS_Database {
 	public function getLogEntries( $offset, $rowCount ) {
 		global $wpdb;
 
-		$result = $wpdb->get_results( sprintf( "SELECT * FROM {$wpdb->prefix}fullstripe_log LIMIT %d, %d", $offset, $rowCount ), OBJECT );
+		$result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}fullstripe_log LIMIT %d, %d", $offset, $rowCount ), OBJECT );
+
 		self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during select!' );
 
 		return $result;
@@ -3856,5 +3865,45 @@ class MM_WPFS_Database {
 			'start' => $start,
 			'end'   => $end
 		];
+	}
+
+	/**
+	 * Check if user accumulates 140 USD or 140 EUR in transactions over the last 45 days.
+	 * 
+	 * @return bool True if volume threshold is exceeded in USD or EUR, false otherwise
+	 */
+	public function requiresVolumeWarning() {
+		$cached_result = get_transient( 'wpfs_transaction_volume_notice_check' );
+		if ( 'yes' === $cached_result || 'no' === $cached_result ) {
+			return 'yes' === $cached_result;
+		}
+
+		global $wpdb;
+
+		$startDate = gmdate( 'Y-m-d H:i:s', strtotime( '-45 days' ) );
+		$mode      = MM_WPFS_Utils::getMode();
+
+		// Check if user has over 140 USD or EUR in transactions.
+		$has_volume = $wpdb->get_var( $wpdb->prepare(
+			"SELECT 1 
+			FROM {$wpdb->prefix}fullstripe_reports 
+			WHERE created_at >= %s 
+			AND status = 'succeeded' 
+			AND currency IN (%s, %s) 
+			AND mode = %s 
+			GROUP BY currency 
+			HAVING SUM(amount) >= %d 
+			LIMIT 1",
+			$startDate,
+			MM_WPFS::CURRENCY_USD,
+			MM_WPFS::CURRENCY_EUR,
+			$mode,
+			14000 // threshold in cents
+		) );
+
+		$should_show = $has_volume ? 'yes' : 'no';
+		set_transient( 'wpfs_transaction_volume_notice_check', $should_show, DAY_IN_SECONDS );
+
+		return $should_show === 'yes';
 	}
 }

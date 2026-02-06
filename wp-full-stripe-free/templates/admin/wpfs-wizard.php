@@ -69,6 +69,13 @@
                         <p class="wpfs-input-hint"><?php _e( 'We\'ll send optimization recommendations to this email.', 'wp-full-stripe-free' ); ?></p>
                     </div>
 
+                    <div>
+                        <input type="checkbox" id="wpfs-tracking-consent" name="wpfs-tracking-consent" checked>
+                        <label for="wpfs-tracking-consent" class="wpfs-input-hint">
+                            <?php _e( 'Allow anonymous tracking to help us improve the plugin experience.', 'wp-full-stripe-free' ); ?>
+                        </label>
+                    </div>
+
                     <div class="wpfs-actions wpfs-actions-right">
                         <button class="wpfs-btn-secondary wpfs-next"><?php _e( 'Skip Step', 'wp-full-stripe-free' ); ?></button>
                         <button id="wpfs-subscribe-brevo" class="wpfs-btn wpfs-btn-primary wpfs-button-loader"><?php _e( 'Continue →', 'wp-full-stripe-free' ); ?></button>

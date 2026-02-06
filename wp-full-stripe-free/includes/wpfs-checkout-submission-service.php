@@ -877,7 +877,7 @@ abstract class MM_WPFS_CheckoutSessionBuilder {
 	use MM_WPFS_Logger_AddOn;
 	use MM_WPFS_StaticContext_AddOn;
 	protected $submitHash;
-	/** @var MM_WPFS_Public_FormModel */
+	/** @var MM_WPFS_Public_CheckoutPaymentFormModel|MM_WPFS_Public_FormModel */
 	protected $formModel;
 	/** @var MM_WPFS_Options */
 	protected $options;
@@ -1082,7 +1082,7 @@ class MM_WPFS_CheckoutSessionBuilder_Donation extends MM_WPFS_CheckoutSessionBui
 
 		$lineItem = [
 			'price_data' => [
-				'currency' => $this->formModel->getForm()->currency,
+				'currency' => $currency,
 				'product_data' => $productData,
 				'unit_amount' => $this->formModel->getAmount(),
 			],
@@ -1098,7 +1098,7 @@ class MM_WPFS_CheckoutSessionBuilder_Donation extends MM_WPFS_CheckoutSessionBui
 					'product_data' => [
 						'name' => __( 'Transaction Fee', 'wp-full-stripe-free' ),
 					],
-					'unit_amount' => MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] ),
+					'unit_amount' => MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ], $currency ),
 				],
 				'quantity' => 1
 			];
@@ -1188,9 +1188,6 @@ class MM_WPFS_CheckoutSessionBuilder_OneTimePayment extends MM_WPFS_CheckoutSess
 		$sessionData = parent::build();
 
 		$sessionData['mode'] = 'payment';
-		$sessionData['payment_intent_data'] = [
-			'setup_future_usage' => 'off_session'
-		];
 		$sessionData['customer_creation'] = 'always'; // always capture a customer. we need it post payment for internal logic
 
 		$amount = $this->formModel->getAmount();
@@ -1236,7 +1233,7 @@ class MM_WPFS_CheckoutSessionBuilder_OneTimePayment extends MM_WPFS_CheckoutSess
 					'product_data' => [
 						'name' => __( 'Transaction Fee', 'wp-full-stripe-free' ),
 					],
-					'unit_amount' => MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] ),
+					'unit_amount' => MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ], $currency ),
 				],
 				'quantity' => 1
 			];
@@ -1335,7 +1332,7 @@ class MM_WPFS_CheckoutSessionBuilder_Subscription extends MM_WPFS_CheckoutSessio
 					'product_data' => [
 						'name' => __( 'Transaction Fee', 'wp-full-stripe-free' ),
 					],
-					'unit_amount' => MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] ),
+					'unit_amount' => MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ], $currency ),
 				],
 				'quantity' => 1
 			];

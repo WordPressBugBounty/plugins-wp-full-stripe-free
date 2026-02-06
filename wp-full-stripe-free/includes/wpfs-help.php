@@ -415,6 +415,11 @@ class MM_WPFS_HelpRepositoryFactory {
 	 * @return string
 	 */
 	protected static function buildArticleURL( $path, $utmContent ) {
+		// Check if path is already a full URL
+		$baseUrl = ( strpos( $path, 'http://' ) === 0 || strpos( $path, 'https://' ) === 0 )
+			? $path
+			: self::HELP_ARTICLE_BASE_URL . $path;
+
 		$articleUrl = add_query_arg(
 			[
 				'utm_source'   => 'plugin-wpfs',
@@ -422,7 +427,7 @@ class MM_WPFS_HelpRepositoryFactory {
 				'utm_campaign' => 'v' . MM_WPFS::VERSION,
 				'utm_content'  => $utmContent
 			],
-			self::HELP_ARTICLE_BASE_URL . $path
+			$baseUrl
 		);
 
 		return $articleUrl;
@@ -449,7 +454,7 @@ class MM_WPFS_HelpRepositoryFactory {
 			),
 			self::createArticle(
 				__( 'Leave feedback', 'wp-full-stripe-free' ),
-				'/#contact',
+				'https://paymentsplugin.com/contact/',
 				MM_WPFS_HelpArticleVisualType::feedback(),
 				$page
 			)

@@ -1,6 +1,7 @@
 <?php
     /** @var $pageTitle */
 ?>
+<?php include('wpfs-admin-nav.php'); ?>
 <div class="wpfs-page-header wpfs-page-header--tabs">
     <div id="tsdk_banner"></div>
     <div class="wpfs-page-header__headline-with-actions">
@@ -8,10 +9,7 @@
             <div class="wpfs-page-header__title"><?php echo $pageTitle ?></div>
         </div>
         <div class="wpfs-page-header__actions">
-            <?php include('wpfs-header-block-stripe-accounts.php'); ?>
-            <?php include('wpfs-header-block-license-status.php'); ?>
-            <?php include('wpfs-header-block-announcements.php'); ?>
-            <?php include('wpfs-header-block-help.php'); ?>
+            <span id="wpfs-unsaved-changes-indicator"></span>
         </div>
     </div>
     <?php include('wpfs-header-block-tabs.php'); ?>

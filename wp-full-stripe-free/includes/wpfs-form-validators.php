@@ -811,6 +811,7 @@ class MM_WPFS_SubscriptionFormValidator extends MM_WPFS_FormValidator {
 				) {
 					$fieldName = $formModelObject::PARAM_WPFS_STRIPE_PLAN_QUANTITY;
 					$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
+					/* translators: %d: minimum subscription quantity */
 					$error = sprintf( __( 'Subscription quantity is less than the minimum quantity of %d.', 'wp-full-stripe-free' ), $formModelObject->getForm()->minimumQuantityOfSubscriptions );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				}
@@ -820,6 +821,7 @@ class MM_WPFS_SubscriptionFormValidator extends MM_WPFS_FormValidator {
 				) {
 					$fieldName = $formModelObject::PARAM_WPFS_STRIPE_PLAN_QUANTITY;
 					$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
+					/* translators: %d: maximum subscription quantity */
 					$error = sprintf( __( 'Subscription quantity is greater than the maximum quantity of %d.', 'wp-full-stripe-free' ), $formModelObject->getForm()->maximumQuantityOfSubscriptions );
 					$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 				}

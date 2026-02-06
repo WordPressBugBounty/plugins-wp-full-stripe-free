@@ -16,6 +16,7 @@
     <div class="wpfs-page <?php echo $pageStyle; ?>">
 		<?php include( 'partials/wpfs-header-with-tabs.php' ); ?>
 		<?php include( 'partials/wpfs-announcement.php' ); ?>
+		<?php include( 'partials/wpfs-transaction-volume-notice.php' ); ?>
 
 		<?php
 		if ( $transactionCount == 0 ) {

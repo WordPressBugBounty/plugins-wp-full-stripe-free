@@ -369,6 +369,37 @@ abstract class MM_WPFS_PriceCalculator {
 	}
 
 	/**
+	 * Extract the tax rate ID from a Stripe tax item.
+	 * Handles both old and new Stripe API formats:
+	 * - Old format: $taxItem->tax_rate contains the tax rate ID
+	 * - New format: $taxItem->tax_rate_details->tax_rate contains the tax rate ID
+	 * 
+	 * @param object{
+	 *     amount?: int,
+	 *     tax_behavior?: string,
+	 *     tax_rate_details?: object{tax_rate?: string},
+	 *     tax_rate?: string,
+	 *     taxability_reason?: string,
+	 *     taxable_amount?: int,
+	 *     type?: string
+	 * } $taxItem
+	 * @return string|null The tax rate ID, or null if not found.
+	 */
+	protected function extractTaxRateId( $taxItem ) {
+		// Handle new Stripe API format where tax_rate_details contains the ID
+		if ( isset( $taxItem->tax_rate_details ) && isset( $taxItem->tax_rate_details->tax_rate ) ) {
+			return $taxItem->tax_rate_details->tax_rate;
+		}
+
+		// Handle old Stripe API format where tax_rate is directly available
+		if ( isset( $taxItem->tax_rate ) && ! empty( $taxItem->tax_rate ) ) {
+			return $taxItem->tax_rate;
+		}
+
+		return null;
+	}
+
+	/**
 	 * @param $taxItem
 	 * @return string|null
 	 */
@@ -510,7 +541,10 @@ abstract class MM_WPFS_PaymentPriceCalculator extends MM_WPFS_PriceCalculator {
 
 			$taxItemLookup = [];
 			foreach ( $lineItem->taxes as $taxItem ) {
-				$taxItemLookup[ $taxItem->tax_rate ] = $taxItem;
+				$taxRateId = $this->extractTaxRateId( $taxItem );
+				if ( $taxRateId !== null ) {
+					$taxItemLookup[ $taxRateId ] = $taxItem;
+				}
 			}
 			if ( $this->pricingData->stripeTax ) {
 				foreach ( $taxItemLookup as $taxRateId => $taxItem ) {
@@ -793,7 +827,10 @@ abstract class MM_WPFS_SubscriptionPriceCalculator extends MM_WPFS_PriceCalculat
 
 				$taxItemLookup = [];
 				foreach ( $lineItem->taxes as $taxItem ) {
-					$taxItemLookup[ $taxItem->tax_rate ] = $taxItem;
+					$taxRateId = $this->extractTaxRateId( $taxItem );
+					if ( $taxRateId !== null ) {
+						$taxItemLookup[ $taxRateId ] = $taxItem;
+					}
 				}
 
 				if ( $this->pricingData->stripeTax ) {

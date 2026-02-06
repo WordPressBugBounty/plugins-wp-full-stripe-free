@@ -101,6 +101,7 @@ class MM_WPFS_Admin_Menu {
 		$this->initDemoMode();
 
 		add_filter( 'themeisle_sdk_blackfriday_data', [ $this, 'add_black_friday_data' ] );
+		add_filter( 'wpfs_admin_nav_bar_data', [ $this, 'get_nav_bar_data' ] );
 	}
 
 	private function initActionHooks() {
@@ -499,7 +500,7 @@ class MM_WPFS_Admin_Menu {
 		$cleanedUrl = strtolower( $cleanedUrl );
 
 		// Shorten using CRC32 and encode to base36 for a shorter alphanumeric ID
-		$hash = base_convert( crc32( $cleanedUrl ), 10, 36 );
+		$hash = base_convert( (string) crc32( $cleanedUrl ), 10, 36 );
 
 		return $hash;
 	}
@@ -558,7 +559,8 @@ class MM_WPFS_Admin_Menu {
 			'mode'               => $stripe_mode,
 			'connected'          => ($stripe_mode === MM_WPFS::STRIPE_API_MODE_TEST) ? $this->options->get( MM_WPFS_Options::OPTION_TEST_ACCOUNT_ID ) !== null : $this->options->get( MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID ) !== null,
 			'transactions'       => $this->getTransactionCount(),
-			'connectionPage'     => MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS_STRIPE )
+			'connectionPage'     => MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS_STRIPE ),
+			'trackingEndpoint'   => MM_WPFS_TrackingActivationEndpoint::get_url(),
 		];
 
 		$wpfsAdminSettings = array_merge( $wpfsAdminSettings, $localizer->getSettingsOptions() );
@@ -2549,9 +2551,9 @@ class MM_WPFS_Admin_Menu {
 	/**
 	 * Set Black Friday data.
 	 *
-	 * @param array $configs The configuration array for the loaded products.
+	 * @param array<string, array<string, string>> $configs The existing configuration array.
 	 *
-	 * @return array
+	 * @return array<string, array<string, string>> The modified configuration array with Black Friday data.
 	 */
 	public function add_black_friday_data( $configs ) {
 		$config = $configs['default'];
@@ -2588,6 +2590,48 @@ class MM_WPFS_Admin_Menu {
 		$configs[ WP_FULL_STRIPE_PRODUCT_SLUG ] = $config;
 
 		return $configs;
+	}
+
+	/**
+	 * Get the navigation bar data.
+	 * 
+	 * @param array<string, array<string, array<string, string>>|string>|mixed $data The existing navigation bar data.
+	 * @return array<string, array<string, array<string, string>>|string> The modified navigation bar data.
+	 */
+	public function get_nav_bar_data( $data ) {
+		if ( ! is_array( $data ) ) {
+			$data = [];
+		}
+		
+		$current_screen = get_current_screen();
+		
+		$data['version_label'] = sprintf( 'v%s', MM_WPFS::VERSION );
+		$data['plan_type'] = WPFS_License::is_active() ? 'pro' : 'free';
+		$data['product_type_label'] = 'pro' === $data['plan_type'] ? 'Pro' : 'Free';
+		$data['pages'] = [
+			MM_WPFS_Admin_Menu::SLUG_FORMS => [
+				'label' => __( 'Forms', 'wp-full-stripe-free' ),
+				'url'   => MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_FORMS ),
+			],
+			MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS => [
+				'label' => __( 'Transactions', 'wp-full-stripe-free' ),
+				'url'   => MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS ),
+			],
+			MM_WPFS_Admin_Menu::SLUG_REPORTS => [
+				'label' => __( 'Reports', 'wp-full-stripe-free' ),
+				'url'   => MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_REPORTS ),
+			],
+			MM_WPFS_Admin_Menu::SLUG_SETTINGS => [
+				'label' => __( 'Settings', 'wp-full-stripe-free' ),
+				'url'   => MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS ),
+			]
+		];
+		$data['current_page'] = $current_screen ? $current_screen->id : '';
+		$data['stripe_mode'] = $this->getStripeApiMode() === 'live' ? __('Live', 'wp-full-stripe-free') : __('Test', 'wp-full-stripe-free');
+		$data['change_log_url'] = 'https://wordpress.org/plugins/wp-full-stripe-free/#developers';
+		$data['stripe_settings_url'] = MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE );
+
+		return $data;
 	}
 }
 

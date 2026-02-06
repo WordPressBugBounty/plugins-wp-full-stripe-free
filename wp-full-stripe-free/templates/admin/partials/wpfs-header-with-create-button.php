@@ -3,6 +3,7 @@
 /** @var $createButtonUrl */
 /** @var $createButtonLabel */
 ?>
+<?php include('wpfs-admin-nav.php'); ?>
 <div class="wpfs-page-header">
     <div id="tsdk_banner"></div>
     <div class="wpfs-page-header__headline-with-actions">
@@ -11,10 +12,7 @@
             <a class="wpfs-btn wpfs-btn-primary" href="<?php echo $createButtonUrl; ?>"><?php echo $createButtonLabel; ?></a>
         </div>
         <div class="wpfs-page-header__actions">
-            <?php include('wpfs-header-block-stripe-accounts.php'); ?>
-            <?php include('wpfs-header-block-license-status.php'); ?>
-            <?php include('wpfs-header-block-announcements.php'); ?>
-            <?php include('wpfs-header-block-help.php'); ?>
+            <span id="wpfs-unsaved-changes-indicator"></span>
         </div>
     </div>
 </div>

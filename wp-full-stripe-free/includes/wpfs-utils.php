@@ -1060,13 +1060,17 @@ class MM_WPFS_Utils {
     public static function isConnectedToLive(): bool {
         $options = new MM_WPFS_Options();
         $liveAccountId = $options->get( MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID );
-        return ! empty( $liveAccountId );
+        $apiMode = $options->get( MM_WPFS_Options::OPTION_API_MODE );
+        
+        return ! empty( $liveAccountId ) && 'live' === $apiMode;
     }
 
     public static function isConnectedToTest(): bool {
         $options = new MM_WPFS_Options();
         $testAccountId = $options->get( MM_WPFS_Options::OPTION_TEST_ACCOUNT_ID );
-        return ! empty( $testAccountId );
+        $apiMode = $options->get( MM_WPFS_Options::OPTION_API_MODE );
+
+        return ! empty( $testAccountId ) && 'test' === $apiMode;
     }
 
     public static function isConnectedToApiTest(): bool {
@@ -1140,14 +1144,38 @@ class MM_WPFS_Utils {
     /**
      * Calculate the fee recovery amount based on the original amount, the percentage fee and the fixed fee.
      *
-     * @param $amountInCents
-     * @param $percentageFee
-     * @param $fixedFeeInCents
+     * The fixed fee will be processed to be in minor units (cents) based on the provided currency.
      *
-     * @return int
+     * @param int $amountInCents The amount in cents (minor units)
+     * @param float|string $percentageFee The percentage fee (e.g., 1.5 for 1.5%)
+     * @param float|string $fixedFeeDecimal The fixed fee as a decimal amount (e.g., 0.25 for €0.25)
+     * @param string $currency The currency code (e.g., 'USD', 'EUR')
+     *
+     * @return int The fee recovery amount in cents (minor units)
+     *
+     * @see https://docs.stripe.com/currencies#minor-units
      */
-    public static function calculateRecoveryFee( $amountInCents, $percentageFee, $fixedFeeInCents ) {
+    public static function calculateRecoveryFee( $amountInCents, $percentageFee, $fixedFeeDecimal, $currency ) {
+        if ( is_string( $fixedFeeDecimal ) ) {
+            $fixedFeeDecimal = floatval( $fixedFeeDecimal );
+            $fixedFeeDecimal = is_nan( $fixedFeeDecimal ) ? 0.0 : $fixedFeeDecimal;
+        }
+
+        // Convert the decimal fixed fee to cents (minor units)
+        // E.g., 0.25 USD → 25 cents
+        $fixedFeeInCents = MM_WPFS_Currencies::convertAmountToMinorUnits( $fixedFeeDecimal, $currency );
+
+        if ( is_string( $percentageFee ) ) {
+            $percentageFee = floatval( $percentageFee );
+            $percentageFee = is_nan( $percentageFee ) ? 0.0 : $percentageFee;
+        }
+
+        $percentageFee = min( 99.99, $percentageFee ); // Prevent division by zero or negative scenarios.
+
+        // Calculate the original amount needed to cover both the charge and the fees
         $originalAmountInCents = ( $amountInCents + $fixedFeeInCents ) / ( 1 - $percentageFee / 100 );
-        return round( $originalAmountInCents - $amountInCents );
+
+        // Return how much should we charge extra to cover the fees.
+        return intval( round( $originalAmountInCents - $amountInCents ) );
     }
 }

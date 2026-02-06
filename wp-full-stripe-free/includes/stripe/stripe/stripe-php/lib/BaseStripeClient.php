@@ -102,6 +102,15 @@ class BaseStripeClient implements StripeClientInterface, StripeStreamingClientIn
         return $this->config['client_id'];
     }
     /**
+     * Gets the Stripe account ID used by the client to send requests.
+     *
+     * @return null|string the Stripe account ID used by the client to send requests
+     */
+    public function getStripeAccount()
+    {
+        return $this->config['stripe_account'];
+    }
+    /**
      * Gets the base URL for Stripe's API.
      *
      * @return string the base URL for Stripe's API

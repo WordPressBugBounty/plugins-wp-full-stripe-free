@@ -21,7 +21,9 @@ $commission   = 'yes' === $user_version ? '1.9%' : '5%';
                             </button>
 
                             <p>
-                                <?php echo sprintf(
+                                <?php
+                                echo sprintf(
+                                /* translators: %1$s: opening anchor tag, %2$s: closing anchor tag */
                                 __( 'For more information, see our %1$sStripe Connect Setup Guide%2$s.', 'wp-full-stripe-free' ),
                                 '<a href="https://docs.themeisle.com/article/2100-step-by-step-guide-to-setup-stripe-on-fullpay-v7" target="_blank">',
                                 '</a>'
@@ -62,7 +64,9 @@ $commission   = 'yes' === $user_version ? '1.9%' : '5%';
                                 </button>
 
                                 <p>
-                                    <?php echo sprintf(
+                                    <?php
+                                    echo sprintf(
+                                        /* translators: %1$s: opening anchor tag, %2$s: closing anchor tag */
                                         __( 'For more information, see our %1$sStripe Connect Setup Guide%2$s.', 'wp-full-stripe-free' ),
                                         '<a href="https://docs.themeisle.com/article/2100-step-by-step-guide-to-setup-stripe-on-fullpay-v7" target="_blank">',
                                         '</a>'
@@ -84,13 +88,13 @@ $commission   = 'yes' === $user_version ? '1.9%' : '5%';
 
                                             <?php if ( ! WPFS_License::is_active() && ( $stripeData->useWpLivePlatform || $stripeData->useWpTestPlatform ) ): ?>
                                                 <p>
-                                                    <?php 
-                                                      // translators: 1: commission percentage, 2: opening anchor tag, 3: closing anchor tag
+                                                    <?php
                                                       echo sprintf(
-                                                        __( 'Please note that you will be charged %1$s per transaction in addition to Stripe fees. %2$sUpgrade to Pro%3$s for no added fee and priority support.', 'wp-full-stripe-free' ), 
+                                                        /* translators: 1: commission percentage, 2: opening anchor tag, 3: closing anchor tag */
+                                                        __( 'Please note that you will be charged %1$s per transaction in addition to Stripe fees. %2$sUpgrade to Pro%3$s for no added fee and priority support.', 'wp-full-stripe-free' ),
                                                         $commission,
                                                         '<a href="' . esc_url( tsdk_utmify( 'https://paymentsplugin.com/pricing/', 'admin-connection' ) ) . '" target="_blank">',
-                                                        '</a>' 
+                                                        '</a>'
                                                       );
                                                     ?>
                                                 </p>
@@ -127,7 +131,9 @@ $commission   = 'yes' === $user_version ? '1.9%' : '5%';
                             </button>
 
                             <p>
-                                <?php echo sprintf(
+                                <?php
+                                echo sprintf(
+                                    /* translators: %1$s: opening anchor tag, %2$s: closing anchor tag */
                                     __( 'For more information, see our %1$sStripe Connect Setup Guide%2$s.', 'wp-full-stripe-free' ),
                                     '<a href="https://docs.themeisle.com/article/2100-step-by-step-guide-to-setup-stripe-on-fullpay-v7" target="_blank">',
                                     '</a>'
@@ -167,7 +173,9 @@ $commission   = 'yes' === $user_version ? '1.9%' : '5%';
                                 </button>
 
                                 <p>
-                                    <?php echo sprintf(
+                                    <?php
+                                    echo sprintf(
+                                    /* translators: %1$s: opening anchor tag, %2$s: closing anchor tag */
                                     __( 'For more information, see our %1$sStripe Connect Setup Guide%2$s.', 'wp-full-stripe-free' ),
                                     '<a href="https://docs.themeisle.com/article/2100-step-by-step-guide-to-setup-stripe-on-fullpay-v7" target="_blank">',
                                     '</a>'
@@ -189,10 +197,10 @@ $commission   = 'yes' === $user_version ? '1.9%' : '5%';
 
                                             <?php if ( ! WPFS_License::is_active() && ( $stripeData->useWpLivePlatform || $stripeData->useWpTestPlatform ) ): ?>
                                                 <p>
-                                                    <?php 
-                                                      // translators: 1: commission percentage, 2: opening anchor tag, 3: closing anchor tag
+                                                    <?php
                                                       echo sprintf(
-                                                        __( 'Please note that you will be charged %1$s per transaction in addition to Stripe fees. %2$sUpgrade to Pro%3$s for no added fee and priority support.', 'wp-full-stripe-free' ), 
+                                                        /* translators: 1: commission percentage, 2: opening anchor tag, 3: closing anchor tag */
+                                                        __( 'Please note that you will be charged %1$s per transaction in addition to Stripe fees. %2$sUpgrade to Pro%3$s for no added fee and priority support.', 'wp-full-stripe-free' ),
                                                         $commission,
                                                         '<a href="' . esc_url( tsdk_utmify( 'https://paymentsplugin.com/pricing/', 'admin-connection' ) ) . '" target="_blank">',
                                                         '</a>'

@@ -42,7 +42,9 @@
         <div class="wpfs-form__col">
             <div class="wpfs-inline-message wpfs-inline-message--info wpfs-inline-message--w448">
                 <div class="wpfs-inline-message__inner">
-                    <p><?php echo sprintf( __('For prefilling form fields in a more granular manner, please <a href="%s" target="_blank">refer to our knowledge base article</a>.', 'wp-full-stripe-free' ), $articleUrl ); ?></p>
+                    <p><?php
+                    /* translators: %s: URL to knowledge base article */
+                    echo sprintf( __('For prefilling form fields in a more granular manner, please <a href="%s" target="_blank">refer to our knowledge base article</a>.', 'wp-full-stripe-free' ), $articleUrl ); ?></p>
                 </div>
             </div>
         </div>

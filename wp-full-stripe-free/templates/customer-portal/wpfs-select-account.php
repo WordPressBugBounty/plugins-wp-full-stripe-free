@@ -32,7 +32,9 @@
                                 ?>
                                 <strong><?php echo $account->getName(); ?></strong> (<?php echo $subscriptionsLabel ?>)
                             </div>
-                            <div class="wpfs-account-selector-meta"><?php echo sprintf( __('Created at %s', 'wp-full-stripe-free'), $account->getCreatedAtLabel() ); ?></div>
+                            <div class="wpfs-account-selector-meta"><?php
+                            /* translators: %s: formatted date/time string */
+                            echo sprintf( __('Created at %s', 'wp-full-stripe-free'), $account->getCreatedAtLabel() ); ?></div>
                         </div>
                         <div class="wpfs-account-selector-actions">
                             <a class="wpfs-btn wpfs-btn-link wpfs-btn-link--bold wpfs-account-selector" href="" data-customer-id="<?php echo $account->getStripeCustomerId() ?>"><?php esc_html_e( 'Select account', 'wp-full-stripe-free' ); ?></a>

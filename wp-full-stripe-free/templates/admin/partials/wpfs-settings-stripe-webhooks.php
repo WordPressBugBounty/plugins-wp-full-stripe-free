@@ -169,7 +169,9 @@
                     <div class="wpfs-inline-message__inner">
                         <div class="wpfs-inline-message__title"><?php esc_html_e( 'Configure your Webhooks in Stripe', 'wp-full-stripe-free' ); ?></div>
                         <p>
-                            <?php echo sprintf(
+                            <?php
+                            echo sprintf(
+                            /* translators: %1$s: opening anchor tag, %2$s: closing anchor tag */
                             __( 'This is so that Stripe is able to send notifications to WP Full Pay when events occur. This is required for the Connect flow to fully work. For more information on setting up webhooks, see our %1$sSetting up webhooks guide%2$s.', 'wp-full-stripe-free' ),
                             '<a href="https://docs.themeisle.com/article/2096-setting-up-webhooks" target="_blank">',
                             '</a>'

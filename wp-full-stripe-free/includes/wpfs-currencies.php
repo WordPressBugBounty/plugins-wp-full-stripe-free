@@ -44,6 +44,38 @@ class MM_WPFS_Currencies {
 	}
 
 	/**
+	 * Convert a decimal amount to the currency's minor unit for Stripe API.
+	 * 
+	 * Stripe API expects amounts in the currency's smallest unit:
+	 * - Two-decimal currencies (USD, EUR, etc.): multiply by 100 (e.g., 10.00 USD → 1000)
+	 * - Zero-decimal currencies (JPY, KRW, etc.): use as-is (e.g., 1000 JPY → 1000)
+	 * - Special cases: ISK and UGX require two-decimal representation with .00 in Stripe for backward compatibility.
+	 *
+	 * @param float|int $amount The decimal amount (e.g., 10.99 or 1000)
+	 * @param string $currency The currency code (e.g., 'usd', 'jpy')
+	 *
+	 * @return int The amount in the currency's minor unit
+	 * 
+	 * @see https://docs.stripe.com/currencies#minor-units
+	 */
+	public static function convertAmountToMinorUnits( $amount, $currency ) {
+		$currencyArray = self::getCurrencyFor( $currency );
+		
+		if ( ! is_array( $currencyArray ) ) {
+			// Fallback: assume two-decimal currency
+			return intval( round( floatval( $amount ) * 100 ) );
+		}
+		
+		// Zero-decimal currencies: use amount as-is (no multiplication)
+		if ( $currencyArray['zeroDecimalSupport'] ) {
+			return intval( round( floatval( $amount ) ) );
+		}
+		
+		// Two-decimal currencies: multiply by 100
+		return intval( round( floatval( $amount ) * 100 ) );
+	}
+
+	/**
 	 * @return array
 	 */
 	public static function getAvailableCurrencies() {

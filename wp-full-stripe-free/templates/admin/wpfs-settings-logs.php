@@ -21,6 +21,7 @@
                             <div class="wpfs-form-block__title"><?php esc_html_e( 'Log entries', 'wp-full-stripe-free' ); ?></div>
                             <div class="wpfs-form-group">
                                 <?php
+                                    /* translators: %d is the formatted number of log entries. */
                                     $thereAreEntriesLabel = sprintf( __( 'There are %d entries in the log', 'wp-full-stripe-free' ), number_format_i18n( $logData->logEntryCount ));
                                     $logIsEmptyLabel = __( 'The log is empty', 'wp-full-stripe-free' );
                                 ?>

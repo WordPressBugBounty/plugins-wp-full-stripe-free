@@ -57,7 +57,12 @@ abstract class WPFS_Transactions_Table extends WPFS_List_Table {
 	 * @return array
 	 */
 	protected function getOrderParameters(): array {
-		$orderBy = ! empty( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_ORDER_BY ] ) ? trim( sanitize_sql_orderby( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_ORDER_BY ] ) ) : 'created';
+		$orderByParam = isset( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_ORDER_BY ] ) ? $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_ORDER_BY ] : null;
+		$orderBy      = 'created';
+		
+		if ( is_string( $orderByParam ) && ! empty( $orderByParam ) ) {
+			$orderBy = trim( sanitize_sql_orderby( $orderByParam ) );
+		}
 		$order = ! empty( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_ORDER ] ) ? trim( $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_ORDER ] ) : 'desc';
 
 		if ( ! in_array( $order, [ 'desc', 'asc' ], true ) ) {
@@ -1985,31 +1990,24 @@ class WPFS_Log_Table extends WPFS_Base_Table {
 
 		$query = "SELECT * FROM {$wpdb->prefix}fullstripe_log";
 
-		$whereStatement = null;
+		$where  = [];
+		$params = [];
 
 		$module = ! empty( $_REQUEST['module'] ) ? esc_sql( trim( $_REQUEST['module'] ) ) : null;
 		$level = ! empty( $_REQUEST['level'] ) ? esc_sql( trim( $_REQUEST['level'] ) ) : null;
 
 		if ( isset( $module ) ) {
-			if ( ! isset( $whereStatement ) ) {
-				$whereStatement = ' WHERE ';
-			} else {
-				$whereStatement .= ' AND ';
-			}
-			$whereStatement .= sprintf( "( LOWER( `module` ) = LOWER( '%s' ) )", $module );
+			$where[] = "LOWER(module) = LOWER(%s)";
+			$params[]         = $module;
 		}
 
 		if ( isset( $level ) ) {
-			if ( ! isset( $whereStatement ) ) {
-				$whereStatement = ' WHERE ';
-			} else {
-				$whereStatement .= ' AND ';
-			}
-			$whereStatement .= sprintf( '(`level` = %s)', $level );
+			$where[] = "`level` = %d";
+			$params[]         = $level;
 		}
 
-		if ( isset( $whereStatement ) ) {
-			$query .= $whereStatement;
+		if ( ! empty( $where ) ) {
+			$query .= ' WHERE ' . implode( ' AND ', $where );
 		}
 
 		$orderBy = ! empty( $_REQUEST['orderby'] ) ? esc_sql( $_REQUEST['orderby'] ) : 'created';
@@ -2018,7 +2016,7 @@ class WPFS_Log_Table extends WPFS_Base_Table {
 			$query .= ' ORDER BY ' . $orderBy . ' ' . $order;
 		}
 
-		$total_items = $wpdb->query( $query );
+		$total_items = $wpdb->query( $wpdb->prepare( $query, ...$params ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		$per_page = 50;
 		$total_pages = ceil( $total_items / $per_page );
 		$this->set_pagination_args( [
@@ -2037,7 +2035,7 @@ class WPFS_Log_Table extends WPFS_Base_Table {
 		$sortable = $this->get_sortable_columns();
 		$this->_column_headers = [ $columns, $hidden, $sortable ];
 
-		$this->items = $wpdb->get_results( $query );
+		$this->items = $wpdb->get_results( $query );  // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 
 	/**

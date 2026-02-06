@@ -63,6 +63,7 @@ class MM_WPFS_Options {
 	const OPTION_SET_FORM_FIELDS_VIA_URL_PARAMETERS = 'set_form_fields_via_url_parameters';
 	const OPTION_DEFAULT_BILLING_COUNTRY = 'default_billing_country';
 	const OPTION_STRIPE_CONNECT_NOTICE = 'connect_notice';
+	const OPTION_TRANSACTION_VOLUME_NOTICE = 'transaction_volume_notice';
 	const OPTION_FEE_RECOVERY = 'fee_recovery';
 	const OPTION_FEE_RECOVERY_OPT_IN = 'fee_recovery_opt_in';
 	const OPTION_FEE_RECOVERY_OPT_IN_MESSAGE = 'fee_recovery_opt_in_message';

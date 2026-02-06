@@ -1520,11 +1520,11 @@ class MM_WPFS_DropCheckoutSubscriptionAlipayColumns extends MM_WPFS_Patch {
 
 class MM_WPFS_MigrateCurrencyAndSetupFee extends MM_WPFS_Patch {
 
-	/** @var $stripe MM_WPFS_Stripe */
+	/** @var MM_WPFS_Stripe|null $stripe The custom Stripe client instance. */
 	private $stripe;
 
 	/**
-	 * MM_WPFS_MigrateCurrency constructor.
+	 * @param \MM_WPFS_LoggerService $loggerService
 	 */
 	public function __construct( $loggerService ) {
         parent::__construct( $loggerService );
@@ -1536,6 +1536,11 @@ class MM_WPFS_MigrateCurrencyAndSetupFee extends MM_WPFS_Patch {
 		$this->stripe         = new MM_WPFS_Stripe( MM_WPFS_Stripe::getStripeAuthenticationToken($this->staticContext), $this->loggerService );
 	}
 
+	/**
+	 * Migrate currency and setup fees, then clean up global options.
+	 *
+	 * @return bool
+	 */
 	public function apply() {
 		$update_form_currencies_result = $this->update_currency_for_forms();
 		if ( $update_form_currencies_result !== false ) {
@@ -1560,6 +1565,11 @@ class MM_WPFS_MigrateCurrencyAndSetupFee extends MM_WPFS_Patch {
 		return true;
 	}
 
+	/**
+	 * Migrate currency from options to payment and checkout forms.
+	 *
+	 * @return int|false
+	 */
 	private function update_currency_for_forms() {
 		$options = get_option( 'fullstripe_options' );
 		if ( is_array( $options ) ) {
@@ -1579,25 +1589,45 @@ class MM_WPFS_MigrateCurrencyAndSetupFee extends MM_WPFS_Patch {
 		return 0;
 	}
 
+	/**
+	 * Migrate setup fees from forms to Stripe plan metadata.
+	 *
+	 * @return int|false
+	 */
 	private function update_setup_fees_for_plans() {
 		$subscription_forms = $this->load_subscription_forms();
 
 		$updated_plan_count = 0;
+
+		if ( null === $this->stripe || null === $this->stripe->stripe ) {
+			$this->logger->error(__FUNCTION__, 'Stripe client is not initialized. Cannot apply setup fee migration patch.' );
+			return false;
+		}
 
 		if ( isset( $subscription_forms ) ) {
 			foreach ( $subscription_forms as $form ) {
 				if ( !is_null($form->setupFee) && $form->setupFee != - 1 ) {
 					$subscription_form_plans = json_decode( $form->plans );
 					foreach ( $subscription_form_plans as $plan_id ) {
+
+						/**
+						 * The Stripe Price object structure.
+						 * 
+						 * @var object{id: string, object: string, active: bool, amount: int, billing_scheme: string, created: int, currency: string, custom_unit_amount: ?object, livemode: bool, lookup_key: ?string, metadata: object, nickname: ?string, product: object, recurring: ?object, tax_behavior: string, tiers_mode: ?string, transform_quantity: ?object, type: string, unit_amount: ?int, unit_amount_decimal: ?string}|\StripeWPFS\Stripe\Price|null
+						 */
 						$plan = $this->stripe->retrievePlan( $plan_id );
-						if ( isset( $plan ) ) {
-							if ( isset( $plan->metadata ) && ! isset( $plan->metadata->setup_fee ) ) {
+						if ( null !== $plan ) {
+							if (
+								isset( $plan->metadata ) &&
+								! isset( $plan->metadata->setup_fee )
+							) {
 								$plan->metadata->setup_fee = $form->setupFee;
-								if ($plan instanceof stdClass) {
+								
+								if ( method_exists( $plan, 'save' ) ) {
+									$plan->save();
+								} else {
 									// The data on the price doesn't seem to be used. let's just log the error and continue.
 									$this->logger->error(__FUNCTION__, 'Error while applying patches: Setup fee must be added to the Stripe plan manually.' . $plan_id);
-								} else {
-									$plan->save();
 								}
 								$updated_plan_count += 1;
 							}
@@ -1611,18 +1641,36 @@ class MM_WPFS_MigrateCurrencyAndSetupFee extends MM_WPFS_Patch {
 		return $updated_plan_count;
 	}
 
+	/**
+	 * Load all subscription forms from database.
+	 *
+	 * @return array<int, object>|null
+	 */
 	private function load_subscription_forms() {
 		global $wpdb;
 
 		return $wpdb->get_results( "select * from {$wpdb->prefix}fullstripe_subscription_forms" );
 	}
 
+	/**
+	 * Update setup fee for a subscription form.
+	 *
+	 * @param int|string $id The subscription form ID.
+	 * @param int|float  $setupFee The setup fee.
+	 *
+	 * @return int|false
+	 */
 	private function update_subscription_form_setup_fee( $id, $setupFee ) {
 		global $wpdb;
 
 		return $wpdb->update( "{$wpdb->prefix}fullstripe_subscription_forms", [ 'setupFee' => $setupFee ], [ 'subscriptionFormID' => $id ] );
 	}
 
+	/**
+	 * Remove currency from global options after migration.
+	 *
+	 * @return void
+	 */
 	private function remove_currency_from_fullstripe_options() {
 		$options = get_option( 'fullstripe_options' );
 		if ( is_array( $options ) ) {

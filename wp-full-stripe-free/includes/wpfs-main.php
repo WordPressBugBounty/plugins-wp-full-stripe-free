@@ -10,7 +10,7 @@ https://themeisle.com
 */
 
 class MM_WPFS {
-	const VERSION = '8.3.1';
+	const VERSION = '8.3.4';
 	const REQUEST_PARAM_NAME_WPFS_RENDERED_FORMS = 'wpfs_rendered_forms';
 
 	const HANDLE_WP_FULL_STRIPE_JS = 'wp-full-stripe-js';
@@ -108,6 +108,7 @@ class MM_WPFS {
 	const PAYMENT_TYPE_CARD_CAPTURE = 'card_capture';
 
 	const CURRENCY_USD = 'usd';
+	const CURRENCY_EUR = 'eur';
 
 	const CANCEL_SUBSCRIPTION_IMMEDIATELY = 'immediately';
 	const CANCEL_SUBSCRIPTION_AT_PERIOD_END = 'atPeriodEnd';
@@ -389,7 +390,6 @@ class MM_WPFS {
 		$this->thankYou = new MM_WPFS_ThankYou( $this->loggerService );
 		new MM_WPFS_Block();
 
-
 		do_action( 'fullstripe_setup_action' );
 	}
 
@@ -397,7 +397,7 @@ class MM_WPFS {
 		if ( boolval( $this->options->get( MM_WPFS_Options::OPTION_CATCH_UNCAUGHT_ERRORS ) ) ) {
 			set_error_handler( [ $this, 'handleError' ], E_ALL | E_STRICT );
 			set_exception_handler( [ $this, 'handleException' ] );
-			ini_set( 'display_errors', 0 );
+			ini_set( 'display_errors', '0' );
 		}
 	}
 
@@ -547,6 +547,8 @@ class MM_WPFS {
 
 		add_filter( 'script_loader_tag', [ $this, 'addAsyncDeferAttributes' ], 10, 2 );
 
+		MM_WPFS_TrackingActivationEndpoint::register();
+
 		do_action( 'fullstripe_main_hooks_action' );
 	}
 
@@ -665,6 +667,7 @@ class MM_WPFS {
 
 			if ( current_user_can( 'administrator' ) ) {
 				$content = sprintf(
+					/* translators: %1$s: opening p tag, %2$s: opening link tag, %3$s: closing link tag, %4$s: closing p tag. */
 					__( '%1$sYou are not connected to Stripe. Please connect to Stripe %2$sin the plugin settings%3$s.%4$s', 'wp-full-stripe-free' ),
 					'<p>',
 					'<a href="' . MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE ) . '">',
@@ -974,27 +977,47 @@ class MM_WPFS {
 					'weekly' => __( 'Subscription will be charged every week.', 'wp-full-stripe-free' ),
 					'monthly' => __( 'Subscription will be charged every month.', 'wp-full-stripe-free' ),
 					'yearly' => __( 'Subscription will be charged every year.', 'wp-full-stripe-free' ),
+					/* translators: %d: interval count for days */
 					'y_days' => __( 'Subscription will be charged every %d days.', 'wp-full-stripe-free' ),
+					/* translators: %d: interval count for weeks */
 					'y_weeks' => __( 'Subscription will be charged every %d weeks.', 'wp-full-stripe-free' ),
+					/* translators: %d: interval count for months */
 					'y_months' => __( 'Subscription will be charged every %d months.', 'wp-full-stripe-free' ),
+					/* translators: %d: interval count for years */
 					'y_years' => __( 'Subscription will be charged every %d years.', 'wp-full-stripe-free' ),
+					/* translators: %d: number of occasions */
 					'x_times_daily' => __( 'Subscription will be charged every day, for %d occasions.', 'wp-full-stripe-free' ),
+					/* translators: %d: number of occasions */
 					'x_times_weekly' => __( 'Subscription will be charged every week, for %d occasions.', 'wp-full-stripe-free' ),
+					/* translators: %d: number of occasions */
 					'x_times_monthly' => __( 'Subscription will be charged every month, for %d occasions.', 'wp-full-stripe-free' ),
+					/* translators: %d: number of occasions */
 					'x_times_yearly' => __( 'Subscription will be charged every year, for %d occasions.', 'wp-full-stripe-free' ),
+					/* translators: %1$d: interval count for days, %2$d: occasions */
 					'x_times_y_days' => __( 'Subscription will be charged every %1$d days, for %2$d occasions.', 'wp-full-stripe-free' ),
+					/* translators: %1$d: interval count for weeks, %2$d: occasions */
 					'x_times_y_weeks' => __( 'Subscription will be charged every %1$d weeks, for %2$d occasions.', 'wp-full-stripe-free' ),
+					/* translators: %1$d: interval count for months, %2$d: occasions */
 					'x_times_y_months' => __( 'Subscription will be charged every %1$d months, for %2$d occasions.', 'wp-full-stripe-free' ),
+					/* translators: %1$d: interval count for years, %2$d: occasions */
 					'x_times_y_years' => __( 'Subscription will be charged every %1$d years, for %2$d occasions.', 'wp-full-stripe-free' ),
 				],
 				'subscription_pricing_templates' => [
+					/* translators: %1$s: formatted price amount */
 					'daily' => __( '%1$s / day', 'wp-full-stripe-free' ),
+					/* translators: %1$s: formatted price amount */
 					'weekly' => __( '%1$s / week', 'wp-full-stripe-free' ),
+					/* translators: %1$s: formatted price amount */
 					'monthly' => __( '%1$s / month', 'wp-full-stripe-free' ),
+					/* translators: %1$s: formatted price amount */
 					'yearly' => __( '%1$s / year', 'wp-full-stripe-free' ),
+					/* translators: %1$s: price, %2$d: interval count for days */
 					'x_days' => __( '%1$s / %2$d days', 'wp-full-stripe-free' ),
+					/* translators: %1$s: price, %2$d: interval count for weeks */
 					'x_weeks' => __( '%1$s / %2$d weeks', 'wp-full-stripe-free' ),
+					/* translators: %1$s: price, %2$d: interval count for months */
 					'x_months' => __( '%1$s / %2$d months', 'wp-full-stripe-free' ),
+					/* translators: %1$s: price, %2$d: interval count for years */
 					'x_years' => __( '%1$s / %2$d years', 'wp-full-stripe-free' ),
 				],
 				'products' => [

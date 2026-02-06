@@ -4,14 +4,21 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitee1a631c206ba2dc7a0b959e6075f771
+class ComposerStaticInitdc60629b31f9991f9e5bfab40861184a
 {
     public static $files = array (
+        'e69f7f6ee287b969198c3c9d6777bd38' => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer/bootstrap.php',
         '3109cb1a231dcd04bee1f9f620d46975' => __DIR__ . '/..' . '/paragonie/sodium_compat/autoload.php',
+        'f598d06aa772fa33d905e87be6398fb1' => __DIR__ . '/..' . '/symfony/polyfill-intl-idn/bootstrap.php',
         '538d11a8c218d52c670b27979ae23ec9' => __DIR__ . '/..' . '/codeinwp/themeisle-sdk/load.php',
     );
 
     public static $prefixLengthsPsr4 = array (
+        'S' => 
+        array (
+            'Symfony\\Polyfill\\Intl\\Normalizer\\' => 33,
+            'Symfony\\Polyfill\\Intl\\Idn\\' => 26,
+        ),
         'P' => 
         array (
             'Psr\\EventDispatcher\\' => 20,
@@ -20,6 +27,14 @@ class ComposerStaticInitee1a631c206ba2dc7a0b959e6075f771
     );
 
     public static $prefixDirsPsr4 = array (
+        'Symfony\\Polyfill\\Intl\\Normalizer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer',
+        ),
+        'Symfony\\Polyfill\\Intl\\Idn\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-intl-idn',
+        ),
         'Psr\\EventDispatcher\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/event-dispatcher/src',
@@ -32,14 +47,15 @@ class ComposerStaticInitee1a631c206ba2dc7a0b959e6075f771
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'Normalizer' => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer/Resources/stubs/Normalizer.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitee1a631c206ba2dc7a0b959e6075f771::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitee1a631c206ba2dc7a0b959e6075f771::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInitee1a631c206ba2dc7a0b959e6075f771::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitdc60629b31f9991f9e5bfab40861184a::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitdc60629b31f9991f9e5bfab40861184a::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitdc60629b31f9991f9e5bfab40861184a::$classMap;
 
         }, null, ClassLoader::class);
     }

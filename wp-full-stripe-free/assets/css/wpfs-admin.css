@@ -1100,7 +1100,7 @@ a.wpfs-btn-outline-primary,
   line-height: 18px;
   padding: 8px 16px;
   border: 1px solid #c5c6cd;
-  border-radius: 100px;
+  border-radius: 4px;
 }
 .wpfs-btn-outline-primary:hover,
 button.wpfs-btn-outline-primary:hover,
@@ -2773,7 +2773,7 @@ textarea.wpfs-form-control::placeholder {
 .wpfs-floating-message {
   background: #ffffff;
   position: fixed;
-  top: 40px;
+  top: 95px;
   left: calc(50% - 20px);
   border: 1px solid rgba(206, 208, 215, 0.24);
   -webkit-box-shadow: 0px 2px 4px rgba(44, 49, 73, 0.08);
@@ -2787,6 +2787,7 @@ textarea.wpfs-form-control::placeholder {
   transition: opacity 0.3s, visibility 0s 0.3s;
   visibility: hidden;
   opacity: 0;
+  z-index: 999;
 }
 .wpfs-floating-message--show {
   visibility: visible;
@@ -3219,7 +3220,7 @@ textarea.wpfs-form-control::placeholder {
 .wpfs-page-header {
   background: #f4f7fe;
   position: relative;
-  padding: 32px;
+  padding: 8px 24px;
   border-top: 1px solid #ced0d7;
   border-bottom: 1px solid #ced0d7;
   margin-bottom: 32px;
@@ -3239,7 +3240,7 @@ textarea.wpfs-form-control::placeholder {
   font-size: 13px;
   font-weight: 600;
   line-height: 16px;
-  margin-bottom: 4px;
+  margin-bottom: 10px;
 }
 .wpfs-page-header__back-button {
   color: #6e7289;
@@ -3299,6 +3300,7 @@ textarea.wpfs-form-control::placeholder {
   -ms-flex-align: center;
   align-items: center;
   margin-left: auto;
+  gap: 10px;
 }
 .wpfs-page-header__btn {
   margin-left: 16px;
@@ -4166,18 +4168,16 @@ textarea.wpfs-form-control::placeholder {
 
 .wpfs-help-dropdown {
   display: none;
-  background: #ffffff;
+  background: #1a1f36;
   position: absolute;
-  top: 90px;
-  right: 30px;
+  top: 60px;
+  right: 7px;
   width: 275px;
   color: #2c3149;
   font-size: 14px;
   line-height: 20px;
   padding: 24px;
   border: 1px solid rgba(206, 208, 215, 0.24);
-  -webkit-box-shadow: 0px 4px 16px rgba(44, 49, 73, 0.16);
-  box-shadow: 0px 4px 16px rgba(44, 49, 73, 0.16);
   border-radius: 4px;
   text-align: left;
   cursor: default;
@@ -4230,6 +4230,10 @@ textarea.wpfs-form-control::placeholder {
 .wpfs-help-dropdown__link [class*=" wpfs-icon-"] {
   font-size: 20px;
   margin-right: 16px;
+}
+
+.wpfs-help-dropdown .wpfs-help-dropdown__item .wpfs-help-dropdown__link {
+  color: white;
 }
 
 .wpfs-announcements-summary {
@@ -5823,4 +5827,198 @@ input[type="email"].wpfs-input {
 
 div.notice.themeisle-sale {
   margin-top: 10px;
+}
+
+/* Global Nav Bar Styles */
+.wpfs-global-header {
+  background: #1a1f36;
+  color: white;
+  padding: 10px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 110;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+/* Plugin Brand/Logo */
+.wpfs-global-header__brand {
+  display: flex;
+  align-items: center;
+}
+
+.wpfs-global-header__logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: white;
+  transition: opacity 0.15s;
+}
+
+.wpfs-global-header__logo:hover {
+  opacity: 0.9;
+}
+
+.wpfs-global-header__plugin-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+}
+
+/* Plugin Meta (version + plan badges) */
+.wpfs-global-header__plugin-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wpfs-global-header__plugin-version {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.wpfs-global-header__plugin-version:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.wpfs-global-header__plugin-plan {
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.wpfs-global-header__spacer {
+  flex-grow: 1;
+}
+
+.wpfs-global-header__stripe_mode {
+  color: white;
+  border: 1px solid white;
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  box-sizing: border-box;
+  font-weight: 600;
+  border-radius: 4px;
+  text-decoration: none;
+  gap: 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+  font-size: 14px;
+}
+
+.wpfs-global-header__stripe_mode:hover,
+.wpfs-global-header__stripe_mode:focus {
+  background: white;
+  color: black;
+}
+
+.wpfs-global-header__plugin-plan--pro {
+  background: rgba(240, 180, 41, 0.2);
+  color: #f0b429;
+}
+
+.wpfs-global-header__plugin-plan--free {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Main Navigation */
+.wpfs-global-header__nav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  height: 100%;
+}
+
+.wpfs-global-header__nav-item {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wpfs-global-header__nav-item:hover,
+.wpfs-global-header__nav-item:active,
+.wpfs-global-header__nav-item:focus  {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.wpfs-global-header__nav-item--active {
+  background: rgba(103, 114, 229, 0.3);
+  color: white;
+}
+
+.wpfs-global-header__stripe_mode .wpfs-icon-stripe {
+  color: #568ee8;
+  font-size: 14px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.wpfs-global-header__logo-icon {
+  width: 20px;
+  height: 20px;
+  color: #568ee8;
+}
+
+.wpfs-btn-icon:has(.wpfs-icon-help) {
+  color: white;
+}
+
+.wpfs-transaction-volume-notice {
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+.wpfs-transaction-volume-notice .wpfs-inline-message__inner {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+}
+
+.wpfs-transaction-volume-notice .wpfs-transaction-volume-notice__actions {
+  flex-grow: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.wpfs-transaction-volume-notice .wpfs-inline-message__close {
+  text-decoration: none;
+  min-height: unset;
+  line-height: unset;
+} 
+
+
+.wpfs-members-upsell {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wpfs-members-upsell h4 {
+  margin: 0;
+}
+
+.wpfs-members-upsell .wpfs-form-help {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }

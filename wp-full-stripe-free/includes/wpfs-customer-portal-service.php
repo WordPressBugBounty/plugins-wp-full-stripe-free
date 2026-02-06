@@ -418,6 +418,7 @@ class MM_WPFS_CustomerPortalService
 
 			if ( current_user_can( 'administrator' ) ) {
 				$content = sprintf(
+					/* translators: %1$s: opening p tag, %2$s: opening link tag, %3$s: closing link tag, %4$s: closing p tag. */
 					__( '%1$sYou are not connected to Stripe. Please connect to Stripe %2$sin the plugin settings%3$s.%4$s', 'wp-full-stripe-free' ),
 					'<p>',
 					'<a href="' . MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS_STRIPE ) . '">',

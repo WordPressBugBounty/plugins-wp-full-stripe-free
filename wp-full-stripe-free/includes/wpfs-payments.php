@@ -321,7 +321,13 @@ class MM_WPFS_Stripe {
 					'price' => $stripePlanId,
 					'quantity' => $amount
 				]
-			]
+			],
+			'expand' => [
+				'latest_invoice',
+				'latest_invoice.payments',
+				'latest_invoice.payment_intent',
+				'pending_setup_intent'
+			],
 		];
 
 		if ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) {
@@ -769,7 +775,7 @@ class MM_WPFS_Stripe {
 	 */
 	function createProduct( $name, $currency, $price, $interval = null ) {
 		$currency = sanitize_text_field( $currency );
-		$price    = intval( $price );
+		$price    = MM_WPFS_Currencies::convertAmountToMinorUnits( $price, $currency );
 		$name     = sanitize_text_field( $name );
 		$interval = sanitize_text_field( $interval );
 
@@ -815,9 +821,11 @@ class MM_WPFS_Stripe {
 	}
 
 	/**
-	 * @param $planId
+	 * Get the Stripe Plan/Price by its ID.
+	 * 
+	 * @param $planId The Stripe Plan/Price ID
 	 *
-	 * @return \StripeWPFS\Stripe\Price|null
+	 * @return \StripeWPFS\Stripe\Price|null NOTE. The Price class is not used, all the return is a generic object, but kept for type hinting.
 	 */
 	public function retrievePlan( $planId ) {
 		$plan = null;
@@ -835,7 +843,7 @@ class MM_WPFS_Stripe {
 					'get',
 					'/prices/' . $planId . '?mode=live&accountId=' . $this->liveStripeAcountId . '&' . $query_string
 				);
-			} else {
+			} else if ( isset( $this->stripe ) && null !== $this->stripe ) {
 				$plan = json_decode( $this->stripe->prices->retrieve(
 					$planId,
 					$params
@@ -1950,11 +1958,17 @@ class MM_WPFS_Stripe {
 	}
 
 	/**
+	 * Create a setup intent.
+	 * 
+	 * @param string|null $customerId Optional customer ID to attach to the SetupIntent
+	 * 
 	 * @return \StripeWPFS\Stripe\Invoice
 	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 * @throws WPFS_UserFriendlyException
+	 * 
+	 * @see https://docs.stripe.com/api/setup_intents
 	 */
-	public function createSetupIntent() {
+	public function createSetupIntent( $customerId = null ) {
 		$params = [
 			'usage' => 'off_session',
 			'metadata' => [
@@ -1965,6 +1979,11 @@ class MM_WPFS_Stripe {
 				'allow_redirects' => 'never', //setup intents do not support redirects
 			],
 		];
+
+		// Attach customer to SetupIntent if provided. It ensures PaymentMethods can be attached during confirmation
+		if ( ! empty( $customerId ) ) {
+			$params['customer'] = $customerId;
+		}
 
 		$setupIntent = null;
 		if ( ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) || ( $this->apiMode === 'live' && $this->usingWpLivePlatform ) ) {
@@ -2095,12 +2114,23 @@ class MM_WPFS_Stripe {
 
 		if ( isset( $stripeCustomer ) && isset( $currentPaymentMethod ) ) {
 			// WPFS-983: tnagy find existing PaymentMethod with identical fingerprint and reuse it
-			$existingStripePaymentMethod = $this->findExistingPaymentMethodByFingerPrintAndExpiry(
-				$stripeCustomer,
-				$currentPaymentMethod->card->fingerprint,
-				$currentPaymentMethod->card->exp_year,
-				$currentPaymentMethod->card->exp_month
-			);
+
+			/**
+			 * @var \StripeWPFS\Stripe\PaymentMethod|null
+			 */
+			$existingStripePaymentMethod = null;
+
+			if (
+				isset($currentPaymentMethod->card) &&
+				isset( $currentPaymentMethod->card->fingerprint )
+			) {
+				$existingStripePaymentMethod = $this->findExistingPaymentMethodByFingerPrintAndExpiry(
+					$stripeCustomer,
+					$currentPaymentMethod->card->fingerprint,
+					$currentPaymentMethod->card->exp_year,
+					$currentPaymentMethod->card->exp_month
+				);
+			}
 			if ( isset( $existingStripePaymentMethod ) ) {
 				$this->logger->debug(
 					__FUNCTION__,
@@ -2135,7 +2165,7 @@ class MM_WPFS_Stripe {
 	 * Find a Customer's PaymentMethod by fingerprint if exists.
 	 *
 	 * @param \StripeWPFS\Stripe\Customer $stripeCustomer
-	 * @param string $paymentMethodCardFingerPrint
+	 * @param string|null $paymentMethodCardFingerPrint
 	 * @param $expiryYear
 	 * @param $expiryMonth
 	 *

@@ -4,17 +4,17 @@
 
 namespace StripeWPFS\Composer\Autoload;
 
-class ComposerStaticInit25e00a8e055a5fe77e8f4a8e0091b917
+class ComposerStaticInit8a6b2cb230ff2c582ebe3c4ab852f8d9
 {
     public static $prefixLengthsPsr4 = array (
-        'S' => 
+        'S' =>
         array (
             'StripeWPFS\\Stripe\\' => 18,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'StripeWPFS\\Stripe\\' => 
+        'StripeWPFS\\Stripe\\' =>
         array (
             0 => __DIR__ . '/..' . '/stripe/stripe-php/lib',
         ),
@@ -398,9 +398,9 @@ class ComposerStaticInit25e00a8e055a5fe77e8f4a8e0091b917
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit25e00a8e055a5fe77e8f4a8e0091b917::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit25e00a8e055a5fe77e8f4a8e0091b917::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit25e00a8e055a5fe77e8f4a8e0091b917::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit8a6b2cb230ff2c582ebe3c4ab852f8d9::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit8a6b2cb230ff2c582ebe3c4ab852f8d9::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit8a6b2cb230ff2c582ebe3c4ab852f8d9::$classMap;
 
         }, null, ClassLoader::class);
     }

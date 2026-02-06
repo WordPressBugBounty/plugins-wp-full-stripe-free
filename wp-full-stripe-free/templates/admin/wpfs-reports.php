@@ -69,12 +69,13 @@ $has_donation_forms = count( $data->donation_forms ) > 0;
                         <div class="wpfs-inline-message__inner">
                             <div class="wpfs-inline-message__title"><?php esc_html_e('Ensure Webhooks are Properly Configured in Stripe', 'wp-full-stripe-free'); ?></div>
                             <p>
-                                <?php 
+                                <?php
                                 echo sprintf(
+                                    /* translators: %1$s: opening anchor tag, %2$s: closing anchor tag */
                                     __( 'To ensure that reports are accurately recorded, please make sure that webhooks are properly configured in Stripe. This allows Stripe to send notifications to WP Full Pay when events occur. For more information on setting up webhooks, see our %1$sSetting up webhooks guide%2$s.', 'wp-full-stripe-free' ),
                                     '<a href="' . esc_url('https://docs.themeisle.com/article/2096-setting-up-webhooks') . '" target="_blank">',
                                     '</a>'
-                                ); 
+                                );
                                 ?>
                             </p>
                         </div>

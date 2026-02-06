@@ -52,8 +52,8 @@ class MM_WPFS_Admin {
 
 		// show notice banner if not fully configured
 		add_action( 'admin_notices', [ $this, 'wpfp_config_notice' ] );
-		add_action( 'admin_notices', [ $this, 'wpfp_coupon_notice' ] );
 		add_action( 'wp_ajax_wpfs-dismiss-stripe-connect-notice', [ $this, 'wpfp_dismiss_notice' ] );
+		add_action( 'wp_ajax_wpfs-dismiss-transaction-volume-notice', [ $this, 'wpfp_dismiss_transaction_volume_notice' ] );
 
 		// actions for forms
 		add_action( 'wp_ajax_wpfs-create-form', [ $this, 'createForm' ] );
@@ -295,24 +295,25 @@ class MM_WPFS_Admin {
 		<?php
 	}
 
-	public static function wpfp_coupon_notice() {
-		// if connected to live account but no license
-		$options = new MM_WPFS_Options();
-		$wpfp_options = $options->getSeveral( [ 
-			MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID
-		] );
-		$validLicense = WPFS_License::is_active();
-		if (
-			! empty( $wpfp_options[ MM_WPFS_Options::OPTION_LIVE_ACCOUNT_ID ] ) &&
-			! $validLicense
-		) {
-			$url = tsdk_utmify( 'https://paymentsplugin.com/pricing', 'no-license');
-			echo
-				'<div class="notice notice-info">
-					<p><b>Get 10% off your license!</b> Use coupon code <b>WPFP10OFF1Y</b> during checkout via <a href="' . $url . '">https://paymentsplugin.com/pricing</a>/</p>
-				</div>';
+
+
+	/**
+	 * Dismiss the Transaction Volume notice.
+	 * 
+	 * @return void
+	 */
+	public function wpfp_dismiss_transaction_volume_notice() {
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'wp-full-stripe-admin-nonce' ) ) {
+			wp_send_json_error( [ 'message' => __( 'Invalid nonce.', 'wp-full-stripe-free' ) ] );
 		}
 
+		$options = new MM_WPFS_Options();
+		$options->set( MM_WPFS_Options::OPTION_TRANSACTION_VOLUME_NOTICE, true );
+
+		// Clear the cached transaction volume check
+		delete_transient( 'wpfs_transaction_volume_notice_check' );
+
+		wp_send_json_success();
 	}
 
 	/**
@@ -3208,7 +3209,6 @@ class MM_WPFS_Admin {
 		}
 
 		try {
-			$data->price = $data->price * 100;
 			$this->stripe->createProduct( ...array_values( (array) $data ) );
 
 			wp_send_json_success( [ 'msg' => __( 'Product created.', 'wp-full-stripe-free' ) ] );

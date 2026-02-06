@@ -3,8 +3,8 @@ Contributors: themeisle
 Tags: stripe payments, credit card payments, donation form, stripe checkout, stripe gateway
 Requires at least: 5.3
 Requires PHP: 7.4
-Tested up to: 6.8
-Stable tag: 8.3.1
+Tested up to: 6.9
+Stable tag: 8.3.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -79,7 +79,7 @@ To get started with Stripe payments on your WordPress site using WP Full Pay, fo
 
 Done! You can start creating Stripe payment forms and embed them in your WordPress site.
 
-Before publishing, conduct a [Stripe test transaction](https://paymentsplugin.com/blog/stripe-test-transactions/?utm_source=wpadmin&utm_campaign=wpfullpayfree&utm_medium=readme) to ensure everything works smoothly.
+Before publishing, conduct a [Stripe test transaction](https://paymentsplugin.com/blog/stripe-test-transactions/?utm_source=wordpressorg&utm_campaign=wpfullpayfree&utm_medium=readme) to ensure everything works smoothly.
 
 Refer to our [installation & setup guide](https://docs.themeisle.com/article/2097-configuring-the-stripe-api-keys) for detailed instructions on configuring Stripe in WordPress.
 
@@ -105,7 +105,7 @@ subscription forms, and donation forms. With WP Full Pay, you can easily embed t
 * **Automatic updates** - the plugin can auto-update to the latest version with one click
 * **Professional support** - fully supported, professionally written and regularly updated software
 * **Comprehensive documentation** available at [docs.themeisle.com](https://docs.themeisle.com/)
-* **Integrates with [WP Full Members](https://paymentsplugin.com/wp-full-members-addon/?utm_source=wpadmin&utm_campaign=wpfullpayfree&utm_medium=readme)** - easily build out a membership site with protected content that only subscribed members are allowed to view
+* **Integrates with [WP Full Members](https://paymentsplugin.com/wp-full-members-addon/?utm_source=wordpressorg&utm_campaign=wpfullpayfree&utm_medium=readme)** - easily build out a membership site with protected content that only subscribed members are allowed to view
 
 ### 👥 Payment Management
 
@@ -161,7 +161,7 @@ There is a 5% fee per-transaction to use WP Full Pay without a license. If you u
 
 ### 🔍 Documentation & Support
 
-WP Full Pay [offers knowledge](https://docs.themeisle.com/collection/2079-wp-full-pay) base and also invites you to [submit a ticket](https://themeisle.com/contact/?utm_source=wpadmin&utm_campaign=wpfullpayfree&utm_medium=readme) if you need help or encounter any issues.
+WP Full Pay [offers knowledge](https://docs.themeisle.com/collection/2079-wp-full-pay) base and also invites you to [submit a ticket](https://themeisle.com/contact/?utm_source=wordpressorg&utm_campaign=wpfullpayfree&utm_medium=readme) if you need help or encounter any issues.
 
 == Installation ==
 

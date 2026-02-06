@@ -303,7 +303,7 @@ class MM_WPFS_SubscriptionContextCreator {
 			$amount = $this->formModel->getStripePlan()->unit_amount * $this->formModel->getStripePlanQuantity();
 			$currency = $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY ];
 			$plan = $this->createSubscriptionForRecoveryFee( $currency, $this->formModel->getStripePlan()->recurring->interval );
-			$quantity = MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] );
+			$quantity = MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ], $currency );
 
 			$recoveryFeeLineItem = [
 				'price' => $plan->id,
@@ -377,18 +377,22 @@ class MM_WPFS_SubscriptionContextCreator {
 
 		switch ( $frequency ) {
 			case MM_WPFS_SubscriptionFormViewConstants::FIELD_VALUE_SUBSCRIPTION_FREQUENCY_DAILY:
+				/* translators: %s: formatted transaction fee amount with currency symbol */
 				$res = __( 'Daily transaction fee (%s)', 'wp-full-stripe-free' );
 				break;
 
 			case MM_WPFS_SubscriptionFormViewConstants::FIELD_VALUE_SUBSCRIPTION_FREQUENCY_WEEKLY:
+				/* translators: %s: formatted transaction fee amount with currency symbol */
 				$res = __( 'Weekly transaction fee (%s)', 'wp-full-stripe-free' );
 				break;
 
 			case MM_WPFS_SubscriptionFormViewConstants::FIELD_VALUE_SUBSCRIPTION_FREQUENCY_MONTHLY:
+				/* translators: %s: formatted transaction fee amount with currency symbol */
 				$res = __( 'Monthly transaction fee (%s)', 'wp-full-stripe-free' );
 				break;
 
 			case MM_WPFS_SubscriptionFormViewConstants::FIELD_VALUE_SUBSCRIPTION_FREQUENCY_ANNUAL:
+				/* translators: %s: formatted transaction fee amount with currency symbol */
 				$res = __( 'Annual transaction fee (%s)', 'wp-full-stripe-free' );
 				break;
 		}
@@ -449,18 +453,22 @@ trait MM_WPFS_DonationTools_AddOn {
 
 		switch ( $frequency ) {
 			case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_DAILY:
+				/* translators: %s: formatted donation amount with currency symbol */
 				$res = __( 'Daily donation (%s)', 'wp-full-stripe-free' );
 				break;
 
 			case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_WEEKLY:
+				/* translators: %s: formatted donation amount with currency symbol */
 				$res = __( 'Weekly donation (%s)', 'wp-full-stripe-free' );
 				break;
 
 			case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_MONTHLY:
+				/* translators: %s: formatted donation amount with currency symbol */
 				$res = __( 'Monthly donation (%s)', 'wp-full-stripe-free' );
 				break;
 
 			case MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_ANNUAL:
+				/* translators: %s: formatted donation amount with currency symbol */
 				$res = __( 'Annual donation (%s)', 'wp-full-stripe-free' );
 				break;
 		}
@@ -561,7 +569,7 @@ trait MM_WPFS_DonationTools_AddOn {
 		$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $donationFormModel->getForm() );
 
 		if ( $recoveryFee && ! empty( $recoveryFeeData ) ) {
-			$amount = $amount + MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] );
+			$amount = $amount + MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY ] );
 		}
 
 		return $subscription;
@@ -836,17 +844,35 @@ class MM_WPFS_Customer {
 		$result = null;
 		$intent_type = null;
 		try {
+			/*
+				NOTE 1.1: All the forms call this endpoint to get the client secret, but only the one-time payment is processing at full.
+
+				For all the form that enters, the `validateForm` method is working only with MM_WPFS_Public_InlinePaymentFormModel branch check. This makes that $paymentFormModel->getForm() to be null for all other forms (since it fails the DB lookup), thus using only the `createSetupIntent`.
+			*/
 			$paymentFormModel = new MM_WPFS_Public_InlinePaymentFormModel( $this->loggerService );
 			$paymentFormModel->bind();
 
-			if ( isset( $paymentFormModel->getForm()->paymentMethods ) ) {
-				$paymentMethods = $paymentFormModel->getForm()->paymentMethods;
-				$paymentMethods = json_decode( $paymentMethods );
+			// Find or create customer by email to attach to SetupIntent to prevent errors when a user re-use the email.
+			$customerId = null;
+			$email = isset( $_POST['wpfs-card-holder-email'] ) ? sanitize_email( $_POST['wpfs-card-holder-email'] ) : null;
+			if ( ! empty( $email ) ) {
+				$existingCustomer = $this->findExistingStripeCustomerAnywhereByEmail( $email );
+				if ( $existingCustomer ) {
+					$customerId = $existingCustomer->id;
+				}
 			}
+		
+			$paymentMethods = [];
 
 			// this form might not be able to handle recurring type payments
 			// check the enabled payment methods and see if some of whem don't support recurring payments
 			$supportRecurring = true; // assuming card by default
+
+			if ( isset( $paymentFormModel->getForm()->paymentMethods ) ) {
+				$paymentMethods = $paymentFormModel->getForm()->paymentMethods;
+				$paymentMethods = json_decode( $paymentMethods );
+				$supportRecurring = false; // Disabled by default for one-time payment forms. (Based on NOTE 1.1)
+			}
 
 			// check currency & recurring support for payment methods
 			if ( isset( $paymentMethods ) && count( $paymentMethods ) > 0 ) {
@@ -880,7 +906,7 @@ class MM_WPFS_Customer {
 
 			// depending on the form capabilities we need to create payment intent or setup intent
 			if ( $supportRecurring ) {
-				$result = $this->stripe->createSetupIntent();
+				$result = $this->stripe->createSetupIntent( $customerId );
 				$intent_type = "setup";
 			} else {
 				$result = $this->stripe->createPaymentIntent(
@@ -1477,7 +1503,12 @@ class MM_WPFS_Customer {
 			$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $donationFormModel->getForm() );
 
 			if ( $recoveryFee && ! empty( $recoveryFeeData ) ) {
-				$amount = $amount + MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] );
+				$amount = $amount + MM_WPFS_Utils::calculateRecoveryFee(
+					$amount,
+					$recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ],
+					$recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ],
+					$currency
+				);
 			}
 
 			$paymentIntent = $this->stripe->createPaymentIntent(
@@ -1623,14 +1654,40 @@ class MM_WPFS_Customer {
 
 		$this->fireBeforeInlineDonationAction( $donationFormModel, $transactionData );
 
-		$paymentIntent = $this->createOrRetrievePaymentIntentForDonation( $donationFormModel, $transactionData );
+		$paymentIntent = null;
+		$subscription = null;
+		$latestCharge = null;
 
-		if ( isset( $paymentIntent ) && $paymentIntent !== null ) {
-			// first check if we need to re-confirm the intent
-			if ( $paymentIntent->status === \StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_CONFIRMATION ) {
-				$paymentIntent = $this->stripe->confirmPaymentIntent( $paymentIntent->id, $transactionData->getStripePaymentMethodId() );
+		if ( $this->isRecurringDonation( $donationFormModel ) ) {
+			// Recurring donation: create subscription ONLY (no separate PaymentIntent charge)
+			$subscription = $this->createSubscriptionForDonation( $donationFormModel );
+			$donationFormModel->setStripeSubscription( $subscription );
+
+			// NOTE: Donation do not have trial time. They are charged immediately.
+			// Get the PaymentIntent and charge from the subscription's latest invoice (expanded)
+			if ( isset( $subscription->latest_invoice ) ) {
+				$invoice = $subscription->latest_invoice;
+				
+				// Get payment_intent for transaction ID only
+				$payments = $invoice->payments->data ?? [];
+				foreach ( $payments as $payment ) {
+					if ( isset( $payment->payment->payment_intent ) ) {
+						$paymentIntent = $this->stripe->retrievePaymentIntent( 
+							$payment->payment->payment_intent 
+						);
+						if ( $paymentIntent !== null ) {
+							$donationFormModel->setTransactionId( $paymentIntent->id );
+							$transactionData->setTransactionId( $paymentIntent->id );
+						}
+						break;
+					}
+				}
 			}
-			if ( $this->paymentIntentRequiresAction( $paymentIntent ) ) {
+
+			$latestCharge = $this->stripe->getLatestCharge( $paymentIntent );
+
+			// Handle different subscription/payment states
+			if ( $paymentIntent !== null && $this->paymentIntentRequiresAction( $paymentIntent ) ) {
 				$this->createPaymentIntentResultActionRequired(
 					$paymentIntentResult,
 					$paymentIntent,
@@ -1639,18 +1696,11 @@ class MM_WPFS_Customer {
 					/* translators: Banner message of a one-time payment requiring a second factor authentication (SCA/PSD2) */
 					__( 'The donation needs additional action before completion!', 'wp-full-stripe-free' )
 				);
-			} else if ( $this->paymentIntentSucceeded( $paymentIntent ) ) {
+			} elseif ( $paymentIntent !== null && $this->paymentIntentSucceeded( $paymentIntent ) ) {
+
 				$this->setInvoiceDataFromPaymentIntent( $paymentIntent, $transactionData );
-				$this->addFormNameToPaymentIntent( $paymentIntent, $donationFormModel->getFormName() );
 
-				$subscription = null;
-				if ( $this->isRecurringDonation( $donationFormModel ) ) {
-					$subscription = $this->createSubscriptionForDonation( $donationFormModel );
-					$donationFormModel->setStripeSubscription( $subscription );
-				}
-				$latest_charge = $this->stripe->getLatestCharge( $paymentIntent );
-
-				$this->db->insertInlineDonation( $donationFormModel, $paymentIntent, $subscription, $latest_charge );
+				$this->db->insertInlineDonation( $donationFormModel, $paymentIntent, $subscription, $latestCharge );
 
 				$this->fireAfterInlineDonationAction( $donationFormModel, $transactionData, $paymentIntent );
 
@@ -1661,24 +1711,80 @@ class MM_WPFS_Customer {
 					/* translators: Banner message of successful payment */
 					__( 'Donation Successful!', 'wp-full-stripe-free' )
 				);
-
 			} else {
 				$this->createPaymentIntentResultFailed(
 					$paymentIntentResult,
 					/* translators: Banner title of failed transaction */
 					__( 'Failed', 'wp-full-stripe-free' ),
 					// This is an internal error, no need to localize it
-					sprintf( "Invalid PaymentIntent status '%s'.", $paymentIntent->status )
+					$paymentIntent !== null
+						? sprintf( "Invalid PaymentIntent status '%s'.", $paymentIntent->status )
+						: "Could not process recurring donation."
 				);
 			}
 		} else {
-			$this->createPaymentIntentResultFailed(
-				$paymentIntentResult,
-				/* translators: Banner title of failed transaction */
-				__( 'Failed', 'wp-full-stripe-free' ),
-				// This is an internal error, no need to localize it
-				"PaymentIntent was neither created nor retrieved."
-			);
+			// One-time donation: create PaymentIntent ONLY (no subscription)
+			$paymentIntent = $this->createOrRetrievePaymentIntentForDonation( $donationFormModel, $transactionData );
+
+			if ( $paymentIntent !== null ) {
+				if ( $paymentIntent->status === \StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_CONFIRMATION ) {
+					$paymentIntent = $this->stripe->confirmPaymentIntent( $paymentIntent->id, $transactionData->getStripePaymentMethodId() );
+				}
+
+				if ( $this->paymentIntentRequiresAction( $paymentIntent ) ) {
+					$this->createPaymentIntentResultActionRequired(
+						$paymentIntentResult,
+						$paymentIntent,
+						/* translators: Banner title of pending transaction requiring a second factor authentication (SCA/PSD2) */
+						__( 'Action required', 'wp-full-stripe-free' ),
+						/* translators: Banner message of a one-time payment requiring a second factor authentication (SCA/PSD2) */
+						__( 'The donation needs additional action before completion!', 'wp-full-stripe-free' )
+					);
+				} elseif ( $this->paymentIntentSucceeded( $paymentIntent ) ) {
+					$this->setInvoiceDataFromPaymentIntent( $paymentIntent, $transactionData );
+					$this->addFormNameToPaymentIntent( $paymentIntent, $donationFormModel->getFormName() );
+
+					$latestCharge = $this->stripe->getLatestCharge( $paymentIntent );
+
+					if ( $latestCharge !== null ) {
+						$this->db->insertInlineDonation( $donationFormModel, $paymentIntent, null, $latestCharge );
+
+						$this->fireAfterInlineDonationAction( $donationFormModel, $transactionData, $paymentIntent );
+
+						$this->createPaymentIntentResultSuccess(
+							$paymentIntentResult,
+							/* translators: Banner title of successful transaction */
+							__( 'Success', 'wp-full-stripe-free' ),
+							/* translators: Banner message of successful payment */
+							__( 'Donation Successful!', 'wp-full-stripe-free' )
+						);
+					} else {
+						$this->createPaymentIntentResultFailed(
+							$paymentIntentResult,
+							/* translators: Banner title of failed transaction */
+							__( 'Failed', 'wp-full-stripe-free' ),
+							// This is an internal error, no need to localize it
+							"Payment succeeded but charge data is unavailable."
+						);
+					}
+				} else {
+					$this->createPaymentIntentResultFailed(
+						$paymentIntentResult,
+						/* translators: Banner title of failed transaction */
+						__( 'Failed', 'wp-full-stripe-free' ),
+						// This is an internal error, no need to localize it
+						sprintf( "Invalid PaymentIntent status '%s'.", $paymentIntent->status )
+					);
+				}
+			} else {
+				$this->createPaymentIntentResultFailed(
+					$paymentIntentResult,
+					/* translators: Banner title of failed transaction */
+					__( 'Failed', 'wp-full-stripe-free' ),
+					// This is an internal error, no need to localize it
+					"PaymentIntent was neither created nor retrieved."
+				);
+			}
 		}
 
 		$this->handleRedirect( $donationFormModel, $transactionData, $paymentIntentResult );
@@ -2893,7 +2999,12 @@ class MM_WPFS_Customer {
 		$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $paymentFormModel->getForm() );
 
 		if ( $recoveryFee && ! empty( $recoveryFeeData ) ) {
-			$paymentIntent->amount = $amount + MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] );
+			$paymentIntent->amount = $amount + MM_WPFS_Utils::calculateRecoveryFee(
+				$amount,
+				$recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ],
+				$recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ],
+				$currency
+			);
 			$this->stripe->updatePaymentIntent( $paymentIntent, true );
 		}
 

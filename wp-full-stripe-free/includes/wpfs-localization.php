@@ -26,24 +26,28 @@ class MM_WPFS_Localization {
 			if($intervalCount == 1) {
 				$intervalLabel = __( 'year', 'wp-full-stripe-free' );
 			} else {
+				/* translators: %d: interval count for years */
 				$intervalLabel = sprintf( _n( '%d year', '%d years', $intervalCount, 'wp-full-stripe-free' ), number_format_i18n( $intervalCount ) );
 			}
 		} elseif ( $interval === "month" ) {
 			if($intervalCount== 1){
 				$intervalLabel = __( 'month', 'wp-full-stripe-free' );
 			}else {
+				/* translators: %d: interval count for months */
 				$intervalLabel = sprintf( _n( '%d month', '%d months', $intervalCount, 'wp-full-stripe-free' ), number_format_i18n( $intervalCount ) );
 			}
 		} elseif ( $interval === "week" ) {
 			if ( $intervalCount == 1 ) {
 				$intervalLabel = __( 'week', 'wp-full-stripe-free' );
 			} else {
+				/* translators: %d: interval count for weeks */
 				$intervalLabel = sprintf( _n( '%d week', '%d weeks', $intervalCount, 'wp-full-stripe-free' ), number_format_i18n( $intervalCount ) );
 			}
 		} elseif ( $interval === "day" ) {
 			if ( $intervalCount == 1 ) {
 				$intervalLabel = __( 'day', 'wp-full-stripe-free' );
 			} else {
+				/* translators: %d: interval count for days */
 				$intervalLabel = sprintf( _n( '%d day', '%d days', $intervalCount, 'wp-full-stripe-free' ), number_format_i18n( $intervalCount ) );
 			}
 		}
@@ -63,11 +67,12 @@ class MM_WPFS_Localization {
 		switch ( $interval ) {
 			case 'day':
 				if ( $intervalCount == 1 ) {
+					/* translators: %1$s: formatted recurring amount with currency symbol */
 					$formatStr = __('%1$s / day', 'wp-full-stripe-free');
 				} else {
 					/* translators: Recurring pricing descriptor.
-					 * p1: formatted recurring amount with currency symbol
-					 * p2: interval count
+					 * %1$s: formatted recurring amount with currency symbol
+					 * %2$d: interval count
 					 */
 					$formatStr = _n(
 						'%1$s / %2$d day',
@@ -79,11 +84,12 @@ class MM_WPFS_Localization {
 
 			case 'week':
 				if ( $intervalCount == 1 ) {
+					/* translators: %1$s: formatted recurring amount with currency symbol */
 					$formatStr = __( '%1$s / week', 'wp-full-stripe-free' );
 				} else {
 					/* translators: Recurring pricing descriptor.
-					 * p1: formatted recurring amount with currency symbol
-					 * p2: interval count
+					 * %1$s: formatted recurring amount with currency symbol
+					 * %2$d: interval count
 					 */
 					$formatStr = _n(
 						'%1$s / %2$d week',
@@ -95,12 +101,13 @@ class MM_WPFS_Localization {
 
 			case 'month':
 				if ( $intervalCount == 1 ) {
+					/* translators: %1$s: formatted recurring amount with currency symbol */
 					$formatStr = __( '%1$s / month', 'wp-full-stripe-free' );
 				} else {
 
 					/* translators: Recurring pricing descriptor.
-					 * p1: formatted recurring amount with currency symbol
-					 * p2: interval count
+					 * %1$s: formatted recurring amount with currency symbol
+					 * %2$d: interval count
 					 */
 					$formatStr = _n(
 						'%1$s / %2$d month',
@@ -113,11 +120,12 @@ class MM_WPFS_Localization {
 
 			case 'year':
 				if ( $intervalCount == 1 ) {
+					/* translators: %1$s: formatted recurring amount with currency symbol */
 					$formatStr = __( '%1$s / year', 'wp-full-stripe-free' );
 				} else {
 					/* translators: Recurring pricing descriptor.
-					 * p1: formatted recurring amount with currency symbol
-					 * p2: interval count
+					 * %1$s: formatted recurring amount with currency symbol
+					 * %2$d: interval count
 					 */
 					$formatStr = _n(
 						'%1$s / %2$d year',

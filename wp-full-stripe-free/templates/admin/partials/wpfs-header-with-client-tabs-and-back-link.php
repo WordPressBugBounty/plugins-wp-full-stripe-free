@@ -3,6 +3,7 @@
 /** @var $backLinkLabel */
 /** @var $pageTitle */
 ?>
+<?php include('wpfs-admin-nav.php'); ?>
 <div class="wpfs-page-header wpfs-page-header--tabs">
     <div class="wpfs-page-header__back-button-wrapper">
         <a class="wpfs-page-header__back-button" href="<?php echo $backLinkUrl; ?>"><?php echo $backLinkLabel; ?></a>
@@ -13,11 +14,8 @@
             <div class="wpfs-page-header__title"><?php echo $pageTitle ?></div>
         </div>
         <div class="wpfs-page-header__actions">
+            <span id="wpfs-unsaved-changes-indicator"></span>
             <?php include('wpfs-header-block-preview.php'); ?>
-            <?php include('wpfs-header-block-stripe-accounts.php'); ?>
-            <?php include('wpfs-header-block-license-status.php'); ?>
-            <?php include('wpfs-header-block-announcements.php'); ?>
-            <?php include('wpfs-header-block-help.php'); ?>
         </div>
     </div>
     <?php include('wpfs-header-block-client-tabs.php'); ?>

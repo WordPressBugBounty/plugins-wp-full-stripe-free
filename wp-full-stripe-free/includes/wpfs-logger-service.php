@@ -438,3 +438,122 @@ trait MM_WPFS_Logger_AddOn {
 		$this->logger = $this->loggerService->createLogger( $module, get_class( $this ) );
 	}
 }
+
+/**
+ * Tracking/Logger Activation REST API Endpoint Handler
+ */
+class MM_WPFS_TrackingActivationEndpoint {
+
+	const ROUTE_NAMESPACE = 'wp-full-stripe/v1';
+	const ROUTE_PATH = '/tracking-activation';
+	const NONCE_ACTION = 'wp_rest';
+
+	/**
+	 * Register the REST API endpoint.
+	 * 
+	 * @return void
+	 */
+	public static function register() {
+		add_action( 'rest_api_init', [ __CLASS__, 'register_routes' ] );
+	}
+
+	/**
+	 * Get the URL for the tracking activation endpoint.
+	 * @return string
+	 */
+	public static function get_url() {
+		return rest_url( self::ROUTE_NAMESPACE . self::ROUTE_PATH );
+	}
+
+	/**
+	 * Register REST routes for tracking activation.
+	 * 
+	 * @return void
+	 */
+	public static function register_routes() {
+		register_rest_route(
+			self::ROUTE_NAMESPACE,
+			self::ROUTE_PATH,
+			[
+				'methods'             => WP_REST_Server::EDITABLE,
+				'callback'            => [ __CLASS__, 'handle_tracking_activation' ],
+				'permission_callback' => [ __CLASS__, 'check_permission' ],
+				'args'                => [
+					'enabled' => [
+						'type'        => 'boolean',
+						'description' => 'Enable or disable tracking',
+						'required'    => true,
+					],
+					'nonce'   => [
+						'type'        => 'string',
+						'description' => 'Security nonce',
+						'required'    => true,
+					],
+				],
+			]
+		);
+	}
+
+	/**
+	 * Check if user has permission to access this endpoint.
+	 *
+	 * @param WP_REST_Request<array{enabled: bool, nonce: string}> $request The request object.
+	 *
+	 * @return bool|WP_Error
+	 */
+	public static function check_permission( $request ) {
+		$nonce = $request->get_param( 'nonce' );
+		
+		if ( ! $nonce || ! wp_verify_nonce( $nonce, self::NONCE_ACTION ) ) {
+			return new WP_Error(
+				'rest_nonce_invalid',
+				'Invalid security nonce.',
+				[ 'status' => 403 ]
+			);
+		}
+	   
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return new WP_Error(
+				'rest_forbidden',
+				'You do not have permission to manage tracking settings.', // NOTE: This is used internally only.
+				[ 'status' => 403 ]
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Handle the tracking activation request.
+	 *
+	 * @param WP_REST_Request<array{enabled: bool, nonce: string}> $request The request object.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function handle_tracking_activation( $request ) {
+		try {
+			$enabled = $request->get_param( 'enabled' );
+			
+			$flag_value = $enabled ? 'yes' : 'no';
+			$option_key = WPFS_License::get_namespace() . '_logger_flag';
+			update_option( $option_key, $flag_value );
+			
+			return new WP_REST_Response(
+				[
+					'success'      => true,
+					'message'      => 'Tracking settings updated successfully.', // NOTE: This is used internally only.
+					'enabled'      => $enabled,
+					'option_key'   => $option_key,
+					'option_value' => $flag_value,
+				],
+				200
+			);
+		} catch ( Exception $e ) {
+			return new WP_Error(
+				'tracking_activation_error',
+				sprintf( 'Failed to update tracking settings: %s', $e->getMessage() ),
+				[ 'status' => 500 ]
+			);
+		}
+	}
+}

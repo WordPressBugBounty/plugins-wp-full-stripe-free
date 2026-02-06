@@ -2176,6 +2176,10 @@ jQuery.noConflict();
 						}
 					} );
 				}
+				// Note: The item.amount is in minor-units.
+				if ( ! paymentDetailsConfig?.zeroDecimalSupport ) {
+					total = total / 100;
+				}
 			}
 
 			const amountLabel = formatCurrencyAmount(
@@ -2491,7 +2495,8 @@ jQuery.noConflict();
 				let taxIdx = 0;
 				displayItems.forEach( ( lineItem ) => {
 					if (
-						PRICE_ID_CUSTOM_AMOUNT !== paymentDetailsConfig.priceId
+						PRICE_ID_CUSTOM_AMOUNT !== paymentDetailsConfig.priceId &&
+						!paymentDetailsConfig?.zeroDecimalSupport
 					) {
 						lineItem.amount = lineItem.amount / 100;
 					}
@@ -2607,13 +2612,15 @@ jQuery.noConflict();
 					$selectedProductElement.val()
 						? $selectedProductElement.val()
 						: 0,
-					buttonCaptionConfig.zeroDecimalSupport,
-					true
+					buttonCaptionConfig.zeroDecimalSupport
 				);
 			} else {
 				buttonCaptionConfig.total = $selectedProductElement.data(
 					'wpfs-amount-in-smallest-common-currency'
 				);
+				if ( ! buttonCaptionConfig.zeroDecimalSupport ) {
+					buttonCaptionConfig.total = parseInt( buttonCaptionConfig.total ) / 100;
+				}
 			}
 
 			showPaymentButtonCaption( $form, buttonCaptionConfig );
@@ -3756,59 +3763,92 @@ jQuery.noConflict();
 								},
 							} );
 						} else if ( intentType === 'setup' ) {
-							stripe
-								.confirmSetup({
+							// For setup intents with deferred customer attachment:
+							// 1. Call elements.submit() first to validate payment details
+							// 2. Fetch fresh SetupIntent with customer attached
+							// 3. Confirm the SetupIntent
+							// See: https://stripe.com/docs/payments/accept-a-payment-deferred
+							elements.submit().then( function( submitResult ) {
+								if ( submitResult.error ) {
+									enableFormButtons( $form );
+									hideLoadingAnimation( $form );
+									showFieldError(
+										$form,
+										'cardnumber',
+										null,
+										submitResult.error.message
+									);
+									scrollToElement(
+										$( '.wpfs-form-card', $form ),
+										false
+									);
+									return Promise.reject( submitResult.error );
+								}
+								
+								// Fetch fresh SetupIntent with customer attached
+								return getSetupIntentClientSecret( $form );
+							}).then( function( freshIntent ) {
+								if ( !freshIntent ) return; // Submit failed, already handled
+								
+								const freshClientSecret = freshIntent.clientSecret;
+								
+								return stripe.confirmSetup({
 									elements,
+									clientSecret: freshClientSecret,
 									confirmParams: {
 										return_url: return_url,
 										payment_method_data: paymentMethodData
 									},
 									redirect: 'if_required'
-								})
-								.then( function ( createPaymentMethodResult ) {
-									if ( debugLog ) {
-										console.log(
-											'form.submit(): ' +
-												'PaymentMethod creation result=' +
-												JSON.stringify(
-													createPaymentMethodResult
-												)
-										);
-									}
-									clearFieldErrors( $form );
-									if ( createPaymentMethodResult.error ) {
-										enableFormButtons( $form );
-										hideLoadingAnimation( $form );
-										showFieldError(
-											$form,
-											'cardnumber',
-											null,
-											createPaymentMethodResult.error
-												.message
-										);
-										scrollToElement(
-											$( '.wpfs-form-card', $form ),
-											false
-										);
-									} else {
-										addPaymentMethodIdInput(
-											$form,
-											createPaymentMethodResult
-										);
-										submitPaymentData( $form, cardElement );
-									}
-								} )
-								.catch( ( error ) => {
+								});
+							}).then( function ( createPaymentMethodResult ) {
+								if ( !createPaymentMethodResult ) return; // Previous step failed
+								
+								if ( debugLog ) {
+									console.log(
+										'form.submit(): ' +
+											'PaymentMethod creation result=' +
+											JSON.stringify(
+												createPaymentMethodResult
+											)
+									);
+								}
+								clearFieldErrors( $form );
+								if ( createPaymentMethodResult.error ) {
+									enableFormButtons( $form );
+									hideLoadingAnimation( $form );
+									showFieldError(
+										$form,
+										'cardnumber',
+										null,
+										createPaymentMethodResult.error
+											.message
+									);
+									scrollToElement(
+										$( '.wpfs-form-card', $form ),
+										false
+									);
+								} else {
+									addPaymentMethodIdInput(
+										$form,
+										createPaymentMethodResult
+									);
+									submitPaymentData( $form, cardElement );
+								}
+							}).catch( ( error ) => {
+								// Only show error if not already handled by submit validation
+								if ( error && error.type !== 'validation_error' ) {
 									enableFormButtons( $form );
 									hideLoadingAnimation( $form );
 									showErrorGlobalMessage(
 										$form,
 										wpfsFormSettings.l10n.stripe_errors
 											.internal_error,
-										error.message
+										error.message || 'An error occurred'
 									);
 									console.log( error );
-								} );
+								}
+							} );
 						}
 					} else {
 						console.error( '[Sumbit] Stripe.js not loaded' );

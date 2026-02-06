@@ -10,10 +10,11 @@
     <div class="wpfs-form-help">
         <?php
             echo sprintf(
+                /* translators: %1$s: opening anchor tag, %2$s: closing anchor tag */
                 __( 'Inherit locale settings from %1$sglobal configurations%2$s.', 'wp-full-stripe-free' ),
                 '<a target="_blank" href="' . MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS_WORDPRESS_DASHBOARD ) . '">',
                 '</a>'
-            ); 
+            );
         ?>
     </div>
 </div>

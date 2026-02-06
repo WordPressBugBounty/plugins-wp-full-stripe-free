@@ -765,12 +765,26 @@ function initWpfsAdminLibrary($, ctx) {
       });
     },
     get: function (str) {
-      return str
+      const fastHash = (s) => {
+        let hash = 1000;
+        for (let i = 0; i < s.length; i++) {
+          hash = (hash << 5) - hash + s.charCodeAt(i);
+          hash |= 0;
+        }
+        return Math.abs(hash).toString(36);
+      }
+      const identifier = str
         .match(/[a-z]+/gi)
-        .map(function (word) {
-          return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase();
+        ?.map(function (word) {
+          return word.charAt(0).toUpperCase() + word.substring(1).toLowerCase();
         })
-        .join("");
+        .join("") ?? '';
+
+      if (!identifier) {
+        return `form_${fastHash(str)}`;
+      }
+
+      return identifier;
     },
   };
 
@@ -1652,4 +1666,104 @@ function initWpfsAdminLibrary($, ctx) {
       window.location = redirectUrl;
     }, timeout);
   };
+}
+
+/**
+ * FormHeaderButtonMirror - Automatically mirrors form action buttons to page header
+ * 
+ * This class detects form submit buttons in .wpfs-form-actions and
+ * clones them to .wpfs-page-header__actions. Clicking either button triggers
+ * the original form submit button, maintaining all existing form processing logic.
+ * 
+ * The mirror button syncs its loading state with the original button by watching
+ * for the wpfs-btn-primary--loader class that gets added/removed during AJAX calls.
+ */
+class FormHeaderButtonMirror {
+  constructor() {
+    this.formActions = document.querySelector('.wpfs-form-actions');
+    this.headerActions = document.querySelector('.wpfs-page-header__actions');
+    this.submitButton = null;
+    this.mirrorButton = null;
+    this.observer = null;
+
+    if (!this.formActions || !this.headerActions) {
+      return;
+    }
+
+    this.init();
+  }
+
+  /**
+   * Initialize the mirror
+   */
+  init() {
+    this.submitButton = this.formActions.querySelector('button[type="submit"]');
+    
+    if (!this.submitButton) {
+      return;
+    }
+
+    this.createMirrorButton();
+    this.observeOriginalButton();
+  }
+
+  /**
+   * Create a mirror button in the header
+   */
+  createMirrorButton() {
+    this.mirrorButton = this.submitButton.cloneNode(true);
+    
+    this.mirrorButton.classList.add('wpfs-header-btn-primary');
+    
+    // Bind click to original button submit
+    this.mirrorButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.submitButton.click();
+    });
+
+    this.headerActions.appendChild(this.mirrorButton);
+  }
+
+  /**
+   * Sync loading state from original button to mirror button
+   * The loading state is controlled by wpfs-btn-primary--loader class
+   * and the disabled attribute
+   */
+  syncLoadingState() {
+    const hasLoading = this.submitButton.classList.contains('wpfs-btn-primary--loader');
+    const isDisabled = this.submitButton.disabled;
+    
+    if (hasLoading) {
+      this.mirrorButton.classList.add('wpfs-btn-primary--loader');
+    } else {
+      this.mirrorButton.classList.remove('wpfs-btn-primary--loader');
+    }
+    
+    this.mirrorButton.disabled = isDisabled;
+  }
+
+  /**
+   * Observe the original submit button for loading state changes
+   * When the original button's loading class changes, sync it to mirror
+   */
+  observeOriginalButton() {
+    this.observer = new MutationObserver(() => {
+      this.syncLoadingState();
+    });
+
+    this.observer.observe(this.submitButton, {
+      attributes: true,
+      attributeFilter: ['class', 'disabled']
+    });
+  }
+}
+
+// Auto-initialize on DOM ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    new FormHeaderButtonMirror();
+  });
+} else {
+  new FormHeaderButtonMirror();
 }

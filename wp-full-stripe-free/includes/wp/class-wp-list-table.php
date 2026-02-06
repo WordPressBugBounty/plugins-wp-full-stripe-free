@@ -520,13 +520,14 @@ class WPFS_List_Table {
 			$extra_checks = $wpdb->prepare( ' AND post_status = %s', $_GET['post_status'] );
 		}
 
-		$months = $wpdb->get_results( $wpdb->prepare( "
-			SELECT DISTINCT YEAR( post_date ) AS year, MONTH( post_date ) AS month
-			FROM $wpdb->posts
-			WHERE post_type = %s
-			$extra_checks
-			ORDER BY post_date DESC
-		", $post_type ) );
+		$months = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT DISTINCT YEAR( post_date ) AS year, MONTH( post_date ) AS month
+				FROM $wpdb->posts
+				WHERE post_type = %s $extra_checks ORDER BY post_date DESC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$post_type
+			)
+		);
 
 		/**
 		 * Filters the 'Months' drop-down results.
@@ -610,8 +611,11 @@ class WPFS_List_Table {
 		$approved_comments_number = number_format_i18n( $approved_comments );
 		$pending_comments_number = number_format_i18n( $pending_comments );
 
+		/* translators: %s: formatted number of comments */
 		$approved_only_phrase = sprintf( _n( '%s comment', '%s comments', $approved_comments, 'wp-full-stripe-free' ), $approved_comments_number );
+		/* translators: %s: formatted number of approved comments */
 		$approved_phrase = sprintf( _n( '%s approved comment', '%s approved comments', $approved_comments, 'wp-full-stripe-free' ), $approved_comments_number );
+		/* translators: %s: formatted number of pending comments */
 		$pending_phrase = sprintf( _n( '%s pending comment', '%s pending comments', $pending_comments, 'wp-full-stripe-free' ), $pending_comments_number );
 
 		// No comments at all.
@@ -716,6 +720,7 @@ class WPFS_List_Table {
 			$this->screen->render_screen_reader_content( 'heading_pagination' );
 		}
 
+		/* translators: %s: formatted number of items */
 		$output = '<span class="displaying-num">' . sprintf( _n( '%s item', '%s items', $total_items, 'wp-full-stripe-free' ), number_format_i18n( $total_items ) ) . '</span>';
 
 		$current = $this->get_pagenum();
@@ -778,6 +783,7 @@ class WPFS_List_Table {
 			);
 		}
 		$html_total_pages = sprintf( "<span class='total-pages'>%s</span>", number_format_i18n( $total_pages ) );
+		/* translators: %1$s: current page, %2$s: total pages. */
 		$page_links[] = $total_pages_before . sprintf( _x( '%1$s of %2$s', 'paging', 'wp-full-stripe-free' ), $html_current_page, $html_total_pages ) . $total_pages_after;
 
 		if ( $disable_next ) {
@@ -1285,6 +1291,7 @@ class WPFS_List_Table {
 
 		if ( isset( $this->_pagination_args['total_items'] ) ) {
 			$response['total_items_i18n'] = sprintf(
+				/* translators: %s: formatted number of items */
 				_n( '%s item', '%s items', $this->_pagination_args['total_items'], 'wp-full-stripe-free' ),
 				number_format_i18n( $this->_pagination_args['total_items'] )
 			);
