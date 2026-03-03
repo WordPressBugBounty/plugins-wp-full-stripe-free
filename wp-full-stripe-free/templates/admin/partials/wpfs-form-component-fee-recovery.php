@@ -40,21 +40,6 @@
     </div>
 </div>
 
-<?php if ( $view instanceof MM_WPFS_Admin_InlineSubscriptionFormView || $view instanceof MM_WPFS_Admin_CheckoutSubscriptionFormView ): ?>
-    <div class="wpfs-form-block wpfs-fee-recovery--can-be-disabled">
-        <div class="wpfs-form-group">
-            <label for="<?php $view->feeRecoveryCurrency()->id(); ?>" class="wpfs-form-label"><?php $view->feeRecoveryCurrency()->label(); ?></label>
-            <select class="wpfs-form-control mx-none" id="<?php $view->feeRecoveryCurrency()->id(); ?>" name="<?php $view->feeRecoveryCurrency()->name(); ?>" <?php $view->feeRecoveryCurrency()->attributes(); ?>>
-                <?php foreach ( MM_WPFS_Currencies::getAvailableCurrencies() as $key => $value ): ?>
-                    <option value="<?php echo esc_attr( $key ); ?>" <?php echo $form->feeRecoveryCurrency == $key ? 'selected' : ''; ?>>
-                        <?php echo esc_html( $value['code'] . ' (' . $value['symbol'] . ')' ); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-    </div>
-<?php endif; ?>
-
 <div class="wpfs-form-block wpfs-fee-recovery--can-be-disabled">
     <div class="wpfs-form-group">
         <label for="<?php $view->feeRecoveryFeePercentage()->id(); ?>" class="wpfs-form-label"><?php $view->feeRecoveryFeePercentage()->label(); ?></label>

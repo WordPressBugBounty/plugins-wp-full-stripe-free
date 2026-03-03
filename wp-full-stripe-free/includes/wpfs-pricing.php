@@ -549,6 +549,13 @@ abstract class MM_WPFS_PaymentPriceCalculator extends MM_WPFS_PriceCalculator {
 			if ( $this->pricingData->stripeTax ) {
 				foreach ( $taxItemLookup as $taxRateId => $taxItem ) {
 					if ( $taxItem->amount > 0 ) {
+						$inclusive = null;
+						if ( property_exists( $taxItem, 'tax_behavior' ) && $taxItem->tax_behavior !== null ) {
+							$inclusive = ( $taxItem->tax_behavior === 'inclusive' );
+						} elseif ( property_exists( $taxItem, 'inclusive' ) ) {
+							$inclusive = (bool) $taxItem->inclusive;
+						}
+
 						$displayItem = new \StdClass;
 						$displayItem->type = MM_WPFS::LINE_ITEM_TYPE_PRODUCT;
 						$displayItem->subType = MM_WPFS::LINE_ITEM_SUBTYPE_TAX;
@@ -557,7 +564,7 @@ abstract class MM_WPFS_PaymentPriceCalculator extends MM_WPFS_PriceCalculator {
 						$displayItem->currency = $currency;
 						$displayItem->amount = $taxItem->amount;
 						$displayItem->percentage = null;
-						$displayItem->inclusive = $taxItem->inclusive;
+						$displayItem->inclusive = $inclusive;
 						array_push( $dislayItems, $displayItem );
 					}
 				}
@@ -836,6 +843,13 @@ abstract class MM_WPFS_SubscriptionPriceCalculator extends MM_WPFS_PriceCalculat
 				if ( $this->pricingData->stripeTax ) {
 					foreach ( $taxItemLookup as $taxRateId => $taxItem ) {
 						if ( $taxItem->amount > 0 ) {
+							$inclusive = null;
+							if ( property_exists( $taxItem, 'tax_behavior' ) && $taxItem->tax_behavior !== null ) {
+								$inclusive = ( $taxItem->tax_behavior === 'inclusive' );
+							} elseif ( property_exists( $taxItem, 'inclusive' ) ) {
+								$inclusive = (bool) $taxItem->inclusive;
+							}
+
 							$displayItem = new \StdClass;
 							$displayItem->type = $type;
 							$displayItem->subType = MM_WPFS::LINE_ITEM_SUBTYPE_TAX;
@@ -844,7 +858,7 @@ abstract class MM_WPFS_SubscriptionPriceCalculator extends MM_WPFS_PriceCalculat
 							$displayItem->currency = $this->extractCurrencyFromLineItems( $lineItems );
 							$displayItem->amount = $taxItem->amount;
 							$displayItem->percentage = null;
-							$displayItem->inclusive = $taxItem->inclusive;
+							$displayItem->inclusive = $inclusive;
 							array_push( $dislayItems, $displayItem );
 						}
 					}

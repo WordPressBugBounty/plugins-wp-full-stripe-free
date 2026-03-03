@@ -36,6 +36,7 @@ jQuery.noConflict();
 		const PAYMENT_DETAIL_ROW_TAX_0 = 'tax-0';
 		const PAYMENT_DETAIL_ROW_TAX_1 = 'tax-1';
 		const PAYMENT_DETAIL_ROW_TOTAL = 'total';
+		const PAYMENT_DETAIL_FEE_RECOVERY = 'fee-recovery';
 
 		const TAX_RATE_TYPE_NO_TAX = 'taxRateNoTax';
 		const TAX_RATE_TYPE_FIXED = 'taxRateFixed';
@@ -1198,6 +1199,7 @@ jQuery.noConflict();
 				PAYMENT_DETAIL_ROW_TAX_0,
 				PAYMENT_DETAIL_ROW_TAX_1,
 				PAYMENT_DETAIL_ROW_TOTAL,
+				PAYMENT_DETAIL_FEE_RECOVERY,
 			];
 
 			rowTypes.forEach( ( rowType ) => {
@@ -1442,6 +1444,7 @@ jQuery.noConflict();
 					}
 				);
 				data.action = 'wp_get_Setup_Intent_Client_Secret';
+				data.type = $form.data( 'wpfs-form-type' );
 
 				$.ajax( {
 					type: 'POST',
@@ -1550,13 +1553,55 @@ jQuery.noConflict();
 						$form,
 						wpfsFormSettings.l10n.validation_errors
 							.internal_error_title,
-						wpfsFormSettings.l10n.validation_errors.internal_error
+						errorThrown
 					);
 				},
 				complete() {
 					enableFormButtons( $form );
 					hideLoadingAnimation( $form );
 				},
+			} );
+		}
+
+		function updateFailedPaymentStatus( $form, paymentIntentId, error ) {
+			const data = {
+				action: 'wpfs_update_failed_payment_status',
+				paymentIntentId: paymentIntentId,
+				failureCode: error.code || '',
+				failureMessage: error.message || '',
+			};
+
+			$.ajax( {
+				type: 'POST',
+				url: wpfsFormSettings.ajaxUrl,
+				data: data,
+				cache: false,
+				dataType: 'json',
+				success( response ) {
+					if ( debugLog ) {
+						logInfo(
+							'updateFailedPaymentStatus',
+							'Payment status updated in database: ' + JSON.stringify( response )
+						);
+					}
+				},
+				error( jqXHR, textStatus, errorThrown ) {
+					if ( debugLog ) {
+						logError(
+							'updateFailedPaymentStatus',
+							jqXHR,
+							textStatus,
+							errorThrown
+						);
+					}
+					showErrorGlobalMessage(
+						$form,
+						wpfsFormSettings.l10n
+							.stripe_errors
+							.card_declined,
+						errorThrown
+					);
+				}
 			} );
 		}
 
@@ -1570,6 +1615,10 @@ jQuery.noConflict();
 				}
 				if ( result.error ) {
 					logWarn( 'handleStripeIntentAction', result.error.message );
+					// Update payment status in database when confirmation fails
+					if ( result.paymentIntent && result.paymentIntent.id ) {
+						updateFailedPaymentStatus( $form, result.paymentIntent.id, result.error );
+					}
 					showErrorGlobalMessage(
 						$form,
 						wpfsFormSettings.l10n.validation_errors
@@ -2177,9 +2226,12 @@ jQuery.noConflict();
 					} );
 				}
 				// Note: The item.amount is in minor-units.
-				if ( ! paymentDetailsConfig?.zeroDecimalSupport ) {
-					total = total / 100;
-				}
+				const $form = $( `form[data-wpfs-form-id="${ paymentDetailsConfig?.formId }"]` );
+				total = convertNonZeroDecimalAmount(
+					$form,
+					total,
+					paymentDetailsConfig
+				);
 			}
 
 			const amountLabel = formatCurrencyAmount(
@@ -2193,8 +2245,21 @@ jQuery.noConflict();
 		}
 
 		function showPaymentButtonCaption( $form, paymentDetailsConfig ) {
-			const total = getTotalAmountForPrice( paymentDetailsConfig );
+			if ( ! isFeeRecoveryChecked( $form ) ) {
+				clearRecoveryItem( paymentDetailsConfig );
+			}
 
+			let total = getTotalAmountForPrice( paymentDetailsConfig );
+
+			if ( total && $( 'input[name="wpfs-fee-recovery-accepted"]').prop('checked') ) {
+				const feeRecoveryAmount = calculateRecoveryFee( total, paymentDetailsConfig );
+				if ( ! paymentDetailsConfig.zeroDecimalSupport ) {
+					total += feeRecoveryAmount / 100;
+				} else {
+					total += feeRecoveryAmount;
+				}
+			}
+			
 			if ( total === null || isNaN( total ) ) {
 				updateButtonCaption(
 					$form,
@@ -2451,6 +2516,20 @@ jQuery.noConflict();
 				} );
 			}
 
+			const feeRecoveryItem = lineItems.find(
+				( lineItem ) =>
+					lineItem.type === PAYMENT_DETAIL_FEE_RECOVERY &&
+					lineItem.subType === PAYMENT_DETAIL_FEE_RECOVERY
+			);
+
+			if ( feeRecoveryItem ) {
+				displayItems.push( {
+					type: PAYMENT_DETAIL_FEE_RECOVERY,
+					amount: feeRecoveryItem.amount,
+					displayName: feeRecoveryItem.displayName,
+				} );
+			}
+
 			return displayItems;
 		}
 
@@ -2494,12 +2573,11 @@ jQuery.noConflict();
 				let total = 0;
 				let taxIdx = 0;
 				displayItems.forEach( ( lineItem ) => {
-					if (
-						PRICE_ID_CUSTOM_AMOUNT !== paymentDetailsConfig.priceId &&
-						!paymentDetailsConfig?.zeroDecimalSupport
-					) {
-						lineItem.amount = lineItem.amount / 100;
-					}
+					lineItem.amount = convertNonZeroDecimalAmount(
+						$form,
+						lineItem.amount,
+						paymentDetailsConfig
+					);
 					const amount = formatter.format(
 						formatCurrencyAmount(
 							lineItem.amount,
@@ -2513,7 +2591,8 @@ jQuery.noConflict();
 					if (
 						lineItem.type === PAYMENT_DETAIL_ROW_PRODUCT ||
 						lineItem.type === PAYMENT_DETAIL_ROW_SETUP_FEE ||
-						lineItem.type === PAYMENT_DETAIL_ROW_DISCOUNT
+						lineItem.type === PAYMENT_DETAIL_ROW_DISCOUNT ||
+						lineItem.type === PAYMENT_DETAIL_FEE_RECOVERY
 					) {
 						$(
 							'td[data-wpfs-summary-row-label="' +
@@ -2623,6 +2702,11 @@ jQuery.noConflict();
 				}
 			}
 
+			if ( $selectedProductElement.data('wpfs-fee-recovery-enabled') ) {
+				buttonCaptionConfig.feePercentage = $selectedProductElement.data( 'wpfs-fee-percentage' );
+				buttonCaptionConfig.feeAmount = $selectedProductElement.data( 'wpfs-fee-amount' );
+			}
+
 			showPaymentButtonCaption( $form, buttonCaptionConfig );
 		}
 
@@ -2670,8 +2754,7 @@ jQuery.noConflict();
 							$form,
 							wpfsFormSettings.l10n.validation_errors
 								.internal_error_title,
-							wpfsFormSettings.l10n.validation_errors
-								.internal_error
+							errorThrown
 						);
 					},
 				} );
@@ -2691,6 +2774,10 @@ jQuery.noConflict();
 				buttonTitle:
 					$selectedProductElement.data( 'wpfs-button-title' ),
 			};
+			if ( $selectedProductElement.data('wpfs-fee-recovery-enabled') ) {
+				buttonCaptionConfig.feePercentage = $selectedProductElement.data( 'wpfs-fee-percentage' );
+				buttonCaptionConfig.feeAmount = $selectedProductElement.data( 'wpfs-fee-amount' );
+			}
 			showPaymentButtonCaption( $form, buttonCaptionConfig );
 
 			const paymentDetailsConfig = {
@@ -2705,6 +2792,15 @@ jQuery.noConflict();
 						'wpfs-zero-decimal-support'
 					) === true,
 			};
+			if ( $selectedProductElement.data('wpfs-fee-recovery-enabled') ) {
+				paymentDetailsConfig.feePercentage = $selectedProductElement.data( 'wpfs-fee-percentage' );
+				paymentDetailsConfig.feeAmount = $selectedProductElement.data( 'wpfs-fee-amount' );
+			}
+			if ( isFeeRecoveryChecked( $form ) ) {
+				setFeeRecoveryItem( $form, $selectedProductElement, paymentDetailsConfig );
+			} else {
+				clearRecoveryItem( paymentDetailsConfig );
+			}
 			showPaymentDetails( $form, paymentDetailsConfig );
 		}
 
@@ -2867,6 +2963,18 @@ jQuery.noConflict();
 					$selectedPlanElement.attr( 'data-wpfs-cancellation-count' )
 				),
 			};
+
+			if ( $selectedPlanElement.data('wpfs-fee-recovery-enabled') ) {
+				paymentDetailsConfig.feePercentage = $selectedPlanElement.data( 'wpfs-fee-percentage' );
+				paymentDetailsConfig.feeAmount = $selectedPlanElement.data( 'wpfs-fee-amount' );
+			}
+
+			if ( isFeeRecoveryChecked( $form ) ) {
+				setFeeRecoveryItem( $form, $selectedPlanElement, paymentDetailsConfig );
+			} else {
+				clearRecoveryItem( paymentDetailsConfig );
+			}
+
 			showSubscriptionDetails( $form, paymentDetailsConfig );
 		}
 
@@ -3294,6 +3402,137 @@ jQuery.noConflict();
 			return result;
 		}
 
+		function convertNonZeroDecimalAmount( $form, amount, paymentDetailsConfig ) {
+			if ( ! paymentDetailsConfig.zeroDecimalSupport ) {
+				if (
+					PRICE_ID_CUSTOM_AMOUNT !== paymentDetailsConfig.priceId ||
+					( ! isNoTaxForm( $form ) || ! isNoCouponAppliedForm( $form ) )
+				) {
+					amount = amount / 100;
+				}
+			}
+
+			return amount;
+		}
+
+		function calculateRecoveryFee(amount, paymentDetailsConfig) {
+			
+			// Convert main amount to minor units (cents)
+			const amountInCents = convertAmountToMinorUnits(amount, paymentDetailsConfig);
+			let percentageFee = paymentDetailsConfig.feePercentage;
+			let fixedFeeDecimal = paymentDetailsConfig.feeAmount;
+
+			// Normalize fixed fee
+			if (typeof fixedFeeDecimal === 'string') {
+				fixedFeeDecimal = parseFloat(fixedFeeDecimal);
+				fixedFeeDecimal = Number.isNaN(fixedFeeDecimal) ? 0.0 : fixedFeeDecimal;
+			}
+
+			const fixedFeeInCents = convertAmountToMinorUnits(fixedFeeDecimal, paymentDetailsConfig);
+
+			// Normalize percentage fee
+			if (typeof percentageFee === 'string') {
+				percentageFee = parseFloat(percentageFee);
+				percentageFee = Number.isNaN(percentageFee) ? 0.0 : percentageFee;
+			}
+
+			// Prevent division by zero
+			percentageFee = Math.min(99.99, percentageFee);
+
+			// Calculate original amount required to cover fees
+			const originalAmountInCents =
+				( ( amountInCents + fixedFeeInCents ) * percentageFee ) / 100;
+
+			return Math.round(originalAmountInCents);
+		}
+
+
+		function convertAmountToMinorUnits(amount, paymentDetailsConfig) {
+			// Zero-decimal currencies (e.g., JPY)
+			if (paymentDetailsConfig.zeroDecimalSupport) {
+				return Math.round(parseFloat(amount));
+			}
+
+			// Two-decimal currencies (e.g., USD, EUR)
+			return Math.round(parseFloat(amount) * 100);
+		}
+
+		function isFeeRecoveryChecked( $form ) {
+			return $('input[name="wpfs-fee-recovery-accepted"]', $form).prop('checked');
+		}
+
+		function setFeeRecoveryItem( $form, $selectedElement, paymentDetailsConfig ) {
+			let amount = 0;
+			const formType = $form.data( FROM_TYPE_DOM );
+			const allowCustomAmountValue = 1 === $form.data( 'wpfs-allow-list-of-amounts-custom' );
+			const $selectedAmount = findSelectedAmountFromListOfAmounts( $form );
+			let selected_amount = '';
+			if ( $selectedAmount && $selectedAmount.length > 0 ) {
+				selected_amount = $selectedAmount.val();
+			}
+
+			if ( allowCustomAmountValue && AMOUNT_OTHER == selected_amount ) {
+				amount = $(
+					'input[name="wpfs-custom-amount-unique"]',
+					$form
+				).val();
+			} else if (
+				FORM_TYPE_INLINE_SUBSCRIPTION === formType ||
+				FORM_TYPE_CHECKOUT_SUBSCRIPTION === formType
+			) {
+				amount = $selectedElement.data('wpfs-plan-amount-in-smallest-common-currency');
+			} else if (
+				FORM_TYPE_INLINE_PAYMENT === formType ||
+				FORM_TYPE_CHECKOUT_PAYMENT === formType ||
+				FORM_TYPE_INLINE_DONATION === formType ||
+				FORM_TYPE_CHECKOUT_DONATION === formType
+			) {
+				amount = $selectedElement.data('wpfs-amount-in-smallest-common-currency');
+			} 
+
+			if ( ! paymentDetailsConfig.zeroDecimalSupport ) {
+				amount = amount / 100;
+			}
+			const feeRecoveryAmount = calculateRecoveryFee( amount, paymentDetailsConfig );
+			const paymentDetail = {
+				'type': PAYMENT_DETAIL_FEE_RECOVERY,
+				'subType': PAYMENT_DETAIL_FEE_RECOVERY,
+				'id': paymentDetailsConfig.priceId,
+				'displayName': 'Fee Recovery',
+				'amount': feeRecoveryAmount,
+			}
+			const paymentDetails = WPFS.getPaymentDetails( paymentDetailsConfig.formId );
+
+			let priceIdPaymentDetails = paymentDetails?.[paymentDetailsConfig.priceId];
+			priceIdPaymentDetails.push( paymentDetail );
+
+			WPFS.setPaymentDetailsForPrice(
+				paymentDetailsConfig.formId,
+				paymentDetailsConfig.priceId,
+				priceIdPaymentDetails
+			);
+		}
+
+		function clearRecoveryItem( paymentDetailsConfig ) {
+			const paymentDetails = WPFS.getPaymentDetails( paymentDetailsConfig.formId );
+			if ( paymentDetails === null ) {
+				return;
+			}
+
+			let priceIdPaymentDetails = paymentDetails?.[ paymentDetailsConfig.priceId ];
+			priceIdPaymentDetails = priceIdPaymentDetails?.filter(
+				(item) =>
+					item.type !== PAYMENT_DETAIL_FEE_RECOVERY &&
+					item.subType !== PAYMENT_DETAIL_FEE_RECOVERY
+			);
+
+			WPFS.setPaymentDetailsForPrice(
+				paymentDetailsConfig.formId,
+				paymentDetailsConfig.priceId,
+				priceIdPaymentDetails
+			);
+		}
+
 		var WPFS = {};
 		WPFS.couponMap = {};
 		WPFS.paymentDetailsMap = {};
@@ -3412,6 +3651,10 @@ jQuery.noConflict();
 				'form[data-wpfs-form-type] [data-toggle="card"]'
 			);
 
+			WPFS.initStripeJSCardElement( $cards );
+		};
+		
+		WPFS.initStripeJSCardElement = function ( $cards ) {
 			if ( $cards.length === 0 ) {
 				return;
 			}
@@ -3420,83 +3663,54 @@ jQuery.noConflict();
 				if ( stripe != null ) {
 					var $form = getParentForm( this );
 					const formId = $form.data( 'wpfs-form-id' );
-					const elementsLocale = $form.data(
-						'wpfs-preferred-language'
-					);
-					// Add get parameters to the form
-					setPageParametersField( $form );
-
-					// add amount index
-					addCustomAmountIndexInput( $form );
-
-					// this is used for both payment intent and setup intent secrets
-					const { clientSecret, intentType } =
-						await getSetupIntentClientSecret( $form );
-
-					// set the intent type on the form so it can be used later
-					$form.data( 'wpfs-intent-type', intentType );
-					$form.data( 'wpfs-stripe-client-secret', clientSecret );
-					$form.data(
-						'wpfs-stripe-payment-intent-id',
-						clientSecret.substr(
-							0,
-							clientSecret.indexOf( '_secret_' )
-						)
-					);
-
-					let appearance = {
-						theme: $form.data( 'wpfs-elements-theme' ),
-					};
-
-					if ( $form.data( 'wpfs-elements-font' ) ) {
-						appearance = {
-							...appearance,
-							variables: {
-								fontFamily: $form.data( 'wpfs-elements-font' ),
-							},
-						};
-					}
-					// create Stripe Payments Element
-					var elements = stripe.elements( {
-						locale: elementsLocale,
-						loader: 'always',
-						clientSecret,
-						appearance,
-					} );
-					var cardElement = elements.create( 'payment', {
-						fields: {
-							billingDetails: {
-								name: 'never', // never show the name field as it's handled by the FP form
-								email: 'never', // never show the email field as it's handled by the FP form
-							},
-						},
-					} );
+					var { elements, cardElement } = await WPFS.initStripeCardElement( $form );
 					cardElement.mount(
 						'div[data-wpfs-form-id="' + formId + '"]'
 					);
 				} else {
-					console.error( 'Stripe.js not loaded' );
+					showErrorGlobalMessage(
+						$form,
+						wpfsFormSettings.l10n.stripe_errors
+							.internal_error_title,
+						'Stripe.js not loaded'
+					);
 				}
 
+				$($form).on('change', 'input[name="wpfs-donation-frequency"]', async function() {
+					if ( $(this).is(':checked') ) {
+						cardElement.unmount();
+						cardElement.destroy();
+						const formId = $form.data( 'wpfs-form-id' );
+						
+						const stripeCardElements = await WPFS.initStripeCardElement( $form );
+						elements = stripeCardElements.elements;
+						cardElement = stripeCardElements.cardElement;
+
+						cardElement.mount(
+							'div[data-wpfs-form-id="' + formId + '"]'
+						);
+					}
+				});
+	
 				// handle form submission
 				$form.submit( function ( event ) {
 					event.preventDefault();
 					/*
-            disable submit button and show loading animation,
-            clear message panel, reset token and amount index
-          */
+			disable submit button and show loading animation,
+			clear message panel, reset token and amount index
+		  */
 					disableFormButtons( $form );
 					showLoadingAnimation( $form );
 					clearFieldErrors( $form );
 					clearGlobalMessage( $form );
 					removeHiddenFormFields( $form );
-
+	
 					// Add get parameters to the form
 					setPageParametersField( $form );
-
+	
 					// add amount index
 					addCustomAmountIndexInput( $form );
-
+	
 					// validate terms of use if necessary
 					const showTermsOfUse = $form.data(
 						'wpfs-show-terms-of-use'
@@ -3527,9 +3741,9 @@ jQuery.noConflict();
 							return false;
 						}
 					}
-
+	
 					const paymentMethodData = {};
-
+	
 					// capture cardholder email
 					const cardHolderEmail = $(
 						'input[name="wpfs-card-holder-email"]',
@@ -3544,7 +3758,7 @@ jQuery.noConflict();
 							email: cardHolderEmail.val(),
 						};
 					}
-
+	
 					// capture cardholder name
 					const cardHolderNameField = $(
 						'input[name="wpfs-card-holder-name"]',
@@ -3561,7 +3775,7 @@ jQuery.noConflict();
 						paymentMethodData.billing_details.name =
 							cardHolderNameField.val();
 					}
-
+	
 					// capture billing address if country is set
 					const billingAddressCountryField = $(
 						'select[name="wpfs-billing-address-country"] option:selected',
@@ -3644,11 +3858,15 @@ jQuery.noConflict();
 								billingAddressStateField.val();
 						}
 					}
-
+	
 					if ( stripe != null ) {
 						const intentType = $form.data( 'wpfs-intent-type' );
 						const clientSecret = $form.data(
 							'wpfs-stripe-client-secret'
+						);
+						const paymentIntentId = clientSecret.substr(
+							0,
+							clientSecret.indexOf( '_secret_' )
 						);
 						let return_url = window.location.href;
 						if ( $form.data( 'wpfs-form-id' ) ) {
@@ -3658,6 +3876,7 @@ jQuery.noConflict();
 							return_url +=
 								'wpfs-form-id=' + $form.data( 'wpfs-form-id' );
 						}
+
 						if ( intentType === 'payment' ) {
 							// need to save a draft transaction locally before confirming the payment
 							let data =
@@ -3674,94 +3893,239 @@ jQuery.noConflict();
 										: decodeURIComponent( value );
 								}
 							);
-							data.action = 'wpfs-save-draft-transaction';
-							// custom fields are not serialized correct by default
-							delete data[ 'wpfs-custom-input%5B%5D' ];
-							const inputFields = $(
-								'input[name="wpfs-custom-input[]"]',
-								$form
-							);
-							const customInputValues = [];
-							inputFields.each( function ( index, element ) {
-								const $element = $( element );
-								customInputValues.push( $element.val() );
-							} );
-							data[ 'wpfs-custom-input[]' ] = customInputValues;
-							data[ 'wpfs-intent-type' ] = intentType;
-							data[ 'wpfs-stripe-client-secret' ] = clientSecret;
-							data[ 'wpfs-stripe-payment-intent-id' ] =
-								clientSecret.substr(
-									0,
-									clientSecret.indexOf( '_secret_' )
-								);
 
-							$.ajax( {
-								type: 'POST',
-								url: wpfsFormSettings.ajaxUrl,
-								data,
-								cache: false,
-								dataType: 'json',
-								success( data ) {
-									// now confirm the payment and wait for the redirect or the webhook
-									if (
-										data.success &&
-										data.success === true
-									) {
-										stripe
-											.confirmPayment( {
-												elements,
-												confirmParams: {
-													return_url,
-													payment_method_data:
-														paymentMethodData,
-												},
-											} )
-											.catch( ( error ) => {
-												enableFormButtons( $form );
-												hideLoadingAnimation( $form );
+							if ( data.hasOwnProperty('wpfs-donation-frequency') && data['wpfs-donation-frequency'] === 'one-time' ) {
+								data.action = 'wpfs-save-one-time-donation';
+								// custom fields are not serialized correctly by default
+								delete data[ 'wpfs-custom-input%5B%5D' ];
+								const inputFields = $(
+									'input[name="wpfs-custom-input[]"]',
+									$form
+								);
+								const customInputValues = [];
+								inputFields.each( function ( index, element ) {
+									const $element = $( element );
+									customInputValues.push( $element.val() );
+								} );
+								data[ 'wpfs-custom-input[]' ] = customInputValues;
+								data[ 'wpfs-intent-type' ] = intentType;
+								data[ 'wpfs-stripe-client-secret' ] = clientSecret;
+								data[ 'wpfs-stripe-payment-intent-id' ] =
+									clientSecret.substr(
+										0,
+										clientSecret.indexOf( '_secret_' )
+									);
+								
+								$.ajax( {
+									type: 'POST',
+									url: wpfsFormSettings.ajaxUrl,
+									data,
+									cache: false,
+									dataType: 'json',
+									success( data ) {
+										// now confirm the payment and wait for the redirect or the webhook
+										if (
+											data.success &&
+											data.success === true
+										) {
+											stripe
+												.confirmPayment( {
+													elements,
+													confirmParams: {
+														payment_method_data:
+															paymentMethodData,
+													},
+													redirect: 'if_required'
+												} )
+												.then( function( createPaymentMethodResult ) {
+													if ( !createPaymentMethodResult ) return; // Previous step failed
+												
+													if ( debugLog ) {
+														console.log(
+															'form.submit(): ' +
+																'PaymentMethod creation result=' +
+																JSON.stringify(
+																	createPaymentMethodResult
+																)
+														);
+													}
+													clearFieldErrors( $form );
+													if ( createPaymentMethodResult.error ) {
+														enableFormButtons( $form );
+														hideLoadingAnimation( $form );
+														showFieldError(
+															$form,
+															'cardnumber',
+															null,
+															createPaymentMethodResult.error
+																.message
+														);
+														scrollToElement(
+															$( '.wpfs-form-card', $form ),
+															false
+														);
+													} else {
+														const inputAction = $('input[name="action"]', $form);
+														if ( 'wp_full_stripe_inline_donation_charge' === inputAction.val() ) {
+															inputAction.val('wp_full_stripe_onetime_donation_charge');
+														}
+														$( '<input>' )
+															.attr( {
+																type: 'hidden',
+																name: 'wpfs-stripe-payment-intent-id',
+																value: createPaymentMethodResult.paymentIntent.id,
+															} )
+															.appendTo( $form );
+														$( '<input>' )
+															.attr( {
+																type: 'hidden',
+																name: 'wpfs-stripe-payment-method-id',
+																value: createPaymentMethodResult.paymentIntent.payment_method,
+															} )
+															.appendTo( $form );
+														submitPaymentData( $form, cardElement );
+													}
+												})
+												.catch( ( error ) => {
+													enableFormButtons( $form );
+													hideLoadingAnimation( $form );
+													showErrorGlobalMessage(
+														$form,
+														wpfsFormSettings.l10n
+															.stripe_errors
+															.internal_error,
+														error.message
+													);
+													console.log( error );
+												} );
+										} else {
+											if (
+												data &&
+												( data.messageTitle ||
+													data.message )
+											) {
 												showErrorGlobalMessage(
 													$form,
-													wpfsFormSettings.l10n
-														.stripe_errors
-														.internal_error,
-													error.message
+													data.messageTitle,
+													data.message
 												);
-												console.log( error );
-											} );
-									} else {
-										if (
-											data &&
-											( data.messageTitle ||
-												data.message )
-										) {
-											showErrorGlobalMessage(
-												$form,
-												data.messageTitle,
-												data.message
-											);
+											}
+											processValidationErrors( $form, data );
+											enableFormButtons( $form );
+											hideLoadingAnimation( $form );
 										}
-										processValidationErrors( $form, data );
+									},
+									error( jqXHR, textStatus, errorThrown ) {
+										logError(
+											'submitSaveOneTimeDonation',
+											jqXHR,
+											textStatus,
+											errorThrown
+										);
+										showErrorGlobalMessage(
+											$form,
+											wpfsFormSettings.l10n.stripe_errors
+												.internal_error
+										);
 										enableFormButtons( $form );
 										hideLoadingAnimation( $form );
-									}
-								},
-								error( jqXHR, textStatus, errorThrown ) {
-									logError(
-										'submitDraftTransation',
-										jqXHR,
-										textStatus,
-										errorThrown
+										console.log( errorThrown );
+									},
+								} );
+
+							} else {
+								// need to save a draft transaction locally before confirming the payment
+								data.action = 'wpfs-save-draft-transaction';
+								// custom fields are not serialized correct by default
+								delete data[ 'wpfs-custom-input%5B%5D' ];
+								const inputFields = $(
+									'input[name="wpfs-custom-input[]"]',
+									$form
+								);
+
+								const customInputValues = [];
+								inputFields.each( function ( index, element ) {
+									const $element = $( element );
+									customInputValues.push( $element.val() );
+								} );
+								data[ 'wpfs-custom-input[]' ] = customInputValues;
+								data[ 'wpfs-intent-type' ] = intentType;
+								data[ 'wpfs-stripe-client-secret' ] = clientSecret;
+								data[ 'wpfs-stripe-payment-intent-id' ] =
+									clientSecret.substr(
+										0,
+										clientSecret.indexOf( '_secret_' )
 									);
-									showErrorGlobalMessage(
-										$form,
-										wpfsFormSettings.l10n.stripe_errors
-											.internal_error
-									);
-									enableFormButtons( $form );
-									hideLoadingAnimation( $form );
-									console.log( errorThrown );
-								},
-							} );
+		
+								$.ajax( {
+									type: 'POST',
+									url: wpfsFormSettings.ajaxUrl,
+									data,
+									cache: false,
+									dataType: 'json',
+									success( data ) {
+										// now confirm the payment and wait for the redirect or the webhook
+										if (
+											data.success &&
+											data.success === true
+										) {
+											stripe
+												.confirmPayment( {
+													elements,
+													confirmParams: {
+														return_url,
+														payment_method_data:
+															paymentMethodData,
+													},
+												} )
+												.catch( ( error ) => {
+													enableFormButtons( $form );
+													hideLoadingAnimation( $form );
+													showErrorGlobalMessage(
+														$form,
+														wpfsFormSettings.l10n
+															.stripe_errors
+															.internal_error,
+														error.message
+													);
+													console.log( error );
+												} );
+										} else {
+											if (
+												data &&
+												( data.messageTitle ||
+													data.message )
+											) {
+												showErrorGlobalMessage(
+													$form,
+													data.messageTitle,
+													data.message
+												);
+											}
+											processValidationErrors( $form, data );
+											enableFormButtons( $form );
+											hideLoadingAnimation( $form );
+										}
+									},
+									error( jqXHR, textStatus, errorThrown ) {
+										logError(
+											'submitDraftTransation',
+											jqXHR,
+											textStatus,
+											errorThrown
+										);
+										showErrorGlobalMessage(
+											$form,
+											wpfsFormSettings.l10n.stripe_errors
+												.internal_error_title,
+											errorThrown
+										);
+										enableFormButtons( $form );
+										hideLoadingAnimation( $form );
+										console.log( errorThrown );
+									},
+								} );
+							}
 						} else if ( intentType === 'setup' ) {
 							// For setup intents with deferred customer attachment:
 							// 1. Call elements.submit() first to validate payment details
@@ -3772,10 +4136,10 @@ jQuery.noConflict();
 								if ( submitResult.error ) {
 									enableFormButtons( $form );
 									hideLoadingAnimation( $form );
-									showFieldError(
+									showErrorGlobalMessage(
 										$form,
-										'cardnumber',
-										null,
+										wpfsFormSettings.l10n.stripe_errors
+											.internal_error_title,
 										submitResult.error.message
 									);
 									scrollToElement(
@@ -3817,10 +4181,10 @@ jQuery.noConflict();
 								if ( createPaymentMethodResult.error ) {
 									enableFormButtons( $form );
 									hideLoadingAnimation( $form );
-									showFieldError(
+									showErrorGlobalMessage(
 										$form,
-										'cardnumber',
-										null,
+										wpfsFormSettings.l10n.stripe_errors
+											.internal_error_title,
 										createPaymentMethodResult.error
 											.message
 									);
@@ -3851,13 +4215,73 @@ jQuery.noConflict();
 							} );
 						}
 					} else {
-						console.error( '[Sumbit] Stripe.js not loaded' );
+						showErrorGlobalMessage(
+							$form,
+							wpfsFormSettings.l10n.stripe_errors
+								.internal_error_title,
+							'[Submit] Stripe.js not loaded'
+						);
 					}
-
+	
 					return false;
 				} );
 			} );
 		};
+
+		WPFS.initStripeCardElement = async function ( $form ) {
+			const elementsLocale = $form.data(
+				'wpfs-preferred-language'
+			);
+			// Add get parameters to the form
+			setPageParametersField( $form );
+
+			// add amount index
+			addCustomAmountIndexInput( $form );
+
+			// this is used for both payment intent and setup intent secrets
+			const { clientSecret, intentType } =
+				await getSetupIntentClientSecret( $form );
+
+			// set the intent type on the form so it can be used later
+			$form.data( 'wpfs-intent-type', intentType );
+			$form.data( 'wpfs-stripe-client-secret', clientSecret );
+			$form.data(
+				'wpfs-stripe-payment-intent-id',
+				clientSecret.substr(
+					0,
+					clientSecret.indexOf( '_secret_' )
+				)
+			);
+
+			let appearance = {
+				theme: $form.data( 'wpfs-elements-theme' ),
+			};
+
+			if ( $form.data( 'wpfs-elements-font' ) ) {
+				appearance = {
+					...appearance,
+					variables: {
+						fontFamily: $form.data( 'wpfs-elements-font' ),
+					},
+				};
+			}
+			// create Stripe Payments Element
+			const elements = stripe.elements( {
+				locale: elementsLocale,
+				loader: 'always',
+				clientSecret,
+				appearance,
+			} );
+			const cardElement = elements.create( 'payment', {
+				fields: {
+					billingDetails: {
+						name: 'never', // never show the name field as it's handled by the FP form
+						email: 'never', // never show the email field as it's handled by the FP form
+					},
+				},
+			} );
+			return { elements, cardElement };
+		}
 
 		WPFS.initCoupon = function () {
 			const COUPON_FIELD_NAME = 'wpfs-coupon';
@@ -3977,7 +4401,8 @@ jQuery.noConflict();
 							showErrorGlobalMessage(
 								$form,
 								wpfsFormSettings.l10n.stripe_errors
-									.internal_error
+									.internal_error_title,
+								errorThrown
 							);
 						},
 						complete() {
@@ -4048,6 +4473,7 @@ jQuery.noConflict();
 			$( document ).on( 'mouseleave', inputGroupAppendClass, function () {
 				$( this ).prev().mouseleave();
 			} );
+
 		};
 
 		WPFS.initSelectmenu = function () {
@@ -4978,8 +5404,7 @@ jQuery.noConflict();
 									$form,
 									wpfsFormSettings.l10n.validation_errors
 										.internal_error_title,
-									wpfsFormSettings.l10n.validation_errors
-										.internal_error
+									errorThrown
 								);
 							},
 							complete() {
@@ -5841,6 +6266,12 @@ jQuery.noConflict();
 						textStatus,
 						errorThrown
 					);
+					showErrorGlobalMessage(
+						$form,
+						wpfsFormSettings.l10n.validation_errors
+							.internal_error_title,
+						errorThrown
+					);
 				},
 				complete() {
 					hideLoadingAnimation( $form );
@@ -6008,6 +6439,11 @@ jQuery.noConflict();
 					}
 				);
 			} );
+
+			$('input[name="wpfs-fee-recovery-accepted"]').on( 'change', function() {
+				const $form = getParentForm( this );
+				refreshPaymentDetails($form);
+			} );
 		};
 
 		// tnagy initialize components
@@ -6130,7 +6566,7 @@ jQuery.noConflict();
 						$form,
 						wpfsFormSettings.l10n.validation_errors
 							.internal_error_title,
-						wpfsFormSettings.l10n.validation_errors.internal_error
+						errorThrown
 					);
 				},
 				complete() {},

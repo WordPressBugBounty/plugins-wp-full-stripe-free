@@ -5,22 +5,28 @@
 
 $currentThemeValue = $form->stripeElementsTheme;
 ?>
-    <label for="" class="wpfs-form-label wpfs-form-label--mb"><?php $view->stripeElementsThemeSelector()->label(); ?></label>
-<?php foreach ( $view->stripeElementsThemeSelector()->options() as $option ) {
-    /* @var $option MM_WPFS_Control */
-    ?>
-    <div class="wpfs-form-check wpfs-form-check--block">
-        <input id="<?php $option->id(); ?>" name="<?php $option->name(); ?>" value="<?php $option->value(); ?>" <?php $option->attributes(); ?> <?php echo $option->value(false) == $currentThemeValue ? 'checked' : ''; ?>/>
-        <label class="wpfs-form-check-label" for="<?php $option->id(); ?>">
-            <span class="wpfs-form-check-label__title"><?php $option->label(); ?></span>
-            <span class="wpfs-form-check-label__desc">
-                <?php echo isset($option->metadata()['description']) ? $option->metadata()['description'] : ''; ?>
-            </span>
-            <span class="<?php echo $option->metadata()['iconClass']; ?> wpfs-form-check-label__illu"></span>
+<div class="wpfs-appearance-subsection" id="stripe-elements-theme-selector">
+    <label class="wpfs-form-label"><?php $view->stripeElementsThemeSelector()->label(); ?></label>
+    <div class="wpfs-theme-grid">
+    <?php foreach ( $view->stripeElementsThemeSelector()->options() as $option ) {
+        /* @var $option MM_WPFS_Control */
+        ?>
+        <label class="wpfs-theme-option" for="<?php $option->id(); ?>" title="<?php echo esc_attr( $option->label() ); ?>">
+            <input id="<?php $option->id(); ?>" name="<?php $option->name(); ?>" value="<?php $option->value(); ?>" <?php $option->attributes(); ?> <?php echo $option->value(false) == $currentThemeValue ? 'checked' : ''; ?>/>
+            <div class="wpfs-theme-preview">
+                <span class="<?php echo $option->metadata()['iconClass']; ?>"></span>
+            </div>
         </label>
+    <?php } ?>
     </div>
-<?php } ?>
-<div class="wpfs-form-group">
-    <label for="" class="wpfs-form-label"><?php $view->stripeElementsFont()->label(); ?></label>
-    <input id="<?php $view->stripeElementsFont()->id(); ?>" name="<?php $view->stripeElementsFont()->name(); ?>" type="text" class="wpfs-form-control js-to-pascal-case" value="<?php echo $form->stripeElementsFont; ?>" data-to-pascal-case="#<?php $view->name()->id(); ?>">
+</div>
+
+<div class="wpfs-appearance-subsection">
+    <label for="<?php echo esc_attr( $view->stripeElementsFont()->id() ); ?>" class="wpfs-form-label">
+        <?php $view->stripeElementsFont()->label(); ?>
+    </label>
+    <div class="wpfs-form-group">
+        <input id="<?php $view->stripeElementsFont()->id(); ?>" name="<?php $view->stripeElementsFont()->name(); ?>" type="text" class="wpfs-form-control js-to-pascal-case" value="<?php echo esc_attr( $form->stripeElementsFont ); ?>" placeholder="<?php esc_attr_e( 'e.g., Inter, Helvetica, sans-serif', 'wp-full-stripe-free' ); ?>" data-to-pascal-case="#<?php $view->name()->id(); ?>">
+        <p class="wpfs-form-help"><?php esc_html_e( 'Specify font family for Stripe payment elements', 'wp-full-stripe-free' ); ?></p>
+    </div>
 </div>

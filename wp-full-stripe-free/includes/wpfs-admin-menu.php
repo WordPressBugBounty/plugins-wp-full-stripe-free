@@ -73,9 +73,9 @@ class MM_WPFS_Admin_Menu {
 	const PARAM_VALUE_TAB_APPEARANCE = 'appearance';
 	const PARAM_VALUE_TAB_GENERAL = 'general';
 	const PARAM_VALUE_TAB_PAYMENT = 'payment';
-	const PARAM_VALUE_TAB_TAX = 'tax';
+	const PARAM_VALUE_TAB_PAYMENT_AND_TAX = 'payment-and-tax';
 	const PARAM_VALUE_TAB_FORM_LAYOUT = 'form-layout';
-	const PARAM_VALUE_TAB_EMAIL_NOTIFICATIONS = 'email-notifications';
+	const PARAM_VALUE_TAB_NOTIFICATIONS_AND_INTEGRATION = 'notifications-and-integration';
 	const PARAM_VALUE_RANGE_TODAY = 'today';
 	const PARAM_VALUE_RANGE_YESTERDAY = 'yesterday';
 	const PARAM_VALUE_RANGE_LAST_7_DAYS = 'last_7_days';
@@ -1051,20 +1051,8 @@ class MM_WPFS_Admin_Menu {
 			MM_WPFS_Options::OPTION_SHOW_CURRENCY_SYMBOL_INSTEAD_OF_CODE,
 			MM_WPFS_Options::OPTION_SHOW_CURRENCY_SIGN_AT_FIRST_POSITION,
 			MM_WPFS_Options::OPTION_PUT_WHITESPACE_BETWEEN_CURRENCY_AND_AMOUNT,
-			MM_WPFS_Options::OPTION_FEE_RECOVERY,
-			MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN,
-			MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE,
-			MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY,
-			MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE,
-			MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT,
 		] );
 
-		$result->feeRecovery = $options[ MM_WPFS_Options::OPTION_FEE_RECOVERY ];
-		$result->feeRecoveryOptIn = $options[ MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN ];
-		$result->feeRecoveryOptInMessage = $options[ MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE ];
-		$result->feeRecoveryCurrency = $options[ MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY ];
-		$result->feeRecoveryFeePercentage = $options[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ];
-		$result->feeRecoveryFeeAdditionalAmount = $options[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ];
 		$result->decimalSeparator = $options[ MM_WPFS_Options::OPTION_DECIMAL_SEPARATOR_SYMBOL ];
 		$result->useSymbolNotCode = $options[ MM_WPFS_Options::OPTION_SHOW_CURRENCY_SYMBOL_INSTEAD_OF_CODE ];
 		$result->currencySymbolAtFirstPosition = $options[ MM_WPFS_Options::OPTION_SHOW_CURRENCY_SIGN_AT_FIRST_POSITION ];
@@ -1080,7 +1068,7 @@ class MM_WPFS_Admin_Menu {
 
 		$pageTitle =
 			/* translators: Page title of the "WordPress dashboard settings" page in WordPress admin  */
-			__( 'Currency & Fee Recovery', 'wp-full-stripe-free' );
+			__( 'Currency', 'wp-full-stripe-free' );
 		$stripeStatus = $this->getStripeStatus();
 		$backLinkUrl = MM_WPFS_Admin_Menu::getAdminUrlBySlug( self::SLUG_SETTINGS );
 		$backLinkLabel =
@@ -1348,8 +1336,8 @@ class MM_WPFS_Admin_Menu {
 				'slug' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_WORDPRESS_DASHBOARD,
 				'cssClasses' => 'wpfs-illu-credit-card',
 				'url' => $this->getAdminUrlBySlug(MM_WPFS_Admin_Menu::SLUG_SETTINGS_WORDPRESS_DASHBOARD),
-				'title' => __('Currency & Fee Recovery', 'wp-full-stripe-free'),
-				'description' => __('Set your currency format & fee recovery preferences', 'wp-full-stripe-free'),
+				'title' => __('Currency', 'wp-full-stripe-free'),
+				'description' => __('Set your currency format', 'wp-full-stripe-free'),
 				'group' => [
 					'slug' => 'configuration',
 					'title' => __('Configuration', 'wp-full-stripe-free'),
@@ -1727,14 +1715,32 @@ class MM_WPFS_Admin_Menu {
 	}
 
 	/**
+	 * Get the forms counts.
+	 *
+	 * @return array<string, int>
+	 */
+	protected function getFormCounts() {
+		$onetime_payment_forms = $this->db->getNumberOfOneTimePaymentForms();
+		$subscription_forms    = $this->db->getNumberOfSubscriptionForms();
+		$donation_forms        = $this->db->getNumberOfDonationForms();
+		$save_card_forms       = $this->db->getNumberOfSaveCardForms();
+
+		$forms = [
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS      => isset( $onetime_payment_forms->formCount ) ? $onetime_payment_forms->formCount : 0,
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS => isset( $subscription_forms->formCount ) ? $subscription_forms->formCount : 0,
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS     => isset( $donation_forms->formCount ) ? $donation_forms->formCount : 0,
+			MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS   => isset( $save_card_forms->formCount ) ? $save_card_forms->formCount : 0,
+		];
+
+		return $forms;
+	}
+
+	/**
 	 * @param $lookupTabs array
 	 * @return string
 	 */
 	private function getTransactionTabIdFromRequest( &$lookupTabs ): string {
 		$tabId = array_key_exists( MM_WPFS_Admin_Menu::PARAM_NAME_TAB, $_REQUEST ) ? $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_TAB ] : null;
-		if ( is_null( $tabId ) ) {
-			$tabId = $this->getTabIdFromCookie();
-		}
 
 		$transactions = $this->getTransactionCounts();
 
@@ -1742,11 +1748,39 @@ class MM_WPFS_Admin_Menu {
 		foreach ( $transactions as $key => $value ) {
 			if ( $value > 0 ) {
 				$default = $key;
+				$tabId = is_null( $tabId ) ? $key : $tabId;
 				break;
 			}
 		}
 
+		if ( is_null( $tabId ) ) {
+			$tabId = $this->getTabIdFromFormCountsOrCookie();
+		}
+
 		$tabId = $this->validateTabId( $lookupTabs, $tabId, $default );
+
+		return $tabId;
+	}
+
+	/**
+	 * Get the Tab ID from the form counts or cookies.
+	 *
+	 * @return string
+	 */
+	private function getTabIdFromFormCountsOrCookie() {
+		$forms = $this->getFormCounts();
+		$tabId = '';
+
+		foreach ( $forms as $key => $value ) {
+			if ( $value > 0 ) {
+				$tabId = $key;
+				break;
+			}
+		}
+
+		if ( empty( $tabId ) ) {
+			return $this->getTabIdFromCookie();
+		}
 
 		return $tabId;
 	}
@@ -2762,7 +2796,10 @@ class MM_WPFS_FormTabCreatorFactory {
 }
 
 abstract class MM_WPFS_FormTabCreator {
-	abstract public function getTabs(): array;
+	/**
+	 * @return array<array<string, string>>
+	 */
+	abstract public function getTabs();
 
 	protected function generalTab( &$tabs ) {
 		array_push( $tabs, [
@@ -2804,37 +2841,35 @@ abstract class MM_WPFS_FormTabCreator {
 		);
 	}
 
-	protected function emailNotificationsTab( &$tabs ) {
+	/**
+	 * Add the "Notifications & Integrations" tab on the form edit page.
+	 *
+	 * @param array<array<string, string>> $tabs The existing tabs array.
+	 * @return void
+	 */
+	protected function notificationsAndIntegrationTab( &$tabs ) {
 		array_push( $tabs, [
 			'title' =>
-				/* translators: Label of the "Email notifications" tab on "Edit form" pages */
-				__( 'Email notifications', 'wp-full-stripe-free' ),
-			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_EMAIL_NOTIFICATIONS
-		]
-		);
-	}
-
-	protected function webhookTab( &$tabs ) {
-		array_push( $tabs, [
-			'title' =>
-				/* translators: Label of the "Webhooks" tab on "Edit form" pages */
-				__( 'Webhook', 'wp-full-stripe-free' ),
-			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_WEBHOOK
+				/* translators: Label of the "Notifications & Integrations" tab on "Edit form" pages */
+				__( 'Notifications & Integrations', 'wp-full-stripe-free' ),
+			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_NOTIFICATIONS_AND_INTEGRATION
 		]
 		);
 	}
 }
 
 class MM_WPFS_InlineSaveCardFormTabCreator extends MM_WPFS_FormTabCreator {
-	public function getTabs(): array {
+	/**
+	 * @return array<array<string, string>>
+	 */
+	public function getTabs() {
 		$tabs = [];
 
 		$this->generalTab( $tabs );
 		$this->paymentTab( $tabs );
 		$this->appearanceTab( $tabs );
 		$this->formFieldsTab( $tabs );
-		$this->emailNotificationsTab( $tabs );
-		$this->webhookTab( $tabs );
+		$this->notificationsAndIntegrationTab( $tabs );
 
 		return $tabs;
 	}
@@ -2848,8 +2883,7 @@ class MM_WPFS_CheckoutSaveCardFormTabCreator extends MM_WPFS_FormTabCreator {
 		$this->paymentTab( $tabs );
 		$this->appearanceTab( $tabs );
 		$this->formFieldsTab( $tabs );
-		$this->emailNotificationsTab( $tabs );
-		$this->webhookTab( $tabs );
+		$this->notificationsAndIntegrationTab( $tabs );
 
 		return $tabs;
 	}
@@ -2863,8 +2897,7 @@ class MM_WPFS_InlineDonationFormTabCreator extends MM_WPFS_FormTabCreator {
 		$this->paymentTab( $tabs );
 		$this->appearanceTab( $tabs );
 		$this->formFieldsTab( $tabs );
-		$this->emailNotificationsTab( $tabs );
-		$this->webhookTab( $tabs );
+		$this->notificationsAndIntegrationTab( $tabs );
 
 		return $tabs;
 	}
@@ -2878,20 +2911,25 @@ class MM_WPFS_CheckoutDonationFormTabCreator extends MM_WPFS_FormTabCreator {
 		$this->paymentTab( $tabs );
 		$this->appearanceTab( $tabs );
 		$this->formFieldsTab( $tabs );
-		$this->emailNotificationsTab( $tabs );
-		$this->webhookTab( $tabs );
+		$this->notificationsAndIntegrationTab( $tabs );
 
 		return $tabs;
 	}
 }
 
 trait MM_WPFS_TaxAwareFormTabCreator {
-	protected function taxTab( &$tabs ) {
+	/**
+	 * Add the "Payment & Tax" tab on the form edit page.
+	 *
+	 * @param array<array<string, string>> $tabs The existing tabs array.
+	 * @return void
+	 */
+	protected function paymentAndTaxTab( &$tabs ) {
 		array_push( $tabs, [
 			'title' =>
-				/* translators: Label of the "Tax" tab on "Edit form" pages */
-				__( 'Tax', 'wp-full-stripe-free' ),
-			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_TAX
+				/* translators: Label of the "Payment & Tax" tab on "Edit form" pages */
+				__( 'Payment & Tax', 'wp-full-stripe-free' ),
+			'tab' => MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENT_AND_TAX
 		]
 		);
 	}
@@ -2900,16 +2938,17 @@ trait MM_WPFS_TaxAwareFormTabCreator {
 class MM_WPFS_InlinePaymentFormTabCreator extends MM_WPFS_FormTabCreator {
 	use MM_WPFS_TaxAwareFormTabCreator;
 
-	public function getTabs(): array {
+	/**
+	 * @return array<array<string, string>>
+	 */
+	public function getTabs() {
 		$tabs = [];
 
 		$this->generalTab( $tabs );
-		$this->paymentTab( $tabs );
-		$this->taxTab( $tabs );
+		$this->paymentAndTaxTab( $tabs );
 		$this->appearanceTab( $tabs );
 		$this->formFieldsTab( $tabs );
-		$this->emailNotificationsTab( $tabs );
-		$this->webhookTab( $tabs );
+		$this->notificationsAndIntegrationTab( $tabs );
 
 		return $tabs;
 	}
@@ -2918,16 +2957,17 @@ class MM_WPFS_InlinePaymentFormTabCreator extends MM_WPFS_FormTabCreator {
 class MM_WPFS_CheckoutPaymentFormTabCreator extends MM_WPFS_FormTabCreator {
 	use MM_WPFS_TaxAwareFormTabCreator;
 
-	public function getTabs(): array {
+	/**
+	 * @return array<array<string, string>>
+	 */
+	public function getTabs() {
 		$tabs = [];
 
 		$this->generalTab( $tabs );
-		$this->paymentTab( $tabs );
-		$this->taxTab( $tabs );
+		$this->paymentAndTaxTab( $tabs );
 		$this->appearanceTab( $tabs );
 		$this->formFieldsTab( $tabs );
-		$this->emailNotificationsTab( $tabs );
-		$this->webhookTab( $tabs );
+		$this->notificationsAndIntegrationTab( $tabs );
 
 		return $tabs;
 	}
@@ -2936,16 +2976,17 @@ class MM_WPFS_CheckoutPaymentFormTabCreator extends MM_WPFS_FormTabCreator {
 class MM_WPFS_InlineSubscriptionFormTabCreator extends MM_WPFS_FormTabCreator {
 	use MM_WPFS_TaxAwareFormTabCreator;
 
-	public function getTabs(): array {
+	/**
+	 * @return array<array<string, string>>
+	 */
+	public function getTabs() {
 		$tabs = [];
 
 		$this->generalTab( $tabs );
-		$this->paymentTab( $tabs );
-		$this->taxTab( $tabs );
+		$this->paymentAndTaxTab( $tabs );
 		$this->appearanceTab( $tabs );
 		$this->formFieldsTab( $tabs );
-		$this->emailNotificationsTab( $tabs );
-		$this->webhookTab( $tabs );
+		$this->notificationsAndIntegrationTab( $tabs );
 
 		return $tabs;
 	}
@@ -2954,16 +2995,17 @@ class MM_WPFS_InlineSubscriptionFormTabCreator extends MM_WPFS_FormTabCreator {
 class MM_WPFS_CheckoutSubscriptionFormTabCreator extends MM_WPFS_FormTabCreator {
 	use MM_WPFS_TaxAwareFormTabCreator;
 
-	public function getTabs(): array {
+	/**
+	 * @return array<array<string, string>>
+	 */
+	public function getTabs() {
 		$tabs = [];
 
 		$this->generalTab( $tabs );
-		$this->paymentTab( $tabs );
-		$this->taxTab( $tabs );
+		$this->paymentAndTaxTab( $tabs );
 		$this->appearanceTab( $tabs );
 		$this->formFieldsTab( $tabs );
-		$this->emailNotificationsTab( $tabs );
-		$this->webhookTab( $tabs );
+		$this->notificationsAndIntegrationTab( $tabs );
 
 		return $tabs;
 	}
@@ -3519,6 +3561,31 @@ class MM_WPFS_EditFormLocalizer extends MM_WPFS_AdminScriptLocalizer {
 		}
 
 		return $options;
+	}
+
+	/**
+	 * Enqueue ACE editor scripts.
+	 *
+	 * @return void
+	 */
+	public function enqueueScripts() {
+		// Only load ACE editor for inline forms (where custom CSS can be used).
+		if (
+			$this->formType === MM_WPFS::FORM_TYPE_INLINE_SAVE_CARD ||
+			$this->formType === MM_WPFS::FORM_TYPE_INLINE_DONATION ||
+			$this->formType === MM_WPFS::FORM_TYPE_INLINE_PAYMENT ||
+			$this->formType === MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION
+		) {
+			wp_enqueue_script( 'beautify-js-js', MM_WPFS_Assets::scripts( 'beautify/beautify.js' ), [], MM_WPFS::VERSION );
+			wp_enqueue_script( 'beautify-css-js', MM_WPFS_Assets::scripts( 'beautify/beautify-css.js' ), [], MM_WPFS::VERSION );
+			wp_enqueue_script( 'ace-js', MM_WPFS_Assets::scripts( 'ace/ace.js' ), [
+				'beautify-js-js',
+				'beautify-css-js',
+			], MM_WPFS::VERSION );
+			wp_enqueue_script( 'ace-theme-js', MM_WPFS_Assets::scripts( 'ace/theme-solarized_dark.js' ), [
+				'ace-js'
+			], MM_WPFS::VERSION );
+		}
 	}
 }
 

@@ -301,7 +301,7 @@ class MM_WPFS_SubscriptionContextCreator {
 
 		if ( $recoveryFee && ! empty( $recoveryFeeData ) ) {
 			$amount = $this->formModel->getStripePlan()->unit_amount * $this->formModel->getStripePlanQuantity();
-			$currency = $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY ];
+			$currency = $this->formModel->getStripePlan()->currency;
 			$plan = $this->createSubscriptionForRecoveryFee( $currency, $this->formModel->getStripePlan()->recurring->interval );
 			$quantity = MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ], $currency );
 
@@ -695,6 +695,16 @@ class MM_WPFS_Customer {
 		// action for updating payment intent
 		add_action( 'wp_ajax_wpfs-update-payment-intent', [ $this, 'updatePaymentIntent' ] );
 		add_action( 'wp_ajax_nopriv_wpfs-update-payment-intent', [ $this, 'updatePaymentIntent' ] );
+
+		add_action( 'wp_ajax_wpfs-save-one-time-donation', [ $this, 'fullstripe_save_onetime_donation' ] );
+		add_action( 'wp_ajax_nopriv_wpfs-save-one-time-donation', [ $this, 'fullstripe_save_onetime_donation' ] );
+
+		add_action( 'wp_ajax_wp_full_stripe_onetime_donation_charge', [ $this, 'fullstripe_onetime_donation_charge' ] );
+		add_action( 'wp_ajax_nopriv_wp_full_stripe_onetime_donation_charge', [ $this, 'fullstripe_onetime_donation_charge' ] );
+
+		add_action( 'wp_ajax_wpfs_update_failed_payment_status', [ $this, 'update_failed_payment_status' ] );
+		add_action( 'wp_ajax_nopriv_wpfs_update_failed_payment_status', [ $this, 'update_failed_payment_status' ] );
+
 	}
 
 	function fullstripe_handle_checkout_session() {
@@ -844,12 +854,14 @@ class MM_WPFS_Customer {
 		$result = null;
 		$intent_type = null;
 		try {
-			/*
-				NOTE 1.1: All the forms call this endpoint to get the client secret, but only the one-time payment is processing at full.
+			$form_type = isset( $_POST['type' ] ) ? sanitize_text_field( $_POST['type'] ) : MM_WPFS::FORM_TYPE_INLINE_PAYMENT;
 
-				For all the form that enters, the `validateForm` method is working only with MM_WPFS_Public_InlinePaymentFormModel branch check. This makes that $paymentFormModel->getForm() to be null for all other forms (since it fails the DB lookup), thus using only the `createSetupIntent`.
+			/*
+				NOTE 1.1: All the forms call this endpoint to get the client secret, but only the one-time and inline-donation payment is processing at full.
+
+				For all the form that enters, the `validateForm` method is working only with MM_WPFS_Public_InlinePaymentFormModel and MM_WPFS_Public_InlineDonationFormModel branch check. This makes that $paymentFormModel->getForm() to be null for all other forms (since it fails the DB lookup), thus using only the `createSetupIntent`.
 			*/
-			$paymentFormModel = new MM_WPFS_Public_InlinePaymentFormModel( $this->loggerService );
+			$paymentFormModel = $this->getFormModel( $form_type );
 			$paymentFormModel->bind();
 
 			// Find or create customer by email to attach to SetupIntent to prevent errors when a user re-use the email.
@@ -904,8 +916,21 @@ class MM_WPFS_Customer {
 				}
 			}
 
-			// depending on the form capabilities we need to create payment intent or setup intent
-			if ( $supportRecurring ) {
+			if ( MM_WPFS::FORM_TYPE_INLINE_DONATION === $form_type && ! $paymentFormModel->isRecurringDonation() ) {
+				$result = $this->stripe->createPaymentIntent(
+					null, // payment method id
+					null, // customer id
+					$paymentFormModel->getForm()->currency,
+					$paymentFormModel->getAmount(),
+					null, // manual capture or not
+					null, // description is updated later
+					null, //meta data
+					null, // stripe email
+					"always",
+				);
+				$intent_type = "payment";
+			} elseif ( $supportRecurring ) {
+				// depending on the form capabilities we need to create payment intent or setup intent
 				$result = $this->stripe->createSetupIntent( $customerId );
 				$intent_type = "setup";
 			} else {
@@ -1130,81 +1155,117 @@ class MM_WPFS_Customer {
 		$this->logger->debug( __FUNCTION__, 'CALLED' );
 
 		$setupIntentResult = new MM_WPFS_SetupIntentResult();
+		$transactionData = null;
+
+		// Create or retrieve customer first, before creating SetupIntent.
+		$createCustomerOptions = new MM_WPFS_CreateCustomerOptions();
+		$createCustomerOptions->addMetadata = true;
+		$this->createOrRetrieveCustomerByFormModel( $paymentFormModel, $createCustomerOptions );
 
 		if ( empty( $paymentFormModel->getStripeSetupIntentId() ) ) {
-			$this->logger->debug( __FUNCTION__, 'Creating SetupIntent...' );
+			// The frontend already confirmed a SetupIntent via stripe.confirmSetup()
+			// We cannot create another SetupIntent with the same PaymentMethod
+			// Instead, go directly to the success flow: create/find customer, attach PM, save card
+			$this->logger->debug( __FUNCTION__, 'Processing PaymentMethod directly (frontend already confirmed SetupIntent)...' );
 
-			$setupIntent = $this->stripe->createSetupIntentWithPaymentMethod( $paymentFormModel->getStripePaymentMethodId() );
-			$setupIntent = $this->stripe->confirmSetupIntent( $setupIntent );
+			$this->fireBeforeInlineSaveCardAction( $paymentFormModel, $transactionData );
+
+			$createCustomerOptions = new MM_WPFS_CreateCustomerOptions();
+			$createCustomerOptions->addMetadata = true;
+			$this->createOrRetrieveCustomerByFormModel( $paymentFormModel, $createCustomerOptions );
+
+			$transactionData = MM_WPFS_TransactionDataService::createSaveCardDataByModel( $paymentFormModel );
+			$stripeCardSavedDescription = MM_WPFS_Utils::prepareStripeCardSavedDescription( $this->staticContext, $paymentFormModel, $transactionData );
+
+			$stripeCustomer = $paymentFormModel->getStripeCustomer();
+			$stripeCustomer->description = $stripeCardSavedDescription;
+			$this->stripe->updateCustomer( $stripeCustomer );
+
+			$paymentFormModel->setTransactionId( $paymentFormModel->getStripeCustomer()->id );
+			$transactionData->setTransactionId( $paymentFormModel->getTransactionId() );
+
+			$this->db->insertSavedCard( $paymentFormModel, $transactionData );
+
+			$this->fireAfterInlineSaveCardAction( $paymentFormModel, $transactionData, $stripeCustomer );
+
+			$setupIntentResult->setRequiresAction( false );
+			$setupIntentResult->setSuccess( true );
+			$setupIntentResult->setMessageTitle(
+				/* translators: Banner title of successful transaction */
+				__( 'Success', 'wp-full-stripe-free' )
+			);
+			$setupIntentResult->setMessage(
+				/* translators: Banner message of saving card successfully */
+				__( 'Saving Card Successful!', 'wp-full-stripe-free' )
+			);
 
 		} else {
 			$this->logger->debug( __FUNCTION__, 'Retrieving SetupIntent...' );
 
 			$setupIntent = $this->stripe->retrieveSetupIntent( $paymentFormModel->getStripeSetupIntentId() );
-		}
 
-		$transactionData = null;
-		if ( isset( $setupIntent ) ) {
-			if (
-				\StripeWPFS\Stripe\SetupIntent::STATUS_REQUIRES_ACTION === $setupIntent->status
-				&& 'use_stripe_sdk' === $setupIntent->next_action->type
-			) {
-				$this->logger->debug( __FUNCTION__, 'SetupIntent requires action...' );
+			if ( isset( $setupIntent ) ) {
+				if (
+					\StripeWPFS\Stripe\SetupIntent::STATUS_REQUIRES_ACTION === $setupIntent->status
+					&& 'use_stripe_sdk' === $setupIntent->next_action->type
+				) {
+					$this->logger->debug( __FUNCTION__, 'SetupIntent requires action...' );
 
-				$setupIntentResult->setSuccess( false );
-				$setupIntentResult->setRequiresAction( true );
-				$setupIntentResult->setSetupIntentClientSecret( $setupIntent->client_secret );
-				$setupIntentResult->setMessageTitle(
-					/* translators: Banner title of pending transaction requiring a second factor authentication (SCA/PSD2) */
-					__( 'Action required', 'wp-full-stripe-free' )
-				);
-				$setupIntentResult->setMessage(
-					/* translators: Banner message of a pending card saving transaction requiring a second factor authentication (SCA/PSD2) */
-					__( 'Saving this card requires additional action before completion!', 'wp-full-stripe-free' )
-				);
-			} elseif ( \StripeWPFS\Stripe\SetupIntent::STATUS_SUCCEEDED === $setupIntent->status ) {
-				$this->logger->debug( __FUNCTION__, 'SetupIntent succeeded.' );
+					$setupIntentResult->setSuccess( false );
+					$setupIntentResult->setRequiresAction( true );
+					$setupIntentResult->setSetupIntentClientSecret( $setupIntent->client_secret );
+					$setupIntentResult->setMessageTitle(
+						/* translators: Banner title of pending transaction requiring a second factor authentication (SCA/PSD2) */
+						__( 'Action required', 'wp-full-stripe-free' )
+					);
+					$setupIntentResult->setMessage(
+						/* translators: Banner message of a pending card saving transaction requiring a second factor authentication (SCA/PSD2) */
+						__( 'Saving this card requires additional action before completion!', 'wp-full-stripe-free' )
+					);
+				} elseif ( \StripeWPFS\Stripe\SetupIntent::STATUS_SUCCEEDED === $setupIntent->status ) {
+					$this->logger->debug( __FUNCTION__, 'SetupIntent succeeded.' );
 
-				$this->fireBeforeInlineSaveCardAction( $paymentFormModel, $transactionData );
+					$this->fireBeforeInlineSaveCardAction( $paymentFormModel, $transactionData );
 
-				$createCustomerOptions = new MM_WPFS_CreateCustomerOptions();
-				$createCustomerOptions->addMetadata = true;
-				$this->createOrRetrieveCustomerByFormModel( $paymentFormModel, $createCustomerOptions );
+					$createCustomerOptions = new MM_WPFS_CreateCustomerOptions();
+					$createCustomerOptions->addMetadata = true;
+					$this->createOrRetrieveCustomerByFormModel( $paymentFormModel, $createCustomerOptions );
 
-				$transactionData = MM_WPFS_TransactionDataService::createSaveCardDataByModel( $paymentFormModel );
-				$stripeCardSavedDescription = MM_WPFS_Utils::prepareStripeCardSavedDescription( $this->staticContext, $paymentFormModel, $transactionData );
+					$transactionData = MM_WPFS_TransactionDataService::createSaveCardDataByModel( $paymentFormModel );
+					$stripeCardSavedDescription = MM_WPFS_Utils::prepareStripeCardSavedDescription( $this->staticContext, $paymentFormModel, $transactionData );
 
-				$stripeCustomer = $paymentFormModel->getStripeCustomer();
-				$stripeCustomer->description = $stripeCardSavedDescription;
-				$this->stripe->updateCustomer( $stripeCustomer );
+					$stripeCustomer = $paymentFormModel->getStripeCustomer();
+					$stripeCustomer->description = $stripeCardSavedDescription;
+					$this->stripe->updateCustomer( $stripeCustomer );
 
-				$paymentFormModel->setTransactionId( $paymentFormModel->getStripeCustomer()->id );
-				$transactionData->setTransactionId( $paymentFormModel->getTransactionId() );
+					$paymentFormModel->setTransactionId( $paymentFormModel->getStripeCustomer()->id );
+					$transactionData->setTransactionId( $paymentFormModel->getTransactionId() );
 
-				$this->db->insertSavedCard( $paymentFormModel, $transactionData );
+					$this->db->insertSavedCard( $paymentFormModel, $transactionData );
 
-				$this->fireAfterInlineSaveCardAction( $paymentFormModel, $transactionData, $stripeCustomer );
+					$this->fireAfterInlineSaveCardAction( $paymentFormModel, $transactionData, $stripeCustomer );
 
-				$setupIntentResult->setRequiresAction( false );
-				$setupIntentResult->setSuccess( true );
-				$setupIntentResult->setMessageTitle(
-					/* translators: Banner title of successful transaction */
-					__( 'Success', 'wp-full-stripe-free' )
-				);
-				$setupIntentResult->setMessage(
-					/* translators: Banner message of saving card successfully */
-					__( 'Saving Card Successful!', 'wp-full-stripe-free' )
-				);
-			} else {
-				$setupIntentResult->setSuccess( false );
-				$setupIntentResult->setMessageTitle(
-					/* translators: Banner title of failed transaction */
-					__( 'Failed', 'wp-full-stripe-free' )
-				);
-				$setupIntentResult->setMessage(
-					// This is an internal error, no need to localize it
-					sprintf( "Invalid SetupIntent status '%s'.", $setupIntent->status )
-				);
+					$setupIntentResult->setRequiresAction( false );
+					$setupIntentResult->setSuccess( true );
+					$setupIntentResult->setMessageTitle(
+						/* translators: Banner title of successful transaction */
+						__( 'Success', 'wp-full-stripe-free' )
+					);
+					$setupIntentResult->setMessage(
+						/* translators: Banner message of saving card successfully */
+						__( 'Saving Card Successful!', 'wp-full-stripe-free' )
+					);
+				} else {
+					$setupIntentResult->setSuccess( false );
+					$setupIntentResult->setMessageTitle(
+						/* translators: Banner title of failed transaction */
+						__( 'Failed', 'wp-full-stripe-free' )
+					);
+					$setupIntentResult->setMessage(
+						// This is an internal error, no need to localize it
+						sprintf( "Invalid SetupIntent status '%s'.", $setupIntent->status )
+					);
+				}
 			}
 		}
 
@@ -1723,68 +1784,8 @@ class MM_WPFS_Customer {
 				);
 			}
 		} else {
-			// One-time donation: create PaymentIntent ONLY (no subscription)
-			$paymentIntent = $this->createOrRetrievePaymentIntentForDonation( $donationFormModel, $transactionData );
-
-			if ( $paymentIntent !== null ) {
-				if ( $paymentIntent->status === \StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_CONFIRMATION ) {
-					$paymentIntent = $this->stripe->confirmPaymentIntent( $paymentIntent->id, $transactionData->getStripePaymentMethodId() );
-				}
-
-				if ( $this->paymentIntentRequiresAction( $paymentIntent ) ) {
-					$this->createPaymentIntentResultActionRequired(
-						$paymentIntentResult,
-						$paymentIntent,
-						/* translators: Banner title of pending transaction requiring a second factor authentication (SCA/PSD2) */
-						__( 'Action required', 'wp-full-stripe-free' ),
-						/* translators: Banner message of a one-time payment requiring a second factor authentication (SCA/PSD2) */
-						__( 'The donation needs additional action before completion!', 'wp-full-stripe-free' )
-					);
-				} elseif ( $this->paymentIntentSucceeded( $paymentIntent ) ) {
-					$this->setInvoiceDataFromPaymentIntent( $paymentIntent, $transactionData );
-					$this->addFormNameToPaymentIntent( $paymentIntent, $donationFormModel->getFormName() );
-
-					$latestCharge = $this->stripe->getLatestCharge( $paymentIntent );
-
-					if ( $latestCharge !== null ) {
-						$this->db->insertInlineDonation( $donationFormModel, $paymentIntent, null, $latestCharge );
-
-						$this->fireAfterInlineDonationAction( $donationFormModel, $transactionData, $paymentIntent );
-
-						$this->createPaymentIntentResultSuccess(
-							$paymentIntentResult,
-							/* translators: Banner title of successful transaction */
-							__( 'Success', 'wp-full-stripe-free' ),
-							/* translators: Banner message of successful payment */
-							__( 'Donation Successful!', 'wp-full-stripe-free' )
-						);
-					} else {
-						$this->createPaymentIntentResultFailed(
-							$paymentIntentResult,
-							/* translators: Banner title of failed transaction */
-							__( 'Failed', 'wp-full-stripe-free' ),
-							// This is an internal error, no need to localize it
-							"Payment succeeded but charge data is unavailable."
-						);
-					}
-				} else {
-					$this->createPaymentIntentResultFailed(
-						$paymentIntentResult,
-						/* translators: Banner title of failed transaction */
-						__( 'Failed', 'wp-full-stripe-free' ),
-						// This is an internal error, no need to localize it
-						sprintf( "Invalid PaymentIntent status '%s'.", $paymentIntent->status )
-					);
-				}
-			} else {
-				$this->createPaymentIntentResultFailed(
-					$paymentIntentResult,
-					/* translators: Banner title of failed transaction */
-					__( 'Failed', 'wp-full-stripe-free' ),
-					// This is an internal error, no need to localize it
-					"PaymentIntent was neither created nor retrieved."
-				);
-			}
+			// One-time donation: make the charge for one-time donation.
+			$paymentIntentResult = $this->processOnetimeDonationCharge( $donationFormModel );
 		}
 
 		$this->handleRedirect( $donationFormModel, $transactionData, $paymentIntentResult );
@@ -1926,6 +1927,9 @@ class MM_WPFS_Customer {
 			$paymentFormModel->setStripePaymentIntent( $this->stripe->retrievePaymentIntent( $paymentFormModel->getStripePaymentIntentId() ) );
 			if ( isset( $paymentFormModel->getStripePaymentIntent()->latest_charge ) ) {
 				$latest_charge = $paymentFormModel->getStripePaymentIntent()->latest_charge;
+				if ( is_string( $latest_charge ) ) {
+					$latest_charge = $this->stripe->getLatestCharge( $paymentFormModel->getStripePaymentIntent() );
+				}
 				$paymentFormModel->setStripePaymentMethodType( $latest_charge->payment_method_details ? $latest_charge->payment_method_details->type : null );
 			}
 		}
@@ -3395,6 +3399,477 @@ class MM_WPFS_Customer {
 		exit;
 	}
 
+	/**
+	 * Get form model by form type.
+	 *
+	 * @param string $form_type The form type.
+	 * @return MM_WPFS_Public_InlineDonationFormModel|MM_WPFS_Public_InlinePaymentFormModel
+	 */
+	private function getFormModel( $form_type ) {
+		if ( MM_WPFS::FORM_TYPE_INLINE_DONATION === $form_type ) {
+			return new MM_WPFS_Public_InlineDonationFormModel( $this->loggerService );
+		}
+
+		return new MM_WPFS_Public_InlinePaymentFormModel( $this->loggerService );
+	}
+
+	/**
+	 * Handling onetime donation save.
+	 *
+	 * @return void
+	 */
+	public function fullstripe_save_onetime_donation() {
+		try {
+			$paymentFormModel = $this->getFormModel( MM_WPFS::FORM_TYPE_INLINE_DONATION );
+			$bindingResult = $paymentFormModel->bind();
+
+			if ( $bindingResult->hasErrors() ) {
+				$return = MM_WPFS_Utils::generateReturnValueFromBindings( $bindingResult );
+			} else {
+				$return = $this->saveOnetimeDonation( $paymentFormModel );
+			}
+		} catch (WPFS_UserFriendlyException $ex) {
+			$this->logger->error( __FUNCTION__, 'User-friendly exception while handling onetime donation save', $ex );
+
+			$messageTitle = is_null( $ex->getTitle() ) ?
+				/* translators: Banner title of an error returned from an extension point by a developer */
+				__( 'Internal Error', 'wp-full-stripe-free' ) :
+				$ex->getTitle();
+			$message = $ex->getMessage();
+			$return = [
+				'success' => false,
+				'messageTitle' => $messageTitle,
+				'message' => $message,
+				'exceptionMessage' => $ex->getMessage()
+			];
+		} catch (Exception $ex) {
+			$this->logger->error( __FUNCTION__, 'Generic exception while handling onetime donation save', $ex );
+
+			$return = [
+				'success' => false,
+				'messageTitle' =>
+					/* translators: Banner title of internal error */
+					__( 'Internal Error', 'wp-full-stripe-free' ),
+				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
+				'exceptionMessage' => $ex->getMessage()
+			];
+		}
+
+		header( "Content-Type: application/json" );
+		echo json_encode( apply_filters( 'fullstripe_save_onetime_donation_return_message', $return ) );
+		exit;
+	}
+
+	/**
+	 * Update onetime donation payment intent with the final amount.
+	 *
+	 * @param MM_WPFS_Public_InlineDonationFormModel $donationFormModel The donation form model.
+	 * @return array<string,bool>
+	 */
+	private function saveOnetimeDonation( $donationFormModel ) {
+		// payment intent is most likely missing
+		if ( empty( $donationFormModel->getStripePaymentIntent() ) ) {
+			$paymentIntent = $this->stripe->retrievePaymentIntent( $donationFormModel->getStripePaymentIntentId() );
+			$donationFormModel->setStripePaymentIntent( $paymentIntent );
+		} else {
+			$paymentIntent = $donationFormModel->getStripePaymentIntent();
+		}
+
+		$amount = $donationFormModel->getAmount();
+		$currency = $donationFormModel->getForm()->currency;
+		$recoveryFee = $donationFormModel->getFeeRecoveryAccepted();
+		$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $donationFormModel->getForm() );
+
+		if ( $recoveryFee && ! empty( $recoveryFeeData ) ) {
+			$amount = $amount + MM_WPFS_Utils::calculateRecoveryFee(
+				$amount,
+				$recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ],
+				$recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ],
+				$currency
+			);
+		}
+
+		$paymentIntent->amount = $amount;
+
+		$this->stripe->updatePaymentIntent( $paymentIntent, true );
+
+		return [
+			'success' => true
+		];
+	}
+
+	/**
+	 * Handling onetime donation.
+	 *
+	 * @return void
+	 */
+	public function fullstripe_onetime_donation_charge() {
+		try {
+			$paymentFormModel = $this->getFormModel( MM_WPFS::FORM_TYPE_INLINE_DONATION );
+			$bindingResult = $paymentFormModel->bind();
+
+			if ( $bindingResult->hasErrors() ) {
+				$return = MM_WPFS_Utils::generateReturnValueFromBindings( $bindingResult );
+			} else {
+				$result = $this->processOnetimeDonationCharge( $paymentFormModel );
+				$return = $result->getAsArray();
+			}
+		} catch (WPFS_UserFriendlyException $ex) {
+			$this->logger->error( __FUNCTION__, 'User-friendly exception while handling onetime donation charge', $ex );
+
+			$messageTitle = is_null( $ex->getTitle() ) ?
+				/* translators: Banner title of an error returned from an extension point by a developer */
+				__( 'Internal Error', 'wp-full-stripe-free' ) :
+				$ex->getTitle();
+			$message = $ex->getMessage();
+			$return = [
+				'success' => false,
+				'messageTitle' => $messageTitle,
+				'message' => $message,
+				'exceptionMessage' => $ex->getMessage()
+			];
+		} catch (\StripeWPFS\Stripe\Exception\CardException $ex) {
+			$this->logger->error( __FUNCTION__, 'Stripe card exception while handling onetime donation charge', $ex );
+
+			$messageTitle =
+				/* translators: Banner title of error returned by Stripe */
+				__( 'Stripe Error', 'wp-full-stripe-free' );
+			$message = $this->stripe->resolveErrorMessageByCode( $ex->getCode() );
+			if ( is_null( $message ) ) {
+				$message = MM_WPFS_Localization::translateLabel( $ex->getMessage() );
+			}
+			$return = [
+				'success' => false,
+				'messageTitle' => $messageTitle,
+				'message' => $message,
+				'exceptionMessage' => $ex->getMessage()
+			];
+		} catch (Exception $ex) {
+			$this->logger->error( __FUNCTION__, 'Generic exception while handling onetime donation charge', $ex );
+
+			$return = [
+				'success' => false,
+				'messageTitle' =>
+					/* translators: Banner title of internal error */
+					__( 'Internal Error', 'wp-full-stripe-free' ),
+				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
+				'exceptionMessage' => $ex->getMessage()
+			];
+		} catch (Error $err) {
+			$this->logger->error( __FUNCTION__, 'Generic error while handling onetime donation charge', $err );
+
+			$return = [
+				'success' => false,
+				'messageTitle' =>
+					/* translators: Banner title of internal error */
+					__( 'Internal Error', 'wp-full-stripe-free' ),
+				'message' => MM_WPFS_Localization::translateLabel( $err->getMessage() ),
+				'exceptionMessage' => $err->getMessage()
+			];
+		}
+
+		header( "Content-Type: application/json" );
+		echo json_encode( apply_filters( 'fullstripe_onetime_donation_charge_return_message', $return ) );
+		exit;
+	}
+
+	/**
+	 * Process the onetime donation charge.
+	 *
+	 * @param MM_WPFS_Public_InlineDonationFormModel $donationFormModel The donation form model.
+	 *
+	 * @return MM_WPFS_DonationPaymentIntentResult The charge result.
+	 *
+	 * @throws Exception If an error occurs during the process.
+	 */
+	private function processOnetimeDonationCharge( $donationFormModel ) {
+		$this->logger->debug( __FUNCTION__, "CALLED" );
+
+		$paymentIntentResult = new MM_WPFS_DonationPaymentIntentResult();
+		$paymentIntentResult->setNonce( $donationFormModel->getNonce() );
+		// get the payment intent from Stripe to be able to react to status etc.
+		if ( $donationFormModel->getStripePaymentIntentId() ) {
+			$donationFormModel->setStripePaymentIntent( $this->stripe->retrievePaymentIntent( $donationFormModel->getStripePaymentIntentId() ) );
+			if ( isset( $donationFormModel->getStripePaymentIntent()->latest_charge ) ) {
+				$latest_charge = $donationFormModel->getStripePaymentIntent()->latest_charge;
+				if ( is_string( $latest_charge ) ) {
+					$latest_charge = $this->stripe->getLatestCharge( $donationFormModel->getStripePaymentIntent() );
+				}
+				$donationFormModel->setStripePaymentMethodType( $latest_charge->payment_method_details ? $latest_charge->payment_method_details->type : null );
+			}
+		}
+
+		$createCustomerOptions = new MM_WPFS_CreateCustomerOptions();
+		$createCustomerOptions->addMetadata = false;
+		$this->createOrRetrieveCustomerByFormModel( $donationFormModel, $createCustomerOptions );
+
+		$transactionData = MM_WPFS_TransactionDataService::createDonationDataByFormModel( $donationFormModel );
+
+		$this->fireBeforeInlineDonationAction( $donationFormModel, $transactionData );
+
+		$paymentIntent = null;
+		$latestCharge = null;
+
+		if ( '1' === $donationFormModel->getForm()->generateInvoice ) {
+			if ( empty( $donationFormModel->getStripePaymentIntentId() ) ) {
+				$createInvoiceOptions = new MM_WPFS_CreateOneTimeInvoiceOptions();
+				$createInvoiceOptions->autoAdvance = true;
+				$stripeInvoice = $this->createInvoiceForOneTimePaymentByFormModel( $donationFormModel, $createInvoiceOptions );
+
+				$finalizedInvoice = $this->stripe->finalizeInvoice( $stripeInvoice->id );
+
+				$this->updatePaymentTransactionDataPricing( $transactionData, $finalizedInvoice );
+
+				$payments = $finalizedInvoice->payments->data ?? [];
+				$stripePaymentIntent = null;
+
+				foreach ( $payments as $payment ) {
+					if (
+						isset( $payment->payment->type ) &&
+						$payment->payment->type === 'payment_intent' &&
+						isset( $payment->payment->payment_intent )
+					) {
+						$stripePaymentIntent = $payment->payment->payment_intent;
+						break;
+					}
+				}
+				$transactionData->setStripeInvoiceId( $finalizedInvoice->id );
+				$transactionData->setInvoiceUrl( $finalizedInvoice->invoice_pdf );
+				$transactionData->setInvoiceNumber( $finalizedInvoice->number );
+				$stripePaymentIntentDescription = MM_WPFS_Utils::prepareStripeDonationDescription( $this->staticContext, $donationFormModel, $transactionData );
+
+				$this->stripe->updatePaymentIntentByInvoice(
+					$finalizedInvoice,
+					$donationFormModel->getStripePaymentMethodId(),
+					$stripePaymentIntentDescription,
+					$donationFormModel->getMetadata(),
+					MM_WPFS_Mailer::canSendPaymentStripeReceipt( $donationFormModel->getForm() ) ? $donationFormModel->getCardHolderEmail() : null
+				);
+
+				$paymentIntent = $this->stripe->retrievePaymentIntent( $stripePaymentIntent );
+				$donationFormModel->setTransactionId( $paymentIntent->id );
+				$transactionData->setTransactionId( $donationFormModel->getTransactionId() );
+			} else {
+				$createInvoiceOptions = new MM_WPFS_CreateOneTimeInvoiceOptions();
+				$createInvoiceOptions->autoAdvance = true;
+				$stripeInvoice = $this->createInvoiceForOneTimePaymentByFormModel( $donationFormModel, $createInvoiceOptions );
+
+				$paidStripeInvoice = $this->stripe->payInvoiceOutOfBand( $stripeInvoice->id );
+
+				$transactionData->setStripeInvoiceId( $paidStripeInvoice->id );
+				$transactionData->setInvoiceUrl( $paidStripeInvoice->invoice_pdf );
+				$transactionData->setInvoiceNumber( $paidStripeInvoice->number );
+
+				if ( $donationFormModel->getStripePaymentIntent() ) {
+					// no need to refetch the PaymentIntent if it is already available
+					$paymentIntent = $donationFormModel->getStripePaymentIntent();
+				} else {
+					$this->logger->debug( __FUNCTION__, "Retrieving PaymentIntent..." );
+					try {
+						$paymentIntent = $this->stripe->retrievePaymentIntent( $donationFormModel->getStripePaymentIntentId() );
+					} catch ( Exception $e ) {
+						// Fallback if retrieval fails
+						$this->logger->debug( __FUNCTION__, "Failed to retrieve PaymentIntent: " . $e->getMessage() );
+						$paymentIntent = null;
+					}
+				}
+			}
+		} else {
+			if ( $donationFormModel->getStripePaymentIntent() ) {
+				// no need to refetch the PaymentIntent if it is already available
+				$paymentIntent = $donationFormModel->getStripePaymentIntent();
+			} else if ( ! empty( $donationFormModel->getStripePaymentIntentId() ) ) {
+				$this->logger->debug( __FUNCTION__, "Retrieving PaymentIntent..." );
+				try {
+					$paymentIntent = $this->stripe->retrievePaymentIntent( $donationFormModel->getStripePaymentIntentId() );
+				} catch ( Exception $e ) {
+					// Fallback if retrieval fails
+					$this->logger->debug( __FUNCTION__, "Failed to retrieve PaymentIntent: " . $e->getMessage() );
+					$paymentIntent = null;
+				}
+			} else {
+				$paymentIntent = $this->createPaymentIntentForDonation( $donationFormModel, $transactionData );
+			}
+		}
+
+		if ( $paymentIntent !== null ) {
+			// Add webhook URL to metadata if not already present.
+			if ( isset( $paymentIntent->metadata ) && is_array( $paymentIntent->metadata ) && ! array_key_exists( 'webhookUrl', $paymentIntent->metadata ) ) {
+				$metadata = $donationFormModel->getMetadata();
+				$metadata['webhookUrl'] = esc_attr( MM_WPFS_EventHandler::getWebhookEndpointURL( $this->staticContext ) );
+				$paymentIntent->metadata = $metadata;
+			} else {
+				$paymentIntent->metadata = $donationFormModel->getMetadata();
+			}
+
+			// update description and metadata 
+			$stripePaymentIntentDescription = MM_WPFS_Utils::prepareStripeDonationDescription( $this->staticContext, $donationFormModel, $transactionData );
+
+			$paymentIntent->description = empty( $stripePaymentIntentDescription ) ? null : $stripePaymentIntentDescription;
+
+			$this->stripe->updatePaymentIntent(
+				$paymentIntent,
+				! $this->paymentIntentSucceeded( $paymentIntent )
+			);
+
+			// in some cases we need to re-confirm the PaymentIntent
+			if ( \StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_CONFIRMATION === $paymentIntent->status ) {
+				$paymentIntent = $this->stripe->confirmPaymentIntent( $paymentIntent->id, $donationFormModel->getStripePaymentMethodId() );
+			}
+
+			$donationFormModel->setTransactionId( $paymentIntent->id );
+			$transactionData->setTransactionId( $paymentIntent->id );
+
+			if ( $this->paymentIntentRequiresAction( $paymentIntent ) ) {
+				$this->createPaymentIntentResultActionRequired(
+					$paymentIntentResult,
+					$paymentIntent,
+					/* translators: Banner title of pending transaction requiring a second factor authentication (SCA/PSD2) */
+					__( 'Action required', 'wp-full-stripe-free' ),
+					/* translators: Banner message of a one-time payment requiring a second factor authentication (SCA/PSD2) */
+					__( 'The donation needs additional action before completion!', 'wp-full-stripe-free' )
+				);
+			} elseif ( $this->paymentIntentSucceeded( $paymentIntent ) ) {
+				$this->setInvoiceDataFromPaymentIntent( $paymentIntent, $transactionData );
+				$this->addFormNameToPaymentIntent( $paymentIntent, $donationFormModel->getFormName() );
+
+				$latestCharge = $this->stripe->getLatestCharge( $paymentIntent );
+
+				if ( $latestCharge !== null ) {
+					$this->db->insertInlineDonation( $donationFormModel, $paymentIntent, null, $latestCharge );
+
+					$this->fireAfterInlineDonationAction( $donationFormModel, $transactionData, $paymentIntent );
+
+					$this->createPaymentIntentResultSuccess(
+						$paymentIntentResult,
+						/* translators: Banner title of successful transaction */
+						__( 'Success', 'wp-full-stripe-free' ),
+						/* translators: Banner message of successful payment */
+						__( 'Donation Successful!', 'wp-full-stripe-free' )
+					);
+				} else {
+					$this->createPaymentIntentResultFailed(
+						$paymentIntentResult,
+						/* translators: Banner title of failed transaction */
+						__( 'Failed', 'wp-full-stripe-free' ),
+						// This is an internal error, no need to localize it
+						"Payment succeeded but charge data is unavailable."
+					);
+				}
+			} else {
+				$this->createPaymentIntentResultFailed(
+					$paymentIntentResult,
+					/* translators: Banner title of failed transaction */
+					__( 'Failed', 'wp-full-stripe-free' ),
+					// This is an internal error, no need to localize it
+					sprintf( "Invalid PaymentIntent status '%s'.", $paymentIntent->status )
+				);
+			}
+		} else {
+			$this->createPaymentIntentResultFailed(
+				$paymentIntentResult,
+				/* translators: Banner title of failed transaction */
+				__( 'Failed', 'wp-full-stripe-free' ),
+				// This is an internal error, no need to localize it
+				"PaymentIntent was neither created nor retrieved."
+			);
+		}
+
+		$this->handleRedirect( $donationFormModel, $transactionData, $paymentIntentResult );
+
+		if ( $paymentIntentResult->isSuccess() ) {
+			if ( MM_WPFS_Mailer::canSendDonationPluginReceipt( $donationFormModel->getForm() ) ) {
+				$this->mailer->sendDonationEmailReceipt( $donationFormModel->getForm(), $transactionData );
+			}
+		}
+
+		return $paymentIntentResult;
+	}
+
+	/**
+	 * Update payment status in database when payment intent confirmation fails.
+	 *
+	 * @return void
+	 */
+	function update_failed_payment_status() {
+		try {
+			$result = [];
+			$failureCode = isset( $_POST['failureCode'] ) ? sanitize_text_field( $_POST['failureCode'] ) : null;
+			$failureMessage = isset( $_POST['failureMessage'] ) ? sanitize_text_field( $_POST['failureMessage'] ) : null;
+			$paymentIntentId = isset( $_POST['paymentIntentId'] ) ? sanitize_text_field( $_POST['paymentIntentId'] ) : null;
+
+			$paymentIntent = $this->stripe->retrievePaymentIntent( $paymentIntentId );
+			$lastCharge = null;
+
+			if ( isset( $paymentIntent->latest_charge ) && ! empty( $paymentIntent->latest_charge ) ) {
+				$lastCharge = $paymentIntent->latest_charge;
+			}
+
+			$updateData = [
+				'paid' => 0,
+				'captured' => 0,
+				'refunded' => 0
+			];
+
+			if ( $lastCharge ) {
+				$updateData['last_charge_status'] = $lastCharge->status;
+				$updateData['failure_code'] = $lastCharge->failure_code;
+				$updateData['failure_message'] = $lastCharge->failure_message;
+			} else {
+				$updateData['last_charge_status'] = 'failed';
+				$updateData['failure_code'] = $failureCode;
+				$updateData['failure_message'] = $failureMessage;
+			}
+
+			$this->db->updatePaymentByEventId( $paymentIntentId, $updateData );
+
+			$result = [
+				'success' => true,
+				'message' => __( 'Payment status updated successfully', 'wp-full-stripe-free' ),
+			];
+
+			$this->logger->info( __FUNCTION__, 'Payment status updated for payment intent: ' . $paymentIntentId );
+		} catch (WPFS_UserFriendlyException $ex) {
+			$this->logger->error( __FUNCTION__, 'User-friendly exception while updating failed payment status', $ex );
+
+			$messageTitle = is_null( $ex->getTitle() ) ?
+				/* translators: Banner title of an error returned from an extension point by a developer */
+				__( 'Internal Error', 'wp-full-stripe-free' ) :
+				$ex->getTitle();
+			$message = $ex->getMessage();
+			$result = [
+				'success' => false,
+				'messageTitle' => $messageTitle,
+				'message' => $message,
+				'exceptionMessage' => $ex->getMessage()
+			];
+		} catch ( Exception $ex ) {
+			$this->logger->error( __FUNCTION__, 'Exception in update_failed_payment_status', $ex );
+			$result = [
+				'success' => false,
+				'messageTitle' =>
+					/* translators: Banner title of internal error */
+					__( 'Internal Error', 'wp-full-stripe-free' ),
+				'message' => MM_WPFS_Localization::translateLabel( $ex->getMessage() ),
+				'exceptionMessage' => $ex->getMessage()
+			];
+		} catch (Error $err) {
+			$this->logger->error( __FUNCTION__, 'Generic error while handling payment charge', $err );
+
+			$result = [
+				'success' => false,
+				'messageTitle' =>
+					/* translators: Banner title of internal error */
+					__( 'Internal Error', 'wp-full-stripe-free' ),
+				'message' => MM_WPFS_Localization::translateLabel( $err->getMessage() ),
+				'exceptionMessage' => $err->getMessage()
+			];
+		}
+
+		header( 'Content-Type: application/json' );
+		echo json_encode( $result );
+		exit;
+	}
 }
 
 class MM_WPFS_TransactionResult {

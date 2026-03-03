@@ -661,12 +661,6 @@ class MM_WPFS_Admin_WordpressDashboardModel implements MM_WPFS_Binder {
 	protected $useSymbolNotCode;
 	protected $currencySymbolAtFirstPosition;
 	protected $putSpaceBetweenSymbolAndAmount;
-	protected $feeRecovery;
-	protected $feeRecoveryOptIn;
-	protected $feeRecoveryOptInMessage;
-	protected $feeRecoveryCurrency;
-	protected $feeRecoveryFeePercentage;
-	protected $feeRecoveryFeeAdditionalAmount;
 
 	public function __construct( $loggerService ) {
 		$this->initLogger( $loggerService, MM_WPFS_LoggerService::MODULE_ADMIN );
@@ -702,48 +696,6 @@ class MM_WPFS_Admin_WordpressDashboardModel implements MM_WPFS_Binder {
 		return $this->putSpaceBetweenSymbolAndAmount;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function getFeeRecovery() {
-		return $this->feeRecovery;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function getFeeRecoveryOptIn() {
-		return $this->feeRecoveryOptIn;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getFeeRecoveryOptInMessage() {
-		return $this->feeRecoveryOptInMessage;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getFeeRecoveryCurrency() {
-		return $this->feeRecoveryCurrency;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getFeeRecoveryFeePercentage() {
-		return $this->feeRecoveryFeePercentage;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getFeeRecoveryFeeAdditionalAmount() {
-		return $this->feeRecoveryFeeAdditionalAmount;
-	}
-
 	public function bind() {
 		return $this->bindByArray( $_POST );
 	}
@@ -755,12 +707,6 @@ class MM_WPFS_Admin_WordpressDashboardModel implements MM_WPFS_Binder {
 		$this->useSymbolNotCode = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SYMBOL_NOT_CODE, 1 );
 		$this->currencySymbolAtFirstPosition = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SYMBOL_AT_FIRST_POSITION, 1 );
 		$this->putSpaceBetweenSymbolAndAmount = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SPACE_BETWEEN_SYMBOL_AND_AMOUNT, 0 );
-		$this->feeRecovery = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY, 0 );
-		$this->feeRecoveryOptIn = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_OPT_IN, 1 );
-		$this->feeRecoveryOptInMessage = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_OPT_IN_MESSAGE );
-		$this->feeRecoveryCurrency = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_CURRENCY );
-		$this->feeRecoveryFeePercentage = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_FEE_PERCENTAGE );
-		$this->feeRecoveryFeeAdditionalAmount = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT );
 
 		if ( isset( $this->__validator ) ) {
 			$this->__validator->validate( $bindingResult, $this );
@@ -775,12 +721,6 @@ class MM_WPFS_Admin_WordpressDashboardModel implements MM_WPFS_Binder {
 			'useSymbolNotCode' => $this->useSymbolNotCode,
 			'currencySymbolAtFirstPosition' => $this->currencySymbolAtFirstPosition,
 			'putSpaceBetweenSymbolAndAmount' => $this->putSpaceBetweenSymbolAndAmount,
-			'feeRecovery' => $this->feeRecovery,
-			'feeRecoveryOptIn'   => $this->feeRecoveryOptIn,
-			'feeRecoveryOptInMessage' => $this->feeRecoveryOptInMessage,
-			'feeRecoveryCurrency' => $this->feeRecoveryCurrency,
-			'feeRecoveryFeePercentage' => $this->feeRecoveryFeePercentage,
-			'feeRecoveryFeeAdditionalAmount' => $this->feeRecoveryFeeAdditionalAmount
 		];
 
 		return $data;
@@ -951,7 +891,7 @@ abstract class MM_WPFS_Admin_FormModel implements MM_WPFS_Binder {
 		$this->stripeElementsTheme = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_STRIPE_ELEMENTS_THEME_SELECTOR );
 		$this->stripeElementsFont = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_STRIPE_ELEMENTS_FONT_SELECTOR );
 
-		$this->feeRecovery = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_FEE_RECOVERY, MM_WPFS::FEE_RECOVERY_INHERIT );
+		$this->feeRecovery = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_FEE_RECOVERY, 0 );
 		$this->feeRecoveryOptIn = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_FEE_RECOVERY_OPT_IN, 1 );
 		$this->feeRecoveryOptInMessage = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_FEE_RECOVERY_OPT_IN_MESSAGE );
 		$this->feeRecoveryFeePercentage = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_FEE_RECOVERY_FEE_PERCENTAGE );
@@ -1212,6 +1152,8 @@ trait MM_WPFS_Admin_InlineFormModel {
 	protected $collectBillingAddress;
 	protected $defaultBillingCountry;
 	protected $collectShippingAddress;
+	/** @var mixed */
+	protected $stripeElementsCustomCss;
 
 	protected function bindInlineParams( $dataArray ) {
 		$this->cardInputFieldLanguage = $this->getSanitizedArrayParam( $dataArray, MM_WPFS_Admin_InlineFormViewConstants::FIELD_FORM_CARD_FIELD_LANGUAGE, MM_WPFS::PREFERRED_LANGUAGE_AUTO );
@@ -1222,6 +1164,7 @@ trait MM_WPFS_Admin_InlineFormModel {
 		if ( $this->collectShippingAddress == 1 ) {
 			$this->collectBillingAddress = 1;
 		}
+		$this->stripeElementsCustomCss = $this->getSanitizedArrayParam( $dataArray, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_CUSTOM_CSS_HIDDEN );
 	}
 
 	protected function getInlineDataArray() {
@@ -1231,6 +1174,7 @@ trait MM_WPFS_Admin_InlineFormModel {
 			'showAddress' => $this->collectBillingAddress,
 			'defaultBillingCountry' => $this->defaultBillingCountry,
 			'showShippingAddress' => $this->collectShippingAddress,
+			'stripeElementsCustomCss' => $this->stripeElementsCustomCss,
 		];
 
 		return $data;
@@ -1262,6 +1206,13 @@ trait MM_WPFS_Admin_InlineFormModel {
 	 */
 	public function getCollectShippingAddress() {
 		return $this->collectShippingAddress;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getStripeElementsCustomCss() {
+		return $this->stripeElementsCustomCss;
 	}
 }
 
@@ -1504,6 +1455,10 @@ abstract class MM_WPFS_Admin_PaymentFormModel extends MM_WPFS_Admin_FormModel im
 	use MM_WPFS_Admin_Model_TaxAddOn;
 	use MM_WPFS_Admin_Model_CouponAddOn;
 	use MM_WPFS_Admin_Model_InvoiceAddOn;
+	/**
+	 * @var mixed
+	 */
+	protected $showPaymentDetail;
 
 	protected $transactionDescription;
 	protected $currency;
@@ -1576,6 +1531,8 @@ abstract class MM_WPFS_Admin_PaymentFormModel extends MM_WPFS_Admin_FormModel im
 
         $this->paymentMethods = $this->getArrayParam( $postData, MM_WPFS_Admin_PaymentFormViewConstants::FIELD_FORM_PAYMENT_METHOD );
 
+		$this->showPaymentDetail = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_SHOW_PAYMENT_DETAIL, 1 );
+
         return $bindingResult;
 	}
 
@@ -1595,6 +1552,7 @@ abstract class MM_WPFS_Admin_PaymentFormModel extends MM_WPFS_Admin_FormModel im
 			'amount' => 0,
 			'showButtonAmount' => 0,
 			'paymentMethods' => $this->paymentMethods,
+			'showPaymentDetail' => $this->showPaymentDetail,
 		];
 
 		return array_merge( $data,
@@ -1666,6 +1624,13 @@ abstract class MM_WPFS_Admin_PaymentFormModel extends MM_WPFS_Admin_FormModel im
 	 */
 	public function getMinimumPaymentAmount() {
 		return $this->minimumPaymentAmount;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function showPaymentDetail() {
+		return $this->showPaymentDetail;
 	}
 }
 
@@ -1832,10 +1797,13 @@ abstract class MM_WPFS_Admin_SubscriptionFormModel extends MM_WPFS_Admin_FormMod
 	protected $subscriptionMaximumQuantity;
 	protected $productSelectorStyle;
 	protected $recurringProducts;
-	protected $feeRecoveryCurrency;
 
 	/** @var MM_WPFS_Stripe */
 	protected $stripe;
+	/**
+	 * @var mixed
+	 */
+	protected $showPaymentDetail;
 
 	public function __construct( $loggerService ) {
 		parent::__construct( $loggerService );
@@ -1917,7 +1885,7 @@ abstract class MM_WPFS_Admin_SubscriptionFormModel extends MM_WPFS_Admin_FormMod
 		$this->productSelectorStyle = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_SubscriptionFormView::FIELD_FORM_PLAN_SELECTOR_STYLE );
 		$recurringProducts = $this->getJSONDecodedArrayParam( $postData, MM_WPFS_Admin_SubscriptionFormView::FIELD_FORM_RECURRING_PRODUCTS );
 		$this->recurringProducts = $this->prepareRecurringProducts( $recurringProducts );
-		$this->feeRecoveryCurrency = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_SubscriptionFormView::FIELD_FORM_FEE_RECOVERY_CURRENCY );
+		$this->showPaymentDetail = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_SHOW_PAYMENT_DETAIL, 1 );
 
 		$this->bindTaxParameters( $postData );
 		$this->bindCouponParameters( $postData );
@@ -1934,7 +1902,7 @@ abstract class MM_WPFS_Admin_SubscriptionFormModel extends MM_WPFS_Admin_FormMod
 			'allowMultipleSubscriptions' => $this->allowSubscriptionQuantity,
 			'minimumQuantityOfSubscriptions' => $this->subscriptionMinimumQuantity,
 			'maximumQuantityOfSubscriptions' => $this->subscriptionMaximumQuantity,
-			'feeRecoveryCurrency' => $this->feeRecoveryCurrency,
+			'showPaymentDetail' => $this->showPaymentDetail,
 		];
 
 		return array_merge( $data,
@@ -1982,8 +1950,8 @@ abstract class MM_WPFS_Admin_SubscriptionFormModel extends MM_WPFS_Admin_FormMod
 	/**
 	 * @return mixed
 	 */
-	public function getFeeRecoveryCurrency() {
-		return $this->feeRecoveryCurrency;
+	public function showPaymentDetail() {
+		return $this->showPaymentDetail;
 	}
 }
 

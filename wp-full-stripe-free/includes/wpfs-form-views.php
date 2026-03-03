@@ -149,6 +149,10 @@ interface MM_WPFS_FormViewConstants {
 	const ATTR_DATA_WPFS_ELEMENTS_THEME = 'data-wpfs-elements-theme';
 	const ATTR_DATA_WPFS_ELEMENTS_FONT = 'data-wpfs-elements-font';
 
+	const ATTR_DATA_WPFS_FEE_RECOVERY_ENABLED = 'data-wpfs-fee-recovery-enabled';
+	const ATTR_DATA_WPFS_FEE_AMOUNT     = 'data-wpfs-fee-amount';
+	const ATTR_DATA_WPFS_FEE_PERCENTAGE = 'data-wpfs-fee-percentage';
+
 	const ATTR_DATA_DEFAULT_VALUE = 'data-default-value';
 	const ATTR_DATA_MINIMUM_VALUE = 'data-min';
 	const ATTR_DATA_MAXIMUM_VALUE = 'data-max';
@@ -1004,11 +1008,7 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 		if ( isset( $feeRecovery[ MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE ] ) && isset( $feeRecovery[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ] ) && isset( $feeRecovery[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] ) ) {
 			$feeRecoveryLabel = $feeRecovery[ MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE ];
 
-			if ( $this instanceof MM_WPFS_CheckoutSubscriptionFormView || $this instanceof MM_WPFS_InlineSubscriptionFormView ) {
-				$currency = $feeRecovery[ MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY ];
-			}
-
-
+			$currency      = $feeRecovery[ MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY ];
 			$currencyArray = MM_WPFS_Currencies::getCurrencyFor( $currency );
 			$isZeroDecimal = (int) $currencyArray['zeroDecimalSupport'] === 1;
 			$recoveryAmount =  $isZeroDecimal ? $feeRecovery[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] : $feeRecovery[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ] * 100;
@@ -2262,10 +2262,19 @@ abstract class MM_WPFS_SubscriptionFormView extends MM_WPFS_FormView implements 
 					self::ATTR_DATA_WPFS_CANCELLATION_COUNT => $planCancellationCount,  // todo: for legacy plans, it's in the metadata
 					self::ATTR_DATA_WPFS_CURRENCY => $planCurrency,
 					self::ATTR_DATA_WPFS_ZERO_DECIMAL_SUPPORT => $currencyArray['zeroDecimalSupport'] ? 'true' : 'false',
-					self::ATTR_DATA_WPFS_CURRENCY_SYMBOL => MM_WPFS_Currencies::getCurrencySymbolFor( $planCurrency )
+					self::ATTR_DATA_WPFS_CURRENCY_SYMBOL => MM_WPFS_Currencies::getCurrencySymbolFor( $planCurrency ),
+					self::ATTR_DATA_WPFS_FEE_RECOVERY_ENABLED => false,
 				];
 				if ( $isPriceConfigurable && $planId == $selectedPriceId ) {
 					$planAttributes[ $selectedAttribute ] = $selectedAttribute;
+				}
+
+				if ( MM_WPFS_Utils::hasFeeRecovery( $this->form ) ) {
+					$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $this->form );
+
+					$planAttributes[ self::ATTR_DATA_WPFS_FEE_RECOVERY_ENABLED ] = true;
+					$planAttributes[ self::ATTR_DATA_WPFS_FEE_AMOUNT ]           = $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ];
+					$planAttributes[ self::ATTR_DATA_WPFS_FEE_PERCENTAGE ]       = $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ];
 				}
 
 				$plan->setAttributes( $planAttributes );
@@ -2309,23 +2318,31 @@ abstract class MM_WPFS_SubscriptionFormView extends MM_WPFS_FormView implements 
 
 			$this->firstPlan = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_PLAN, null, null, null, null );
 			$this->firstPlan->setValue( $planId );
-			$this->firstPlan->setAttributes(
-				[
-					'type' => 'hidden',
-					self::ATTR_DATA_WPFS_VALUE => $planId,
-					self::ATTR_DATA_WPFS_PLAN_AMOUNT => MM_WPFS_Currencies::formatAmount( $planCurrency, $planAmount, true ),
-					self::ATTR_DATA_WPFS_PLAN_AMOUNT_IN_SMALLEST_COMMON_CURRENCY => $planAmount,
-					self::ATTR_DATA_WPFS_PLAN_SETUP_FEE => MM_WPFS_Currencies::formatAmount( $planCurrency, $planSetupFee, true ),
-					self::ATTR_DATA_WPFS_PLAN_SETUP_FEE_IN_SMALLEST_COMMON_CURRENCY => $planSetupFee,
-					self::ATTR_DATA_WPFS_PRODUCT_NAME => MM_WPFS_Localization::translateLabel( $planName ),
-					self::ATTR_DATA_WPFS_INTERVAL => $planInterval,
-					self::ATTR_DATA_WPFS_INTERVAL_COUNT => $planIntervalCount,
-					self::ATTR_DATA_WPFS_CANCELLATION_COUNT => $planCancellationCount,
-					self::ATTR_DATA_WPFS_CURRENCY => $planCurrency,
-					self::ATTR_DATA_WPFS_ZERO_DECIMAL_SUPPORT => $currencyArray['zeroDecimalSupport'] ? 'true' : 'false',
-					self::ATTR_DATA_WPFS_CURRENCY_SYMBOL => MM_WPFS_Currencies::getCurrencySymbolFor( $planCurrency )
-				]
-			);
+			$attributes = [
+				'type' => 'hidden',
+				self::ATTR_DATA_WPFS_VALUE => $planId,
+				self::ATTR_DATA_WPFS_PLAN_AMOUNT => MM_WPFS_Currencies::formatAmount( $planCurrency, $planAmount, true ),
+				self::ATTR_DATA_WPFS_PLAN_AMOUNT_IN_SMALLEST_COMMON_CURRENCY => $planAmount,
+				self::ATTR_DATA_WPFS_PLAN_SETUP_FEE => MM_WPFS_Currencies::formatAmount( $planCurrency, $planSetupFee, true ),
+				self::ATTR_DATA_WPFS_PLAN_SETUP_FEE_IN_SMALLEST_COMMON_CURRENCY => $planSetupFee,
+				self::ATTR_DATA_WPFS_PRODUCT_NAME => MM_WPFS_Localization::translateLabel( $planName ),
+				self::ATTR_DATA_WPFS_INTERVAL => $planInterval,
+				self::ATTR_DATA_WPFS_INTERVAL_COUNT => $planIntervalCount,
+				self::ATTR_DATA_WPFS_CANCELLATION_COUNT => $planCancellationCount,
+				self::ATTR_DATA_WPFS_CURRENCY => $planCurrency,
+				self::ATTR_DATA_WPFS_ZERO_DECIMAL_SUPPORT => $currencyArray['zeroDecimalSupport'] ? 'true' : 'false',
+				self::ATTR_DATA_WPFS_CURRENCY_SYMBOL => MM_WPFS_Currencies::getCurrencySymbolFor( $planCurrency ),
+				self::ATTR_DATA_WPFS_FEE_RECOVERY_ENABLED   => false,
+			];
+
+			if ( MM_WPFS_Utils::hasFeeRecovery( $this->form ) ) {
+				$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $this->form );
+
+				$attributes[ self::ATTR_DATA_WPFS_FEE_RECOVERY_ENABLED ] = true;
+				$attributes[ self::ATTR_DATA_WPFS_FEE_AMOUNT ]           = $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ];
+				$attributes[ self::ATTR_DATA_WPFS_FEE_PERCENTAGE ]       = $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ];
+			}
+			$this->firstPlan->setAttributes( $attributes );
 		}
 	}
 
@@ -2926,8 +2943,16 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 			self::ATTR_DATA_WPFS_FORM_ID => $this->formHash,
 			self::ATTR_DATA_WPFS_SELECTOR_STYLE => $this->form->amountSelectorStyle,
 			self::ATTR_DATA_WPFS_PRODUCT_NAME => MM_WPFS_Utils::getDefaultProductDescription(),
-
+			self::ATTR_DATA_WPFS_FEE_RECOVERY_ENABLED => false,
 		];
+		if ( MM_WPFS_Utils::hasFeeRecovery( $this->form ) ) {
+			$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $this->form );
+
+			$attributes[ self::ATTR_DATA_WPFS_FEE_RECOVERY_ENABLED ] = true;
+			$attributes[ self::ATTR_DATA_WPFS_FEE_AMOUNT ]           = $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ];
+			$attributes[ self::ATTR_DATA_WPFS_FEE_PERCENTAGE ]       = $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ];
+		}
+
 		if ( MM_WPFS::PAYMENT_TYPE_CUSTOM_AMOUNT == $this->form->customAmount ) {
 			$this->customAmount = MM_WPFS_ControlUtils::createControl(
 				$this->formHash,
@@ -3117,7 +3142,16 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 				$listOfProducts = json_decode( $form->decoratedProducts );
 				if ( JSON_ERROR_NONE === json_last_error() ) {
 					$firstProduct = reset( $listOfProducts );
-					$amountLabel = MM_WPFS_Currencies::formatAndEscapeByForm( $form, $form->currency, $firstProduct->price, false );
+
+					$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $form );
+					$currency        = $form->currency;
+
+					$amount = $firstProduct->price;
+
+					if ( ! empty( $recoveryFeeData ) ) {
+						$amount = $amount + MM_WPFS_Utils::calculateRecoveryFee( $amount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ], $currency );
+					}
+					$amountLabel = MM_WPFS_Currencies::formatAndEscapeByForm( $form, $form->currency, $amount, false );
 				}
 			}
 		}
@@ -3327,6 +3361,12 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 			$donationAmounts = MM_WPFS_Utils::decodeJsonArray( $this->form->donationAmounts );
 			if ( count( $donationAmounts ) > 0 ) {
 				$donationAmount = (int) $donationAmounts[0];
+				$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $form );
+
+				if ( ! empty ( $recoveryFeeData ) ) {
+					$currency = $form->currency;	
+					$donationAmount = $donationAmount + MM_WPFS_Utils::calculateRecoveryFee( $donationAmount, $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ], $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ], $currency );	
+				}
 				$amountLabel = MM_WPFS_Currencies::formatAndEscapeByForm( $this->form, $this->form->currency, $donationAmount, false );
 
 				$caption = $this->insertAmountIntoLabel( $caption, $amountLabel );
@@ -3492,8 +3532,16 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 			self::ATTR_DATA_WPFS_CURRENCY_SYMBOL => $this->currencySymbol,
 			self::ATTR_DATA_WPFS_FORM_ID => $this->formHash,
 			self::ATTR_DATA_WPFS_SHOW_AMOUNT => $this->containsAmountMacro( $amountButtonTitle ) ? 1 : 0,
+			self::ATTR_DATA_WPFS_FEE_RECOVERY_ENABLED => false,
 
 		];
+		if ( MM_WPFS_Utils::hasFeeRecovery( $this->form ) ) {
+			$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $this->form );
+
+			$attributes[ self::ATTR_DATA_WPFS_FEE_RECOVERY_ENABLED ] = true;
+			$attributes[ self::ATTR_DATA_WPFS_FEE_AMOUNT ]           = $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ];
+			$attributes[ self::ATTR_DATA_WPFS_FEE_PERCENTAGE ]       = $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ];
+		}
 
 		$this->donationAmountOptions = MM_WPFS_ControlUtils::createControl(
 			$this->formHash,
@@ -3617,6 +3665,15 @@ abstract class MM_WPFS_DonationFormView extends MM_WPFS_FormView implements MM_W
 		$attributes[ self::ATTR_DATA_WPFS_AMOUNT_TYPE ] = $this->isCustomAmountOnly() ? MM_WPFS::PAYMENT_TYPE_CUSTOM_AMOUNT : MM_WPFS::PAYMENT_TYPE_LIST_OF_AMOUNTS;
 		$attributes[ self::ATTR_DATA_WPFS_ALLOW_LIST_OF_AMOUNTS_CUSTOM ] = $this->form->allowCustomDonationAmount;
 		$attributes[ self::ATTR_DATA_WPFS_SELECTOR_STYLE ] = MM_WPFS::SELECTOR_STYLE_BUTTON_GROUP;
+		$attributes[ self::ATTR_DATA_WPFS_FEE_RECOVERY_ENABLED ] = false;
+
+		if ( MM_WPFS_Utils::hasFeeRecovery( $this->form ) ) {
+			$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $this->form );
+
+			$attributes[ self::ATTR_DATA_WPFS_FEE_RECOVERY_ENABLED ] = true;
+			$attributes[ self::ATTR_DATA_WPFS_FEE_AMOUNT ]           = $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ];
+			$attributes[ self::ATTR_DATA_WPFS_FEE_PERCENTAGE ]       = $recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ];
+		}
 
 		return array_merge( $attributes, parent::getFormAttributes() );
 	}

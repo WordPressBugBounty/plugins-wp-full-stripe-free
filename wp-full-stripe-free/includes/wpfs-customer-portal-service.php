@@ -1889,7 +1889,7 @@ class MM_WPFS_CustomerPortalService
                         if (isset($stripePaymentMethod)) {
                             $stripeSetupIntent = null;
                             if (is_null($stripeSetupIntentId)) {
-                                $stripeSetupIntent = $this->stripe->createSetupIntentWithPaymentMethod($stripePaymentMethod->id);
+                                $stripeSetupIntent = $this->stripe->createSetupIntentWithPaymentMethod($stripePaymentMethod->id, $stripeCustomer->id);
                                 $stripeSetupIntentId = $stripeSetupIntent->id;
                                 $this->stripe->confirmSetupIntent($stripeSetupIntent);
                             }

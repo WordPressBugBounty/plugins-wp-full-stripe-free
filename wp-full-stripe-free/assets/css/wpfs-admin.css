@@ -6022,3 +6022,172 @@ div.notice.themeisle-sale {
   align-items: center;
   gap: 5px;
 }
+.wpfs-submit-form-display-payment-details {
+  width: 100%;
+}
+
+/* Enhanced appearance tab styling */
+.wpfs-form-block--appearance {
+  background: #f9fafb;
+  border: 1px solid #e3e8ee;
+  border-radius: 8px;
+  padding: 24px;
+}
+.wpfs-form-block__title-with-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.wpfs-form-block__title-with-badge .wpfs-form-block__title {
+  margin-bottom: 0;
+}
+.wpfs-form-id-badge {
+  font-size: 12px;
+  color: #6e7289;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.wpfs-form-id-badge strong {
+  color: #2c3149;
+  font-weight: 600;
+}
+.wpfs-appearance-subsection {
+  margin-bottom: 24px;
+}
+.wpfs-appearance-subsection:last-child {
+  margin-bottom: 0;
+}
+.wpfs-appearance-subsection .wpfs-form-group {
+  margin-bottom: 16px;
+}
+.wpfs-appearance-subsection .wpfs-form-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Horizontal radio group (Product Selector Style) */
+.wpfs-horizontal-radio-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+.wpfs-horizontal-radio-option {
+  position: relative;
+  display: block;
+  cursor: pointer;
+  border: 2px solid #e3e8ee;
+  border-radius: 6px;
+  padding: 16px 12px;
+  text-align: center;
+  transition: all 0.15s ease;
+  background: #ffffff;
+}
+.wpfs-horizontal-radio-option:hover {
+  border-color: #c5c6cd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+.wpfs-horizontal-radio-option:has(.wpfs-form-check-input:checked) {
+  border-color: #568ee8;
+  background: #f7f9fe;
+  box-shadow: 0 0 0 1px #568ee8;
+}
+.wpfs-horizontal-radio-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.wpfs-horizontal-radio-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.wpfs-horizontal-radio-icon {
+  font-size: 20px;
+  color: #6e7289;
+  margin-bottom: 4px;
+}
+.wpfs-horizontal-radio-option:has(.wpfs-form-check-input:checked) .wpfs-horizontal-radio-icon {
+  color: #568ee8;
+}
+.wpfs-horizontal-radio-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c3149;
+  line-height: 1.3;
+}
+.wpfs-horizontal-radio-description {
+  font-size: 11px;
+  color: #a4a8bb;
+  line-height: 1.3;
+}
+
+/* Theme grid (Stripe Elements Theme Selector) */
+.wpfs-theme-grid {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+.wpfs-theme-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 8px;
+  border: 2px solid #e3e8ee;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  background: #ffffff;
+}
+.wpfs-theme-option:hover {
+  border-color: #c5c6cd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+.wpfs-theme-option:has(.wpfs-form-check-input:checked) {
+  border-color: #568ee8;
+  background: #f7f9fe;
+  box-shadow: 0 0 0 1px #568ee8;
+}
+.wpfs-theme-radio {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.wpfs-theme-preview {
+  width: 64px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  border-radius: 4px;
+  background: #f9fafb;
+  border: 1px solid #e3e8ee;
+}
+
+/* Custom CSS code editor */
+.wpfs-form-group--custom-css {
+  margin-bottom: 0;
+}
+.wpfs-form-label-with-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.wpfs-form-group--custom-css .wpfs-code-editor {
+  height: 300px;
+  border: 1px solid #e3e8ee;
+  border-radius: 4px;
+  font-size: 13px;
+}
+/* Small link button variant */
+.wpfs-btn-link--small {
+  font-size: 12px;
+  padding: 0;
+}

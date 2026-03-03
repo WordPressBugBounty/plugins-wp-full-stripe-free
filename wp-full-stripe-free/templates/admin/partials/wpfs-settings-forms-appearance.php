@@ -16,7 +16,8 @@
                 </textarea>
             </div>
             <div class="wpfs-form-actions">
-                <button class="wpfs-btn wpfs-btn-primary wpfs-button-loader"><?php esc_html_e( 'Save settings', 'wp-full-stripe-free' ); ?></button>
+                <?php include( 'wpfs-settings-save-indicator.php' ); ?>
+                <button class="wpfs-btn wpfs-btn-primary wpfs-button-loader" type="submit"><?php esc_html_e( 'Save settings', 'wp-full-stripe-free' ); ?></button>
             </div>
         </div>
         <div class="wpfs-form__col">

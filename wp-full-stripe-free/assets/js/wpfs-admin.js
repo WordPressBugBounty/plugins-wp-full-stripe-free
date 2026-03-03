@@ -1795,6 +1795,8 @@ jQuery.noConflict();
         WPFS.Toggler.init();
         initEventHandlersOnTheSettingsStripeAccountPage();
         initWebhookUrlCopyToClipboard();
+        initSavedElements();
+        initSettingsUnsavedChangesDetection();
       }
     };
 
@@ -1863,6 +1865,8 @@ jQuery.noConflict();
     WPFS.initSettingsMyAccount = function () {
       if (onSettingsMyAccountPage()) {
         initEventHandlersOnTheSettingsMyAccountPage();
+        initSavedElements();
+        initSettingsUnsavedChangesDetection();
       }
     };
 
@@ -1900,6 +1904,8 @@ jQuery.noConflict();
     WPFS.initSettingsSecurity = function () {
       if (onSettingsSecurityPage()) {
         initEventHandlersOnTheSettingsSecurityPage();
+        initSavedElements();
+        initSettingsUnsavedChangesDetection();
       }
     };
 
@@ -1952,6 +1958,8 @@ jQuery.noConflict();
       if (onSettingsEmailOptionsPage()) {
         WPFS.TagsInput.init();
         initEventHandlersOnTheSettingsEmailOptionsPage();
+        initSavedElements();
+        initSettingsUnsavedChangesDetection();
       }
     };
 
@@ -2518,6 +2526,8 @@ jQuery.noConflict();
         initModelViewOnSettingsEmailTemplates();
         initMacroLookupsOnSettingsEmailTemplates();
         initEventHandlersOnSettingsEmailTemplates();
+        initSavedElements();
+        initSettingsUnsavedChangesDetection();
       }
     };
 
@@ -2540,6 +2550,8 @@ jQuery.noConflict();
     WPFS.initSettingsFormsOptions = function () {
       if (onSettingsFormsOptions()) {
         initEventHandlersOnSettingsFormsOptions();
+        initSavedElements();
+        initSettingsUnsavedChangesDetection();
       }
     };
 
@@ -2563,9 +2575,19 @@ jQuery.noConflict();
       );
     }
 
+    function initEventHandlersOnFormsAppearance() {
+      WPFS.CodeEditor.init();
+    }
+
+    function transformCustomCss() {
+      $(".wpfs-custom-css-hidden").val(WPFS.CodeEditor.getEditorValue(0));
+    }
+
     WPFS.initSettingsFormsAppearance = function () {
       if (onSettingsFormsAppearance()) {
         initEventHandlersOnSettingsFormsAppearance();
+        initSavedElements();
+        initSettingsUnsavedChangesDetection();
       }
     };
 
@@ -2596,6 +2618,8 @@ jQuery.noConflict();
     WPFS.initSettingsCustomerPortal = function () {
       if ( onSettingsCustomerPortal() ) {
         initStripePortalEffect();
+        initSavedElements();
+        initSettingsUnsavedChangesDetection();
       }
     };
 
@@ -2618,27 +2642,8 @@ jQuery.noConflict();
     WPFS.initSettingsWordpressDashboard = function () {
       if (onSettingsWordpressDashboard()) {
         initEventHandlersOnSettingsWordpressDashboard();
-
-        function toggleRecoveryFeeSettings() {
-          const isChecked = document.querySelector('input[name="wpfs-fee-recovery"]:checked').value;
-          const fields = document.querySelectorAll('.wpfs-fee-recovery--can-be-disabled');
-    
-          fields.forEach(field => {
-          if ( Number( isChecked ) ) {
-            field.style.pointerEvents = "auto";
-            field.style.opacity = "1";
-          } else {
-            field.style.pointerEvents = "none";
-            field.style.opacity = "0.5";
-          }
-          });
-        }
-
-        toggleRecoveryFeeSettings();
-
-        document.querySelectorAll('input[name="wpfs-fee-recovery"]').forEach((radio) => {
-          radio.addEventListener('change', toggleRecoveryFeeSettings);
-        });
+        initSavedElements();
+        initSettingsUnsavedChangesDetection();
       }
     };
 
@@ -2683,6 +2688,8 @@ jQuery.noConflict();
       if (onSettingsLogs()) {
         initEventHandlersOnSettingsLogs();
         initErrorDialog();
+        initSavedElements();
+        initSettingsUnsavedChangesDetection();
       }
     };
 
@@ -3026,6 +3033,134 @@ jQuery.noConflict();
       });
     }
 
+    function initSavedElements() {
+      const savedIndicator = $('.wpfs-saved-indicator').show();
+      $('#wpfs-unsaved-changes-indicator').append(savedIndicator).show();
+    }
+
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction() {
+        const context = this;
+        const args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(function() {
+          func.apply(context, args);
+        }, wait);
+      };
+    }
+
+    function markFormEditing() {
+      const $savedIndicators = $(".js-saved-indicator");
+
+      $savedIndicators.attr("data-saved", "false");
+      $savedIndicators.find(".wpfs-saved-indicator__text--saved").hide();
+      $savedIndicators.find(".wpfs-saved-indicator__text--unsaved").show();
+      $savedIndicators.find(".wpfs-saved-indicator__icon use").attr("xlink:href", "#wpfs-icon-unsaved");
+    }
+
+    function markFormSaved() {
+      const $savedIndicators = $(".js-saved-indicator");
+
+      $savedIndicators.attr("data-saved", "true");
+      $savedIndicators.find(".wpfs-saved-indicator__text--unsaved").hide();
+      $savedIndicators.find(".wpfs-saved-indicator__text--saved").show();
+      $savedIndicators.find(".wpfs-saved-indicator__icon use").attr("xlink:href", "#wpfs-icon-saved");
+    }
+
+    function initFormUnsavedChangesDetection() {
+      let formIsSaved = true;
+      const $savedIndicators = $(".js-saved-indicator");
+      const $forms = $(
+        "#wpfs-save-inline-save-card-form, #wpfs-save-checkout-save-card-form, " +
+        "#wpfs-save-inline-donation-form, #wpfs-save-checkout-donation-form, " +
+        "#wpfs-save-inline-payment-form, #wpfs-save-checkout-payment-form, " +
+        "#wpfs-save-inline-subscription-form, #wpfs-save-checkout-subscription-form"
+      );
+
+      if ($forms.length === 0 || $savedIndicators.length === 0) {
+        return;
+      }
+
+      $(".js-combobox").on("autocompleteselect", function () {
+        markFormEditing();
+        formIsSaved = false;
+      });
+
+      $forms.find('input[type="text"], input[type="email"], input[type="url"], input[type="number"], textarea').on(
+        "input", function() {
+          debounce(markFormEditing, 300)
+          formIsSaved = false;
+      });
+
+      const $formInputs = $forms.find("input, select, textarea");
+
+      $formInputs.on("change", function() {
+        markFormEditing();
+        formIsSaved = false;
+      });
+
+      $(document).on("wpfs-form-saved", function() {
+        markFormSaved();
+        formIsSaved = true;
+      });
+
+      $(window).on("beforeunload", function(e) {
+        if (!formIsSaved) {
+          return false;
+        }
+      });
+
+      markFormSaved();
+    }
+
+    function initSettingsUnsavedChangesDetection() {
+      let formIsSaved = true;
+      const $savedIndicators = $(".js-saved-indicator");
+      const $forms = $(
+        "#wpfs-save-stripe-account, #wpfs-save-my-account, " +
+        "#wpfs-save-security, #wpfs-save-email-options, " +
+        "#wpfs-save-email-templates, #wpfs-save-forms-options, " +
+        "#wpfs-save-forms-appearance, #wpfs-save-wp-dashboard, " +
+        "#wpfs-save-logs"
+      );
+
+      if ($forms.length === 0 || $savedIndicators.length === 0) {
+        return;
+      }
+
+      const $formInputs = $forms.find("input, select, textarea");
+
+      $formInputs.on("change", function() {
+        markFormEditing();
+        formIsSaved = false;
+      });
+
+      $(".js-combobox").on("autocompleteselect", function (event, ui) {
+        markFormEditing();
+        formIsSaved = false;
+      });
+
+      $forms.find('input[type="text"], input[type="email"], input[type="url"], input[type="number"], input[type="radio"], textarea').on(
+        "input", function() {
+          debounce(markFormEditing, 300);
+          formIsSaved = false;
+      });
+
+      $(document).on("wpfs-form-saved", function() {
+        markFormSaved();
+        formIsSaved = true;
+      });
+
+      $(window).on("beforeunload", function(e) {
+        if (!formIsSaved) {
+          return false;
+        }
+      });
+
+      markFormSaved();
+    }
+
     function initTransactionDescriptionSelectionTracking() {
       $(".js-position-tracking-transaction-description").on(
         "blur",
@@ -3157,7 +3292,7 @@ jQuery.noConflict();
       var currencyFormatter = WPFS.createAdminCurrencyFormatter();
       var amount = currencyFormatter.parse(amountStr);
       if (!zeroDecimalSupported) {
-        amount *= 100;
+        amount = parseCurrencyAmount( amountStr, zeroDecimalSupported, true);
       }
 
       return amount;
@@ -3377,6 +3512,9 @@ jQuery.noConflict();
       initEditFormCustomFields();
       initEditFormEmailTemplates();
       initFormCssIdCopyToClipboard();
+      initEventHandlersOnFormsAppearance();
+      initSavedElements();
+      initFormUnsavedChangesDetection();
       new WebhookFormManager( WPFS );
 
       $("#wpfs-save-inline-save-card-form").submit(function (e) {
@@ -3385,6 +3523,7 @@ jQuery.noConflict();
         var $form = $(this);
         transformCustomFields($form);
         transformEmailTemplates($form);
+        transformCustomCss();
         WPFS.makeAjaxCallWithForm($form);
       });
     }
@@ -3397,6 +3536,8 @@ jQuery.noConflict();
       initEditFormCustomFields();
       initEditFormEmailTemplates();
       initFormCssIdCopyToClipboard();
+      initSavedElements();
+      initFormUnsavedChangesDetection();
       new WebhookFormManager( WPFS );
 
       $("#wpfs-save-checkout-save-card-form").submit(function (e) {
@@ -3760,7 +3901,7 @@ jQuery.noConflict();
         const fields = document.querySelectorAll('.wpfs-fee-recovery--can-be-disabled');
 
         fields.forEach( field => {
-          if ( 'customize' === isChecked ) {
+          if ( 'enable' === isChecked ) {
             field.style.pointerEvents = "auto";
             field.style.opacity = "1";
             field.style.display = "block";
@@ -3797,6 +3938,9 @@ jQuery.noConflict();
       initFormCssIdCopyToClipboard();
       initFeeRecovery();
       initGlobalLocalEffect();
+      initEventHandlersOnFormsAppearance();
+      initSavedElements();
+      initFormUnsavedChangesDetection();
       new WebhookFormManager( WPFS );
 
       $("#wpfs-save-inline-donation-form").submit(function (e) {
@@ -3808,6 +3952,7 @@ jQuery.noConflict();
         transformDonationAmounts($form);
         transformDonationGoalAmount($form);
         transformMinimumDonationAmount($form);
+        transformCustomCss();
         WPFS.makeAjaxCallWithForm($form);
       });
     }
@@ -3838,6 +3983,8 @@ jQuery.noConflict();
       initFormCssIdCopyToClipboard();
       initFeeRecovery();
       initGlobalLocalEffect();
+      initSavedElements();
+      initFormUnsavedChangesDetection();
       new WebhookFormManager( WPFS );
 
       $("#wpfs-save-checkout-donation-form").submit(function (e) {
@@ -3873,8 +4020,10 @@ jQuery.noConflict();
 
         if ($this.val() === PAYMENT_TYPE_LIST_OF_AMOUNTS) {
           $("#onetime-payment-stripe-product-list").show();
+          $('#product-selector-style-list').show();
         } else {
           $("#onetime-payment-stripe-product-list").hide();
+          $('#product-selector-style-list').hide();
         }
       });
     }
@@ -3924,6 +4073,8 @@ jQuery.noConflict();
             .closest(".wpfs-field-list__item")
             .data("id");
           WPFS.onetimeProducts.remove(id);
+
+          initProductSelectorStyle();
         },
         render: function () {
           this.$el.html("");
@@ -4186,6 +4337,7 @@ jQuery.noConflict();
         var selectedProducts = getSelectedProducts(selectedProductIds);
         var formattedProducts = formatOnetimeProducts(selectedProducts);
         addOnetimeProductsToCollection(formattedProducts);
+        initProductSelectorStyle();
 
         $("#" + ctx.options.dialogId).dialog("close");
       });
@@ -4754,6 +4906,10 @@ jQuery.noConflict();
       initFormCssIdCopyToClipboard();
       initFeeRecovery();
       initGlobalLocalEffect();
+      initProductSelectorStyle();
+      initEventHandlersOnFormsAppearance();
+      initSavedElements();
+      initFormUnsavedChangesDetection();
       new WebhookFormManager( WPFS );
 
       $("#wpfs-save-inline-payment-form").submit(function (e) {
@@ -4765,6 +4921,7 @@ jQuery.noConflict();
         transformTaxRates($form);
         transformCustomFields($form);
         transformEmailTemplates($form);
+        transformCustomCss();
         WPFS.makeAjaxCallWithForm($form);
       });
     }
@@ -4797,6 +4954,9 @@ jQuery.noConflict();
       initFormCssIdCopyToClipboard();
       initFeeRecovery();
       initGlobalLocalEffect();
+      initProductSelectorStyle();
+      initSavedElements();
+      initFormUnsavedChangesDetection();
       new WebhookFormManager( WPFS );
 
       $("#wpfs-save-checkout-payment-form").submit(function (e) {
@@ -4889,6 +5049,7 @@ jQuery.noConflict();
             .closest(".wpfs-field-list__item")
             .data("id");
           WPFS.recurringProducts.remove(id);
+          initPlanSelectorStyle();
         },
         render: function () {
           this.$el.html("");
@@ -5422,6 +5583,7 @@ jQuery.noConflict();
 
             var formattedProducts = formatRecurringProducts([selectedProduct]);
             addRecurringProductsToCollection(formattedProducts);
+            initPlanSelectorStyle();
 
             $("#" + ctx.options.dialogId).dialog("close");
           }
@@ -5761,6 +5923,10 @@ jQuery.noConflict();
       initFormCssIdCopyToClipboard();
       initFeeRecovery();
       initGlobalLocalEffect();
+      initPlanSelectorStyle();
+      initEventHandlersOnFormsAppearance();
+      initSavedElements();
+      initFormUnsavedChangesDetection();
       new WebhookFormManager( WPFS );
 
       $("#wpfs-save-inline-subscription-form").submit(function (e) {
@@ -5771,6 +5937,7 @@ jQuery.noConflict();
         transformTaxRates($form);
         transformCustomFields($form);
         transformEmailTemplates($form);
+        transformCustomCss();
         WPFS.makeAjaxCallWithForm($form);
       });
     }
@@ -5801,6 +5968,9 @@ jQuery.noConflict();
       initFormCssIdCopyToClipboard();
       initFeeRecovery();
       initGlobalLocalEffect();
+      initPlanSelectorStyle();
+      initSavedElements();
+      initFormUnsavedChangesDetection();
       new WebhookFormManager( WPFS );
 
       $("#wpfs-save-checkout-subscription-form").submit(function (e) {
@@ -6073,6 +6243,22 @@ jQuery.noConflict();
             toggleCustomDateFields( false );
           }
         });
+      }
+    }
+
+    function initProductSelectorStyle() {
+      if ( WPFS.onetimeProducts.length > 1 ) {
+        $('#product-selector-style-list').show();
+      } else {
+        $('#product-selector-style-list').hide();
+      }
+    }
+
+    function initPlanSelectorStyle() {
+      if ( WPFS.recurringProducts.length > 1 ) {
+        $('#plan-selector-style-list').show();
+      } else {
+        $('#plan-selector-style-list').hide();
       }
     }
 

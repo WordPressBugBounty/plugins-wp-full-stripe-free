@@ -10,7 +10,7 @@ https://themeisle.com
 */
 
 class MM_WPFS {
-	const VERSION = '8.3.4';
+	const VERSION = '8.4.0';
 	const REQUEST_PARAM_NAME_WPFS_RENDERED_FORMS = 'wpfs_rendered_forms';
 
 	const HANDLE_WP_FULL_STRIPE_JS = 'wp-full-stripe-js';
@@ -261,8 +261,7 @@ class MM_WPFS {
 
 	const ONBOARDING_WIZARD_OPTION_NAME = 'fullstripe_onboarding_wizard';
 
-	const FEE_RECOVERY_INHERIT = 'inherit';
-	const FEE_RECOVERY_CUSTOMIZE = 'customize';
+	const FEE_RECOVERY_ENABLE = 'enable';
 	const FEE_RECOVERY_DISABLE = 'disable';
 
 	public static $instance;
@@ -467,12 +466,6 @@ class MM_WPFS {
 			MM_WPFS_Options::OPTION_LIVE_ACCOUNT_STATUS => null,
 			MM_WPFS_Options::OPTION_TEST_ACCOUNT_STATUS => null,
 			MM_WPFS_Options::OPTION_CONNECT_MODE => 'prod',
-			MM_WPFS_Options::OPTION_FEE_RECOVERY => '0',
-			MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN => '1',
-			MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE => MM_WPFS_Utils::getDefaultFeeRecoveryMessage(),
-			MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY => 'usd',
-			MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE => '2.9',
-			MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT => '0.30',
 		];
 
 		$this->options->setNonExistentSeveral( $updateSet );
@@ -785,6 +778,11 @@ class MM_WPFS {
 							$this->checkoutSubmissionService->updateSubmitEntryWithComplete( $popupFormSubmit );
 						}
 					}
+				}
+
+				if ( ! empty( $form->stripeElementsCustomCss ) ) {
+					$custom_css = wp_strip_all_tags( $form->stripeElementsCustomCss );
+					echo '<style type="text/css" media="screen">' . $custom_css . '</style>';
 				}
 
 				/** @noinspection PhpIncludeInspection */

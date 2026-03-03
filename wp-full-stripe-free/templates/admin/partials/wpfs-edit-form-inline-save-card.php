@@ -41,8 +41,17 @@
                 <?php include( 'wpfs-form-component-action-buttons.php' ); ?>
             </div>
             <div class="wpfs-form__col">
-                <?php include( 'wpfs-form-component-css-selector.php' ); ?>
-                <?php include( 'wpfs-form-component-elements-appearance-selector.php' ); ?>
+                <div class="wpfs-form-block wpfs-form-block--appearance">
+                    <div class="wpfs-form-block__title-with-badge">
+                        <span class="wpfs-form-block__title"><?php esc_html_e( 'Form Appearance', 'wp-full-stripe-free' ); ?></span>
+                        <span class="wpfs-form-id-badge">
+                            <?php esc_html_e( 'Form ID:', 'wp-full-stripe-free' ); ?> <strong><?php echo esc_html( $form->name ); ?></strong>
+                            <a class="wpfs-btn wpfs-btn-link wpfs-btn-link--small js-copy-form-id" data-form-id="<?php echo esc_attr( $form->name ); ?>"><?php esc_html_e( 'Copy', 'wp-full-stripe-free' ); ?></a>
+                        </span>
+                    </div>
+                    <?php include( 'wpfs-form-component-elements-appearance-selector.php' ); ?>
+                    <?php include( 'wpfs-form-component-custom-css.php' ); ?>
+                </div>
             </div>
         </div>
     </div>
@@ -75,11 +84,8 @@
             </div>
         </div>
     </div>
-    <div class="wpfs-edit-form-pane" data-tab-id="<?php echo MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_EMAIL_NOTIFICATIONS; ?>" style="display: none;">
+    <div class="wpfs-edit-form-pane" data-tab-id="<?php echo MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_NOTIFICATIONS_AND_INTEGRATION; ?>" style="display: none;">
         <?php include( 'wpfs-form-component-email-templates.php' ); ?>
-        <?php include( 'wpfs-form-component-action-buttons.php' ); ?>
-    </div>
-    <div class="wpfs-edit-form-pane" data-tab-id="<?php echo MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_WEBHOOK; ?>" style="display: none;">
         <div class="wpfs-form__cols">
             <div class="wpfs-form__col wpfs-form__col__third">
                 <?php include( 'wpfs-form-component-webhook.php' ); ?>

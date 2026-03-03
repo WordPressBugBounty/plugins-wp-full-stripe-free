@@ -14,7 +14,9 @@
             <div class="wpfs-page-header__title"><?php echo $pageTitle ?></div>
         </div>
         <div class="wpfs-page-header__actions">
-            <span id="wpfs-unsaved-changes-indicator"></span>
+            <span id="wpfs-unsaved-changes-indicator">
+                <?php include( 'wpfs-settings-save-indicator.php' ); ?>
+            </span>
             <?php include('wpfs-header-block-preview.php'); ?>
         </div>
     </div>

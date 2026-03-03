@@ -1096,14 +1096,7 @@ class MM_WPFS_Utils {
             return false;
         }
 
-        if ( $form->feeRecovery === MM_WPFS::FEE_RECOVERY_DISABLE ) {
-            return false;
-        }
-
-		$options = new MM_WPFS_Options();
-        $feeRecovery = $options->get( MM_WPFS_Options::OPTION_FEE_RECOVERY );
-
-        return $feeRecovery;
+        return MM_WPFS::FEE_RECOVERY_ENABLE === $form->feeRecovery;
     }
 
     /**
@@ -1118,24 +1111,10 @@ class MM_WPFS_Utils {
             return [];
         }
 
-        $options = new MM_WPFS_Options();
-
-        if ( $form->feeRecovery === MM_WPFS::FEE_RECOVERY_INHERIT ) {
-            $feeRecovery = $options->getSeveral( [ 
-                MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN,
-                MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE,
-                MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY,
-                MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE,
-                MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT,
-			] );
-
-            return $feeRecovery;
-        }
-
         return [
             MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN => $form->feeRecoveryOptIn,
             MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE => $form->feeRecoveryOptInMessage,
-            MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY => isset( $form->feeRecoveryCurrency ) ? $form->feeRecoveryCurrency : $options->get( MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY ),
+            MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY => isset( $form->currency ) ? $form->currency : 'usd',
             MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE => $form->feeRecoveryFeePercentage,
             MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT => $form->feeRecoveryFeeAdditionalAmount
         ];
@@ -1173,9 +1152,9 @@ class MM_WPFS_Utils {
         $percentageFee = min( 99.99, $percentageFee ); // Prevent division by zero or negative scenarios.
 
         // Calculate the original amount needed to cover both the charge and the fees
-        $originalAmountInCents = ( $amountInCents + $fixedFeeInCents ) / ( 1 - $percentageFee / 100 );
+        $originalAmountInCents = (  ( $amountInCents + $fixedFeeInCents ) * $percentageFee ) / 100;
 
         // Return how much should we charge extra to cover the fees.
-        return intval( round( $originalAmountInCents - $amountInCents ) );
+        return intval( round( $originalAmountInCents ) );
     }
 }

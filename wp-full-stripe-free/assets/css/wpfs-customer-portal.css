@@ -501,7 +501,7 @@ body[data-form-submit=regular] .container-wrap button[type=submit].wpfs-btn-prim
   width: 100%;
   height: auto;
   font-size: 15px;
-  padding: 16px;
+  padding: 20px;
   border: 1px solid var(--form-control-border-color);
   border-radius: var(--default-border-radius);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
@@ -1302,7 +1302,7 @@ button.wpfs-btn-primary:disabled:not(:hover):not(:active):not(.has-text-color), 
   left: 16px;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 10px 40px 10px 0;
+  padding: 12px 40px 12px 0;
   transition: color 0.3s ease;
 }
 .wpfs-selectmenu-menu {

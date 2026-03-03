@@ -633,6 +633,9 @@ class MM_WPFS_Stripe {
 				'/customers/' .$customerId . '?mode=live&accountId=' . $this->liveStripeAcountId . '&' . $query_string
 			);
 		} else {
+			if ( is_null( $this->stripe ) ) {
+				throw new WPFS_UserFriendlyException( __( 'Stripe client is not initialized.', 'wp-full-stripe-free' ) );
+			}
 			$customer = json_decode( $this->stripe->customers->retrieve( $customerId, $params )->toJSON() );
 		}
 
@@ -956,6 +959,9 @@ class MM_WPFS_Stripe {
 			);
 			$customers = $customers->data;
 		} else {
+			if ( is_null( $this->stripe ) ) {
+				throw new WPFS_UserFriendlyException( __( 'Stripe client is not initialized.', 'wp-full-stripe-free' ) );
+			}
 			$customers = json_decode( $this->stripe->customers->all( $params )->toJSON() );
 		}
 		return $customers;
@@ -1096,6 +1102,9 @@ class MM_WPFS_Stripe {
 				);
 				$prices = array_merge( $prices, $priceCollection->data );
 			} else {
+				if ( is_null( $this->stripe ) ) {
+					throw new WPFS_UserFriendlyException( __( 'Stripe client is not initialized.', 'wp-full-stripe-free' ) );
+				}
 				$priceCollection = $this->stripe->prices->all( $params );
 				$prices = array_merge( $prices, $priceCollection['data'] );
 			}
@@ -1842,7 +1851,7 @@ class MM_WPFS_Stripe {
 				'/payment_intents/' . $paymentIntentId . '?mode=live&accountId=' . $this->liveStripeAcountId . '&expand[]=latest_charge'
 			);
 		} else {
-			$intent = json_decode( $this->stripe->paymentIntents->retrieve( $paymentIntentId )->toJSON() );
+			$intent = json_decode( $this->stripe->paymentIntents->retrieve( $paymentIntentId, [ 'expand' => [ 'latest_charge' ] ] )->toJSON() );
 		}
 
 
@@ -2007,12 +2016,13 @@ class MM_WPFS_Stripe {
 
 	/**
 	 * @param $stripePaymentMethodId
+	 * @param string|null $customerId Optional customer ID to attach to the SetupIntent
 	 *
 	 * @return \StripeWPFS\Stripe\SetupIntent
 	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 * @throws WPFS_UserFriendlyException
 	 */
-	public function createSetupIntentWithPaymentMethod( $stripePaymentMethodId ) {
+	public function createSetupIntentWithPaymentMethod( $stripePaymentMethodId, $customerId = null ) {
 		$params = [
 			'usage' => 'off_session',
 			'payment_method' => $stripePaymentMethodId,
@@ -2025,6 +2035,10 @@ class MM_WPFS_Stripe {
 				'allow_redirects' => 'never', //setup intents do not support redirects
 			],
 		];
+
+		if ( ! empty( $customerId ) ) {
+			$params['customer'] = $customerId;
+		}
 
 		$intent = null;
 		if ( ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) || ( $this->apiMode === 'live' && $this->usingWpLivePlatform ) ) {
@@ -2355,6 +2369,7 @@ class MM_WPFS_Stripe {
 			$subscriptions = $subscriptions->data;
 		} else {
 			$subscriptions = json_decode( $this->stripe->subscriptions->all( $params )->toJSON() );
+			$subscriptions = $subscriptions->data;
 		}
 		return $subscriptions;
 	}
@@ -2434,6 +2449,9 @@ class MM_WPFS_Stripe {
 				'/subscriptions/' . $subscriptionID . '?mode=live&accountId=' . $this->liveStripeAcountId
 			);
 		} else {
+			if ( is_null( $this->stripe ) ) {
+				throw new WPFS_UserFriendlyException( __( 'Stripe client is not initialized.', 'wp-full-stripe-free' ) );
+			}
 			$subscription = json_decode( $this->stripe->subscriptions->retrieve( $subscriptionID )->toJSON() );
 		}
 		return $subscription;
@@ -2461,6 +2479,9 @@ class MM_WPFS_Stripe {
 				'/subscriptions/' . $subscriptionId . '?mode=live&accountId=' . $this->liveStripeAcountId . '&' . $query_string
 			);
 		} else {
+			if ( is_null( $this->stripe ) ) {
+				throw new WPFS_UserFriendlyException( __( 'Stripe client is not initialized.', 'wp-full-stripe-free' ) );
+			}
 			$stripeSubscription = json_decode( $this->stripe->subscriptions->retrieve(
 				$subscriptionId,
 				$params
@@ -2819,6 +2840,9 @@ class MM_WPFS_Stripe {
 				'metadata' => $paymentIntent->metadata,
 				'description' => $paymentIntent->description,
 			];
+			if ( $includeAmount && isset( $paymentIntent->amount ) ) {
+				$params["amount"] = $paymentIntent->amount;
+			}
 			$this->stripe->paymentIntents->update( $paymentIntent->id, $params );
 		}
 	}

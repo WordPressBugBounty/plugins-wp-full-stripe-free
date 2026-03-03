@@ -1484,6 +1484,7 @@ function initWpfsAdminLibrary($, ctx) {
       dataType: "json",
       success: function (responseData) {
         if (responseData.success) {
+          ctx.setFormSaved();
           ctx.displaySuccessMessageBanner(responseData.msg);
           ctx.setTimeoutToRedirect(responseData.redirectURL, 1000);
         } else {
@@ -1666,6 +1667,10 @@ function initWpfsAdminLibrary($, ctx) {
       window.location = redirectUrl;
     }, timeout);
   };
+
+  ctx.setFormSaved = function() {
+    $(document).trigger('wpfs-form-saved');
+  }
 }
 
 /**

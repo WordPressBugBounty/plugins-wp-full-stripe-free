@@ -877,7 +877,7 @@ abstract class MM_WPFS_CheckoutSessionBuilder {
 	use MM_WPFS_Logger_AddOn;
 	use MM_WPFS_StaticContext_AddOn;
 	protected $submitHash;
-	/** @var MM_WPFS_Public_CheckoutPaymentFormModel|MM_WPFS_Public_FormModel */
+	/** @var MM_WPFS_Public_CheckoutPaymentFormModel|MM_WPFS_Public_CheckoutDonationFormModel|MM_WPFS_Public_CheckoutSubscriptionFormModel */
 	protected $formModel;
 	/** @var MM_WPFS_Options */
 	protected $options;
@@ -1062,9 +1062,11 @@ class MM_WPFS_CheckoutSessionBuilder_Donation extends MM_WPFS_CheckoutSessionBui
 		$this->buildPhoneNumber( $sessionData );
 
 		$sessionData['mode'] = 'payment';
-		$sessionData['payment_intent_data'] = [
-			'setup_future_usage' => 'off_session'
-		];
+		if (  $this->formModel->isRecurringDonation() ) {
+			$sessionData['payment_intent_data'] = [
+				'setup_future_usage' => 'off_session'
+			];
+		}
 		$sessionData['customer_creation'] = 'always'; // always capture a customer. we need it post payment for internal logic
 
 		$productData = [

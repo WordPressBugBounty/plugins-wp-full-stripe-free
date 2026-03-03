@@ -47,7 +47,7 @@ $testComplete = $testStatus === MM_WPFS_Options::OPTION_ACCOUNT_STATUS_COMPLETE 
 			</div>
 		</div>
 	</div>
-	<div class="wpfs-edit-form-pane" data-tab-id="<?php echo MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENT; ?>"
+	<div class="wpfs-edit-form-pane" data-tab-id="<?php echo MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENT_AND_TAX; ?>"
 		style="display: none;">
 		<div class="wpfs-form__cols">
 			<div class="wpfs-form__col">
@@ -73,6 +73,22 @@ $testComplete = $testStatus === MM_WPFS_Options::OPTION_ACCOUNT_STATUS_COMPLETE 
 					<?php include ( 'wpfs-form-component-charge-type.php' ); ?>
 					<?php include ( 'wpfs-form-component-generate-invoice.php' ); ?>
 					<?php include ( 'wpfs-form-component-transaction-description.php' ); ?>
+				</div>
+			</div>
+		</div>
+		<div class="wpfs-form__cols">
+			<div class="wpfs-form__col">
+				<div class="wpfs-form-block">
+					<div class="wpfs-form-block__title">
+						<?php esc_html_e( 'Tax', 'wp-full-stripe-free' ); ?>
+					</div>
+					<?php include ( 'wpfs-form-component-tax-type.php' ); ?>
+				</div>
+				<div class="wpfs-form-block" id="tax-rates-settings"
+					style="<?php echo $view->doesFormCalculateTax( $form ) ? '' : 'display: none;' ?>">
+					<?php include ( 'wpfs-form-component-tax-rate-type.php' ); ?>
+					<?php include ( 'wpfs-form-component-collect-customer-tax-id.php' ); ?>
+					<?php include ( 'wpfs-form-component-tax-rates.php' ); ?>
 				</div>
 			</div>
 		</div>
@@ -116,26 +132,6 @@ $testComplete = $testStatus === MM_WPFS_Options::OPTION_ACCOUNT_STATUS_COMPLETE 
 		<div class="wpfs-form__cols">
 			<div class="wpfs-form__col">
 				<div class="wpfs-form-block">
-
-					<?php include ( 'wpfs-form-component-action-buttons.php' ); ?>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="wpfs-edit-form-pane" data-tab-id="<?php echo MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_TAX; ?>"
-		style="display: none;">
-		<div class="wpfs-form__cols">
-			<div class="wpfs-form__col">
-				<div class="wpfs-form-block">
-					<?php include ( 'wpfs-form-component-tax-type.php' ); ?>
-				</div>
-				<div class="wpfs-form-block" id="tax-rates-settings"
-					style="<?php echo $view->doesFormCalculateTax( $form ) ? '' : 'display: none;' ?>">
-					<?php include ( 'wpfs-form-component-tax-rate-type.php' ); ?>
-					<?php include ( 'wpfs-form-component-collect-customer-tax-id.php' ); ?>
-					<?php include ( 'wpfs-form-component-tax-rates.php' ); ?>
-				</div>
-				<div class="wpfs-form-block">
 					<?php include ( 'wpfs-form-component-action-buttons.php' ); ?>
 				</div>
 			</div>
@@ -146,10 +142,9 @@ $testComplete = $testStatus === MM_WPFS_Options::OPTION_ACCOUNT_STATUS_COMPLETE 
 		<div class="wpfs-form__cols">
 			<div class="wpfs-form__col">
 				<div class="wpfs-form-block">
-					<?php include ( 'wpfs-form-component-product-selector-style.php' ); ?>
-				</div>
-				<div class="wpfs-form-block">
 					<?php include ( 'wpfs-form-component-submit-form-button-label.php' ); ?>
+					<?php include( 'wpfs-form-component-submit-form-display-payment-details.php' ); ?>
+					<?php include ( 'wpfs-form-component-product-selector-style.php' ); ?>
 					<?php include ( 'wpfs-form-component-card-field-language.php' ); ?>
 				</div>
 				<div class="wpfs-form-block">
@@ -161,9 +156,17 @@ $testComplete = $testStatus === MM_WPFS_Options::OPTION_ACCOUNT_STATUS_COMPLETE 
 				<?php include ( 'wpfs-form-component-action-buttons.php' ); ?>
 			</div>
 			<div class="wpfs-form__col">
-				<?php include ( 'wpfs-form-component-css-selector.php' ); ?>
-				<?php include ( 'wpfs-form-component-elements-appearance-selector.php' ); ?>
-
+				<div class="wpfs-form-block wpfs-form-block--appearance">
+					<div class="wpfs-form-block__title-with-badge">
+						<span class="wpfs-form-block__title"><?php esc_html_e( 'Form Appearance', 'wp-full-stripe-free' ); ?></span>
+						<span class="wpfs-form-id-badge">
+							<?php esc_html_e( 'Form ID:', 'wp-full-stripe-free' ); ?> <strong><?php echo esc_html( $form->name ); ?></strong>
+							<a class="wpfs-btn wpfs-btn-link wpfs-btn-link--small js-copy-form-id" data-form-id="<?php echo esc_attr( $form->name ); ?>"><?php esc_html_e( 'Copy', 'wp-full-stripe-free' ); ?></a>
+						</span>
+					</div>
+					<?php include ( 'wpfs-form-component-elements-appearance-selector.php' ); ?>
+					<?php include ( 'wpfs-form-component-custom-css.php' ); ?>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -207,16 +210,13 @@ $testComplete = $testStatus === MM_WPFS_Options::OPTION_ACCOUNT_STATUS_COMPLETE 
 		</div>
 	</div>
 	<div class="wpfs-edit-form-pane"
-		data-tab-id="<?php echo MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_EMAIL_NOTIFICATIONS; ?>" style="display: none;">
+		data-tab-id="<?php echo MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_NOTIFICATIONS_AND_INTEGRATION; ?>" style="display: none;">
 		<?php include ( 'wpfs-form-component-email-templates.php' ); ?>
-		<?php include ( 'wpfs-form-component-action-buttons.php' ); ?>
+		<div class="wpfs-form__cols">
+			<div class="wpfs-form__col wpfs-form__col__third">
+				<?php include ( 'wpfs-form-component-webhook.php' ); ?>
+				<?php include ( 'wpfs-form-component-action-buttons.php' ); ?>
+			</div>
+		</div>
 	</div>
-    <div class="wpfs-edit-form-pane" data-tab-id="<?php echo MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_WEBHOOK; ?>" style="display: none;">
-        <div class="wpfs-form__cols">
-            <div class="wpfs-form__col wpfs-form__col__third">
-                <?php include( 'wpfs-form-component-webhook.php' ); ?>
-                <?php include( 'wpfs-form-component-action-buttons.php' ); ?>
-            </div>
-        </div>
-    </div>
 </form>

@@ -76,7 +76,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="wpfs-form-group">
+                            <div class="wpfs-form-actions">
+                                <?php include( 'partials/wpfs-settings-save-indicator.php' ); ?>
                                 <button class="wpfs-btn wpfs-btn-primary wpfs-button-loader" type="submit"><?php esc_html_e( 'Save settings', 'wp-full-stripe-free' ); ?></button>
                             </div>
                         </form>

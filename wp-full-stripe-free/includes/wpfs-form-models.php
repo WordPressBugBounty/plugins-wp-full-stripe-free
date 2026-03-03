@@ -2149,6 +2149,8 @@ abstract class MM_WPFS_Public_DonationFormModel extends MM_WPFS_Public_FormModel
 	protected $donationFrequency;
 	protected $__amount;
 	protected $__stripeSubscription;
+	/** @var mixed */
+	protected $__stripePaymentIntent;
 
 	/**
 	 * MM_WPFS_Public_DonationFormModel constructor.
@@ -2308,6 +2310,23 @@ abstract class MM_WPFS_Public_DonationFormModel extends MM_WPFS_Public_FormModel
 	public function setStripeSubscription($stripeSubscription)
 	{
 		$this->__stripeSubscription = $stripeSubscription;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getStripePaymentIntent()
+	{
+		return $this->__stripePaymentIntent;
+	}
+
+	/**
+	 * @param mixed $stripePaymentIntent
+	 * @return mixed
+	 */
+	public function setStripePaymentIntent($stripePaymentIntent)
+	{
+		$this->__stripePaymentIntent = $stripePaymentIntent;
 	}
 
 }

@@ -9,10 +9,23 @@ namespace {
 
 namespace StripeWPFS {
 
+    use BrianHenryIE\Strauss\Types\AutoloadAliasInterface;
+
+    /**
+     * @see AutoloadAliasInterface
+     *
+     * @phpstan-type ClassAliasArray array{'type':'class',isabstract:bool,classname:string,namespace?:string,extends:string,implements:array<string>}
+     * @phpstan-type InterfaceAliasArray array{'type':'interface',interfacename:string,namespace?:string,extends:array<string>}
+     * @phpstan-type TraitAliasArray array{'type':'trait',traitname:string,namespace?:string,use:array<string>}
+     * @phpstan-type AutoloadAliasArray array<string,ClassAliasArray|InterfaceAliasArray|TraitAliasArray>
+     */
     class AliasAutoloader
     {
         private string $includeFilePath;
 
+        /**
+         * @var AutoloadAliasArray
+         */
         private array $autoloadAliases = array (
   'Stripe\\Account' => 
   array (
@@ -4108,7 +4121,10 @@ namespace StripeWPFS {
             $this->includeFilePath = __DIR__ . '/autoload_alias.php';
         }
 
-        public function autoload($class)
+        /**
+         * @param string $class
+         */
+        public function autoload($class): void
         {
             if (!isset($this->autoloadAliases[$class])) {
                 return;
@@ -4141,13 +4157,16 @@ namespace StripeWPFS {
             }
         }
 
-        private function load(string $includeFile)
+        private function load(string $includeFile): void
         {
             file_put_contents($this->includeFilePath, $includeFile);
             include $this->includeFilePath;
             file_exists($this->includeFilePath) && unlink($this->includeFilePath);
         }
 
+        /**
+         * @param ClassAliasArray $class
+         */
         private function classTemplate(array $class): string
         {
             $abstract = $class['isabstract'] ? 'abstract ' : '';
@@ -4170,6 +4189,9 @@ namespace StripeWPFS {
                 EOD;
         }
 
+        /**
+         * @param InterfaceAliasArray $interface
+         */
         private function interfaceTemplate(array $interface): string
         {
             $interfacename = $interface['interfacename'];
@@ -4184,6 +4206,10 @@ namespace StripeWPFS {
                 interface $interfacename extends $extends {}
                 EOD;
         }
+
+        /**
+         * @param TraitAliasArray $trait
+         */
         private function traitTemplate(array $trait): string
         {
             $traitname = $trait['traitname'];

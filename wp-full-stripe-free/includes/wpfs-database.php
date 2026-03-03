@@ -122,11 +122,13 @@ class MM_WPFS_Database {
 		webhook TEXT,
         stripeElementsTheme VARCHAR(32) NOT NULL DEFAULT 'stripe',
         stripeElementsFont VARCHAR(32),
-		feeRecovery VARCHAR(32) default 'inherit',
+        stripeElementsCustomCss TEXT,
+		feeRecovery VARCHAR(32) default 'disable',
 		feeRecoveryOptIn TINYINT(1) DEFAULT '1',
 		feeRecoveryOptInMessage VARCHAR(1024) DEFAULT NULL,
 		feeRecoveryFeePercentage VARCHAR(32) default '2.9',
 		feeRecoveryFeeAdditionalAmount VARCHAR(32) default '0.30',
+		showPaymentDetail TINYINT(1) default '1',
         PRIMARY KEY (paymentFormID)
         ) $charset_collate;";
 
@@ -193,12 +195,13 @@ class MM_WPFS_Database {
 		webhook TEXT,
         stripeElementsTheme VARCHAR(32) NOT NULL DEFAULT 'stripe',
         stripeElementsFont VARCHAR(32),
-		feeRecovery VARCHAR(32) default 'inherit',
+        stripeElementsCustomCss TEXT,
+		feeRecovery VARCHAR(32) default 'disable',
 		feeRecoveryOptIn TINYINT(1) DEFAULT '1',
 		feeRecoveryOptInMessage VARCHAR(1024) DEFAULT NULL,
-        feeRecoveryCurrency VARCHAR(3) default 'usd',
 		feeRecoveryFeePercentage VARCHAR(32) default '2.9',
 		feeRecoveryFeeAdditionalAmount VARCHAR(32) default '0.30',
+		showPaymentDetail TINYINT(1) default '1',
         PRIMARY KEY (subscriptionFormID)
         ) $charset_collate;";
 
@@ -313,11 +316,12 @@ class MM_WPFS_Database {
         emailTemplates TEXT,
 		webhook TEXT,
         collectPhoneNumber TINYINT(1) DEFAULT '0',
-		feeRecovery VARCHAR(32) default 'inherit',
+		feeRecovery VARCHAR(32) default 'disable',
 		feeRecoveryOptIn TINYINT(1) DEFAULT '1',
 		feeRecoveryOptInMessage VARCHAR(1024) DEFAULT NULL,
 		feeRecoveryFeePercentage VARCHAR(32) default '2.9',
 		feeRecoveryFeeAdditionalAmount VARCHAR(32) default '0.30',
+		showPaymentDetail TINYINT(1) default '1',
         PRIMARY KEY (checkoutFormID)
         ) $charset_collate;";
 
@@ -387,12 +391,12 @@ class MM_WPFS_Database {
 		webhook TEXT,
         emailTemplates TEXT,
         collectPhoneNumber TINYINT(1) DEFAULT '0',
-		feeRecovery VARCHAR(32) default 'inherit',
+		feeRecovery VARCHAR(32) default 'disable',
 		feeRecoveryOptIn TINYINT(1) DEFAULT '1',
 		feeRecoveryOptInMessage VARCHAR(1024) DEFAULT NULL,
-        feeRecoveryCurrency VARCHAR(3) default 'usd',
 		feeRecoveryFeePercentage VARCHAR(32) default '2.9',
 		feeRecoveryFeeAdditionalAmount VARCHAR(32) default '0.30',
+		showPaymentDetail TINYINT(1) default '1',
         PRIMARY KEY (checkoutSubscriptionFormID)
         ) $charset_collate;";
 
@@ -628,7 +632,8 @@ class MM_WPFS_Database {
 		webhook TEXT,
         stripeElementsTheme VARCHAR(32) NOT NULL DEFAULT 'stripe',
         stripeElementsFont VARCHAR(32),
-		feeRecovery VARCHAR(32) default 'inherit',
+        stripeElementsCustomCss TEXT,
+		feeRecovery VARCHAR(32) default 'disable',
 		feeRecoveryOptIn TINYINT(1) DEFAULT '1',
 		feeRecoveryOptInMessage VARCHAR(1024) DEFAULT NULL,
 		feeRecoveryFeePercentage VARCHAR(32) default '2.9',
@@ -688,7 +693,7 @@ class MM_WPFS_Database {
         emailTemplates TEXT,
 		webhook TEXT,
         collectPhoneNumber TINYINT(1) DEFAULT '0',
-		feeRecovery VARCHAR(32) default 'inherit',
+		feeRecovery VARCHAR(32) default 'disable',
 		feeRecoveryOptIn TINYINT(1) DEFAULT '1',
 		feeRecoveryOptInMessage VARCHAR(1024) DEFAULT NULL,
 		feeRecoveryFeePercentage VARCHAR(32) default '2.9',

@@ -655,7 +655,11 @@ class MM_WPFS_InlinePaymentFormValidator extends MM_WPFS_PaymentFormValidator {
 			if ( $formModelObject instanceof MM_WPFS_Public_InlinePaymentFormModel ) {
 				$this->validateInlineFields( $bindingResult, $formModelObject );
 				$this->validateInlineTaxFields( $bindingResult, $formModelObject );
-				$this->validateGoogleReCaptcha( $bindingResult, $formModelObject );
+
+				// Skip reCaptcha validation for Setup Intents.
+				if ( 'wp_get_Setup_Intent_Client_Secret' !== $formModelObject->getAction() ) {
+					$this->validateGoogleReCaptcha( $bindingResult, $formModelObject );
+				}
 			}
 		}
 	}
@@ -765,7 +769,10 @@ class MM_WPFS_InlineDonationFormValidator extends MM_WPFS_DonationFormValidator 
 		parent::validateFields( $bindingResult, $formModelObject );
 		if ( $formModelObject instanceof MM_WPFS_Public_InlineDonationFormModel ) {
 			$this->validateInlineFields( $bindingResult, $formModelObject );
-			$this->validateGoogleReCaptcha( $bindingResult, $formModelObject );
+
+			if ( 'wp_get_Setup_Intent_Client_Secret' !== $formModelObject->getAction() && 'wpfs-save-one-time-donation' !== $formModelObject->getAction() ) {
+				$this->validateGoogleReCaptcha( $bindingResult, $formModelObject );
+			}
 		}
 	}
 

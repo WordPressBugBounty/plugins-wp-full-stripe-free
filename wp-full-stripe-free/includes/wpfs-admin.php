@@ -2509,12 +2509,6 @@ class MM_WPFS_Admin {
 			MM_WPFS_Options::OPTION_SHOW_CURRENCY_SYMBOL_INSTEAD_OF_CODE => $wpDashboardModel->getUseSymbolNotCode(),
 			MM_WPFS_Options::OPTION_SHOW_CURRENCY_SIGN_AT_FIRST_POSITION => $wpDashboardModel->getCurrencySymbolAtFirstPosition(),
 			MM_WPFS_Options::OPTION_PUT_WHITESPACE_BETWEEN_CURRENCY_AND_AMOUNT => $wpDashboardModel->getPutSpaceBetweenSymbolAndAmount(),
-			MM_WPFS_Options::OPTION_FEE_RECOVERY => $wpDashboardModel->getFeeRecovery(),
-			MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN => $wpDashboardModel->getFeeRecoveryOptIn(),
-			MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE => $wpDashboardModel->getFeeRecoveryOptInMessage(),
-			MM_WPFS_Options::OPTION_FEE_RECOVERY_CURRENCY => $wpDashboardModel->getFeeRecoveryCurrency(),
-			MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE => $wpDashboardModel->getFeeRecoveryFeePercentage(),
-			MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT => $wpDashboardModel->getFeeRecoveryFeeAdditionalAmount(),
 		] );
 	}
 

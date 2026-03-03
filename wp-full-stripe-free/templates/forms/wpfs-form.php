@@ -308,6 +308,10 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
         ) {
             $showPaymentDetails = true;
         }
+
+        if ( ! isset( $form->showPaymentDetail ) || ! $form->showPaymentDetail ) {
+            $showPaymentDetails = false;
+        }
         ?>
         <?php if ($showPaymentDetails): ?>
             <a href="" id="payment-details--<?php echo $view->getFormHash(); ?>"
@@ -340,6 +344,10 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
                             <tr class="wpfs-summary-table-row" data-wpfs-summary-row="tax-1">
                                 <td class="wpfs-summary-table-cell" data-wpfs-summary-row-label="tax-1"> </td>
                                 <td class="wpfs-summary-table-cell" data-wpfs-summary-row-value="tax-1">&nbsp;</td>
+                            </tr>
+                            <tr class="wpfs-summary-table-row" data-wpfs-summary-row="fee-recovery">
+                                <td class="wpfs-summary-table-cell" data-wpfs-summary-row-label="fee-recovery"> </td>
+                                <td class="wpfs-summary-table-cell" data-wpfs-summary-row-value="fee-recovery">&nbsp;</td>
                             </tr>
                         </tbody>
                         <tfoot>

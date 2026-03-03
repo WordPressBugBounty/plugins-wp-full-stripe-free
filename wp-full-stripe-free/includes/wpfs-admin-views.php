@@ -1373,12 +1373,6 @@ interface MM_WPFS_Admin_WordpressDashboardViewConstants {
     const FIELD_WP_DASHBOARD_SYMBOL_NOT_CODE = 'wpfs-wp-dashboard-symbol-not-code';
     const FIELD_WP_DASHBOARD_SYMBOL_AT_FIRST_POSITION = 'wpfs-wp-dashboard-symbol-first-position';
     const FIELD_WP_DASHBOARD_SPACE_BETWEEN_SYMBOL_AND_AMOUNT = 'wpfs-wp-dashboard-space-between-symbol-amount';
-    const FIELD_FEE_RECOVERY = 'wpfs-fee-recovery';
-    const FIELD_FEE_RECOVERY_OPT_IN = 'wpfs-fee-recovery-opt-in';
-    const FIELD_FEE_RECOVERY_OPT_IN_MESSAGE = 'wpfs-fee-recovery-opt-in-message';
-    const FIELD_FEE_RECOVERY_CURRENCY = 'wpfs-fee-recovery-currency';
-    const FIELD_FEE_RECOVERY_FEE_PERCENTAGE = 'wpfs-fee-recovery-fee-percentage';
-    const FIELD_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT = 'wpfs-fee-recovery-fee-additional-amount';
 
     const FIELD_ACTION_VALUE_SAVE_WP_DASHBOARD = 'wpfs-save-wp-dashboard';
 }
@@ -1392,18 +1386,6 @@ class MM_WPFS_Admin_WordpressDashboardView extends MM_WPFS_AdminView {
     protected $currencySymbolAtFirstPosition;
     /** @var MM_WPFS_Control */
     protected $putSpaceBetweenSymbolAndAmount;
-    /** @var MM_WPFS_Control */
-    protected $feeRecovery;
-    /** @var MM_WPFS_Control */
-    protected $feeRecoveryOptIn;
-    /** @var MM_WPFS_Control */
-    protected $feeRecoveryOptInMessage;
-    /** @var MM_WPFS_Control */
-    protected $feeRecoveryCurrency;
-    /** @var MM_WPFS_Control */
-    protected $feeRecoveryFeePercentage;
-    /** @var MM_WPFS_Control */
-    protected $feeRecoveryFeeAdditionalAmount;
 
     public function __construct() {
         $this->formHash = MM_WPFS_AdminViewConstants::FORM_HASH_ADMIN_WP_DASHBOARD;
@@ -1542,97 +1524,6 @@ class MM_WPFS_Admin_WordpressDashboardView extends MM_WPFS_AdminView {
         array_push( $options, $option );
 
         $this->putSpaceBetweenSymbolAndAmount->setOptions( $options );
-
-        $this->feeRecovery = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY, null, null,
-            __( "Fee Recovery", 'wp-full-stripe-free' ), null );
-
-        $optionIndex = 0;
-        $options = [];
-
-        $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY, null, null,
-            __( "Enable", 'wp-full-stripe-free' ), $optionIndex );
-        $option->setValue( 1 );
-        $optionAttributes = [
-            'type'      => 'radio',
-            'class'     => 'wpfs-form-check-input'
-        ];
-        $option->setAttributes( $optionAttributes );
-        array_push( $options, $option );
-        $optionIndex++;
-
-        $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY, null, null,
-            __( 'Disable', 'wp-full-stripe-free' ), $optionIndex );
-        $option->setValue( 0 );
-        $optionAttributes = [
-            'type'      => 'radio',
-            'class'     => 'wpfs-form-check-input'
-        ];
-        $option->setAttributes( $optionAttributes );
-        array_push( $options, $option );
-
-        $this->feeRecovery->setOptions( $options );
-
-        $this->feeRecoveryOptIn = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_OPT_IN, null, null,
-            __( "Fee Opt-in", 'wp-full-stripe-free' ), null );
-
-        $optionIndex = 0;
-        $options = [];
-
-        $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_OPT_IN, null, null,
-            __( "Optional", 'wp-full-stripe-free' ), $optionIndex );
-        $option->setValue( 1 );
-        $optionAttributes = [
-            'type'      => 'radio',
-            'class'     => 'wpfs-form-check-input'
-        ];
-        $option->setAttributes( $optionAttributes );
-        array_push( $options, $option );
-        $optionIndex++;
-
-        $option = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_OPT_IN, null, null,
-            __( 'Required', 'wp-full-stripe-free' ), $optionIndex );
-        $option->setValue( 0 );
-        $optionAttributes = [
-            'type'      => 'radio',
-            'class'     => 'wpfs-form-check-input'
-        ];
-        $option->setAttributes( $optionAttributes );
-        array_push( $options, $option );
-
-        $this->feeRecoveryOptIn->setOptions( $options );
-
-        $this->feeRecoveryOptInMessage = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_OPT_IN_MESSAGE, null, null,
-            __( "Opt-in Message", 'wp-full-stripe-free' ), null );
-
-        $this->feeRecoveryOptInMessage->setAttributes( [
-            'type'        => 'text',
-            'class'       => 'wpfs-form-control',
-            'placeholder' => MM_WPFS_Utils::getFeeRecoveryMessagePlaceholder()
-        ]);
-
-        $this->feeRecoveryCurrency = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_CURRENCY, null, null,
-            __( "Currency", 'wp-full-stripe-free' ), null );
-
-        $this->feeRecoveryCurrency->setAttributes( [
-            'type'      => 'text',
-            'class'     => 'wpfs-input-group-form-control'
-        ]);
-
-        $this->feeRecoveryFeePercentage = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_FEE_PERCENTAGE, null, null,
-            __( "Fee Percentage", 'wp-full-stripe-free' ), null );
-
-        $this->feeRecoveryFeePercentage->setAttributes( [
-            'type'      => 'text',
-            'class'     => 'wpfs-input-group-form-control'
-        ]);
-
-        $this->feeRecoveryFeeAdditionalAmount = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT, null, null,
-            __( "Additional Fee Amount", 'wp-full-stripe-free' ), null );
-
-        $this->feeRecoveryFeeAdditionalAmount->setAttributes( [
-            'type'      => 'text',
-            'class'     => 'wpfs-input-group-form-control'
-        ]);
     }
 
     /**
@@ -1644,12 +1535,6 @@ class MM_WPFS_Admin_WordpressDashboardView extends MM_WPFS_AdminView {
             MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SYMBOL_NOT_CODE                   => MM_WPFS_ControlUtils::input( MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SYMBOL_NOT_CODE ),
             MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SYMBOL_AT_FIRST_POSITION          => MM_WPFS_ControlUtils::input( MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SYMBOL_AT_FIRST_POSITION ),
             MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SPACE_BETWEEN_SYMBOL_AND_AMOUNT   => MM_WPFS_ControlUtils::input( MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_WP_DASHBOARD_SPACE_BETWEEN_SYMBOL_AND_AMOUNT ),
-            MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY                                   => MM_WPFS_ControlUtils::input( MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY ),
-            MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_OPT_IN                            => MM_WPFS_ControlUtils::input( MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_OPT_IN ),
-            MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_OPT_IN_MESSAGE                    => MM_WPFS_ControlUtils::input( MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_OPT_IN_MESSAGE ),
-            MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_CURRENCY                          => MM_WPFS_ControlUtils::input( MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_CURRENCY ),
-            MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_FEE_PERCENTAGE                    => MM_WPFS_ControlUtils::input( MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_FEE_PERCENTAGE ),
-            MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT             => MM_WPFS_ControlUtils::input( MM_WPFS_Admin_WordpressDashboardViewConstants::FIELD_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT )
         ];
 
         return array_merge( $fields, parent::getFields() );
@@ -1694,48 +1579,6 @@ class MM_WPFS_Admin_WordpressDashboardView extends MM_WPFS_AdminView {
      */
     public function putSpaceBetweenSymbolAndAmount(): MM_WPFS_Control {
         return $this->putSpaceBetweenSymbolAndAmount;
-    }
-
-    /**
-     * @return MM_WPFS_Control
-     */
-    public function feeRecovery(): MM_WPFS_Control {
-        return $this->feeRecovery;
-    }
-
-    /**
-     * @return MM_WPFS_Control
-     */
-    public function feeRecoveryOptIn(): MM_WPFS_Control {
-        return $this->feeRecoveryOptIn;
-    }
-
-    /**
-     * @return MM_WPFS_Control
-     */
-    public function feeRecoveryOptInMessage(): MM_WPFS_Control {
-        return $this->feeRecoveryOptInMessage;
-    }
-
-    /**
-     * @return MM_WPFS_Control
-     */
-    public function feeRecoveryCurrency(): MM_WPFS_Control {
-        return $this->feeRecoveryCurrency;
-    }
-
-    /**
-     * @return MM_WPFS_Control
-     */
-    public function feeRecoveryFeePercentage(): MM_WPFS_Control {
-        return $this->feeRecoveryFeePercentage;
-    }
-
-    /**
-     * @return MM_WPFS_Control
-     */
-    public function feeRecoveryFeeAdditionalAmount(): MM_WPFS_Control {
-        return $this->feeRecoveryFeeAdditionalAmount;
     }
 }
 
@@ -1990,6 +1833,9 @@ interface MM_WPFS_Admin_FormViewConstants {
     const FIELD_FORM_FEE_RECOVERY_OPT_IN_MESSAGE = 'wpfs-form-fee-recovery-opt-in-message';
     const FIELD_FORM_FEE_RECOVERY_FEE_PERCENTAGE = 'wpfs-form-fee-recovery-fee-percentage';
     const FIELD_FORM_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT = 'wpfs-form-fee-recovery-fee-additional-amount';
+    const FIELD_FORM_SHOW_PAYMENT_DETAIL = 'wpfs-form-display-payment-detail';
+    const FIELD_FORM_CUSTOM_CSS = 'wpfs-form-custom-css';
+    const FIELD_FORM_CUSTOM_CSS_HIDDEN = 'wpfs-form-custom-css-hidden';
 }
 
 interface MM_WPFS_Admin_View_CouponConstants {
@@ -2304,6 +2150,12 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
     protected $feeRecoveryFeePercentage;
     /** @var MM_WPFS_Control */
     protected $feeRecoveryFeeAdditionalAmount;
+    /** @var MM_WPFS_Control */
+    protected $displayPaymentDetail;
+    /** @var MM_WPFS_Control */
+    protected $stripeElementsCustomCss;
+    /** @var MM_WPFS_Control */
+    protected $stripeElementsCustomCssHidden;
 
     public function __construct() {
         parent::__construct();
@@ -2319,6 +2171,7 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
         $this->initStripeElementsThemeSelector();
         $this->initStripeElementsFontSelector();
         $this->createFeeRecoveryFields();
+        $this->initStripeElementsCustomCss();
     }
 
     protected function initStripeElementsThemeSelector() {
@@ -2371,6 +2224,27 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
         array_push( $selectorStyleOptions, $flatOption );
 
         $this->stripeElementsThemeSelector->setOptions( $selectorStyleOptions );
+    }
+
+    /**
+     * Initialize the custom CSS field for stripe elements.
+     *
+     * @return void
+     */
+    protected function initStripeElementsCustomCss() {
+        $this->stripeElementsCustomCss = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_CUSTOM_CSS, null, null,
+            __( 'Custom CSS for This Form', 'wp-full-stripe-free' ), null );
+        $this->stripeElementsCustomCss->setAttributes( [
+            'class'             => 'wpfs-code-editor js-code-editor',
+            'data-editor-mode'  => 'css'
+        ]);
+
+        $this->stripeElementsCustomCssHidden = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_CUSTOM_CSS_HIDDEN, null, null,
+            null, null );
+        $this->stripeElementsCustomCssHidden->setAttributes( [
+            'type'      => 'hidden',
+            'class'     => 'wpfs-custom-css-hidden'
+        ]);
     }
 
     protected function initStripeElementsFontSelector() {
@@ -2706,25 +2580,10 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
         $options = [];
 
         $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_FEE_RECOVERY, null, null,
-            /* translators: Form field label for the 'Inherit from Global Settings' option of the form */
-            __( 'Inherit from Global Settings', 'wp-full-stripe-free' ), $optionIndex );
-
-        $option->setValue( MM_WPFS::FEE_RECOVERY_INHERIT );
-
-        $optionAttributes = [
-            'type'      => 'radio',
-            'class'     => 'wpfs-form-check-input'
-        ];
-
-        $option->setAttributes( $optionAttributes );
-        array_push( $options, $option );
-        $optionIndex++;
-
-        $option = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_FEE_RECOVERY, null, null,
             /* translators: Form field label for the 'Customize' option of the form */
-            __( 'Customize', 'wp-full-stripe-free' ), $optionIndex );
+            __( 'Enable', 'wp-full-stripe-free' ), $optionIndex );
 
-        $option->setValue( MM_WPFS::FEE_RECOVERY_CUSTOMIZE );
+        $option->setValue( MM_WPFS::FEE_RECOVERY_ENABLE );
 
         $optionAttributes = [
             'type'      => 'radio',
@@ -2817,6 +2676,25 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
     }
 
     /**
+     * Initialize whether to display the payment detail field.
+     *
+     * @return void
+     */
+    protected function initPaymentDetailField() {
+        $this->displayPaymentDetail = MM_WPFS_ControlUtils::createControl(
+            $this->formHash,
+            self::FIELD_FORM_SHOW_PAYMENT_DETAIL,
+            null,
+            null,
+            __( 'Display the payment details link', 'wp-full-stripe-free' ),
+            null
+        );
+        $this->displayPaymentDetail->setAttributes( [
+            'class'     => 'js-combobox'
+        ]);
+    }
+
+    /**
      * @return array
      */
     public static function getFields() {
@@ -2838,6 +2716,8 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
             self::FIELD_FORM_FEE_RECOVERY_OPT_IN_MESSAGE              => MM_WPFS_ControlUtils::input( self::FIELD_FORM_FEE_RECOVERY_OPT_IN_MESSAGE ),
             self::FIELD_FORM_FEE_RECOVERY_FEE_PERCENTAGE              => MM_WPFS_ControlUtils::input( self::FIELD_FORM_FEE_RECOVERY_FEE_PERCENTAGE ),
             self::FIELD_FORM_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT       => MM_WPFS_ControlUtils::input( self::FIELD_FORM_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ),
+            self::FIELD_FORM_CUSTOM_CSS                               => MM_WPFS_ControlUtils::input( self::FIELD_FORM_CUSTOM_CSS ),
+            self::FIELD_FORM_CUSTOM_CSS_HIDDEN                        => MM_WPFS_ControlUtils::input( self::FIELD_FORM_CUSTOM_CSS_HIDDEN )
         ];
 
         return array_merge( $fields, parent::getFields() );
@@ -3050,6 +2930,27 @@ class MM_WPFS_Admin_FormView extends MM_WPFS_AdminView implements MM_WPFS_Admin_
      */
     public function feeRecoveryFeeAdditionalAmount(): MM_WPFS_Control {
         return $this->feeRecoveryFeeAdditionalAmount;
+    }
+
+    /**
+     * @return MM_WPFS_Control
+     */
+    public function paymentDetail(): MM_WPFS_Control {
+        return $this->displayPaymentDetail;
+    }
+
+    /**
+     * @return MM_WPFS_Control
+     */
+    public function stripeElementsCustomCss(): MM_WPFS_Control {
+        return $this->stripeElementsCustomCss;
+    }
+
+    /**
+     * @return MM_WPFS_Control
+     */
+    public function stripeElementsCustomCssHidden(): MM_WPFS_Control {
+        return $this->stripeElementsCustomCssHidden;
     }
 }
 
@@ -4055,6 +3956,7 @@ class MM_WPFS_Admin_PaymentFormView extends MM_WPFS_Admin_FormView implements MM
         $this->initProductSelectorStyle();
         $this->initCoupon();
         $this->initPaymentMethod();
+        $this->initPaymentDetailField();
     }
 
     public static function getFields() {
@@ -4070,6 +3972,7 @@ class MM_WPFS_Admin_PaymentFormView extends MM_WPFS_Admin_FormView implements MM
             self::FIELD_FORM_PRODUCT_SELECTOR_STYLE         => MM_WPFS_ControlUtils::input( self::FIELD_FORM_PRODUCT_SELECTOR_STYLE ),
             self::FIELD_FORM_ONETIME_PRODUCTS_ERROR         => MM_WPFS_ControlUtils::products( self::FIELD_FORM_ONETIME_PRODUCTS_ERROR ),
             self::FIELD_FORM_PAYMENT_METHOD                 => MM_WPFS_ControlUtils::input( self::FIELD_FORM_PAYMENT_METHOD ),
+            self::FIELD_FORM_SHOW_PAYMENT_DETAIL            => MM_WPFS_ControlUtils::input( self::FIELD_FORM_SHOW_PAYMENT_DETAIL ),
         ];
 
         return array_merge( $fields,
@@ -4207,6 +4110,7 @@ class MM_WPFS_Admin_CheckoutPaymentFormView extends MM_WPFS_Admin_PaymentFormVie
         $this->initCheckoutFields( $this->formHash );
         $this->initCheckoutPaymentFields( );
         $this->initCheckoutPhoneFields( $this->formHash );
+        $this->initPaymentDetailField();
     }
 
     protected function initCheckoutPaymentFields() {
@@ -4275,7 +4179,6 @@ interface MM_WPFS_Admin_SubscriptionFormViewConstants {
     const FIELD_FORM_COLLECT_CUSTOMER_TAX_ID = 'wpfs-form-collect-customer-tax-id';
     const FIELD_FORM_TAX_RATES = 'wpfs-form-tax-rates';
     const FIELD_FORM_TAX_RATES_ERROR = 'wpfs-form-tax-rates-error';
-    const FIELD_FORM_FEE_RECOVERY_CURRENCY = 'wpfs-form-fee-recovery-currency';
 }
 
 class MM_WPFS_Admin_SubscriptionFormView extends MM_WPFS_Admin_FormView implements MM_WPFS_Admin_SubscriptionFormViewConstants {
@@ -4292,8 +4195,6 @@ class MM_WPFS_Admin_SubscriptionFormView extends MM_WPFS_Admin_FormView implemen
     protected $productSelectorStyle;
     /** @var MM_WPFS_Control */
     protected $recurringProducts;
-    /** @var MM_WPFS_Control */
-    protected $feeRecoveryCurrency;
 
     public function __construct() {
         parent::__construct();
@@ -4393,20 +4294,12 @@ class MM_WPFS_Admin_SubscriptionFormView extends MM_WPFS_Admin_FormView implemen
             'class'     => 'wpfs-input-group-form-control wpfs-input-group-form-control--center'
         ]);
 
-
-        $this->feeRecoveryCurrency = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_FORM_FEE_RECOVERY_CURRENCY, null, null,
-            __( "Currency", 'wp-full-stripe-free' ), null );
-
-        $this->feeRecoveryCurrency->setAttributes( [
-            'type'      => 'text',
-            'class'     => 'wpfs-input-group-form-control'
-        ]);
-
         $this->initAllowSubscriptionQuantity();
         $this->initTaxFields();
         $this->initCollectCustomerTaxId();
         $this->initPlanSelectorStyle();
         $this->initCoupon();
+        $this->initPaymentDetailField();
     }
 
     public static function getFields() {
@@ -4418,7 +4311,7 @@ class MM_WPFS_Admin_SubscriptionFormView extends MM_WPFS_Admin_FormView implemen
             self::FIELD_FORM_SUBSCRIPTION_MAXIMUM_QUANTITY    => MM_WPFS_ControlUtils::inputGroupMinMax( self::FIELD_FORM_SUBSCRIPTION_MAXIMUM_QUANTITY ),
             self::FIELD_FORM_PLAN_SELECTOR_STYLE              => MM_WPFS_ControlUtils::input( self::FIELD_FORM_PLAN_SELECTOR_STYLE ),
             self::FIELD_FORM_RECURRING_PRODUCTS_ERROR         => MM_WPFS_ControlUtils::products( self::FIELD_FORM_RECURRING_PRODUCTS_ERROR ),
-            self::FIELD_FORM_FEE_RECOVERY_CURRENCY            => MM_WPFS_ControlUtils::input( self::FIELD_FORM_FEE_RECOVERY_CURRENCY ),
+            self::FIELD_FORM_SHOW_PAYMENT_DETAIL              => MM_WPFS_ControlUtils::input( self::FIELD_FORM_SHOW_PAYMENT_DETAIL ),
         ];
 
         return array_merge( $fields,
@@ -4461,13 +4354,6 @@ class MM_WPFS_Admin_SubscriptionFormView extends MM_WPFS_Admin_FormView implemen
      */
     public function recurringProducts(): MM_WPFS_Control {
         return $this->recurringProducts;
-    }
-
-    /**
-     * @return MM_WPFS_Control
-     */
-    public function feeRecoveryCurrency(): MM_WPFS_Control {
-        return $this->feeRecoveryCurrency;
     }
 }
 
@@ -4524,6 +4410,7 @@ class MM_WPFS_Admin_CheckoutSubscriptionFormView extends MM_WPFS_Admin_Subscript
         $this->initCheckoutFields( $this->formHash );
         $this->initCheckoutSubscriptionFields( $this->formHash );
         $this->initCheckoutPhoneFields( $this->formHash );
+        $this->initPaymentDetailField();
     }
 
     protected function initCheckoutSubscriptionFields( $formHash ) {
