@@ -578,13 +578,14 @@ class MM_WPFS_CheckoutDonationChargeHandler extends MM_WPFS_CheckoutChargeHandle
     /**
      * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
      * @param $stripeCustomer \StripeWPFS\Stripe\Customer
+     * @param boolean $isRecurringDonation
      *
      * @return \StripeWPFS\Stripe\PaymentMethod
      */
-    protected function setDefaultPaymentMethodFromPaymentIntent($paymentIntent, &$stripeCustomer)
+    protected function setDefaultPaymentMethodFromPaymentIntent($paymentIntent, &$stripeCustomer, $isRecurringDonation = true)
     {
         $paymentMethod = $this->checkoutSubmissionService->retrieveStripePaymentMethodByPaymentIntent($paymentIntent);
-        if (!is_null($paymentMethod)) {
+        if (!is_null($paymentMethod) && $isRecurringDonation) {
             $paymentMethod = $this->stripe->attachPaymentMethodToCustomerIfMissing(
                 $stripeCustomer,
                 $paymentMethod,
@@ -610,7 +611,7 @@ class MM_WPFS_CheckoutDonationChargeHandler extends MM_WPFS_CheckoutChargeHandle
 
         $stripeCustomer = $this->checkoutSubmissionService->retrieveStripeCustomerByCheckoutSession($checkoutSession);
         $paymentIntent = $this->checkoutSubmissionService->retrieveStripePaymentIntentByCheckoutSession($checkoutSession);
-        $paymentMethod = $this->setDefaultPaymentMethodFromPaymentIntent($paymentIntent, $stripeCustomer);
+        $paymentMethod = $this->setDefaultPaymentMethodFromPaymentIntent($paymentIntent, $stripeCustomer, $formModel->isRecurringDonation() );
 
         $this->fixCustomerNamesAndAddresses($stripeCustomer, $paymentMethod, $checkoutSession);
 
