@@ -1043,6 +1043,8 @@ class MM_WPFS_Admin {
 	}
 
 	function getSubscriptionDetails() {
+		$this->validate_request( $_POST );
+
 		$id = $_POST['id'];
 
 		try {
@@ -1606,6 +1608,8 @@ class MM_WPFS_Admin {
 	}
 
 	function getPaymentDetails() {
+		$this->validate_request( $_POST );
+
 		$id = $_POST['id'];
 
 		try {
@@ -1718,6 +1722,8 @@ class MM_WPFS_Admin {
 	}
 
 	function getDonationDetails() {
+		$this->validate_request( $_POST );
+
 		$id = $_POST['id'];
 
 		try {
@@ -2132,6 +2138,8 @@ class MM_WPFS_Admin {
 	}
 
 	function getSavedCardDetails() {
+		$this->validate_request( $_POST );
+
 		$id = $_POST['id'];
 
 		try {
@@ -3552,6 +3560,26 @@ class MM_WPFS_Admin {
 			}
 		</style>
 		<?php
+	}
+
+	/**
+	 * Validate AJAX request.
+	 * @param array<string, mixed> $post
+	 * @return void
+	 */
+	private function validate_request( $post ) {
+		$capability = 'manage_options';
+		if ( MM_WPFS_Utils::isDemoMode() ) {
+			$capability = 'read';
+		}
+
+		if ( ! current_user_can( $capability ) ) {
+			wp_send_json_error( [ 'message' => __( 'You do not have sufficient permissions.', 'wp-full-stripe-free' ) ], 403 );
+		}
+
+		if ( ! isset( $post['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $post['nonce'] ) ), 'wp-full-stripe-admin-nonce' ) ) {
+			wp_send_json_error( [ 'message' => __( 'Invalid nonce.', 'wp-full-stripe-free' ) ], 400 );
+		}
 	}
 }
 

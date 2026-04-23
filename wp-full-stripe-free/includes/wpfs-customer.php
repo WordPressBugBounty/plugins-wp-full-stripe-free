@@ -3709,7 +3709,8 @@ class MM_WPFS_Customer {
 
 			$this->stripe->updatePaymentIntent(
 				$paymentIntent,
-				! $this->paymentIntentSucceeded( $paymentIntent )
+				! $this->paymentIntentSucceeded( $paymentIntent ),
+				MM_WPFS_Mailer::canSendDonationStripeReceipt( $donationFormModel->getForm() ) ? $donationFormModel->getCardHolderEmail() : null
 			);
 
 			// in some cases we need to re-confirm the PaymentIntent

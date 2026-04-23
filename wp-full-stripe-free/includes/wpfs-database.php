@@ -1477,7 +1477,7 @@ class MM_WPFS_Database {
 	 */
 	function deleteInlineDonationForm( $id ) {
 		global $wpdb;
-		$queryResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_donation_forms WHERE paymentFormID=%d", $id ) );
+		$queryResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_donation_forms WHERE donationFormID=%d", $id ) );
 		self::handleDbError( $queryResult, __FUNCTION__ . '(): an error occurred during delete!' );
 
 		return $queryResult;
@@ -1492,7 +1492,7 @@ class MM_WPFS_Database {
 	 */
 	function deleteCheckoutDonationForm( $id ) {
 		global $wpdb;
-		$queryResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_checkout_donation_forms WHERE paymentFormID=%d", $id ) );
+		$queryResult = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}fullstripe_checkout_donation_forms WHERE checkoutDonationFormID=%d", $id ) );
 		self::handleDbError( $queryResult, __FUNCTION__ . '(): an error occurred during delete!' );
 
 		return $queryResult;

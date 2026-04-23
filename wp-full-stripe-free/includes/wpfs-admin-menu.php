@@ -100,7 +100,6 @@ class MM_WPFS_Admin_Menu {
 		$this->initActionHooks();
 		$this->initDemoMode();
 
-		add_filter( 'themeisle_sdk_blackfriday_data', [ $this, 'add_black_friday_data' ] );
 		add_filter( 'wpfs_admin_nav_bar_data', [ $this, 'get_nav_bar_data' ] );
 	}
 
@@ -455,16 +454,16 @@ class MM_WPFS_Admin_Menu {
 	/**
 	 * Load the survey script.
 	 *
-	 * @return void
+	 * @return string|null The resolved script handler, or null if unavailable.
 	 */
 	function loadSurvey() {
 		$survey_handler = apply_filters( 'themeisle_sdk_dependency_script_handler', 'survey' );
 
 		if ( empty( $survey_handler ) ) {
-			return;
+			return null;
 		}
 
-		do_action( 'themeisle_sdk_dependency_enqueue_script', 'survey' );
+		return $survey_handler;
 	}
 
 	/**
@@ -509,8 +508,9 @@ class MM_WPFS_Admin_Menu {
 		$page = $_GET['page'];
 		$tab = array_key_exists( 'tab', $_GET ) ? $_GET['tab'] : null;
 
+		$survey_handler = $this->loadSurvey();
+
 		wp_enqueue_media();
-		$this->loadSurvey();
 		$this->enqueueGlobalScripts();
 
 		$localizer = MM_WPFS_AdminScriptLocalizerFactory::createLocalizer( $this->options, $page, $tab );
@@ -533,7 +533,9 @@ class MM_WPFS_Admin_Menu {
 			'jquery-ui-sortable'
 		];
 
-		array_push( $dependencies, apply_filters( 'themeisle_sdk_dependency_script_handler', 'survey' ) );
+		if ( $survey_handler ) {
+			array_push( $dependencies, $survey_handler );
+		}
 
 		wp_enqueue_script( 'wp-full-stripe-admin-library-js', MM_WPFS_Assets::scripts( 'wpfs-admin-library.js' ), $dependencies, MM_WPFS::VERSION );
 
@@ -566,9 +568,11 @@ class MM_WPFS_Admin_Menu {
 		$wpfsAdminSettings = array_merge( $wpfsAdminSettings, $localizer->getSettingsOptions() );
 		wp_localize_script( 'wp-full-stripe-admin-js', 'wpfsAdminSettings', $wpfsAdminSettings );
 
-		add_filter( 'themeisle-sdk/survey/' . WP_FULL_STRIPE_PRODUCT_SLUG, function( $data, $page_slug ) use( $wpfsAdminSettings ) {
-			return $this->get_survey_metadata( $wpfsAdminSettings );
-		}, 10, 2);
+		if ( $survey_handler ) {
+			add_filter( 'themeisle-sdk/survey/' . WP_FULL_STRIPE_PRODUCT_SLUG, function( $data, $page_slug ) use( $wpfsAdminSettings ) {
+				return $this->get_survey_metadata( $wpfsAdminSettings );
+			}, 10, 2);
+		}
 
 		$screen = get_current_screen();
 
@@ -2552,19 +2556,19 @@ class MM_WPFS_Admin_Menu {
 		$install_category = 0;
 
 		if ( 1 < $install_days_number && 8 > $install_days_number ) {
-			$install_category = 7;
+			$install_category = '7';
 		} elseif ( 8 <= $install_days_number && 31 > $install_days_number ) {
-			$install_category = 30;
+			$install_category = '30';
 		} elseif ( 30 < $install_days_number && 90 > $install_days_number ) {
-			$install_category = 90;
+			$install_category = '90';
 		} elseif ( 90 <= $install_days_number ) {
-			$install_category = 91;
+			$install_category = '91';
 		}
 
 		$data = [
 			'environmentId' => 'cm67ylr58000cky030t6vaa9b',
 			'attributes'    => [
-				'install_days_number' => $install_days_number,
+				'install_days_number' => (string) $install_days_number,
 				'days_since_install'  => $install_category,
 				'has_pro'             => $dash_data['has_pro'],
 				'plan'                => intval( $dash_data['plan'] ),
@@ -2580,50 +2584,6 @@ class MM_WPFS_Admin_Menu {
 		}
 
 		return $data;
-	}
-
-	/**
-	 * Set Black Friday data.
-	 *
-	 * @param array<string, array<string, string>> $configs The existing configuration array.
-	 *
-	 * @return array<string, array<string, string>> The modified configuration array with Black Friday data.
-	 */
-	public function add_black_friday_data( $configs ) {
-		$config = $configs['default'];
-
-		// translators: %1$s - HTML tag, %2$s - discount, %3$s - HTML tag, %4$s - product name.
-		$message_template = __( 'Our biggest sale of the year: %1$sup to %2$s OFF%3$s on %4$s. Don\'t miss this limited-time offer.', 'wp-full-stripe-free' );
-		$product_label    = 'WP Full Pay';
-		$discount         = '70%';
-
-		$plan    = WPFS_License::get_price_id();
-		$is_pro  = 0 < $plan;
-		$license = false;
-
-		if ( $is_pro ) {
-			// translators: %1$s - HTML tag, %2$s - discount, %3$s - HTML tag, %4$s - product name.
-			$message_template = __( 'Get %1$sup to %2$s off%3$s when you upgrade your %4$s plan or renew early.', 'wp-full-stripe-free' );
-			$product_label    = 'WP Full Pay Pro';
-			$discount         = '30%';
-			$license          = WPFS_License::get_key();
-		}
-		
-		$product_label = sprintf( '<strong>%s</strong>', $product_label );
-		$url_params    = [
-			'utm_term' => $is_pro ? 'plan-' . $plan : 'free',
-			'lkey'     => ! empty( $license ) ? $license : false,
-		];
-		
-		$config['message']  = sprintf( $message_template, '<strong>', $discount, '</strong>', $product_label );
-		$config['sale_url'] = add_query_arg(
-			$url_params,
-			tsdk_translate_link( tsdk_utmify( 'https://themeisle.link/wpfp-bf', 'bfcm', 'wpfp' ) )
-		);
-
-		$configs[ WP_FULL_STRIPE_PRODUCT_SLUG ] = $config;
-
-		return $configs;
 	}
 
 	/**

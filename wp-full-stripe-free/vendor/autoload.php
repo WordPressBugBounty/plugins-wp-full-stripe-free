@@ -21,4 +21,4 @@ if (file_exists(__DIR__ . '/../includes/stripe/autoload.php')) {
 }
 
 require_once __DIR__ . '/composer/autoload_real.php';
-return ComposerAutoloaderInitdc60629b31f9991f9e5bfab40861184a::getLoader();
+return ComposerAutoloaderInitc77847b7d63aa8cd5dc3a58ba9f88a36::getLoader();
