@@ -3282,4 +3282,34 @@ class MM_WPFS_Stripe {
 
 		return $customer_name;
 	}
+
+	/**
+	 * Searches Stripe customers by email address.
+	 *
+  	 * Returns the raw result of Stripe's customers.search endpoint, which contains
+ 	 * a `data` array of matching customer records. Callers must inspect `->data`
+ 	 * and handle zero, one, or multiple matches.
+ 	 *
+ 	 * @param string $email The email address to search for.
+ 	 * @return object Search result object returned by Stripe's customers.search endpoint.
+	 */
+	public function retrieveCustomerByEmail( $email ) {
+		$customer = null;
+
+		if ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) {
+			$customer = $this->remoteRequest(
+				'get',
+				'/customers/search?query=' . urlencode( 'email:\'' . $email . '\'' ) . '&mode=test&accountId=' . $this->testStripeAcountId
+			);
+		} elseif ( $this->apiMode === 'live' && $this->usingWpLivePlatform ) {
+			$customer = $this->remoteRequest(
+				'get',
+				'/customers/search?query=' . urlencode( 'email:\'' . $email . '\'' ) . '&mode=live&accountId=' . $this->liveStripeAcountId
+			);
+		} else {
+			$customer = json_decode( $this->stripe->customers->search( [ 'query' => 'email:\'' . $email . '\'' ] )->toJSON() );
+		}
+
+		return $customer;
+	}
 }

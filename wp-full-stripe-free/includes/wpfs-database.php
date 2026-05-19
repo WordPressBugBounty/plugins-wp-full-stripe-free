@@ -767,6 +767,11 @@ class MM_WPFS_Database {
 	public function insertInlineDonation( $donationFormModel, $paymentIntent, $subscription, $lastCharge ) {
 		global $wpdb;
 
+		$existingDonation = $this->getDonationByPaymentIntentId( $paymentIntent->id );
+		if ( $existingDonation ) {
+			return false;
+		}
+
 		$stripeCustomerID = $donationFormModel->getStripeCustomer()->id;
 		$stripeSubscriptionID = $donationFormModel->isRecurringDonation() ? $subscription->id : null;
 		$billingAddress = $donationFormModel->getBillingAddress();
@@ -3052,7 +3057,7 @@ class MM_WPFS_Database {
 	public function getTotalDonationsByFormId( $formId, $formType ) {
 		global $wpdb;
 
-		$result = $wpdb->get_var( $wpdb->prepare( "SELECT sum(amount) FROM {$wpdb->prefix}fullstripe_donations WHERE formId=%d AND formType=%s AND lastChargeStatus='succeeded' AND refunded=0;", $formId, $formType ) );
+		$result = $wpdb->get_var( $wpdb->prepare( "SELECT sum(amount) FROM {$wpdb->prefix}fullstripe_donations WHERE formId=%d AND formType=%s AND lastChargeStatus='succeeded' AND refunded=0 AND (donationFrequency=%s OR subscriptionStatus IS NULL OR subscriptionStatus != %s);", $formId, $formType, MM_WPFS_DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_ONE_TIME, MM_WPFS::SUBSCRIBER_STATUS_CANCELLED ) );
 		self::handleDbError( $result, __FUNCTION__ . '(): an error occurred during select!' );
 
 		return $result ? (int) $result : 0;

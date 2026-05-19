@@ -1759,11 +1759,12 @@ class MM_WPFS_Customer {
 				);
 			} elseif ( $paymentIntent !== null && $this->paymentIntentSucceeded( $paymentIntent ) ) {
 
-				$this->setInvoiceDataFromPaymentIntent( $paymentIntent, $transactionData );
-
-				$this->db->insertInlineDonation( $donationFormModel, $paymentIntent, $subscription, $latestCharge );
-
-				$this->fireAfterInlineDonationAction( $donationFormModel, $transactionData, $paymentIntent );
+				if ( null === $this->db->getDonationByPaymentIntentId( $paymentIntent->id ) ) {
+					$this->setInvoiceDataFromPaymentIntent( $paymentIntent, $transactionData );
+	
+					$this->db->insertInlineDonation( $donationFormModel, $paymentIntent, $subscription, $latestCharge );	
+					$this->fireAfterInlineDonationAction( $donationFormModel, $transactionData, $paymentIntent );
+				}
 
 				$this->createPaymentIntentResultSuccess(
 					$paymentIntentResult,
@@ -3489,7 +3490,45 @@ class MM_WPFS_Customer {
 			);
 		}
 
+		$customerEmail = $donationFormModel->getCardHolderEmail();
+		$customerName = $donationFormModel->getCardHolderName();
+
+		$stripeCustomer = $this->stripe->retrieveCustomerByEmail( $customerEmail );
+		
+		if ( is_null( $stripeCustomer ) || ! isset( $stripeCustomer->data ) || count( $stripeCustomer->data ) === 0 ) {
+			$metadata = [];
+			$metadata['webhookUrl'] = esc_attr( MM_WPFS_EventHandler::getWebhookEndpointURL( $this->staticContext ) );
+			
+			$stripeCustomer = $this->stripe->createCustomerWithPaymentMethod(
+				null, // No payment method at this stage
+				$customerName,
+				$customerEmail,
+				$metadata,
+				null, // taxIdType
+				null, // taxId
+				$donationFormModel->getBillingAddress(),
+				$donationFormModel->getBillingName(),
+				$donationFormModel->getShippingAddress(),
+				$donationFormModel->getShippingName()
+			);
+			
+			$donationFormModel->setStripeCustomer( $stripeCustomer );
+		} else {
+			// Use existing customer
+			$existingCustomer = $stripeCustomer->data[0];
+			$donationFormModel->setStripeCustomer( $existingCustomer );
+		}
+
+		$metadata = $donationFormModel->getMetadata();
+		$metadata['ip_address'] = $donationFormModel->getIpAddress();
+		$metadata['donation_frequency'] = $donationFormModel->getDonationFrequency();
+		$metadata['form_id'] = $donationFormModel->getForm()->donationFormID;
+		$metadata['form_type'] = MM_WPFS::FORM_TYPE_INLINE_DONATION;
+		$metadata['custom_fields'] = $donationFormModel->getCustomFieldsJSON();
+		$metadata['customer_id'] = $donationFormModel->getStripeCustomer()->id;
+		
 		$paymentIntent->amount = $amount;
+		$paymentIntent->metadata = $metadata;
 
 		$this->stripe->updatePaymentIntent( $paymentIntent, true );
 
@@ -3737,9 +3776,10 @@ class MM_WPFS_Customer {
 				$latestCharge = $this->stripe->getLatestCharge( $paymentIntent );
 
 				if ( $latestCharge !== null ) {
-					$this->db->insertInlineDonation( $donationFormModel, $paymentIntent, null, $latestCharge );
-
-					$this->fireAfterInlineDonationAction( $donationFormModel, $transactionData, $paymentIntent );
+ 					if ( null === $this->db->getDonationByPaymentIntentId( $paymentIntent->id ) ) {
+ 						$this->db->insertInlineDonation( $donationFormModel, $paymentIntent, null, $latestCharge );
+ 						$this->fireAfterInlineDonationAction( $donationFormModel, $transactionData, $paymentIntent );
+ 					}
 
 					$this->createPaymentIntentResultSuccess(
 						$paymentIntentResult,

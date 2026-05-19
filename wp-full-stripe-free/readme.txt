@@ -1,10 +1,10 @@
 === Stripe Payment Forms by WP Full Pay – Accept Credit Card Payments, Donations & Subscriptions ===
 Contributors: themeisle
-Tags: stripe payments, credit card payments, donation form, stripe checkout, stripe gateway
+Tags: stripe, payment forms, donations, subscriptions, credit card
 Requires at least: 5.3
 Requires PHP: 7.4
-Tested up to: 6.9
-Stable tag: 8.4.2
+Tested up to: 7.0
+Stable tag: 8.4.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -283,12 +283,11 @@ WP Full Pay fully supports Strong Customer Authentication (SCA) requirements for
 
 == Changelog ==
 
-#####   Version 8.4.2 (2026-04-23)
+#####   Version 8.4.3 (2026-05-19)
 
-- Enhanced security
-- Fixed issue where it was not possible to delete donation forms
-- Fixed issue where Stripe donation receipt email was never sent
-- Fixed changelog
+- Fixed issue with One-time donations when duplicate row was inserted when form submit runs more than once for the same Payment
+- Fixed missing row when donor abandons after Stripe authentication in one-time donation
+- Fixed cancelled recurring donations being incorrectly included in donation goal totals
 - Updated dependencies
 
 

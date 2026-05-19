@@ -1368,7 +1368,144 @@ class MM_WPFS_ChargeSucceeded extends MM_WPFS_EventProcessor
 	{
 		$charge = $this->getDataObject($event);
 		if (!is_null($charge)) {
+			if ( ! empty( $charge->payment_intent ) ) {
+				$this->insertDonationFromWebhookIfNeeded( $charge, $context );
+			}
 			$this->updatePaymentStatus($charge);
+			
+		}
+	}
+
+	/**
+	 * Fallback insert for donations when AJAX insert failed or never fired.
+	 * Uses metadata stored on the PaymentIntent to reconstruct the donation row.
+	 *
+	 * @param mixed $charge
+	 * @param MM_WPFS_LiveModeAwareEventProcessorContext $context
+	 * @return void
+	 */
+	protected function insertDonationFromWebhookIfNeeded( $charge, $context ) {
+		if ( ! isset( $charge->payment_intent ) ) {
+			return;
+		}
+
+		global $wpdb;
+
+		$existingDonation = $this->db->getDonationByPaymentIntentId( $charge->payment_intent );
+		if ( $existingDonation ) {
+			return;
+		}
+
+		try {
+			$paymentIntent = $context->getStripe()->retrievePaymentIntent( $charge->payment_intent );
+			if ( ! isset( $paymentIntent->metadata ) ) {
+				return;
+			}
+
+			/** @var \stdClass $metadata */
+			$metadata = $paymentIntent->metadata;
+
+			// Check if this is a donation by looking for donation_frequency metadata.
+			if ( ! isset( $metadata->donation_frequency ) ) {
+				return;
+			}
+
+			$customer_id = isset( $charge->customer ) ? $charge->customer : null;
+			if ( ! $customer_id ) {
+				$customer_id = isset( $metadata->customer_id ) ? $metadata->customer_id : null;
+			}
+			$billing_address = explode( '|', $metadata->billing_address ?? '' );
+			$shipping_address = explode( '|', $metadata->shipping_address ?? '' );
+			$description = isset( $paymentIntent->description ) ? $paymentIntent->description : '';
+			$description = MM_WPFS_Utils::truncateString( $description, 255 );
+
+			// Reconstruct donation data from metadata and charge
+			$data = [
+				'stripeCustomerID' => $customer_id,
+				'stripeSubscriptionID' => null,
+				'stripePaymentIntentID' => $charge->payment_intent,
+				'stripeSetupIntentID' => null,
+				'stripePlanID' => null,
+				'description' => $description,
+				'paymentMethod' => 'card',
+				'paid' => $charge->paid,
+				'captured' => $charge->captured,
+				'refunded' => $charge->refunded,
+				'expired' => false,
+				'failureCode' => $charge->failure_code,
+				'failureMessage' => $charge->failure_message,
+				'lastChargeStatus' => $charge->status,
+				'currency' => isset( $paymentIntent->currency ) ? $paymentIntent->currency : '',
+				'amount' => isset( $paymentIntent->amount ) ? $paymentIntent->amount : 0,
+				'donationFrequency' => isset( $metadata->donation_frequency ) ? $metadata->donation_frequency : '',
+				'subscriptionStatus' => null,
+				'name' => isset( $metadata->customer_name ) ? $metadata->customer_name : '',
+				'email' => isset( $metadata->customer_email ) ? $metadata->customer_email : '',
+				'billingName' => isset( $metadata->billing_name ) ? $metadata->billing_name : '',
+				'addressLine1' => $billing_address[0],
+				'addressLine2' => isset( $billing_address[1] ) ? $billing_address[1] : '',
+				'addressZip' => isset( $billing_address[2] ) ? $billing_address[2] : '',
+				'addressCity' => isset( $billing_address[3] ) ? $billing_address[3] : '',
+				'addressState' => isset( $billing_address[4] ) ? $billing_address[4] : '',
+				'addressCountry' => isset( $billing_address[5] ) ? $billing_address[5] : '',
+				'addressCountryCode' => isset( $billing_address[6] ) ? $billing_address[6] : '',
+				'shippingName' => isset( $metadata->shipping_name ) ? $metadata->shipping_name : '',
+				'shippingAddressLine1' => $shipping_address[0],
+				'shippingAddressLine2' => isset( $shipping_address[1] ) ? $shipping_address[1] : '',
+				'shippingAddressZip' => isset( $shipping_address[2] ) ? $shipping_address[2] : '',
+				'shippingAddressCity' => isset( $shipping_address[3] ) ? $shipping_address[3] : '',
+				'shippingAddressState' => isset( $shipping_address[4] ) ? $shipping_address[4] : '',
+				'shippingAddressCountry' => isset( $shipping_address[5] ) ? $shipping_address[5] : '',
+				'shippingAddressCountryCode' => isset( $shipping_address[6] ) ? $shipping_address[6] : '',
+				'created' => date( 'Y-m-d H:i:s', $paymentIntent->created ),
+				'livemode' => $paymentIntent->livemode ? 1 : 0,
+				'formId' => isset( $metadata->form_id ) ? $metadata->form_id : null,
+				'formType' => isset( $metadata->form_type ) ? $metadata->form_type : MM_WPFS::FORM_TYPE_INLINE_DONATION,
+				'formName' => isset( $metadata->form_name ) ? $metadata->form_name : '',
+				'ipAddressSubmit' => isset( $metadata->ip_address ) ? $metadata->ip_address : '',
+				'customFields' => isset( $metadata->custom_fields ) ? $metadata->custom_fields : null,
+				'phoneNumber' => ! empty( $metadata->cardholder_phone ) ? $metadata->cardholder_phone : null
+			];
+
+			global $wpdb;
+			$insertResult = $wpdb->insert(
+				$wpdb->prefix . 'fullstripe_donations',
+				apply_filters( 'fullstripe_insert_donation_data', $data )
+			);
+
+			if ( $insertResult ) {
+				$this->logger->debug( __FUNCTION__, 'Donation inserted via webhook fallback for PaymentIntent: ' . $charge->payment_intent );
+
+				$report = $this->db->getReportByPaymentIntentID( $charge->payment_intent );
+				if ( $report ) {
+					$this->db->updateReport( $report->id, [
+						'updated_at' => date( 'Y-m-d H:i:s', time() ),
+						'currency' => $data['currency'],
+						'amount' => $data['amount'],
+						'stripeCustomerID' => $data['stripeCustomerID'],
+						'status' => $this->db->getPaymentStatus( $charge ),
+						'mode' => $charge->livemode ? 'live' : 'test',
+					] );
+				} else {
+					$this->db->addReport( [
+						'created_at' => date( 'Y-m-d H:i:s', $charge->created ),
+						'updated_at' => date( 'Y-m-d H:i:s', $charge->created ),
+						'currency' => $data['currency'],
+						'amount' => $data['amount'],
+						'formId' => $data['formId'],
+						'formType' => $data['formType'],
+						'stripePaymentIntentID' => $data['stripePaymentIntentID'],
+						'stripeCustomerID' => $data['stripeCustomerID'],
+						'stripeSubscriptionID' => $data['stripeSubscriptionID'],
+						'status' => $this->db->getPaymentStatus( $charge ),
+						'mode' => $charge->livemode ? 'live' : 'test',
+					] );
+				}
+			} else {
+				$this->logger->error( __FUNCTION__, 'Failed to insert donation via webhook fallback for PaymentIntent: ' . $charge->payment_intent );
+			}
+		} catch ( Exception $ex ) {
+			$this->logger->error( __FUNCTION__, 'Error in webhook fallback donation insert', $ex );
 		}
 	}
 }
