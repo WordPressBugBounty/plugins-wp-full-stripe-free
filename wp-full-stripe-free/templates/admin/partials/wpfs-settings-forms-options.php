@@ -21,6 +21,20 @@
                     </select>
                 </div>
             </div>
+            <div class="wpfs-form-group" id="default-payment-details-display">
+                <label for="<?php $view->showPaymentDetail()->id(); ?>" class="wpfs-form-label"><?php $view->showPaymentDetail()->label(); ?></label>
+                <div class="wpfs-ui wpfs-form-select">
+                    <?php
+                    $showPaymentDetail = ( ! isset( $formsOptions->showPaymentDetail ) || is_null( $formsOptions->showPaymentDetail ) || '' === $formsOptions->showPaymentDetail ) ? '1' : $formsOptions->showPaymentDetail;
+                    ?>
+                    <select id="<?php $view->showPaymentDetail()->id(); ?>" name="<?php $view->showPaymentDetail()->name(); ?>" <?php $view->showPaymentDetail()->attributes(); ?>>
+                        <option value="1" <?php selected( $showPaymentDetail, '1' ); ?>><?php esc_html_e( 'On hover (link)', 'wp-full-stripe-free' ); ?></option>
+                        <option value="2" <?php selected( $showPaymentDetail, '2' ); ?>><?php esc_html_e( 'Always visible', 'wp-full-stripe-free' ); ?></option>
+                        <option value="0" <?php selected( $showPaymentDetail, '0' ); ?>><?php esc_html_e( 'Hidden', 'wp-full-stripe-free' ); ?></option>
+                    </select>
+                </div>
+                <p class="wpfs-form-help"><?php esc_html_e( 'Applies to newly created payment and subscription forms. Existing forms keep their own setting.', 'wp-full-stripe-free' ); ?></p>
+            </div>
             <div class="wpfs-form-block">
                 <div class="wpfs-form-group">
                     <label class="wpfs-form-label"><?php esc_html_e( 'Prefill form fields', 'wp-full-stripe-free' ); ?></label>

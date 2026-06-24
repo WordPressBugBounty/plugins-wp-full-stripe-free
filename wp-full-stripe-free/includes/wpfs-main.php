@@ -10,7 +10,7 @@ https://themeisle.com
 */
 
 class MM_WPFS {
-	const VERSION = '8.4.3';
+	const VERSION = '8.5.0';
 	const REQUEST_PARAM_NAME_WPFS_RENDERED_FORMS = 'wpfs_rendered_forms';
 
 	const HANDLE_WP_FULL_STRIPE_JS = 'wp-full-stripe-js';
@@ -160,6 +160,8 @@ class MM_WPFS {
 	const JS_VARIABLE_GOOGLE_RECAPTCHA_SITE_KEY = 'googleReCaptchaSiteKey';
 	const JS_VARIABLE_L10N = 'l10n';
 	const JS_VARIABLE_FORM_FIELDS = 'formFields';
+	const JS_VARIABLE_NONCE = 'nonce';
+	const NONCE_ACTION_UPDATE_FAILED_PAYMENT_STATUS = 'wpfs_update_failed_payment_status';
 
 	const ACTION_NAME_BEFORE_SAVE_CARD = 'fullstripe_before_card_capture';
 	const ACTION_NAME_AFTER_SAVE_CARD = 'fullstripe_after_card_capture';
@@ -326,6 +328,7 @@ class MM_WPFS {
 		include 'wpfs-tables.php';
 		include 'wpfs-languages.php';
 		include 'wpfs-form-fields-configurable.php';
+		include 'wpfs-custom-fields.php';
 		include 'wpfs-admin.php';
 		include 'wpfs-admin-menu.php';
 		include 'wpfs-block.php';
@@ -459,6 +462,7 @@ class MM_WPFS {
 			MM_WPFS_Options::OPTION_CATCH_UNCAUGHT_ERRORS => 0,
 			MM_WPFS_Options::OPTION_SET_FORM_FIELDS_VIA_URL_PARAMETERS => 0,
 			MM_WPFS_Options::OPTION_DEFAULT_BILLING_COUNTRY => MM_WPFS::DEFAULT_BILLING_COUNTRY_INITIAL_VALUE,
+			MM_WPFS_Options::OPTION_DEFAULT_SHOW_PAYMENT_DETAIL => '1',
 			MM_WPFS_Options::OPTION_USE_WP_TEST_PLATFORM => '0',
 			MM_WPFS_Options::OPTION_USE_WP_LIVE_PLATFORM => '0',
 			MM_WPFS_Options::OPTION_TEST_ACCOUNT_ID => null,
@@ -919,6 +923,7 @@ class MM_WPFS {
 	function fullstripe_set_common_js_variables() {
 		$wpfsFormOptions = [
 			self::JS_VARIABLE_AJAX_URL => admin_url( 'admin-ajax.php' ),
+			self::JS_VARIABLE_NONCE => wp_create_nonce( self::NONCE_ACTION_UPDATE_FAILED_PAYMENT_STATUS ),
 			self::JS_VARIABLE_GOOGLE_RECAPTCHA_SITE_KEY => MM_WPFS_ReCaptcha::getSiteKey( $this->staticContext ),
 			self::JS_VARIABLE_FORM_FIELDS => [
 				'inlinePayment' => MM_WPFS_InlinePaymentFormView::getFields(),
@@ -952,6 +957,17 @@ class MM_WPFS {
 					'invalid_payment_amount_title' =>
 						/* translators: Banner title when the payment amount cannot be determined (the form has been tampered with) */
 						__( 'Invalid payment amount', 'wp-full-stripe-free' )
+				],
+				'processing' => [
+					'title' =>
+						/* translators: Title shown on the processing overlay while a payment is being completed */
+						__( 'Processing your payment…', 'wp-full-stripe-free' ),
+					'save_card_title' =>
+						/* translators: Title shown on the processing overlay while a card is being saved (no charge is made) */
+						__( 'Saving your card…', 'wp-full-stripe-free' ),
+					'message' =>
+						/* translators: Message shown on the processing overlay while a payment is being completed or a card is being saved */
+						__( 'Please don’t close or refresh this window.', 'wp-full-stripe-free' )
 				],
 				'stripe_errors' => [
 					MM_WPFS_Stripe::INVALID_NUMBER_ERROR => $this->stripe->resolveErrorMessageByCode( MM_WPFS_Stripe::INVALID_NUMBER_ERROR ),

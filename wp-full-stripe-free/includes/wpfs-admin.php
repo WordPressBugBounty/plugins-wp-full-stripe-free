@@ -537,8 +537,27 @@ class MM_WPFS_Admin {
 		$emailTemplates = MM_WPFS_Mailer::extractEmailTemplates( $this->staticContext, $formType, $emailTemplatesJson );
 
 		foreach ( $model->getEmailTemplatesHidden() as $srcTemplate ) {
-			if ( property_exists( $emailTemplates, $srcTemplate->type ) ) {
-				$emailTemplates->{$srcTemplate->type}->enabled = $srcTemplate->enabled;
+			if ( ! is_object( $srcTemplate ) || ! isset( $srcTemplate->type ) || ! is_scalar( $srcTemplate->type ) ) {
+				continue;
+			}
+
+			$type = (string) $srcTemplate->type;
+			if ( property_exists( $emailTemplates, $type ) ) {
+				$emailTemplates->{$type}->enabled = $srcTemplate->enabled;
+				if ( MM_WPFS_Mailer::isPluginEmailTemplate( $type ) ) {
+					$subject = ( isset( $srcTemplate->subject ) && is_scalar( $srcTemplate->subject ) ) ? sanitize_text_field( (string) $srcTemplate->subject ) : '';
+					$body    = ( isset( $srcTemplate->body ) && is_scalar( $srcTemplate->body ) ) ? (string) $srcTemplate->body : '';
+
+					if ( ! isset( $emailTemplates->{$type}->content ) || ! is_object( $emailTemplates->{$type}->content ) ) {
+						$emailTemplates->{$type}->content = new \StdClass;
+					}
+					if ( ! isset( $emailTemplates->{$type}->content->default ) || ! is_object( $emailTemplates->{$type}->content->default ) ) {
+						$emailTemplates->{$type}->content->default = new \StdClass;
+					}
+
+					$emailTemplates->{$type}->content->default->subject = $subject;
+					$emailTemplates->{$type}->content->default->body    = $body;
+				}
 			}
 		}
 
@@ -1501,6 +1520,13 @@ class MM_WPFS_Admin {
 						'wpfs-credit-card wpfs-przelewy24 wpfs-credit-card--lg',
 						/* translators: Label for the przelewy24 payment method */
 						__( 'Przelewy24', 'wp-full-stripe-free' )
+					];
+					break;
+				case 'paynow':
+					$return = [
+						'wpfs-credit-card wpfs-paynow wpfs-credit-card--lg',
+						/* translators: Label for the PayNow payment method */
+						__( 'PayNow', 'wp-full-stripe-free' )
 					];
 					break;
 				case 'revolut_pay':
@@ -2881,6 +2907,7 @@ class MM_WPFS_Admin {
 			MM_WPFS_Options::OPTION_FILL_IN_EMAIL_FOR_LOGGED_IN_USERS => $formsOptionsModel->getFillInEmail(),
 			MM_WPFS_Options::OPTION_SET_FORM_FIELDS_VIA_URL_PARAMETERS => $formsOptionsModel->getSetFormFieldsViaUrlParameters(),
 			MM_WPFS_Options::OPTION_DEFAULT_BILLING_COUNTRY => $formsOptionsModel->getDefaultBillingCountry(),
+			MM_WPFS_Options::OPTION_DEFAULT_SHOW_PAYMENT_DETAIL => $formsOptionsModel->getShowPaymentDetail(),
 		] );
 	}
 
@@ -3916,8 +3943,24 @@ class MM_WPFS_Admin_CreateFormFactory {
 	/** @var MM_WPFS_Database */
 	private $db = null;
 
+	/** @var MM_WPFS_Options */
+	private $options = null;
+
 	public function __construct() {
 		$this->db = new MM_WPFS_Database();
+		$this->options = new MM_WPFS_Options();
+	}
+
+	/**
+	 * Global default for how the payment details summary is displayed on newly created forms.
+	 * Falls back to "on hover" (1) when the option has not been set yet.
+	 *
+	 * @return string
+	 */
+	private function getDefaultShowPaymentDetail() {
+		$mode = $this->options->get( MM_WPFS_Options::OPTION_DEFAULT_SHOW_PAYMENT_DETAIL );
+
+		return ( is_null( $mode ) || '' === $mode ) ? '1' : $mode;
 	}
 
 	/**
@@ -3947,6 +3990,7 @@ class MM_WPFS_Admin_CreateFormFactory {
 		$form['preferredLanguage'] = self::PREFERRED_LANGUAGE_AUTO;
 		$form['decimalSeparator'] = self::DECIMAL_SEPARATOR_DOT;
 		$form['paymentmethods'] = '["card","link"]';
+		$form['showPaymentDetail'] = $this->getDefaultShowPaymentDetail();
 
 		return $form;
 	}
@@ -3992,6 +4036,7 @@ class MM_WPFS_Admin_CreateFormFactory {
 		$form['termsOfUseNotCheckedErrorMessage'] = MM_WPFS_Utils::getDefaultTermsOfUseNotCheckedErrorMessage();
 		$form['preferredLanguage'] = self::PREFERRED_LANGUAGE_AUTO;
 		$form['decimalSeparator'] = self::DECIMAL_SEPARATOR_DOT;
+		$form['showPaymentDetail'] = $this->getDefaultShowPaymentDetail();
 
 		return $form;
 	}
@@ -4033,6 +4078,7 @@ class MM_WPFS_Admin_CreateFormFactory {
 		$form['decoratedPlans'] = json_encode( [] );
 		$form['vatRateType'] = MM_WPFS::FIELD_VALUE_TAX_RATE_NO_TAX;
 		$form['vatRates'] = json_encode( [] );
+		$form['showPaymentDetail'] = $this->getDefaultShowPaymentDetail();
 
 		return $form;
 	}
@@ -4076,6 +4122,7 @@ class MM_WPFS_Admin_CreateFormFactory {
 		$form['decoratedPlans'] = json_encode( [] );
 		$form['vatRateType'] = MM_WPFS::FIELD_VALUE_TAX_RATE_NO_TAX;
 		$form['vatRates'] = json_encode( [] );
+		$form['showPaymentDetail'] = $this->getDefaultShowPaymentDetail();
 
 		return $form;
 	}

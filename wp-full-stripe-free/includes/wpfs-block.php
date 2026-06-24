@@ -22,7 +22,11 @@ class MM_WPFS_Block {
 	 * @return void
 	 */
 	public function register_block() {
-		register_block_type( WP_FULL_STRIPE_PATH . '/assets/build' );
+		$block_path = WP_FULL_STRIPE_PATH . '/assets/build';
+
+		if ( file_exists( $block_path . '/block.json' ) ) {
+			register_block_type( $block_path );
+		}
 	}
 
 	/**

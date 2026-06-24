@@ -331,6 +331,14 @@ class MM_WPFS_Admin_FormsOptionsValidator extends MM_WPFS_Validator {
                 __( 'Please select whether form fields can be set via URL parameters', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
+
+        $paymentDetailValues = [ '0', '1', '2' ];
+        if ( false === array_search( $formModelObject->getShowPaymentDetail(), $paymentDetailValues ) ) {
+            $error =
+                /* translators: Validation error message when the default payment details display mode is not selected */
+                __( 'Please select how the payment details should be displayed by default', 'wp-full-stripe-free' );
+            $bindingResult->addGlobalError( $error );
+        }
     }
 }
 
@@ -1274,11 +1282,11 @@ abstract class MM_WPFS_Admin_PaymentFormValidator extends MM_WPFS_Admin_FormVali
      * @return void
      */
     protected function validateShowPaymentDetail( $bindingResult, $formModel ) {
-        $yesNoValues = [ '0', '1' ];
+        $paymentDetailValues = [ '0', '1', '2' ];
 
-        if ( false === array_search( $formModel->showPaymentDetail(), $yesNoValues ) ) {
+        if ( false === array_search( $formModel->showPaymentDetail(), $paymentDetailValues ) ) {
             $error =
-                __( 'Please select whether the payment details should be displayed.', 'wp-full-stripe-free' );
+                __( 'Please select how the payment details should be displayed.', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }
@@ -1473,11 +1481,11 @@ abstract class MM_WPFS_Admin_SubscriptionFormValidator extends MM_WPFS_Admin_For
      * @return void
      */
     protected function validateShowPaymentDetail( $bindingResult, $formModel ) {
-        $yesNoValues = [ '0', '1' ];
+        $paymentDetailValues = [ '0', '1', '2' ];
 
-        if ( false === array_search( $formModel->showPaymentDetail(), $yesNoValues ) ) {
+        if ( false === array_search( $formModel->showPaymentDetail(), $paymentDetailValues ) ) {
             $error =
-                __( 'Please select whether the payment details should be displayed.', 'wp-full-stripe-free' );
+                __( 'Please select how the payment details should be displayed.', 'wp-full-stripe-free' );
             $bindingResult->addGlobalError( $error );
         }
     }

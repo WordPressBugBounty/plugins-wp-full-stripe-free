@@ -34,7 +34,7 @@ if (
 		for="<?php $option->id(); ?>"
 	>
 		<span class="wpfs-form-check-label__title">
-			<?php $option->label(); ?> (<a href="<?php echo $option->metadata()['external_docs'] ?>" target="_blank">Stripe docs</a>)
+			<?php $option->label(); ?> (<a href="<?php echo esc_url( $option->metadata()['external_docs'] ); ?>" target="_blank" rel="noopener noreferrer">Stripe docs</a>)
 		</span>
 		<?php if ( isset( $option->metadata()['currencies'] ) and count( $option->metadata()['currencies'] ) > 0 ) : ?>
 			<div class="wpfs-form-check-label__desc">
@@ -78,7 +78,7 @@ if (
 			</div>
 		<?php endif; ?>
 		<span class="wpfs-form-check-label__illu">
-			<img src="<?php echo MM_WPFS_Assets::images( 'payment-methods/' . $option->metadata()['icon'] ); ?>" />
+			<img src="<?php echo esc_url( MM_WPFS_Assets::images( 'payment-methods/' . $option->metadata()['icon'] ) ); ?>" alt="" />
 		</span>
 	</label>
 </div>

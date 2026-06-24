@@ -72,7 +72,10 @@ abstract class MM_WPFS_OneTimeInvoiceContextCreator {
 	public function getContext() {
 		$result = new MM_WPFS_CreateOneTimeInvoiceContext();
 
-		$result->stripeCustomerId = $this->formModel->getStripeCustomer()->id;
+		// The customer may not exist yet on preview/pricing flows (e.g. coupon/tax recompute
+		// before checkout), so guard against reading ->id on null.
+		$stripeCustomer = $this->formModel->getStripeCustomer();
+		$result->stripeCustomerId = is_null( $stripeCustomer ) ? null : $stripeCustomer->id;
 		$result->currency = $this->formModel->getForm()->currency;
 		$result->amount = $this->formModel->getAmount();
 		$result->productName = $this->formModel->getProductName();
@@ -589,6 +592,10 @@ class MM_WPFS_Customer {
 
 	const DEFAULT_CHECKOUT_LINE_ITEM_IMAGE = 'https://stripe.com/img/documentation/checkout/marketplace.png';
 
+	// PaymentIntent metadata key holding the pre-tax base amount, so tax can always be
+	// recomputed from a clean base instead of an already tax-inclusive amount (#413).
+	const METADATA_KEY_PRETAX_BASE_AMOUNT = 'wpfs_pretax_base_amount';
+
 	/** @var $stripe MM_WPFS_Stripe */
 	protected $stripe = null;
 
@@ -725,10 +732,17 @@ class MM_WPFS_Customer {
 			if ( ! empty( $submitHash ) && ! empty( $submitStatus ) ) {
 				$popupFormSubmit = $this->checkoutSubmissionService->retrieveSubmitEntry( $submitHash );
 				if ( ! is_null( $popupFormSubmit ) && isset( $popupFormSubmit->checkoutSessionId ) ) {
-					$checkoutSession = $this->checkoutSubmissionService->retrieveCheckoutSession( $popupFormSubmit->checkoutSessionId );
-
-
-					if ( MM_WPFS_CheckoutSubmissionService::CHECKOUT_SESSION_STATUS_SUCCESS === $submitStatus ) {
+					if ( in_array( $popupFormSubmit->status, [
+						MM_WPFS_CheckoutSubmissionService::POPUP_FORM_SUBMIT_STATUS_SUCCESS,
+						MM_WPFS_CheckoutSubmissionService::POPUP_FORM_SUBMIT_STATUS_COMPLETE,
+					], true ) ) {
+						wp_redirect( $popupFormSubmit->referrer );
+						$this->logger->debug(
+							__FUNCTION__,
+							'Submit entry already processed (status=' . $popupFormSubmit->status . '), redirect to=' . $popupFormSubmit->referrer
+						);
+					} elseif ( MM_WPFS_CheckoutSubmissionService::CHECKOUT_SESSION_STATUS_SUCCESS === $submitStatus ) {
+						$checkoutSession = $this->checkoutSubmissionService->retrieveCheckoutSession( $popupFormSubmit->checkoutSessionId );
 
 						/**
 						 * @var MM_WPFS_CheckoutChargeHandler
@@ -750,29 +764,44 @@ class MM_WPFS_Customer {
 						}
 
 						if ( ! is_null( $formModel ) && ! is_null( $checkoutChargeHandler ) ) {
-							$postData = $formModel->extractFormModelDataFromPopupFormSubmit( $popupFormSubmit );
-							$checkoutSessionData = $formModel->extractFormModelDataFromCheckoutSession( $checkoutSession );
-							$postData = array_merge( $postData, $checkoutSessionData );
-							$formModel->bindByArray(
-								$postData
-							);
-
-							$chargeResult = $checkoutChargeHandler->handle( $formModel, $checkoutSession );
-
-							if ( $chargeResult->isSuccess() ) {
-								$this->checkoutSubmissionService->updateSubmitEntryWithSuccess( $popupFormSubmit, $chargeResult->getMessageTitle(), $chargeResult->getMessage() );
-								$redirectURL = $popupFormSubmit->referrer;
-								if ( $chargeResult->isRedirect() ) {
-									$redirectURL = $chargeResult->getRedirectURL();
-								}
-								wp_redirect( $redirectURL );
-
-								$this->logger->debug( __FUNCTION__, 'Submit entry successfully processed, redirect to=' . $redirectURL );
-							} else {
-								$this->checkoutSubmissionService->updateSubmitEntryWithFailed( $popupFormSubmit );
+							// Already processed (e.g. by cron): mark success and redirect without resending notifications.
+							$paymentIntent = $this->checkoutSubmissionService->findPaymentIntentInCheckoutSession( $checkoutSession );
+							if ( $this->checkoutSubmissionService->isPaymentAlreadyProcessed( $popupFormSubmit->formType, $paymentIntent ) ) {
+								$this->checkoutSubmissionService->updateSubmitEntryWithSuccess(
+									$popupFormSubmit,
+									/* translators: Banner title of successful transaction */
+									__( 'Success', 'wp-full-stripe-free' ),
+									/* translators: Banner message of successful payment */
+									__( 'Payment Successful!', 'wp-full-stripe-free' )
+								);
 								wp_redirect( $popupFormSubmit->referrer );
 
-								$this->logger->debug( __FUNCTION__, 'Submit entry failed, redirect to=' . $popupFormSubmit->referrer );
+								$this->logger->debug( __FUNCTION__, 'Payment already processed for PaymentIntent=' . $paymentIntent->id . ', redirect to=' . $popupFormSubmit->referrer );
+							} else {
+								$postData = $formModel->extractFormModelDataFromPopupFormSubmit( $popupFormSubmit );
+								$checkoutSessionData = $formModel->extractFormModelDataFromCheckoutSession( $checkoutSession );
+								$postData = array_merge( $postData, $checkoutSessionData );
+								$formModel->bindByArray(
+									$postData
+								);
+
+								$chargeResult = $checkoutChargeHandler->handle( $formModel, $checkoutSession );
+
+								if ( $chargeResult->isSuccess() ) {
+									$this->checkoutSubmissionService->updateSubmitEntryWithSuccess( $popupFormSubmit, $chargeResult->getMessageTitle(), $chargeResult->getMessage() );
+									$redirectURL = $popupFormSubmit->referrer;
+									if ( $chargeResult->isRedirect() ) {
+										$redirectURL = $chargeResult->getRedirectURL();
+									}
+									wp_redirect( $redirectURL );
+
+									$this->logger->debug( __FUNCTION__, 'Submit entry successfully processed, redirect to=' . $redirectURL );
+								} else {
+									$this->checkoutSubmissionService->updateSubmitEntryWithFailed( $popupFormSubmit );
+									wp_redirect( $popupFormSubmit->referrer );
+
+									$this->logger->debug( __FUNCTION__, 'Submit entry failed, redirect to=' . $popupFormSubmit->referrer );
+								}
 							}
 						} else {
 							$this->logger->debug( __FUNCTION__, "Cannot find handler and form model for form type '" . $popupFormSubmit->formType . "'." );
@@ -886,47 +915,31 @@ class MM_WPFS_Customer {
 				$supportRecurring = false; // Disabled by default for one-time payment forms. (Based on NOTE 1.1)
 			}
 
-			// check currency & recurring support for payment methods
+			// Keep only the payment methods supported for the form currency. A
+			// currency-incompatible method (e.g. PayNow on a non-SGD form) makes Stripe reject
+			// the intent, so we drop it and keep the supported ones instead of failing the whole
+			// request — mirroring the front-end filtering of the Payment Element.
+			$supportedPaymentMethods = [];
 			if ( isset( $paymentMethods ) && count( $paymentMethods ) > 0 ) {
+				$formCurrency = strtolower( (string) $paymentFormModel->getForm()->currency );
 				foreach ( $paymentMethods as $paymentMethod ) {
-					// only checking if the payment method is not type 'card'
-					if ( isset( $paymentMethod ) && $paymentMethod !== MM_WPFS::PAYMENT_METHOD_CARD ) {
-						$supportRecurring = MM_WPFS_PaymentMethods::support_recurring( $paymentMethod );
+					if ( ! MM_WPFS_PaymentMethods::is_supported_currency( $paymentMethod, $formCurrency ) ) {
+						continue;
 					}
-					// now check currency
-					$check = MM_WPFS_PaymentMethods::is_supported_currency( $paymentMethod,
-						$paymentFormModel->getForm()->currency );
-					if ( ! $check ) {
-						$result = [
-							'success' => false,
-							'messageTitle' =>
-								/* translators: Banner title of an error returned from an extension point by a developer */
-								__( 'Internal Error', 'wp-full-stripe-free' ),
-							'message' => MM_WPFS_Localization::translateLabel(
-								'Currency not supported for payment method : ' . $paymentMethod ),
-							'exceptionMessage' => MM_WPFS_Localization::translateLabel(
-								'Currency not supported for payment method : ' . $paymentMethod )
-						];
-
-						header( "Content-Type: application/json" );
-						status_header( 400 );
-						echo json_encode( $result );
-						exit;
+					$supportedPaymentMethods[] = $paymentMethod;
+					// a non-card method that doesn't support recurring disables the setup-intent path
+					if ( $paymentMethod !== MM_WPFS::PAYMENT_METHOD_CARD ) {
+						$supportRecurring = MM_WPFS_PaymentMethods::support_recurring( $paymentMethod );
 					}
 				}
 			}
 
 			if ( MM_WPFS::FORM_TYPE_INLINE_DONATION === $form_type && ! $paymentFormModel->isRecurringDonation() ) {
-				$result = $this->stripe->createPaymentIntent(
-					null, // payment method id
-					null, // customer id
+				// Donation forms have no payment method selector, so rely on automatic payment methods (Stripe Dashboard config) rather than a hard-coded ['card','link'] list.
+				$result = $this->stripe->createPaymentIntentForElement(
 					$paymentFormModel->getForm()->currency,
 					$paymentFormModel->getAmount(),
-					null, // manual capture or not
-					null, // description is updated later
-					null, //meta data
-					null, // stripe email
-					"always",
+					"never"
 				);
 				$intent_type = "payment";
 			} elseif ( $supportRecurring ) {
@@ -944,7 +957,7 @@ class MM_WPFS_Customer {
 					null, //meta data
 					null, // stripe email
 					"always",
-					$paymentFormModel->getForm()->paymentMethods
+					! empty( $supportedPaymentMethods ) ? $supportedPaymentMethods : [ 'card', 'link' ]
 				);
 				$intent_type = "payment";
 			}
@@ -1910,6 +1923,213 @@ class MM_WPFS_Customer {
 	}
 
 	/**
+	 * Compute the tax-inclusive total for an inline payment form via a Stripe preview invoice
+	 * and populate the tax breakdown (net/tax/gross) on the given transaction data.
+	 *
+	 * For inline payment forms the frontend creates the PaymentIntent up front with the
+	 * pre-tax base amount. Tax-address changes update the on-screen preview but do not
+	 * reliably push the new amount back onto the PaymentIntent. As a result the confirmed
+	 * PaymentIntent could still carry the pre-tax amount, so tax was shown but never charged
+	 * (#413). Recomputing the total server-side, just before the charge is confirmed, closes
+	 * the whole class of triggers (country/state/postal code/tax id changes, coupons, custom
+	 * amounts) instead of relying on the frontend to keep the amount in sync.
+	 *
+	 * @param MM_WPFS_Public_PaymentFormModel $paymentFormModel The payment form model.
+	 * @param MM_WPFS_OneTimePaymentTransactionData $transactionData Transaction data updated with the tax breakdown.
+	 *
+	 * @return int|null The discounted, tax-inclusive gross amount in the smallest currency unit
+	 *                  (which may be 0, e.g. a 100% coupon), or null only when the form has
+	 *                  neither tax nor a coupon configured (in which case the caller should keep
+	 *                  the base amount).
+	 * @throws Exception If the preview invoice cannot be created.
+	 */
+	private function calculateTaxInclusivePaymentAmount( $paymentFormModel, $transactionData ) {
+		// Recompute via a preview invoice whenever tax OR a coupon applies — both change the
+		// amount the customer should actually be charged (a coupon discounts it; tax adds to
+		// it). Previously this only ran when tax was configured, so on a no-tax form a coupon
+		// discount was never applied to the charge and the customer was overcharged the full
+		// price (the preview invoice is the only place the coupon is applied). Without tax AND
+		// without a coupon the up-front amount already matches, so we skip the extra API call.
+		$taxableRateTypes = [
+			MM_WPFS::FIELD_VALUE_TAX_RATE_STRIPE_TAX,
+			MM_WPFS::FIELD_VALUE_TAX_RATE_FIXED,
+			MM_WPFS::FIELD_VALUE_TAX_RATE_DYNAMIC,
+		];
+		$hasTax    = in_array( $paymentFormModel->getForm()->vatRateType, $taxableRateTypes, true );
+		$hasCoupon = ! is_null( $paymentFormModel->getStripeDiscountId() );
+		if ( ! $hasTax && ! $hasCoupon ) {
+			return null;
+		}
+
+		$taxRateIds = MM_WPFS_Pricing::extractTaxRateIdsStatic( $this->getApplicableTaxRates( $paymentFormModel ) );
+
+		$createInvoiceOptions = new MM_WPFS_CreateOneTimeInvoiceOptions();
+		$createInvoiceOptions->autoAdvance = true;
+		$createInvoiceOptions->taxRateIds = $taxRateIds;
+
+		// For custom-amount forms the preview invoice is built from the form model's amount.
+		// In redirect/legacy flows that amount may already be the tax-inclusive PaymentIntent
+		// amount, which would tax an already-taxed total. Compute from the pre-tax base instead
+		// (stamped on the PaymentIntent when we first adjusted it) and restore afterwards (#413).
+		$originalAmount = $paymentFormModel->getAmount();
+		$paymentFormModel->setAmount( $this->resolvePretaxBaseAmount( $paymentFormModel ) );
+
+		try {
+			$previewInvoice = $this->createPreviewInvoiceForOneTimePaymentByFormModel( $paymentFormModel, $createInvoiceOptions );
+
+			// Populate the tax breakdown so the recorded transaction reflects the tax-inclusive total too.
+			$this->updatePaymentTransactionDataPricing( $transactionData, $previewInvoice );
+		} finally {
+			$paymentFormModel->setAmount( $originalAmount );
+		}
+
+		// Return the computed gross even when it is 0 (e.g. a 100% coupon); only the "no tax
+		// configured" case above returns null. Conflating a 0 total with "no tax" would make
+		// the caller fall back to the pre-tax base amount and overcharge.
+		return (int) round( $transactionData->getProductAmountGross() );
+	}
+
+	/**
+	 * Compute the full amount that should be charged for an inline payment form: the
+	 * tax-inclusive product total (when tax is configured) plus the recovery fee (when
+	 * accepted), all derived from the pre-tax base amount. Populates the tax breakdown on
+	 * $transactionData as a side effect. Returns [chargeAmount, baseAmount] in the smallest
+	 * currency unit, or null when neither tax nor a recovery fee applies (the up-front amount
+	 * already matches, so the caller should leave the PaymentIntent untouched).
+	 *
+	 * @param MM_WPFS_Public_PaymentFormModel $paymentFormModel
+	 * @param MM_WPFS_OneTimePaymentTransactionData $transactionData
+	 * @return array{0: int, 1: int}|null [chargeAmount, baseAmount], or null when no adjustment is needed.
+	 */
+	private function computeInlinePaymentChargeAmount( $paymentFormModel, $transactionData ) {
+		$baseAmount = $this->resolvePretaxBaseAmount( $paymentFormModel );
+		$taxInclusiveAmount = $this->calculateTaxInclusivePaymentAmount( $paymentFormModel, $transactionData );
+
+		$recoveryFee = $paymentFormModel->getFeeRecoveryAccepted();
+		$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $paymentFormModel->getForm() );
+		$hasRecoveryFee = $recoveryFee && ! empty( $recoveryFeeData );
+
+		// Nothing to adjust for plain forms; the up-front amount already matches the charge.
+		if ( is_null( $taxInclusiveAmount ) && ! $hasRecoveryFee ) {
+			return null;
+		}
+
+		$chargeAmount = is_null( $taxInclusiveAmount ) ? $baseAmount : $taxInclusiveAmount;
+
+		if ( $hasRecoveryFee ) {
+			// Compute the recovery fee on the discounted PRE-TAX amount when a preview ran
+			// (so a coupon reduces the fee too); otherwise on the plain base. Using the
+			// undiscounted base here would inflate the fee on coupon orders.
+			$feeBaseAmount = is_null( $taxInclusiveAmount )
+				? $baseAmount
+				: (int) round( $transactionData->getProductAmountNet() );
+			$chargeAmount += MM_WPFS_Utils::calculateRecoveryFee(
+				$feeBaseAmount,
+				$recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ],
+				$recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ],
+				$paymentFormModel->getForm()->currency
+			);
+		}
+
+		return [ (int) round( $chargeAmount ), (int) round( $baseAmount ) ];
+	}
+
+	/**
+	 * Re-sync an existing PaymentIntent's amount with the tax/fee-inclusive total before it is
+	 * (re-)confirmed, for the legacy/existing-PI charge path.
+	 *
+	 * @param MM_WPFS_Public_PaymentFormModel $paymentFormModel
+	 * @param \StripeWPFS\Stripe\PaymentIntent|object $paymentIntent
+	 * @param MM_WPFS_OneTimePaymentTransactionData $transactionData
+	 * @return void
+	 */
+	private function resyncPaymentIntentAmountWithTax( $paymentFormModel, $paymentIntent, $transactionData ) {
+		// A PaymentIntent's amount can only be changed while it is still awaiting confirmation.
+		// Once it reaches requires_action (SCA/3DS), processing or succeeded it has already been
+		// confirmed and Stripe rejects amount changes, so we must not touch it then.
+		$mutableStatuses = [
+			\StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_PAYMENT_METHOD,
+			\StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_CONFIRMATION,
+		];
+		if ( ! in_array( $paymentIntent->status, $mutableStatuses, true ) ) {
+			return;
+		}
+
+		$resolved = $this->computeInlinePaymentChargeAmount( $paymentFormModel, $transactionData );
+		if ( is_null( $resolved ) ) {
+			return;
+		}
+		list( $chargeAmount, $baseAmount ) = $resolved;
+
+		if ( $chargeAmount > 0 && $chargeAmount !== (int) $paymentIntent->amount ) {
+			$this->logger->debug(
+				__FUNCTION__,
+				sprintf( 'Re-syncing PaymentIntent %s amount from %d to %d (tax/fee-inclusive).', $paymentIntent->id, (int) $paymentIntent->amount, $chargeAmount )
+			);
+			$this->stampPretaxBaseAmount( $paymentIntent, $baseAmount );
+			$paymentIntent->amount = $chargeAmount;
+			$this->stripe->updatePaymentIntent( $paymentIntent, true );
+		}
+	}
+
+	/**
+	 * Normalise a PaymentIntent's metadata to a plain array, regardless of whether it is a
+	 * Stripe object (direct API) or a stdClass (WP test/live platform proxy).
+	 *
+	 * @param \StripeWPFS\Stripe\PaymentIntent|object $paymentIntent
+	 * @return array<string, mixed>
+	 */
+	private function getPaymentIntentMetadataArray( $paymentIntent ) {
+		if ( ! isset( $paymentIntent->metadata ) || empty( $paymentIntent->metadata ) ) {
+			return [];
+		}
+		if ( is_array( $paymentIntent->metadata ) ) {
+			return $paymentIntent->metadata;
+		}
+
+		// Guard against json_decode returning null on unexpected metadata shapes/encoding issues,
+		// which would otherwise make a later $metadata[...] write fatal.
+		$decoded = json_decode( json_encode( $paymentIntent->metadata ), true );
+
+		return is_array( $decoded ) ? $decoded : [];
+	}
+
+	/**
+	 * Resolve the pre-tax base amount for a payment form, preferring a value previously stamped
+	 * on the PaymentIntent metadata. This keeps tax computation idempotent for custom-amount
+	 * forms in redirect/legacy flows where the form model amount may already be tax-inclusive.
+	 *
+	 * @param MM_WPFS_Public_PaymentFormModel $paymentFormModel
+	 * @return int
+	 */
+	private function resolvePretaxBaseAmount( $paymentFormModel ) {
+		$paymentIntent = $paymentFormModel->getStripePaymentIntent();
+		if ( ! empty( $paymentIntent ) ) {
+			$metadata = $this->getPaymentIntentMetadataArray( $paymentIntent );
+			if ( isset( $metadata[ self::METADATA_KEY_PRETAX_BASE_AMOUNT ] ) && is_numeric( $metadata[ self::METADATA_KEY_PRETAX_BASE_AMOUNT ] ) ) {
+				return (int) $metadata[ self::METADATA_KEY_PRETAX_BASE_AMOUNT ];
+			}
+		}
+
+		return (int) round( $paymentFormModel->getAmount() );
+	}
+
+	/**
+	 * Stamp the pre-tax base amount on the PaymentIntent metadata so later tax recomputations
+	 * (e.g. on redirect confirmation) work from the original base rather than a tax-inclusive amount.
+	 *
+	 * @param \StripeWPFS\Stripe\PaymentIntent|object $paymentIntent
+	 * @param int $baseAmount
+	 * @return void
+	 */
+	private function stampPretaxBaseAmount( $paymentIntent, $baseAmount ) {
+		$metadata = $this->getPaymentIntentMetadataArray( $paymentIntent );
+		// Stripe metadata values must be strings.
+		$metadata[ self::METADATA_KEY_PRETAX_BASE_AMOUNT ] = (string) ( (int) round( $baseAmount ) );
+		$paymentIntent->metadata = $metadata;
+	}
+
+	/**
 	 * Process the payment intent charge.
 	 *
 	 * @param MM_WPFS_Public_PaymentFormModel $paymentFormModel The payment form model.
@@ -2049,12 +2269,17 @@ class MM_WPFS_Customer {
 				$paymentIntent = $this->stripe->retrievePaymentIntent( $paymentFormModel->getStripePaymentIntentId() );
 			}
 			if ( isset( $paymentIntent ) ) {
+				// Make sure the amount about to be charged matches the tax-inclusive total
+				// shown in the form preview. This must happen before any (re-)confirmation,
+				// as the amount can no longer be changed once the PaymentIntent is captured.
+				$this->resyncPaymentIntentAmountWithTax( $paymentFormModel, $paymentIntent, $transactionData );
+
 				// in some cases we need to re-confirm the PaymentIntent
 				if ( \StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_CONFIRMATION === $paymentIntent->status ) {
 					$this->stripe->confirmPaymentIntent( $paymentIntent->id, $paymentFormModel->getStripePaymentMethodId() );
 				}
 
-				// update description and metadata 
+				// update description and metadata
 				$stripePaymentIntentDescription = MM_WPFS_Utils::prepareStripeChargeDescription( $this->staticContext, $paymentFormModel, $transactionData );
 
 				$paymentIntent->description = empty( $stripePaymentIntentDescription ) ? null : $stripePaymentIntentDescription;
@@ -2063,6 +2288,11 @@ class MM_WPFS_Customer {
 				} else {
 					$paymentIntent->metadata = $paymentFormModel->getMetadata();
 				}
+
+				if ( $paymentFormModel->getStripeCustomer() ) {
+					$paymentIntent->customerId = $paymentFormModel->getStripeCustomer()->id;
+				}
+
 				$this->stripe->updatePaymentIntent(
 					$paymentIntent,
 					false,
@@ -2984,7 +3214,8 @@ class MM_WPFS_Customer {
 	function saveDraftTransaction( $paymentFormModel ) {
 		$transactionData = MM_WPFS_TransactionDataService::createOneTimePaymentDataByModel( $paymentFormModel );
 		// payment intent is most likely missing
-		if ( empty( $paymentFormModel->getStripePaymentIntent() ) ) {
+		$paymentIntent = $paymentFormModel->getStripePaymentIntent();
+		if ( empty( $paymentIntent ) ) {
 			$paymentIntent = $this->stripe->retrievePaymentIntent( $paymentFormModel->getStripePaymentIntentId() );
 			$paymentFormModel->setStripePaymentIntent( $paymentIntent );
 		}
@@ -2998,19 +3229,29 @@ class MM_WPFS_Customer {
 		$latest_charge->failure_message = null;
 		$latest_charge->status = "pending";
 
-		$amount = $paymentFormModel->getAmount();
-		$currency = $paymentFormModel->getForm()->currency;
-		$recoveryFee = $paymentFormModel->getFeeRecoveryAccepted();
-		$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $paymentFormModel->getForm() );
+		// Recompute the amount (tax-inclusive total + recovery fee) before the payment is
+		// confirmed client-side in the Payment Element flow, otherwise the customer is charged
+		// the pre-tax amount even though the form preview shows tax (#413). Returns null for
+		// plain forms, where the up-front amount already matches and we leave it untouched.
+		$resolved = $this->computeInlinePaymentChargeAmount( $paymentFormModel, $transactionData );
+		if ( ! is_null( $resolved ) ) {
+			list( $chargeAmount, $baseAmount ) = $resolved;
 
-		if ( $recoveryFee && ! empty( $recoveryFeeData ) ) {
-			$paymentIntent->amount = $amount + MM_WPFS_Utils::calculateRecoveryFee(
-				$amount,
-				$recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE ],
-				$recoveryFeeData[ MM_WPFS_Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT ],
-				$currency
-			);
-			$this->stripe->updatePaymentIntent( $paymentIntent, true );
+			// Stamp the pre-tax base whenever it is missing, so a later recompute (e.g. on redirect
+			// confirmation) never taxes an already tax-inclusive amount for custom-amount forms.
+			// This matters when the amount was already set elsewhere (e.g. the coupon flow), where
+			// the amount itself would not change here. (#413)
+			$metadata = $this->getPaymentIntentMetadataArray( $paymentIntent );
+			$baseMissing = ! isset( $metadata[ self::METADATA_KEY_PRETAX_BASE_AMOUNT ] );
+			$amountChanged = ( $chargeAmount > 0 && $chargeAmount !== (int) $paymentIntent->amount );
+
+			if ( $amountChanged || $baseMissing ) {
+				$this->stampPretaxBaseAmount( $paymentIntent, $baseAmount );
+				if ( $amountChanged ) {
+					$paymentIntent->amount = $chargeAmount;
+				}
+				$this->stripe->updatePaymentIntent( $paymentIntent, true );
+			}
 		}
 
 		$this->db->insertOrUpdatePayment( $paymentFormModel, $transactionData, $latest_charge );
@@ -3031,11 +3272,18 @@ class MM_WPFS_Customer {
 				// replace bindings with data from draft payment
 				$draft_payment = $this->db->getPaymentByEventId( $paymentFormModel->getStripePaymentIntentId() );
 				if ( isset( $draft_payment->customFields ) && ! empty( $draft_payment->customFields ) ) {
-					// handle custom fields
+					// handle custom fields - preserve the typed snapshot the customer submitted.
 					$customFields = json_decode( $draft_payment->customFields );
 					$customFieldValues = [];
-					foreach ( $customFields as $customField ) {
-						array_push( $customFieldValues, $customField->value );
+					if ( is_array( $customFields ) ) {
+						foreach ( $customFields as $customField ) {
+							// JSON configs key submitted values by stable id; legacy snapshots are positional.
+							if ( isset( $customField->id ) && '' !== $customField->id ) {
+								$customFieldValues[ $customField->id ] = $customField->value;
+							} else {
+								array_push( $customFieldValues, $customField->value );
+							}
+						}
 					}
 					$paymentFormModel->setCustomInputvalues( $customFieldValues );
 				}
@@ -3141,14 +3389,48 @@ class MM_WPFS_Customer {
 	}
 
 	/**
+	 * Verify the form nonce sent with public coupon/pricing AJAX requests.
+	 * Halts with a 403 JSON response when the nonce is missing or invalid.
+	 *
+	 * @return void
+	 */
+	private function verifyFormNonce() {
+		if (
+			! isset( $_POST['nonce'] ) ||
+			! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), MM_WPFS::NONCE_ACTION_UPDATE_FAILED_PAYMENT_STATUS )
+		) {
+			wp_send_json_error( [ 'message' => __( 'Invalid request', 'wp-full-stripe-free' ) ], 403 );
+		}
+	}
+
+	/**
+	 * Read a scalar value from a request array, unslashed and sanitized as text.
+	 *
+	 * @param array<string,mixed> $source The source array (e.g. $_POST or a nested array of it).
+	 * @param string $key The key to read.
+	 * @param string|null $default Value returned when the key is missing or not a scalar.
+	 * @return string|null
+	 */
+	private function readSanitizedPostValue( $source, $key, $default = null ) {
+		if ( ! isset( $source[ $key ] ) || ! is_scalar( $source[ $key ] ) ) {
+			return $default;
+		}
+
+		return sanitize_text_field( wp_unslash( (string) $source[ $key ] ) );
+	}
+
+	/**
 	 * @throws Exception
 	 */
 	function fullstripe_check_coupon() {
-		$return = [];
-		$couponCode = $_POST['code'];
+		$this->verifyFormNonce();
 
-		$formType = $_POST['taxData']['formType'];
-		$formId = $_POST['taxData']['formId'];
+		$return = [];
+		$taxData = isset( $_POST['taxData'] ) && is_array( $_POST['taxData'] ) ? $_POST['taxData'] : [];
+		$couponCode = $this->readSanitizedPostValue( $_POST, 'code', '' );
+
+		$formType = $this->readSanitizedPostValue( $taxData, 'formType' );
+		$formId = $this->readSanitizedPostValue( $taxData, 'formId' );
 		$form = MM_WPFS::getInstance()->getFormByTypeAndName( $formType, $formId );
 		$formHash = MM_WPFS_Utils::generateFormHash( $formType, MM_WPFS_Utils::getFormId( $form ), $form->name );
 		$bindingResult = new MM_WPFS_BindingResult( $formHash );
@@ -3182,7 +3464,7 @@ class MM_WPFS_Customer {
 					$coupon,
 					$formType,
 					$formId,
-					$_POST['taxData']['currentPriceId']
+					$this->readSanitizedPostValue( $taxData, 'currentPriceId' )
 				);
 
 				if ( ! $result->applicableToForm ) {
@@ -3204,26 +3486,27 @@ class MM_WPFS_Customer {
 
 					$return = MM_WPFS_Utils::generateReturnValueFromBindings( $bindingResult );
 				} else {
+					$customAmount = $this->readSanitizedPostValue( $taxData, 'customAmount' );
 					$pricingData = new \StdClass;
 					$pricingData->formType = $formType;
 					$pricingData->formId = $formId;
-					$pricingData->country = $_POST['taxData']['country'];
-					$pricingData->stripePaymentIntentId = $_POST['taxData']['stripePaymentIntentId'];
-					$pricingData->state = $_POST['taxData']['state'];
-					$pricingData->zip = $_POST['taxData']['zip'];
-					$pricingData->taxIdType = $_POST['taxData']['taxIdType'];
-					$pricingData->taxId = $_POST['taxData']['taxId'];
+					$pricingData->country = $this->readSanitizedPostValue( $taxData, 'country' );
+					$pricingData->stripePaymentIntentId = $this->readSanitizedPostValue( $taxData, 'stripePaymentIntentId' );
+					$pricingData->state = $this->readSanitizedPostValue( $taxData, 'state' );
+					$pricingData->zip = $this->readSanitizedPostValue( $taxData, 'zip' );
+					$pricingData->taxIdType = $this->readSanitizedPostValue( $taxData, 'taxIdType' );
+					$pricingData->taxId = $this->readSanitizedPostValue( $taxData, 'taxId' );
 					$pricingData->couponCode = $coupon->id;
 					$pricingData->couponPercentOff = ! ( $coupon->amount_off > 0 );
-					$pricingData->customAmount = isset( $_POST['taxData']['customAmount'] ) && $_POST['taxData']['customAmount'] !== '' ? $_POST['taxData']['customAmount'] : null;
-					$pricingData->quantity = $_POST['taxData']['quantity'];
-					$pricingData->priceId = $_POST['taxData']['currentPriceId'];
+					$pricingData->customAmount = ( ! is_null( $customAmount ) && $customAmount !== '' ) ? $customAmount : null;
+					$pricingData->quantity = $this->readSanitizedPostValue( $taxData, 'quantity' );
+					$pricingData->priceId = $this->readSanitizedPostValue( $taxData, 'currentPriceId' );
 					$pricingData->stripeTax = ( $formType === MM_WPFS::FORM_TYPE_INLINE_PAYMENT || $formType == MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION ) &&
 						$form->vatRateType === MM_WPFS::FIELD_VALUE_TAX_RATE_STRIPE_TAX;
 
 					try {
 						$productPricing = MM_WPFS_Pricing::createFormPriceCalculator( $pricingData, $this->loggerService )->getProductPrices();
-						$discountedPriceIds = MM_WPFS::getInstance()->getDiscountedPriceIdsByCouponAndForm( $coupon, $_POST['taxData']['formType'], $_POST['taxData']['formId'] );
+						$discountedPriceIds = MM_WPFS::getInstance()->getDiscountedPriceIdsByCouponAndForm( $coupon, $formType, $formId );
 					} catch (WPFS_InvalidTaxIdException $tax) {
 						$fieldName = MM_WPFS_FormView_InlineTaxAddOnConstants::FIELD_TAX_ID;
 						$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formHash );
@@ -3239,10 +3522,16 @@ class MM_WPFS_Customer {
 					if ( ! empty( $productPricing ) && ! $bindingResult->hasErrors() ) {
 						// for payment intent scenarios we need to update the payment intent 
 						// with an updated amount as they don't support coupons
-						if ( ! empty( $pricingData->stripePaymentIntentId ) && isset( $productPricing->stripePriceId ) ) {
-							$this->updatePaymentIntentAmount( $pricingData->stripePaymentIntentId, $productPricing, $productPricing->stripePriceId );
+						if ( ! empty( $pricingData->stripePaymentIntentId ) ) {
+							try {
+								$this->updatePaymentIntentAmount( $pricingData->stripePaymentIntentId, $productPricing, $pricingData->priceId );
+							} catch ( Exception $ex ) {
+								$bindingResult->addGlobalError( $ex->getMessage() );
+							}
 						}
+					}
 
+					if ( ! empty( $productPricing ) && ! $bindingResult->hasErrors() ) {
 						$return = [
 							'msg_title' =>
 								/* translators: Banner title for messages related to applying a coupon */
@@ -3274,13 +3563,16 @@ class MM_WPFS_Customer {
 	}
 
 	private function updatePaymentIntentAmount( $paymentIntentId, $productPricing, $selectedPriceId ) {
-		// calculate the new amount
 		$new_amount = 0;
+		// When a specific price is selected and exists in pricing data, sum only that price's line items.
+		// Otherwise (custom amount / fixed-price forms without a Stripe Price key) sum all line items.
+		$price_matched = ! is_null( $selectedPriceId ) && array_key_exists( $selectedPriceId, $productPricing );
 		foreach ( $productPricing as $key => $productPrice ) {
-			if ( ! is_null( $selectedPriceId ) && $key === $selectedPriceId ) {
-				foreach ( $productPrice as $price ) {
-					$new_amount += $price->amount;
-				}
+			if ( $price_matched && $key !== $selectedPriceId ) {
+				continue;
+			}
+			foreach ( $productPrice as $price ) {
+				$new_amount += $price->amount;
 			}
 		}
 		$paymentIntent = $this->stripe->retrievePaymentIntent( $paymentIntentId );
@@ -3298,6 +3590,8 @@ class MM_WPFS_Customer {
 	 * @throws Exception
 	 */
 	public function updatePaymentIntent() {
+		$this->verifyFormNonce();
+
 		// TODO: get full billing address if available and update the payment intent
 		// this will help with calculating taxes more accurately
 		try {
@@ -3321,31 +3615,35 @@ class MM_WPFS_Customer {
 			'success' => false
 		];
 
-		if ( ! empty( $_POST['coupon'] ) ) {
-			$coupon = $this->stripe->retrieveCouponByPromotionalCodeOrCouponCode( $_POST['coupon'] );
+		$couponInput = $this->readSanitizedPostValue( $_POST, 'coupon', '' );
+		if ( ! empty( $couponInput ) ) {
+			$coupon = $this->stripe->retrieveCouponByPromotionalCodeOrCouponCode( $couponInput );
 			$couponId = ! is_null( $coupon ) ? $coupon->id : null;
 		}
 
-		$formType = $_POST['formType'];
-		$formId = $_POST['formId'];
+		$formType = $this->readSanitizedPostValue( $_POST, 'formType' );
+		$formId = $this->readSanitizedPostValue( $_POST, 'formId' );
 
 		$form = MM_WPFS::getInstance()->getFormByTypeAndName( $formType, $formId );
+
+		$customAmount = $this->readSanitizedPostValue( $_POST, 'customAmount' );
+		$stripePriceId = $this->readSanitizedPostValue( $_POST, 'stripePriceId' );
 
 		$pricingData = new \StdClass;
 		$pricingData->formType = $formType;
 		$pricingData->formId = $formId;
-		$pricingData->country = $_POST['country'];
-		$pricingData->state = $_POST['state'];
-		$pricingData->zip = $_POST['zip'];
-		$pricingData->city = $_POST['city'];
-		$pricingData->line1 = $_POST['line1'];
-		$pricingData->line2 = $_POST['line2'];
-		$pricingData->taxIdType = $_POST['taxIdType'];
-		$pricingData->taxId = $_POST['taxId'];
+		$pricingData->country = $this->readSanitizedPostValue( $_POST, 'country' );
+		$pricingData->state = $this->readSanitizedPostValue( $_POST, 'state' );
+		$pricingData->zip = $this->readSanitizedPostValue( $_POST, 'zip' );
+		$pricingData->city = $this->readSanitizedPostValue( $_POST, 'city' );
+		$pricingData->line1 = $this->readSanitizedPostValue( $_POST, 'line1' );
+		$pricingData->line2 = $this->readSanitizedPostValue( $_POST, 'line2' );
+		$pricingData->taxIdType = $this->readSanitizedPostValue( $_POST, 'taxIdType' );
+		$pricingData->taxId = $this->readSanitizedPostValue( $_POST, 'taxId' );
 		$pricingData->couponCode = $couponId;
-		$pricingData->customAmount = ! empty( $_POST['customAmount'] ) ? $_POST['customAmount'] : null;
-		$pricingData->quantity = $_POST['quantity'];
-		$pricingData->stripePriceId = ! empty($_POST['stripePriceId']) ? $_POST['stripePriceId'] : null;
+		$pricingData->customAmount = ! empty( $customAmount ) ? $customAmount : null;
+		$pricingData->quantity = $this->readSanitizedPostValue( $_POST, 'quantity' );
+		$pricingData->stripePriceId = ! empty( $stripePriceId ) ? $stripePriceId : null;
 		$pricingData->stripeTax = ( $formType === MM_WPFS::FORM_TYPE_INLINE_PAYMENT || $formType == MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION ) &&
 			$form->vatRateType === MM_WPFS::FIELD_VALUE_TAX_RATE_STRIPE_TAX;
 
@@ -3371,8 +3669,9 @@ class MM_WPFS_Customer {
 		}
 
 		if ( ! empty( $pricing ) && ! $bindingResult->hasErrors() ) {
-			if ( ! empty( $_POST['stripePaymentIntentId'] ) ) {
-				$this->updatePaymentIntentAmount( $_POST['stripePaymentIntentId'], $pricing, $pricingData->stripePriceId );
+			$stripePaymentIntentId = $this->readSanitizedPostValue( $_POST, 'stripePaymentIntentId' );
+			if ( ! empty( $stripePaymentIntentId ) ) {
+				$this->updatePaymentIntentAmount( $stripePaymentIntentId, $pricing, $pricingData->stripePriceId );
 			}
 			$return = [
 				'success' => true,
@@ -3385,6 +3684,8 @@ class MM_WPFS_Customer {
 	}
 
 	public function calculatePricing() {
+		$this->verifyFormNonce();
+
 		$return = null;
 		try {
 			$return = $this->reCalculatePricing();
@@ -3746,6 +4047,10 @@ class MM_WPFS_Customer {
 
 			$paymentIntent->description = empty( $stripePaymentIntentDescription ) ? null : $stripePaymentIntentDescription;
 
+			if ( $donationFormModel->getStripeCustomer() ) {
+				$paymentIntent->customerId = $donationFormModel->getStripeCustomer()->id;
+			}
+
 			$this->stripe->updatePaymentIntent(
 				$paymentIntent,
 				! $this->paymentIntentSucceeded( $paymentIntent ),
@@ -3833,13 +4138,42 @@ class MM_WPFS_Customer {
 	 * @return void
 	 */
 	function update_failed_payment_status() {
+		if (
+			! isset( $_POST['nonce'] ) ||
+			! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), MM_WPFS::NONCE_ACTION_UPDATE_FAILED_PAYMENT_STATUS )
+		) {
+			wp_send_json_error( [ 'message' => __( 'Invalid request', 'wp-full-stripe-free' ) ], 403 );
+		}
+
 		try {
 			$result = [];
-			$failureCode = isset( $_POST['failureCode'] ) ? sanitize_text_field( $_POST['failureCode'] ) : null;
-			$failureMessage = isset( $_POST['failureMessage'] ) ? sanitize_text_field( $_POST['failureMessage'] ) : null;
-			$paymentIntentId = isset( $_POST['paymentIntentId'] ) ? sanitize_text_field( $_POST['paymentIntentId'] ) : null;
+			// Bound the client-reported failure strings to their column sizes (failure_code
+			// VARCHAR(100), failure_message VARCHAR(512)) so a caller can't store oversized data.
+			$failureCode = isset( $_POST['failureCode'] ) ? MM_WPFS_Utils::truncateString( sanitize_text_field( wp_unslash( $_POST['failureCode'] ) ), 100 ) : null;
+			$failureMessage = isset( $_POST['failureMessage'] ) ? MM_WPFS_Utils::truncateString( sanitize_text_field( wp_unslash( $_POST['failureMessage'] ) ), 512 ) : null;
+			$paymentIntentId = isset( $_POST['paymentIntentId'] ) ? sanitize_text_field( wp_unslash( $_POST['paymentIntentId'] ) ) : null;
+			$clientSecret = isset( $_POST['clientSecret'] ) ? sanitize_text_field( wp_unslash( $_POST['clientSecret'] ) ) : null;
 
 			$paymentIntent = $this->stripe->retrievePaymentIntent( $paymentIntentId );
+
+			// Verify the caller owns this PI: client_secret is only known to the browser that initiated checkout.
+			if ( empty( $clientSecret ) || ! hash_equals( $paymentIntent->client_secret, $clientSecret ) ) {
+				wp_send_json_error( [ 'message' => __( 'Unauthorized', 'wp-full-stripe-free' ) ], 403 );
+			}
+
+			// This endpoint only records a *failed* confirmation. Refuse to mark a payment unpaid
+			// unless Stripe agrees it actually failed: a succeeded, still-processing or
+			// authorized-awaiting-capture intent must never be flipped to unpaid based on a
+			// client-reported failure, otherwise a good payment gets desynced from Stripe.
+			$nonFailedStatuses = [
+				\StripeWPFS\Stripe\PaymentIntent::STATUS_SUCCEEDED,
+				\StripeWPFS\Stripe\PaymentIntent::STATUS_PROCESSING,
+				\StripeWPFS\Stripe\PaymentIntent::STATUS_REQUIRES_CAPTURE,
+			];
+			if ( in_array( $paymentIntent->status, $nonFailedStatuses, true ) ) {
+				wp_send_json_error( [ 'message' => __( 'Payment is not in a failed state', 'wp-full-stripe-free' ) ], 409 );
+			}
+
 			$lastCharge = null;
 
 			if ( isset( $paymentIntent->latest_charge ) && ! empty( $paymentIntent->latest_charge ) ) {

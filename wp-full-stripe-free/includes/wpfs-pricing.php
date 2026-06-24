@@ -35,6 +35,26 @@ class MM_WPFS_Pricing {
 		}
 	}
 
+	/**
+	 * Whether a Stripe invoice line-item tax entry is inclusive. Handles the newer Stripe
+	 * `tax_behavior` ('inclusive'/'exclusive') shape as well as the legacy boolean `inclusive`
+	 * property, so inclusive taxes aren't silently treated as exclusive (and no PHP warning is
+	 * raised) when the line item carries the newer shape.
+	 *
+	 * @param object $taxAmount A line-item tax entry (from $lineItem->taxes).
+	 * @return bool
+	 */
+	public static function isTaxAmountInclusive( $taxAmount ) {
+		if ( property_exists( $taxAmount, 'tax_behavior' ) && $taxAmount->tax_behavior !== null ) {
+			return 'inclusive' === $taxAmount->tax_behavior;
+		}
+		if ( property_exists( $taxAmount, 'inclusive' ) ) {
+			return (bool) $taxAmount->inclusive;
+		}
+
+		return false;
+	}
+
 	public static function extractSimplifiedPricingFromInvoiceLineItems( $lineItems ) {
 		$result = new \StdClass;
 		$amountTotal = 0;
@@ -50,7 +70,7 @@ class MM_WPFS_Pricing {
 			}
 
 			foreach ( $lineItem->taxes as $taxAmount ) {
-				if ( $taxAmount->inclusive ) {
+				if ( self::isTaxAmountInclusive( $taxAmount ) ) {
 					$taxInclusiveTotal += $taxAmount->amount;
 				} else {
 					$taxExclusiveTotal += $taxAmount->amount;
@@ -86,7 +106,7 @@ class MM_WPFS_Pricing {
 			}
 
 			foreach ( $lineItem->taxes as $taxAmount ) {
-				if ( $taxAmount->inclusive ) {
+				if ( self::isTaxAmountInclusive( $taxAmount ) ) {
 					$statItem->taxInclusive += $taxAmount->amount;
 				} else {
 					$statItem->taxExclusive += $taxAmount->amount;
@@ -407,7 +427,7 @@ abstract class MM_WPFS_PriceCalculator {
 		$params = [ 
 			'taxableAmount' => $taxItem->taxable_amount,
 			'amount' => $taxItem->amount,
-			'inclusive' => $taxItem->inclusive,
+			'inclusive' => MM_WPFS_Pricing::isTaxAmountInclusive( $taxItem ),
 			'taxabilityReason' => $taxItem->taxability_reason,
 			'country' => $this->pricingData->country,
 			'state' => $this->pricingData->state,

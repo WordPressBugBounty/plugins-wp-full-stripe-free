@@ -103,6 +103,68 @@ jQuery.noConflict();
 		/*
 		 * identifier functions
 		 */
+		// Returns the interactive control inside a typed custom field wrapper.
+		function wpfsCustomFieldControl( $field ) {
+			return $field
+				.find( 'input, select, textarea' )
+				.not( '[type="hidden"]' )
+				.first();
+		}
+
+		// Collects custom field values keyed by their actual POST name, mirroring
+		// native form submission. This handles every shape uniformly: the legacy
+		// indexed wpfs-custom-input[] array, keyed scalar fields
+		// wpfs-custom-input[<id>], multiselect groups wpfs-custom-input[<id>][],
+		// and the hidden/checkbox pair used for single checkboxes.
+		function wpfsCollectCustomInputs( $form ) {
+			const result = {};
+
+			$( '[name^="wpfs-custom-input"]', $form ).each( function () {
+				const $el = $( this );
+				const name = $el.attr( 'name' );
+				if ( ! name ) {
+					return;
+				}
+				const type = ( $el.attr( 'type' ) || '' ).toLowerCase();
+				if (
+					( type === 'checkbox' || type === 'radio' ) &&
+					! $el.is( ':checked' )
+				) {
+					return;
+				}
+
+				if ( name.slice( -2 ) === '[]' ) {
+					if ( ! Array.isArray( result[ name ] ) ) {
+						result[ name ] = [];
+					}
+					result[ name ].push( $el.val() );
+				} else {
+					result[ name ] = $el.val();
+				}
+			} );
+
+			return result;
+		}
+
+		// Removes any serialized custom-input keys from a parsed data object so
+		// that wpfsCollectCustomInputs() values can be merged in cleanly.
+		function wpfsApplyCustomInputs( data, $form ) {
+			Object.keys( data ).forEach( function ( key ) {
+				let decoded = key;
+				try {
+					decoded = decodeURIComponent( key );
+				} catch ( e ) {}
+				if ( decoded.indexOf( 'wpfs-custom-input' ) === 0 ) {
+					delete data[ key ];
+				}
+			} );
+
+			const customInputs = wpfsCollectCustomInputs( $form );
+			Object.keys( customInputs ).forEach( function ( key ) {
+				data[ key ] = customInputs[ key ];
+			} );
+		}
+
 		function isDonationForm( $form ) {
 			const formType = $form.data( FROM_TYPE_DOM );
 			return (
@@ -758,22 +820,41 @@ jQuery.noConflict();
 
 				// tnagy add error class, insert error message
 				if ( 'input' === fieldType ) {
-					if ( fieldErrorSelector != null ) {
-						if (
-							fieldErrorSelector.indexOf(
-								FIELD_DESCRIPTOR_MACRO_FIELD_ID
-							) !== -1
-						) {
-							fieldErrorSelector = fieldErrorSelector.replace(
-								/\{fieldId}/g,
-								fieldId
-							);
+					if ( $field.is( ':checkbox, :radio' ) ) {
+						// Custom-field checkbox / multiselect controls draw their
+						// visible box from an `input + label` adjacent-sibling CSS
+						// rule, so the error message must not be inserted between the
+						// input and its label — that would break the adjacency and
+						// hide the box.  Flag the input(s) for the error state and
+						// append the message to the field wrapper instead.
+						const $wrapper = $field.closest( '.wpfs-custom-field' );
+						const $target = $wrapper.length
+							? $wrapper
+							: $field.closest( '.wpfs-form-check' );
+						$target
+							.find( 'input.wpfs-form-check-input' )
+							.addClass( 'wpfs-form-check-input--error' );
+						$fieldError.appendTo(
+							$target.length ? $target : $field.parent()
+						);
+					} else {
+						if ( fieldErrorSelector != null ) {
+							if (
+								fieldErrorSelector.indexOf(
+									FIELD_DESCRIPTOR_MACRO_FIELD_ID
+								) !== -1
+							) {
+								fieldErrorSelector = fieldErrorSelector.replace(
+									/\{fieldId}/g,
+									fieldId
+								);
+							}
+							$field
+								.closest( fieldErrorSelector )
+								.addClass( fieldErrorClass );
 						}
-						$field
-							.closest( fieldErrorSelector )
-							.addClass( fieldErrorClass );
+						$fieldError.insertAfter( $field );
 					}
-					$fieldError.insertAfter( $field );
 				} else if ( 'input-group' === fieldType ) {
 					if ( fieldErrorSelector != null ) {
 						if (
@@ -1189,6 +1270,93 @@ jQuery.noConflict();
 			$form
 				.find( 'button[type=submit]' )
 				.removeClass( 'wpfs-btn-primary--loader' );
+			// Any path that re-enables the form (errors, declines) must also
+			// dismiss the full-screen processing overlay.
+			hideProcessingOverlay();
+		}
+
+		// Full-screen "Processing your payment…" overlay. Shown while Stripe
+		// finalises a charge (incl. the redirect return) so the user keeps the
+		// form context instead of seeing the page flash to the top.
+		function buildProcessingOverlay() {
+			let $overlay = $( '#wpfs-processing-overlay' );
+			if ( $overlay.length ) {
+				return $overlay;
+			}
+			const l10n =
+				( wpfsFormSettings &&
+					wpfsFormSettings.l10n &&
+					wpfsFormSettings.l10n.processing ) ||
+				{};
+			$overlay = $(
+				'<div id="wpfs-processing-overlay" class="wpfs-processing-overlay" role="dialog" aria-modal="true" aria-labelledby="wpfs-processing-overlay-title" aria-describedby="wpfs-processing-overlay-text" tabindex="-1">' +
+					'<div class="wpfs-processing-overlay__card">' +
+					'<div class="wpfs-processing-overlay__spinner" aria-hidden="true"></div>' +
+					'<div class="wpfs-processing-overlay__title" id="wpfs-processing-overlay-title"></div>' +
+					'<div class="wpfs-processing-overlay__text" id="wpfs-processing-overlay-text"></div>' +
+					'</div>' +
+					'</div>'
+			);
+			$overlay
+				.find( '.wpfs-processing-overlay__title' )
+				.text( l10n.title || 'Processing your payment…' );
+			$overlay
+				.find( '.wpfs-processing-overlay__text' )
+				.text( l10n.message || '' );
+			$( 'body' ).append( $overlay );
+			return $overlay;
+		}
+
+		// Save-card forms don't charge anything, so "Processing your payment…"
+		// is misleading there — show a save-card specific title instead.
+		function processingOverlayTitleForForm( $form ) {
+			const l10n =
+				( wpfsFormSettings &&
+					wpfsFormSettings.l10n &&
+					wpfsFormSettings.l10n.processing ) ||
+				{};
+			const formType =
+				$form && $form.length ? $form.data( FROM_TYPE_DOM ) : null;
+			if (
+				FORM_TYPE_INLINE_SAVE_CARD === formType ||
+				FORM_TYPE_CHECKOUT_SAVE_CARD === formType
+			) {
+				return l10n.save_card_title || 'Saving your card…';
+			}
+			return l10n.title || 'Processing your payment…';
+		}
+
+		// Keep keyboard focus on the modal overlay so users can't tab into the
+		// underlying form while the payment is being processed.
+		function trapProcessingOverlayFocus( e ) {
+			const $overlay = $( '#wpfs-processing-overlay' );
+			if (
+				! $overlay.hasClass( 'wpfs-processing-overlay--visible' ) ||
+				e.key !== 'Tab'
+			) {
+				return;
+			}
+			e.preventDefault();
+			$overlay.trigger( 'focus' );
+		}
+
+		function showProcessingOverlay( $form ) {
+			const $overlay = buildProcessingOverlay();
+			$overlay
+				.find( '.wpfs-processing-overlay__title' )
+				.text( processingOverlayTitleForForm( $form ) );
+			$overlay.addClass( 'wpfs-processing-overlay--visible' );
+			$( 'body' ).addClass( 'wpfs-processing-overlay-open' );
+			$overlay.trigger( 'focus' );
+			$( document ).on( 'keydown.wpfsProcessingOverlay', trapProcessingOverlayFocus );
+		}
+
+		function hideProcessingOverlay() {
+			$( '#wpfs-processing-overlay' ).removeClass(
+				'wpfs-processing-overlay--visible'
+			);
+			$( 'body' ).removeClass( 'wpfs-processing-overlay-open' );
+			$( document ).off( 'keydown.wpfsProcessingOverlay' );
 		}
 
 		function clearPaymentDetails( $form ) {
@@ -1563,10 +1731,12 @@ jQuery.noConflict();
 			} );
 		}
 
-		function updateFailedPaymentStatus( $form, paymentIntentId, error ) {
+		function updateFailedPaymentStatus( $form, paymentIntentId, error, clientSecret ) {
 			const data = {
 				action: 'wpfs_update_failed_payment_status',
+				nonce: wpfsFormSettings.nonce,
 				paymentIntentId: paymentIntentId,
+				clientSecret: clientSecret || '',
 				failureCode: error.code || '',
 				failureMessage: error.message || '',
 			};
@@ -1617,7 +1787,7 @@ jQuery.noConflict();
 					logWarn( 'handleStripeIntentAction', result.error.message );
 					// Update payment status in database when confirmation fails
 					if ( result.paymentIntent && result.paymentIntent.id ) {
-						updateFailedPaymentStatus( $form, result.paymentIntent.id, result.error );
+						updateFailedPaymentStatus( $form, result.paymentIntent.id, result.error, data.paymentIntentClientSecret );
 					}
 					showErrorGlobalMessage(
 						$form,
@@ -2723,6 +2893,7 @@ jQuery.noConflict();
 				const data = gatherFormDataForTaxCalculation( $form );
 
 				data.action = 'wpfs-update-payment-intent';
+				data.nonce = wpfsFormSettings.nonce;
 				data.stripePaymentIntentId = $form.data(
 					'wpfs-stripe-payment-intent-id'
 				);
@@ -3536,6 +3707,22 @@ jQuery.noConflict();
 		var WPFS = {};
 		WPFS.couponMap = {};
 		WPFS.paymentDetailsMap = {};
+		WPFS.stripeElementsMap = {};
+		WPFS.setStripeElements = function ( formId, elements ) {
+			WPFS.stripeElementsMap[ formId ] = elements;
+		};
+		WPFS.getStripeElements = function ( formId ) {
+			if ( WPFS.stripeElementsMap.hasOwnProperty( formId ) ) {
+				return WPFS.stripeElementsMap[ formId ];
+			}
+			return null;
+		};
+		WPFS.removeStripeElements = function ( formId ) {
+			if ( WPFS.stripeElementsMap.hasOwnProperty( formId ) ) {
+				delete WPFS.stripeElementsMap[ formId ];
+			}
+		};
+
 		/**
 		 * @param formId
 		 * @param coupon
@@ -3664,6 +3851,7 @@ jQuery.noConflict();
 					var $form = getParentForm( this );
 					const formId = $form.data( 'wpfs-form-id' );
 					var { elements, cardElement } = await WPFS.initStripeCardElement( $form );
+					WPFS.setStripeElements( extractFormNameFromNode( $form ), elements );
 					cardElement.mount(
 						'div[data-wpfs-form-id="' + formId + '"]'
 					);
@@ -3685,6 +3873,7 @@ jQuery.noConflict();
 						const stripeCardElements = await WPFS.initStripeCardElement( $form );
 						elements = stripeCardElements.elements;
 						cardElement = stripeCardElements.cardElement;
+						WPFS.setStripeElements( extractFormNameFromNode( $form ), elements );
 
 						cardElement.mount(
 							'div[data-wpfs-form-id="' + formId + '"]'
@@ -3693,12 +3882,12 @@ jQuery.noConflict();
 				});
 	
 				// handle form submission
-				$form.submit( function ( event ) {
+				$form.submit( async function ( event ) {
 					event.preventDefault();
 					/*
-			disable submit button and show loading animation,
-			clear message panel, reset token and amount index
-		  */
+						disable submit button and show loading animation,
+						clear message panel, reset token and amount index
+					*/
 					disableFormButtons( $form );
 					showLoadingAnimation( $form );
 					clearFieldErrors( $form );
@@ -3861,13 +4050,6 @@ jQuery.noConflict();
 	
 					if ( stripe != null ) {
 						const intentType = $form.data( 'wpfs-intent-type' );
-						const clientSecret = $form.data(
-							'wpfs-stripe-client-secret'
-						);
-						const paymentIntentId = clientSecret.substr(
-							0,
-							clientSecret.indexOf( '_secret_' )
-						);
 						let return_url = window.location.href;
 						if ( $form.data( 'wpfs-form-id' ) ) {
 							return_url += return_url.includes( '?' )
@@ -3897,118 +4079,67 @@ jQuery.noConflict();
 							if ( data.hasOwnProperty('wpfs-donation-frequency') && data['wpfs-donation-frequency'] === 'one-time' ) {
 								data.action = 'wpfs-save-one-time-donation';
 								// custom fields are not serialized correctly by default
-								delete data[ 'wpfs-custom-input%5B%5D' ];
-								const inputFields = $(
-									'input[name="wpfs-custom-input[]"]',
-									$form
-								);
-								const customInputValues = [];
-								inputFields.each( function ( index, element ) {
-									const $element = $( element );
-									customInputValues.push( $element.val() );
-								} );
-								data[ 'wpfs-custom-input[]' ] = customInputValues;
+								wpfsApplyCustomInputs( data, $form );
 								data[ 'wpfs-intent-type' ] = intentType;
-								data[ 'wpfs-stripe-client-secret' ] = clientSecret;
-								data[ 'wpfs-stripe-payment-intent-id' ] =
-									clientSecret.substr(
-										0,
-										clientSecret.indexOf( '_secret_' )
-									);
-								
+
+								const freshClientSecret = await WPFS.submitStripeElement( elements, $form );
+								if ( ! freshClientSecret ) return;
+
+								data[ 'wpfs-stripe-client-secret' ] = freshClientSecret;
+								data[ 'wpfs-stripe-payment-intent-id' ] = freshClientSecret.substr(
+									0,
+									freshClientSecret.indexOf( '_secret_' )
+								);
 								$.ajax( {
 									type: 'POST',
 									url: wpfsFormSettings.ajaxUrl,
 									data,
 									cache: false,
 									dataType: 'json',
-									success( data ) {
-										// now confirm the payment and wait for the redirect or the webhook
+									async success( data ) {
 										if (
 											data.success &&
 											data.success === true
 										) {
-											stripe
-												.confirmPayment( {
+											showProcessingOverlay( $form );
+											const confirmResult = await WPFS.confirmStripeIntent(
+												$form,
+												'payment',
+												{
 													elements,
+													clientSecret: freshClientSecret,
 													confirmParams: {
-														payment_method_data:
-															paymentMethodData,
+														// return_url is only used by Stripe if a redirect is actually required; with allow_redirects:'never' and redirect:'if_required' we should stay on-page and continue here.
+														return_url: return_url,
+														payment_method_data: paymentMethodData
 													},
 													redirect: 'if_required'
-												} )
-												.then( function( createPaymentMethodResult ) {
-													if ( !createPaymentMethodResult ) return; // Previous step failed
-												
-													if ( debugLog ) {
-														console.log(
-															'form.submit(): ' +
-																'PaymentMethod creation result=' +
-																JSON.stringify(
-																	createPaymentMethodResult
-																)
-														);
-													}
-													clearFieldErrors( $form );
-													if ( createPaymentMethodResult.error ) {
-														enableFormButtons( $form );
-														hideLoadingAnimation( $form );
-														showFieldError(
-															$form,
-															'cardnumber',
-															null,
-															createPaymentMethodResult.error
-																.message
-														);
-														scrollToElement(
-															$( '.wpfs-form-card', $form ),
-															false
-														);
-													} else {
-														const inputAction = $('input[name="action"]', $form);
-														if ( 'wp_full_stripe_inline_donation_charge' === inputAction.val() ) {
-															inputAction.val('wp_full_stripe_onetime_donation_charge');
-														}
-														$( '<input>' )
-															.attr( {
-																type: 'hidden',
-																name: 'wpfs-stripe-payment-intent-id',
-																value: createPaymentMethodResult.paymentIntent.id,
-															} )
-															.appendTo( $form );
-														$( '<input>' )
-															.attr( {
-																type: 'hidden',
-																name: 'wpfs-stripe-payment-method-id',
-																value: createPaymentMethodResult.paymentIntent.payment_method,
-															} )
-															.appendTo( $form );
-														submitPaymentData( $form, cardElement );
-													}
-												})
-												.catch( ( error ) => {
-													enableFormButtons( $form );
-													hideLoadingAnimation( $form );
-													showErrorGlobalMessage(
-														$form,
-														wpfsFormSettings.l10n
-															.stripe_errors
-															.internal_error,
-														error.message
-													);
-													console.log( error );
-												} );
+												}
+											);
+											if ( ! confirmResult ) return;
+
+											clearFieldErrors( $form );
+											if ( debugLog ) {
+												console.log( 'form.submit(): PaymentMethod creation result=' + JSON.stringify( confirmResult ) );
+											}
+											const inputAction = $( 'input[name="action"]', $form );
+											if ( 'wp_full_stripe_inline_donation_charge' === inputAction.val() ) {
+												inputAction.val( 'wp_full_stripe_onetime_donation_charge' );
+											}
+											$( '<input>' ).attr( {
+												type: 'hidden',
+												name: 'wpfs-stripe-payment-intent-id',
+												value: confirmResult.paymentIntent.id,
+											} ).appendTo( $form );
+											$( '<input>' ).attr( {
+												type: 'hidden',
+												name: 'wpfs-stripe-payment-method-id',
+												value: confirmResult.paymentIntent.payment_method,
+											} ).appendTo( $form );
+											submitPaymentData( $form, cardElement );
 										} else {
-											if (
-												data &&
-												( data.messageTitle ||
-													data.message )
-											) {
-												showErrorGlobalMessage(
-													$form,
-													data.messageTitle,
-													data.message
-												);
+											if ( data && ( data.messageTitle || data.message ) ) {
+												showErrorGlobalMessage( $form, data.messageTitle, data.message );
 											}
 											processValidationErrors( $form, data );
 											enableFormButtons( $form );
@@ -4016,20 +4147,10 @@ jQuery.noConflict();
 										}
 									},
 									error( jqXHR, textStatus, errorThrown ) {
-										logError(
-											'submitSaveOneTimeDonation',
-											jqXHR,
-											textStatus,
-											errorThrown
-										);
-										showErrorGlobalMessage(
-											$form,
-											wpfsFormSettings.l10n.stripe_errors
-												.internal_error
-										);
+										logError( 'submitSaveOneTimeDonation', jqXHR, textStatus, errorThrown );
+										showErrorGlobalMessage( $form, wpfsFormSettings.l10n.stripe_errors.internal_error );
 										enableFormButtons( $form );
 										hideLoadingAnimation( $form );
-										console.log( errorThrown );
 									},
 								} );
 
@@ -4037,182 +4158,86 @@ jQuery.noConflict();
 								// need to save a draft transaction locally before confirming the payment
 								data.action = 'wpfs-save-draft-transaction';
 								// custom fields are not serialized correct by default
-								delete data[ 'wpfs-custom-input%5B%5D' ];
-								const inputFields = $(
-									'input[name="wpfs-custom-input[]"]',
-									$form
-								);
-
-								const customInputValues = [];
-								inputFields.each( function ( index, element ) {
-									const $element = $( element );
-									customInputValues.push( $element.val() );
-								} );
-								data[ 'wpfs-custom-input[]' ] = customInputValues;
+								wpfsApplyCustomInputs( data, $form );
 								data[ 'wpfs-intent-type' ] = intentType;
-								data[ 'wpfs-stripe-client-secret' ] = clientSecret;
-								data[ 'wpfs-stripe-payment-intent-id' ] =
-									clientSecret.substr(
-										0,
-										clientSecret.indexOf( '_secret_' )
-									);
-		
+
+								const freshClientSecret = await WPFS.submitStripeElement( elements, $form );
+								if ( ! freshClientSecret ) return;
+
+								data[ 'wpfs-stripe-client-secret' ] = freshClientSecret;
+								data[ 'wpfs-stripe-payment-intent-id' ] = freshClientSecret.substr(
+									0,
+									freshClientSecret.indexOf( '_secret_' )
+								);
 								$.ajax( {
 									type: 'POST',
 									url: wpfsFormSettings.ajaxUrl,
 									data,
 									cache: false,
 									dataType: 'json',
-									success( data ) {
-										// now confirm the payment and wait for the redirect or the webhook
-										if (
-											data.success &&
-											data.success === true
-										) {
-											stripe
-												.confirmPayment( {
+									async success( responseData ) {
+										if ( responseData.success === true ) {
+											// confirmPayment will redirect to return_url on success
+											showProcessingOverlay( $form );
+											await WPFS.confirmStripeIntent(
+												$form,
+												'payment',
+												{
 													elements,
+													clientSecret: freshClientSecret,
 													confirmParams: {
-														return_url,
-														payment_method_data:
-															paymentMethodData,
-													},
-												} )
-												.catch( ( error ) => {
-													enableFormButtons( $form );
-													hideLoadingAnimation( $form );
-													showErrorGlobalMessage(
-														$form,
-														wpfsFormSettings.l10n
-															.stripe_errors
-															.internal_error,
-														error.message
-													);
-													console.log( error );
-												} );
+														return_url: return_url,
+														payment_method_data: paymentMethodData
+													}
+												}
+											);
 										} else {
-											if (
-												data &&
-												( data.messageTitle ||
-													data.message )
-											) {
-												showErrorGlobalMessage(
-													$form,
-													data.messageTitle,
-													data.message
-												);
+											if ( responseData && ( responseData.messageTitle || responseData.message ) ) {
+												showErrorGlobalMessage( $form, responseData.messageTitle, responseData.message );
 											}
-											processValidationErrors( $form, data );
+											processValidationErrors( $form, responseData );
 											enableFormButtons( $form );
 											hideLoadingAnimation( $form );
 										}
 									},
 									error( jqXHR, textStatus, errorThrown ) {
-										logError(
-											'submitDraftTransation',
-											jqXHR,
-											textStatus,
-											errorThrown
-										);
+										logError( 'submitDraftTransaction', jqXHR, textStatus, errorThrown );
 										showErrorGlobalMessage(
 											$form,
-											wpfsFormSettings.l10n.stripe_errors
-												.internal_error_title,
+											wpfsFormSettings.l10n.stripe_errors.internal_error_title,
 											errorThrown
 										);
 										enableFormButtons( $form );
 										hideLoadingAnimation( $form );
-										console.log( errorThrown );
 									},
 								} );
 							}
 						} else if ( intentType === 'setup' ) {
-							// For setup intents with deferred customer attachment:
-							// 1. Call elements.submit() first to validate payment details
-							// 2. Fetch fresh SetupIntent with customer attached
-							// 3. Confirm the SetupIntent
-							// See: https://stripe.com/docs/payments/accept-a-payment-deferred
-							elements.submit().then( function( submitResult ) {
-								if ( submitResult.error ) {
-									enableFormButtons( $form );
-									hideLoadingAnimation( $form );
-									showErrorGlobalMessage(
-										$form,
-										wpfsFormSettings.l10n.stripe_errors
-											.internal_error_title,
-										submitResult.error.message
-									);
-									scrollToElement(
-										$( '.wpfs-form-card', $form ),
-										false
-									);
-									return Promise.reject( submitResult.error );
-								}
-								
-								// Fetch fresh SetupIntent with customer attached
-								return getSetupIntentClientSecret( $form );
-							}).then( function( freshIntent ) {
-								if ( !freshIntent ) return; // Submit failed, already handled
-								
-								const freshClientSecret = freshIntent.clientSecret;
-								
-								return stripe.confirmSetup({
-									elements,
-									clientSecret: freshClientSecret,
-									confirmParams: {
-										return_url: return_url,
-										payment_method_data: paymentMethodData
-									},
-									redirect: 'if_required'
-								});
-							}).then( function ( createPaymentMethodResult ) {
-								if ( !createPaymentMethodResult ) return; // Previous step failed
-								
-								if ( debugLog ) {
-									console.log(
-										'form.submit(): ' +
-											'PaymentMethod creation result=' +
-											JSON.stringify(
-												createPaymentMethodResult
-											)
-									);
-								}
-								clearFieldErrors( $form );
-								if ( createPaymentMethodResult.error ) {
-									enableFormButtons( $form );
-									hideLoadingAnimation( $form );
-									showErrorGlobalMessage(
-										$form,
-										wpfsFormSettings.l10n.stripe_errors
-											.internal_error_title,
-										createPaymentMethodResult.error
-											.message
-									);
-									scrollToElement(
-										$( '.wpfs-form-card', $form ),
-										false
-									);
-								} else {
-									addPaymentMethodIdInput(
-										$form,
-										createPaymentMethodResult
-									);
-									submitPaymentData( $form, cardElement );
-								}
-							}).catch( ( error ) => {
-								// Only show error if not already handled by submit validation
-								if ( error && error.type !== 'validation_error' ) {
-									enableFormButtons( $form );
-									hideLoadingAnimation( $form );
-									showErrorGlobalMessage(
-										$form,
-										wpfsFormSettings.l10n.stripe_errors
-											.internal_error,
-										error.message || 'An error occurred'
-									);
-									console.log( error );
-								}
-							} );
+							const freshClientSecret = await WPFS.submitStripeElement( elements, $form );
+							if ( ! freshClientSecret ) return;
+
+							showProcessingOverlay( $form );
+							const confirmResult = await WPFS.confirmStripeIntent(
+									$form,
+									'setup',
+									{
+										elements,
+										clientSecret: freshClientSecret,
+										confirmParams: {
+											return_url: return_url,
+											payment_method_data: paymentMethodData
+										},
+										redirect: 'if_required'
+									}
+								);
+							if ( ! confirmResult ) return;
+
+							if ( debugLog ) {
+								console.log( 'form.submit(): PaymentMethod creation result=' + JSON.stringify( confirmResult ) );
+							}
+							clearFieldErrors( $form );
+							addPaymentMethodIdInput( $form, confirmResult );
+							submitPaymentData( $form, cardElement );
 						}
 					} else {
 						showErrorGlobalMessage(
@@ -4238,21 +4263,6 @@ jQuery.noConflict();
 			// add amount index
 			addCustomAmountIndexInput( $form );
 
-			// this is used for both payment intent and setup intent secrets
-			const { clientSecret, intentType } =
-				await getSetupIntentClientSecret( $form );
-
-			// set the intent type on the form so it can be used later
-			$form.data( 'wpfs-intent-type', intentType );
-			$form.data( 'wpfs-stripe-client-secret', clientSecret );
-			$form.data(
-				'wpfs-stripe-payment-intent-id',
-				clientSecret.substr(
-					0,
-					clientSecret.indexOf( '_secret_' )
-				)
-			);
-
 			let appearance = {
 				theme: $form.data( 'wpfs-elements-theme' ),
 			};
@@ -4265,13 +4275,87 @@ jQuery.noConflict();
 					},
 				};
 			}
-			// create Stripe Payments Element
-			const elements = stripe.elements( {
+
+			const formType = $form.data( 'wpfs-form-type' );
+			let intentType = ( FORM_TYPE_INLINE_DONATION === formType || FORM_TYPE_INLINE_SUBSCRIPTION === formType || FORM_TYPE_INLINE_SAVE_CARD === formType ) ? 'setup' : 'payment';
+
+			const paymentMethodTypesRaw = $form.data( 'wpfs-payment-method-types' );
+			const paymentMethodTypes = paymentMethodTypesRaw
+				? ( Array.isArray( paymentMethodTypesRaw ) ? paymentMethodTypesRaw : JSON.parse( paymentMethodTypesRaw ) )
+				: null;
+
+			let options = {
 				locale: elementsLocale,
 				loader: 'always',
-				clientSecret,
 				appearance,
-			} );
+			};
+
+			/**
+			 * Determines whether the current form configuration supports zero-decimal currencies and sets the amount accordingly to prevent Stripe errors for unsupported amounts.
+			 * @param {object} $form
+			 * @returns {boolean}
+			 */
+			function resolveZeroDecimalSupport( $form ) {
+				const amountType = $form.data( 'wpfs-amount-type' );
+				if ( PAYMENT_TYPE_CUSTOM_AMOUNT === amountType ) {
+					return true === findCustomAmountElement( $form ).data( 'wpfs-zero-decimal-support' );
+				}
+				if ( PAYMENT_TYPE_LIST_OF_AMOUNTS === amountType ) {
+					const $listEl = findListOfAmountsElement( $form );
+					return $listEl && $listEl.length > 0 ? true === $listEl.first().data( 'wpfs-zero-decimal-support' ) : false;
+				}
+				return true === $form.data( 'wpfs-zero-decimal-support' );
+			}
+
+			if (
+				FORM_TYPE_INLINE_PAYMENT === formType ||
+				$form.find( 'input[name="wpfs-donation-frequency"]:checked' ).val() === 'one-time'
+			) {
+				const amountData = findPaymentAmountData( $form );
+				const currency = amountData.valid ? amountData.currency : ( $form.data( 'wpfs-currency' ) || 'usd' );
+				intentType = 'payment';
+				const zeroDecimalSupport = resolveZeroDecimalSupport( $form );
+				const minimumAmount = zeroDecimalSupport ? 1 : 50;
+				options = {
+					...options,
+					mode: intentType,
+					currency: currency.toLowerCase(),
+					amount: amountData.valid && amountData.amount > 0 ? amountData.amount : minimumAmount,
+				};
+			} else if ( FORM_TYPE_INLINE_DONATION === formType ) {
+				const amountData = findPaymentAmountData( $form );
+				const currency = amountData.valid ? amountData.currency : ( $form.data( 'wpfs-currency' ) || 'usd' );
+				options = {
+					...options,
+					mode: intentType,
+					currency: currency.toLowerCase(),
+				};
+			} else if ( FORM_TYPE_INLINE_SUBSCRIPTION === formType ) {
+				const amountData = findPlanAmountData( $form );
+				const currency = amountData.valid ? amountData.currency : ( $form.data( 'wpfs-currency' ) || 'usd' );
+				options = {
+					...options,
+					mode: intentType,
+					currency: currency.toLowerCase(),
+				};
+			} else if ( FORM_TYPE_INLINE_SAVE_CARD === formType ) {
+				options = {
+					...options,
+					mode: intentType,
+					currency: ( $form.data( 'wpfs-currency' ) || 'usd' ).toLowerCase(),
+				};
+			}
+			if ( intentType === 'payment' && paymentMethodTypes ) {
+				options.paymentMethodTypes = paymentMethodTypes;
+			}
+
+			// Use the jQuery .data() setter (not .attr) so it matches the .data()
+			// reads elsewhere — jQuery caches data-* on first read and ignores later
+			// .attr() changes, which made re-inits (e.g. donation frequency toggle)
+			// read a stale intent type.
+			$form.data( 'wpfs-intent-type', intentType );
+			// create Stripe Payments Element.
+			const elements = stripe.elements( options );
 			const cardElement = elements.create( 'payment', {
 				fields: {
 					billingDetails: {
@@ -4282,6 +4366,93 @@ jQuery.noConflict();
 			} );
 			return { elements, cardElement };
 		}
+
+		/**
+		 * Handles errors from Stripe and surfaces them to the user, while also re-enabling the form and hiding any loading animations.
+		 *
+		 * @param {object} $form
+		 * @param {object} error
+		 */
+		function abortWithStripeError( $form, error ) {
+			enableFormButtons( $form );
+			hideLoadingAnimation( $form );
+			showErrorGlobalMessage(
+				$form,
+				wpfsFormSettings.l10n.stripe_errors.internal_error_title,
+				( error && error.message )
+					? error.message
+					: wpfsFormSettings.l10n.stripe_errors.internal_error
+			);
+			scrollToElement( $( '.wpfs-form-card', $form ), false );
+		}
+
+		/**
+		 * Validates the Stripe payment element, then fetches a fresh client secret.
+		 *
+		 * @param {object} elements
+		 * @param {object} $form
+		 * @returns {string|null} The fresh client secret, or null on any failure.
+		 */
+		WPFS.submitStripeElement = async function ( elements, $form ) {
+			const submitResult = await elements.submit();
+			if ( submitResult.error ) {
+				abortWithStripeError( $form, submitResult.error );
+				return null;
+			}
+
+			let freshIntent;
+			try {
+				freshIntent = await getSetupIntentClientSecret( $form );
+			} catch ( _error ) {
+				// Error already displayed by getSetupIntentClientSecret
+				return null;
+			}
+
+			if ( ! freshIntent || ! freshIntent.clientSecret ) {
+				return null;
+			}
+
+			return freshIntent.clientSecret;
+		};
+
+		/**
+		 * Validates the Stripe payment element, then confirms the intent with Stripe using the provided payment method data and client secret.
+		 *
+		 * @param {object} $form
+		 * @param {string} intentType
+		 * @param {object} options
+		 * @returns {object|null} The Stripe result object, or null on any error.
+		 */
+		WPFS.confirmStripeIntent = async function (
+			$form,
+			intentType,
+			options
+		) {
+			try {
+				const confirmResult = intentType === 'setup'
+					? await stripe.confirmSetup( options )
+					: await stripe.confirmPayment( options );
+
+				if ( confirmResult && confirmResult.error ) {
+					abortWithStripeError( $form, confirmResult.error );
+					return null;
+				}
+
+				return confirmResult;
+			} catch ( error ) {
+				if ( ! error || error.type !== 'validation_error' ) {
+					abortWithStripeError( $form, error );
+				} else {
+					// A validation_error is surfaced inline by the Stripe Element, so we
+					// skip the global error banner — but we must still re-enable the form
+					// and dismiss the processing overlay, otherwise the user is locked
+					// behind it with no escape but a page reload.
+					enableFormButtons( $form );
+					hideLoadingAnimation( $form );
+				}
+				return null;
+			}
+		};
 
 		WPFS.initCoupon = function () {
 			const COUPON_FIELD_NAME = 'wpfs-coupon';
@@ -4349,11 +4520,16 @@ jQuery.noConflict();
 					$coupon.prop( 'disabled', true );
 					showRedeemLoadingAnimation( $form );
 
+					// Holds the fetchUpdates() promise when Elements need re-syncing.
+					// complete() defers UI re-enable until it settles.
+					let pendingFetch = null;
+
 					$.ajax( {
 						type: 'POST',
 						url: wpfsFormSettings.ajaxUrl,
 						data: {
 							action: 'wpfs-check-coupon',
+							nonce: wpfsFormSettings.nonce,
 							code: $coupon.val(),
 							taxData,
 						},
@@ -4372,6 +4548,24 @@ jQuery.noConflict();
 								);
 								refreshProductPricing( $form );
 								refreshPaymentDetails( $form );
+
+								// Re-sync the Stripe Elements instance from the updated
+								// PaymentIntent so Apple Pay / Payment Request shows the
+								// discounted amount.  Keep buttons disabled until this
+								// resolves so the user cannot open the payment sheet with
+								// stale data (see complete() handler below).
+								const formName = extractFormNameFromNode( $form );
+								const stripeElements = WPFS.getStripeElements( formName );
+								if ( stripeElements && $form.data( 'wpfs-intent-type' ) === 'payment' ) {
+									pendingFetch = stripeElements.fetchUpdates().catch( function ( err ) {
+											showErrorGlobalMessage(
+												$form,
+												wpfsFormSettings.l10n.stripe_errors
+													.internal_error_title,
+												err.message
+											);
+										} );
+								}
 							} else if ( couponRedeemData.bindingResult ) {
 								processValidationErrors(
 									$form,
@@ -4406,9 +4600,19 @@ jQuery.noConflict();
 							);
 						},
 						complete() {
-							$coupon.prop( 'disabled', false );
-							hideRedeemLoadingAnimation( $form );
-							enableFormButtons( $form );
+							const enableUI = function () {
+								$coupon.prop( 'disabled', false );
+								hideRedeemLoadingAnimation( $form );
+								enableFormButtons( $form );
+							};
+							// If fetchUpdates() is in flight, defer re-enabling until
+							// the Elements instance has refreshed from the updated
+							// PaymentIntent.  Otherwise re-enable immediately.
+							if ( pendingFetch ) {
+								pendingFetch.finally( enableUI );
+							} else {
+								enableUI();
+							}
 						},
 					} );
 				}
@@ -5260,6 +5464,57 @@ jQuery.noConflict();
 							hasErrors = true;
 						}
 					}
+
+					// tnagy validate typed custom fields with a per-field required flag.
+					// Client validation improves UX only; server validation is authoritative.
+					$(
+						'.wpfs-custom-field[data-wpfs-cf-id][data-wpfs-cf-required="1"]',
+						$form
+					).each( function () {
+						const $field = $( this );
+						const type = $field.data( 'wpfs-cf-type' );
+						let empty = false;
+						if ( type === 'checkbox' ) {
+							empty = ! $field
+								.find( 'input[type="checkbox"]' )
+								.is( ':checked' );
+						} else if ( type === 'multiselect' ) {
+							empty =
+								$field.find( 'input[type="checkbox"]:checked' )
+									.length === 0;
+						} else {
+							const val = wpfsCustomFieldControl( $field ).val();
+							empty = ! val || ( '' + val ).trim().length === 0;
+						}
+						if ( ! empty ) {
+							return;
+						}
+						const $control = wpfsCustomFieldControl( $field );
+						if ( $firstInvalidField == null ) {
+							$firstInvalidField = $control.length
+								? $control
+								: $field;
+						}
+						const id = $control.attr( 'id' );
+						const label = $field
+							.find( '.wpfs-form-label, .wpfs-form-check-label' )
+							.first()
+							.text()
+							.trim();
+						fieldErrorMessage = vsprintf(
+							wpfsFormSettings.l10n.validation_errors
+								.mandatory_field_is_empty,
+							[ label ]
+						);
+						showFieldError(
+							$form,
+							'wpfs-custom-input',
+							id,
+							fieldErrorMessage,
+							false
+						);
+						hasErrors = true;
+					} );
 
 					// tnagy validate terms of use if necessary
 					const showTermsOfUse = $form.data(
@@ -6232,6 +6487,7 @@ jQuery.noConflict();
 		function refreshPricingFromServer( $form ) {
 			const data = gatherFormDataForTaxCalculation( $form );
 			data.action = 'wpfs-calculate-pricing';
+			data.nonce = wpfsFormSettings.nonce;
 			clearGlobalMessage( $form );
 			clearFieldErrors( $form );
 			showLoadingAnimation( $form );
@@ -6375,6 +6631,14 @@ jQuery.noConflict();
 					$( this ).val( $( 'option:first', $( this ) ).val() );
 				}
 				handleAmountChange( $form );
+				handleCustomAmountChange( $( this ), $form );
+			} );
+			$customSelectElements.on( 'change', function () {
+				if ( ! $( this ).data( 'custom-wpfsSelectmenu' ) ) {
+					const $form = getParentForm( this );
+					handleAmountChange( $form );
+					handleCustomAmountChange( $( this ), $form );
+				}
 			} );
 			const $customRadioElements = $( 'input.wpfs-custom-amount-radio' );
 			$customRadioElements.each( function () {
@@ -6482,11 +6746,16 @@ jQuery.noConflict();
 		if (
 			paymentIntent &&
 			redirectStatus &&
-			redirectStatus === 'succeeded'
+			redirectStatus === 'succeeded' &&
+			$form.length
 		) {
 			// lock the screen to prevent user interaction
 			disableFormButtons( $form );
 			showLoadingAnimation( $form );
+			// On return from Stripe the page reloads at the top; show the
+			// processing overlay immediately so the user keeps context instead
+			// of seeing the page flash while the charge finalises.
+			showProcessingOverlay( $form );
 			clearFieldErrors( $form );
 			clearGlobalMessage( $form );
 
@@ -6553,6 +6822,9 @@ jQuery.noConflict();
 							);
 						}
 						processValidationErrors( $form, data );
+						// finalisation failed; let the customer retry and clear the overlay
+						enableFormButtons( $form );
+						hideLoadingAnimation( $form );
 					}
 				},
 				error( jqXHR, textStatus, errorThrown ) {
@@ -6568,6 +6840,8 @@ jQuery.noConflict();
 							.internal_error_title,
 						errorThrown
 					);
+					enableFormButtons( $form );
+					hideLoadingAnimation( $form );
 				},
 				complete() {},
 			} );

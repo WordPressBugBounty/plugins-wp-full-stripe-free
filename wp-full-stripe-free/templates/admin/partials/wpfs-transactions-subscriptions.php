@@ -123,8 +123,13 @@ $subscriptionsTable->display();
             <div class="wpfs-side-pane-list__title"><?php _e( 'Custom fields', 'wp-full-stripe-free' ); ?></div>
             <ul class="wpfs-side-pane-list__list">
                 <% _.each(customFields, function(customField) { %>
+                <% if ( customField.type === 'html' ) { return; } %>
                 <li class="wpfs-side-pane-list__item">
-                    <%- customField.label %>: <span class="wpfs-side-pane-list__highlight"><%- customField.value %></span>
+                    <%- customField.label %>: <span class="wpfs-side-pane-list__highlight"><%
+                        var dv = ( customField.displayValue !== undefined && customField.displayValue !== null ) ? customField.displayValue : customField.value;
+                        if ( customField.type === 'checkbox' ) { dv = ( customField.value === 'yes' ) ? '<?php echo esc_html__( 'Yes', 'wp-full-stripe-free' ); ?>' : '<?php echo esc_html__( 'No', 'wp-full-stripe-free' ); ?>'; }
+                        else if ( Array.isArray( dv ) ) { dv = dv.join( ', ' ); }
+                    %><%- dv %></span>
                 </li>
                 <% }); %>
             </ul>

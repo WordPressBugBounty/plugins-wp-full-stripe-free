@@ -1138,6 +1138,25 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	}
 
 	/**
+	 * Truncate a Stripe metadata key to a character length (multibyte-aware, byte fallback).
+	 *
+	 * @param string $value
+	 * @param int    $maxLength
+	 * @return string
+	 */
+	private function truncateMetadataKey($value, $maxLength)
+	{
+		if ($maxLength <= 0) {
+			return '';
+		}
+		if (function_exists('mb_substr')) {
+			return mb_substr($value, 0, $maxLength);
+		}
+
+		return substr($value, 0, $maxLength);
+	}
+
+	/**
 	 * @return array
 	 */
 	public function getMetadata()
@@ -1196,20 +1215,41 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 			}
 		}
 		if (is_null($this->__form->customInputs)) {
-			$customInputValueString = is_array($this->customInputValues) ? implode(",", $this->customInputValues) : printf($this->customInputValues);
+			$customInputValueString = is_array($this->customInputValues) ? implode(",", $this->customInputValues) : (string) $this->customInputValues;
 			if (!empty($customInputValueString)) {
 				$metadata['custom_inputs'] = $customInputValueString;
 			}
 		} else {
-			$customInputLabels = $this->getDecodedCustomInputLabels();
-			foreach ($customInputLabels as $i => $label) {
-				$key = $label;
+			$isJson = MM_WPFS_CustomFields::isJsonConfig($this->__form->customInputs);
+			$defs   = MM_WPFS_CustomFields::parse($this->__form->customInputs, $this->__form->customInputRequired);
+			foreach ($defs as $index => $def) {
+				if (!$def->isInteractive()) {
+					continue;
+				}
+				$raw       = $this->getSubmittedCustomFieldValue($def, $index, $isJson);
+				$stored    = MM_WPFS_CustomFields::storedValueFor($def, $raw);
+				$metaValue = MM_WPFS_CustomFields::metadataValueFor($def, $stored);
+				if (is_null($metaValue)) {
+					continue;
+				}
+				// Stripe rejects blank metadata keys and keys longer than the key max length,
+				// which would fail the whole payment. Skip blank labels, and truncate to the limit
+				// BEFORE de-duplicating so two labels that share the first $keyMaxLength characters
+				// don't collapse to the same truncated key and silently drop the second value.
+				$keyMaxLength = MM_WPFS_Utils::STRIPE_METADATA_KEY_MAX_LENGTH;
+				$baseKey = trim($def->label);
+				if ('' === $baseKey) {
+					continue;
+				}
+				$key = $this->truncateMetadataKey($baseKey, $keyMaxLength);
 				if (array_key_exists($key, $metadata)) {
-					$key = $label . $i;
+					$suffix = (string) $index;
+					$key = $this->truncateMetadataKey($baseKey, $keyMaxLength - strlen($suffix)) . $suffix;
 				}
-				if (!empty($this->customInputValues[$i])) {
-					$metadata[$key] = $this->customInputValues[$i];
+				if (array_key_exists($key, $metadata)) {
+					continue;
 				}
+				$metadata[$key] = $metaValue;
 			}
 		}
 
@@ -1243,19 +1283,32 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	public function getCustomFieldsJSON()
 	{
 		$customFields = [];
-		if (empty($this->__form->customInputs)) {
+		// Mirror getMetadata()'s branch check: only the tnagy single-field legacy
+		// form (customInputs IS NULL) uses the positional path; an empty string
+		// is an empty typed config and must take the parse() branch below.
+		if (is_null($this->__form->customInputs)) {
 			if (is_array($this->customInputValues)) {
 				foreach ($this->customInputValues as $i => $value) {
 					array_push($customFields, $this->createCustomFieldObject(self::CUSTOM_FIELD_IDENTIFIER_PREFIX . ($i + 1), self::CUSTOM_FIELD_IDENTIFIER_PREFIX . ($i + 1), 'text', $value));
 				}
 			} else if (!empty($this->customInputValues)) {
-				array_push($customFields, $this->createCustomFieldObject(self::CUSTOM_FIELD_IDENTIFIER_PREFIX . 1, self::CUSTOM_FIELD_IDENTIFIER_PREFIX . 1, 'text', printf($this->customInputValues)));
+				array_push($customFields, $this->createCustomFieldObject(self::CUSTOM_FIELD_IDENTIFIER_PREFIX . 1, self::CUSTOM_FIELD_IDENTIFIER_PREFIX . 1, 'text', (string) $this->customInputValues));
 			}
 		} else {
-			$customInputLabels = $this->getDecodedCustomInputLabels();
-			foreach ($customInputLabels as $i => $label) {
-				$value = empty($this->customInputValues[$i]) ? '' : $this->customInputValues[$i];
-				array_push($customFields, $this->createCustomFieldObject(self::CUSTOM_FIELD_IDENTIFIER_PREFIX . ($i + 1), $label, 'text', $value));
+			$isJson   = MM_WPFS_CustomFields::isJsonConfig($this->__form->customInputs);
+			$defs     = MM_WPFS_CustomFields::parse($this->__form->customInputs, $this->__form->customInputRequired);
+			$position = 0;
+			foreach ($defs as $index => $def) {
+				// html blocks are display-only and never recorded as a submitted value.
+				if (!$def->isInteractive()) {
+					continue;
+				}
+				$position++;
+				$raw          = $this->getSubmittedCustomFieldValue($def, $index, $isJson);
+				$stored       = MM_WPFS_CustomFields::storedValueFor($def, $raw);
+				$displayValue = MM_WPFS_CustomFields::displayValueFor($def, $stored);
+				$object       = $this->createCustomFieldObject(self::CUSTOM_FIELD_IDENTIFIER_PREFIX . $position, $def->label, $def->type, $stored, $def->id, $displayValue);
+				array_push($customFields, $object);
 			}
 		}
 
@@ -1263,14 +1316,39 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	}
 
 	/**
-	 * @param string $identifier
-	 * @param string $label
-	 * @param string $type
-	 * @param string $value
+	 * Resolve the raw submitted value for a parsed field definition.
+	 *
+	 * JSON configs key submitted values by stable id; legacy {{ lists key by position.
+	 *
+	 * @param MM_WPFS_CustomFieldDef $def
+	 * @param int                    $index
+	 * @param bool                   $isJson
+	 *
+	 * @return mixed
+	 */
+	protected function getSubmittedCustomFieldValue($def, $index, $isJson)
+	{
+		if (!is_array($this->customInputValues)) {
+			return null;
+		}
+		if ($isJson) {
+			return isset($this->customInputValues[$def->id]) ? $this->customInputValues[$def->id] : null;
+		}
+
+		return isset($this->customInputValues[$index]) ? $this->customInputValues[$index] : null;
+	}
+
+	/**
+	 * @param string          $identifier
+	 * @param string          $label
+	 * @param string          $type
+	 * @param string|string[] $value
+	 * @param string|null     $id           stable field id (JSON configs)
+	 * @param mixed           $displayValue human facing value (option labels, Yes/No, ...)
 	 *
 	 * @return StdClass
 	 */
-	public function createCustomFieldObject($identifier, $label, $type, $value)
+	public function createCustomFieldObject($identifier, $label, $type, $value, $id = null, $displayValue = null)
 	{
 		$customFieldObject = new \StdClass;
 
@@ -1278,6 +1356,12 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 		$customFieldObject->label = $label;
 		$customFieldObject->type = $type;
 		$customFieldObject->value = $value;
+		if (!is_null($id)) {
+			$customFieldObject->id = $id;
+		}
+		if (!is_null($displayValue)) {
+			$customFieldObject->displayValue = $displayValue;
+		}
 
 		return $customFieldObject;
 	}
@@ -1301,7 +1385,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	}
 
 	/**
-	 * @return \StripeWPFS\Stripe\Customer
+	 * @return \StripeWPFS\Stripe\Customer|null
 	 */
 	public function getStripeCustomer()
 	{
@@ -1309,7 +1393,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	}
 
 	/**
-	 * @param \StripeWPFS\Stripe\Customer $stripeCustomer
+	 * @param \StripeWPFS\Stripe\Customer|null $stripeCustomer
 	 * @param bool $updatePropertiesByCustomer
 	 */
 	public function setStripeCustomer($stripeCustomer, $updatePropertiesByCustomer = false)

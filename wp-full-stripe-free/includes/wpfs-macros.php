@@ -229,29 +229,87 @@ abstract class MM_WPFS_FormMacroReplacer {
     }
 
     private function getCustomInputKeyValuePairs() {
-        $keyValuePairs      = [];
-        $customInputValues  = $this->transactionData->getCustomInputValues();
-
+        $keyValuePairs            = [];
         $customInputFieldMaxCount = MM_WPFS::getCustomFieldMaxCount( $this->staticContext );
-        $customInputValueCount    = 0;
-        if ( isset( $customInputValues ) && is_array( $customInputValues ) ) {
-            $customInputValueCount = count($customInputValues);
-        }
+        $displayValues            = $this->getCustomInputDisplayValues();
 
         for ( $idx = 0; $idx < $customInputFieldMaxCount; $idx++ ) {
-            $key = "%CUSTOMFIELD" . ( $idx+1 ) . "%";
+            $key   = "%CUSTOMFIELD" . ( $idx + 1 ) . "%";
+            $value = isset( $displayValues[ $idx ] ) ? $displayValues[ $idx ] : '';
 
-            if ( $idx < $customInputValueCount ) {
-                $value = $customInputValues[ $idx ];
-            } else {
-                $value = '';
-            }
-            $customInputElement = [ $key => $value  ];
-
-            $keyValuePairs = array_merge( $keyValuePairs, $customInputElement );
+            $keyValuePairs = array_merge( $keyValuePairs, [ $key => $value ] );
         }
 
         return $keyValuePairs;
+    }
+
+    /**
+     * Ordered, human-facing values for the interactive custom fields.
+     *
+     * Prefers the type-aware transaction snapshot (display values, Yes/No,
+     * comma-joined arrays) and falls back to the legacy positional values.
+     *
+     * @return array<int, string>
+     */
+    private function getCustomInputDisplayValues() {
+        $values       = [];
+        $snapshotJSON = method_exists( $this->transactionData, 'getCustomFieldsJSON' )
+            ? $this->transactionData->getCustomFieldsJSON()
+            : null;
+
+        if ( ! empty( $snapshotJSON ) ) {
+            $snapshot = json_decode( $snapshotJSON, true );
+            if ( is_array( $snapshot ) ) {
+                foreach ( $snapshot as $field ) {
+                    if ( ! is_array( $field ) ) {
+                        continue;
+                    }
+                    if ( isset( $field['type'] ) && 'html' === $field['type'] ) {
+                        continue;
+                    }
+                    $values[] = $this->formatCustomFieldDisplayValue( $field );
+                }
+
+                return $values;
+            }
+        }
+
+        // Legacy fallback: raw positional values.
+        $customInputValues = $this->transactionData->getCustomInputValues();
+        if ( isset( $customInputValues ) && is_array( $customInputValues ) ) {
+            foreach ( $customInputValues as $value ) {
+                $values[] = is_array( $value ) ? implode( ', ', $value ) : (string) $value;
+            }
+        } elseif ( ! empty( $customInputValues ) ) {
+            $values[] = (string) $customInputValues;
+        }
+
+        return $values;
+    }
+
+    /**
+     * @param array<string, mixed> $field decoded custom field snapshot object
+     *
+     * @return string
+     */
+    private function formatCustomFieldDisplayValue( $field ) {
+        $type = isset( $field['type'] ) ? $field['type'] : 'text';
+
+        if ( 'checkbox' === $type ) {
+            $value = isset( $field['value'] ) ? $field['value'] : '';
+
+            return 'yes' === $value
+                ? __( 'Yes', 'wp-full-stripe-free' )
+                : __( 'No', 'wp-full-stripe-free' );
+        }
+
+        if ( array_key_exists( 'displayValue', $field ) ) {
+            $display = $field['displayValue'];
+        } else {
+            $display = isset( $field['value'] ) ? $field['value'] : '';
+        }
+
+        return is_array( $display ) ? implode( ', ', $display ) : (string) $display;
     }
 }
 

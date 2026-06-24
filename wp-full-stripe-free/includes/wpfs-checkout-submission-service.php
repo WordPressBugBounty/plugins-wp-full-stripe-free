@@ -195,6 +195,21 @@ class MM_WPFS_CheckoutSubmissionService {
 		return $this->db->findPopupFormSubmitByHash( $submitHash );
 	}
 
+	/**
+	 * True if a payment record already exists for this PaymentIntent. Check before handle()
+	 * so notifications fire at most once, even if a prior run left the submission non-terminal.
+	 *
+	 * @param string $formType
+	 * @param \StripeWPFS\Stripe\PaymentIntent|null $paymentIntent
+	 *
+	 * @return bool
+	 */
+	public function isPaymentAlreadyProcessed( $formType, $paymentIntent ) {
+		$paymentIntentId = ( isset( $paymentIntent ) && isset( $paymentIntent->id ) ) ? $paymentIntent->id : null;
+
+		return $this->db->isCheckoutPaymentProcessedByPaymentIntent( $formType, $paymentIntentId );
+	}
+
 	public function processCheckoutSubmissions() {
 		$this->logger->debug( __FUNCTION__, 'CALLED' );
 
@@ -346,9 +361,33 @@ class MM_WPFS_CheckoutSubmissionService {
 	private function processSinglePopupFormSubmit( $popupFormSubmit ) {
 		try {
 			if ( isset( $popupFormSubmit->checkoutSessionId ) ) {
+				// Skip if the redirect path already handled this record (avoids duplicate emails).
+				$freshSubmit = $this->retrieveSubmitEntry( $popupFormSubmit->hash );
+				$freshStatus = is_object( $freshSubmit ) ? $freshSubmit->status : null;
+				if (
+					! in_array( $freshStatus, [
+						self::POPUP_FORM_SUBMIT_STATUS_CREATED,
+						self::POPUP_FORM_SUBMIT_STATUS_PENDING,
+					], true )
+				) {
+					$this->logger->debug(
+						__FUNCTION__,
+						'Skipping: submission already handled or missing, status=' . ( is_null( $freshStatus ) ? 'not found' : $freshStatus )
+					);
+					return self::PROCESS_RESULT_WAIT_FOR_STATUS_CHANGE;
+				}
+
 				$checkoutSession = $this->retrieveCheckoutSession( $popupFormSubmit->checkoutSessionId );
 				$paymentIntent = $this->findPaymentIntentInCheckoutSession( $checkoutSession );
 				if ( isset( $paymentIntent ) && \StripeWPFS\Stripe\PaymentIntent::STATUS_SUCCEEDED === $paymentIntent->status ) {
+
+					// Already processed by a prior run: resolve without resending notifications.
+					if ( $this->isPaymentAlreadyProcessed( $popupFormSubmit->formType, $paymentIntent ) ) {
+						$this->logger->debug( __FUNCTION__, 'Payment already processed for PaymentIntent=' . $paymentIntent->id . ', skipping notifications.' );
+
+						return self::PROCESS_RESULT_SET_TO_SUCCESS;
+					}
+
 					$formModel = null;
 					$checkoutChargeHandler = null;
 					if (

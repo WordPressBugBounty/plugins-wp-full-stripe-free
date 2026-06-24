@@ -351,59 +351,47 @@ class MM_WPFS_FormValidator extends MM_WPFS_Validator {
 			}
 			if ( ! $this->isIgnored( MM_WPFS_Public_FormModel::PARAM_WPFS_CUSTOM_INPUT ) ) {
 				if ( 1 == $formModelObject->getForm()->showCustomInput ) {
-					if ( 1 == $formModelObject->getForm()->customInputRequired ) {
-						if ( is_null( $formModelObject->getForm()->customInputs ) ) {
-							if ( is_null( $formModelObject->getCustomInputvalues() ) || ( false == trim( $formModelObject->getCustomInputvalues() ) ) ) {
-								$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_CUSTOM_INPUT;
-								$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
-								$error = sprintf(
-									/* translators: Error message for required fields when empty.
-									 * p1: custom input field label
-									 */
-									__( "Please enter a value for '%s'", 'wp-full-stripe-free' ), MM_WPFS_Localization::translateLabel( $formModelObject->getForm()->customInputTitle ) );
-								$bindingResult->addFieldError( $fieldName, $fieldId, $error );
-							}
-						} else {
-							$customInputLabels = MM_WPFS_Utils::decodeCustomFieldLabels( $formModelObject->getForm()->customInputs );
-							foreach ( $customInputLabels as $index => $label ) {
-								$customInputValues = $formModelObject->getCustomInputvalues();
-								if (
-									! isset( $customInputValues ) ||
-									(
-										is_array( $customInputValues ) && isset( $customInputValues[ $index ] ) &&
-										( is_null( $customInputValues[ $index ] ) || ( false == trim( $customInputValues[ $index ] ) ) )
-									)
-								) {
-									$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_CUSTOM_INPUT;
-									$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash(), $index );
-									/* translators: Error message for required fields when empty.
-									 * p1: custom input field label
-									 */
-									$error = sprintf( __( "Please enter a value for '%s'", 'wp-full-stripe-free' ), MM_WPFS_Localization::translateLabel( $label ) );
-									$bindingResult->addFieldError( $fieldName, $fieldId, $error );
-								}
-							}
+					$form = $formModelObject->getForm();
+					if ( is_null( $form->customInputs ) ) {
+						// tnagy legacy single custom input field
+						$customInputValue = $formModelObject->getCustomInputvalues();
+						if ( 1 == $form->customInputRequired
+							&& ( is_null( $customInputValue ) || ( false == trim( $customInputValue ) ) ) ) {
+							$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_CUSTOM_INPUT;
+							$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
+							$error = sprintf(
+								/* translators: Error message for required fields when empty.
+								 * p1: custom input field label
+								 */
+								__( "Please enter a value for '%s'", 'wp-full-stripe-free' ), MM_WPFS_Localization::translateLabel( $form->customInputTitle ) );
+							$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 						}
-					}
-					if ( is_null( $formModelObject->getForm()->customInputs ) ) {
-						if ( is_string( $formModelObject->getCustomInputvalues() ) && strlen( $formModelObject->getCustomInputvalues() ) > MM_WPFS_Utils::STRIPE_METADATA_VALUE_MAX_LENGTH ) {
+						if ( is_string( $customInputValue ) && strlen( $customInputValue ) > MM_WPFS_Utils::STRIPE_METADATA_VALUE_MAX_LENGTH ) {
 							$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_CUSTOM_INPUT;
 							$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash() );
 							$error = sprintf(
 								/* translators: Form field validation error for custom fields */
-								__( "The value for '%s' is too long", 'wp-full-stripe-free' ), MM_WPFS_Localization::translateLabel( $formModelObject->getForm()->customInputTitle ) );
+								__( "The value for '%s' is too long", 'wp-full-stripe-free' ), MM_WPFS_Localization::translateLabel( $form->customInputTitle ) );
 							$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 						}
 					} else {
-						$customInputLabels = MM_WPFS_Utils::decodeCustomFieldLabels( $formModelObject->getForm()->customInputs );
-						foreach ( $customInputLabels as $index => $label ) {
-							$customInputValues = $formModelObject->getCustomInputvalues();
-							if ( isset( $customInputValues ) && isset( $customInputValues[ $index ] ) && is_string( $customInputValues[ $index ] ) && strlen( $customInputValues[ $index ] ) > MM_WPFS_Utils::STRIPE_METADATA_VALUE_MAX_LENGTH ) {
+						// Typed custom fields (legacy {{ list or JSON v1 config) validated against the saved schema.
+						$isJson = MM_WPFS_CustomFields::isJsonConfig( $form->customInputs );
+						$defs   = MM_WPFS_CustomFields::parse( $form->customInputs, $form->customInputRequired );
+						$values = $formModelObject->getCustomInputvalues();
+						foreach ( $defs as $index => $def ) {
+							if ( MM_WPFS_CustomFields::TYPE_HTML === $def->type ) {
+								continue;
+							}
+							if ( $isJson ) {
+								$raw = ( is_array( $values ) && isset( $values[ $def->id ] ) ) ? $values[ $def->id ] : null;
+							} else {
+								$raw = ( is_array( $values ) && isset( $values[ $index ] ) ) ? $values[ $index ] : null;
+							}
+							$error = MM_WPFS_CustomFields::validateSubmittedValue( $def, $raw );
+							if ( ! is_null( $error ) ) {
 								$fieldName = MM_WPFS_Public_FormModel::PARAM_WPFS_CUSTOM_INPUT;
-								$fieldId = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash(), $index );
-								$error = sprintf(
-									/* translators: Form field validation error for custom fields */
-									__( "The value for '%s' is too long", 'wp-full-stripe-free' ), MM_WPFS_Localization::translateLabel( $label ) );
+								$fieldId   = MM_WPFS_Utils::generateFormElementId( $fieldName, $formModelObject->getFormHash(), $isJson ? $def->id : $index );
 								$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 							}
 						}

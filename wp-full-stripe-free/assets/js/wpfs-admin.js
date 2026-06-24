@@ -2757,62 +2757,89 @@ jQuery.noConflict();
       }
     };
 
-    function validateAddCustomFieldDialog(bindingResult) {
-      if (!$('input[name="' + FORM_FIELD_CUSTOM_FIELD_LABEL + '"]').val()) {
-        var fieldId = generateFormElementId(
-          FORM_FIELD_CUSTOM_FIELD_LABEL,
-          bindingResult.getFormHash()
-        );
+    // ---------------------------------------------------------------------
+    // Typed custom fields editor
+    //
+    // The fields array (hydrated from the #wpfs-custom-fields-bootstrap JSON)
+    // is the single source of truth. The DOM list and the hidden form input
+    // are projections of it. Saved configuration is canonicalized again
+    // server-side by MM_WPFS_CustomFields::normalizeFromAdminJson().
+    // ---------------------------------------------------------------------
 
-        bindingResult.addFieldError(
-          FORM_FIELD_CUSTOM_FIELD_LABEL,
-          fieldId,
-          wpfsAdminL10n.fieldNameRequiredMessage
-        );
-      }
+    var customFieldsState = {
+      fields: [],
+      l10n: {},
+      editingIndex: null,
+    };
 
-      var fieldName = $(
-        'input[name="' + FORM_FIELD_CUSTOM_FIELD_LABEL + '"]'
-      ).val();
-      if ([...fieldName].length > 40) {
-        var longFieldId = generateFormElementId(
-          FORM_FIELD_CUSTOM_FIELD_LABEL,
-          bindingResult.getFormHash()
-        );
-
-        bindingResult.addFieldError(
-          FORM_FIELD_CUSTOM_FIELD_LABEL,
-          longFieldId,
-          wpfsAdminL10n.fieldNameTooLongMessage
-        );
-      }
+    function cfOptionTypes() {
+      return ["select", "multiselect"];
     }
 
-    function extractCustomFieldLabelDialog(dialogId, model) {
-      var dialogData = {
-        fieldName: $("#" + dialogId)
-          .find('input[name="' + FORM_FIELD_CUSTOM_FIELD_LABEL + '"]')
-          .val(),
-      };
-
-      return dialogData;
+    function cfIsOptionType(type) {
+      return cfOptionTypes().indexOf(type) !== -1;
     }
 
-    function addCustomFieldMarkup(model, dialogSelector) {
-      var dialogData = model.get("dialogData");
+    function cfTypeSupportsPlaceholder(type) {
+      return (
+        ["text", "phone", "number", "date", "textarea", "select"].indexOf(
+          type
+        ) !== -1
+      );
+    }
 
-      var templateModel = new WPFS.CustomFieldModel({
-        name: dialogData.fieldName,
-        typeLabel: wpfsAdminL10n.textFieldTypeLabel,
-      });
-      var templateView = new WPFS.CustomFieldView({
-        model: templateModel,
-      });
-      $("#wpfs-custom-fields").append(templateView.render().el);
+    function cfGenerateId() {
+      var chars = "0123456789abcdefghijklmnopqrstuvwxyz";
+      var token = "";
+      for (var i = 0; i < 8; i++) {
+        token += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return "cf_" + token;
+    }
+
+    function cfSanitizeValue(value) {
+      value = (value == null ? "" : String(value)).toLowerCase().trim();
+      value = value.replace(/[^a-z0-9_\-]+/g, "_").replace(/^_+|_+$/g, "");
+      return value.substring(0, 100);
+    }
+
+    function cfTypeLabel(type) {
+      var labels = customFieldsState.l10n.typeLabels || {};
+      return labels[type] || type;
+    }
+
+    function cfFieldTitle(field) {
+      if (field.type === "html") {
+        return field.title || cfTypeLabel("html");
+      }
+      return field.label || cfTypeLabel(field.type);
+    }
+
+    function loadCustomFieldsState() {
+      customFieldsState.fields = [];
+      customFieldsState.l10n = {};
+
+      var l10nEl = document.getElementById("wpfs-custom-fields-l10n");
+      if (l10nEl) {
+        try {
+          customFieldsState.l10n = JSON.parse(l10nEl.textContent);
+        } catch (e) {}
+      }
+
+      var bootstrapEl = document.getElementById("wpfs-custom-fields-bootstrap");
+      if (bootstrapEl) {
+        try {
+          var config = JSON.parse(bootstrapEl.textContent);
+          if (config && Array.isArray(config.fields)) {
+            customFieldsState.fields = config.fields;
+          }
+        } catch (e) {}
+      }
     }
 
     function displayAddCustomField() {
-      if ($("#wpfs-custom-fields .wpfs-field-list__item").length < 10) {
+      var max = customFieldsState.l10n.maxCount || 0;
+      if (!max || customFieldsState.fields.length < max) {
         $("#wpfs-add-custom-field").show();
       } else {
         $("#wpfs-add-custom-field").hide();
@@ -2820,101 +2847,473 @@ jQuery.noConflict();
     }
 
     function displayCustomFieldRequired() {
-      if (
-        $("#wpfs-custom-fields .wpfs-field-list__item") &&
-        $("#wpfs-custom-fields .wpfs-field-list__item").length > 0
-      ) {
+      if (customFieldsState.fields.length > 0) {
         $("#wpfs-custom-fields-required").show();
       } else {
         $("#wpfs-custom-fields-required").hide();
       }
     }
 
-    function extractCustomFieldName($node) {
-      return {
-        itemName: $node
-          .closest(".wpfs-field-list__item")
-          .data("custom-field-name"),
-      };
-    }
-
-    function deleteCustomField(model, dialogSelector) {
-      $(
-        '.wpfs-field-list__item[data-custom-field-name="' +
-          model.get("pageData").itemName +
-          '"]'
-      ).remove();
-      $(dialogSelector).dialog("close");
-
-      displayCustomFieldRequired();
-      displayAddCustomField();
-    }
-
-    function initCustomFieldActionDialogs() {
-      $(".js-delete-custom-field").off("click");
-
-      var deleteCustomFieldOptions = {
-        dialogId: "wpfs-delete-custom-field-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.deleteCustomFieldTitle,
-        normalTemplateSelector: "#wpfs-modal-delete-custom-field",
-        clickSelector: ".js-delete-custom-field",
-        extractPageDataCallback: extractCustomFieldName,
-        clientCallback: deleteCustomField,
-        confirmationMessage: wpfsAdminL10n.deleteCustomFieldConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-delete-custom-field-dialog",
-      };
-      initClientActionDialog(deleteCustomFieldOptions);
-    }
-
-    function addCustomField(model, dialogSelector) {
-      addCustomFieldMarkup(model, dialogSelector);
-      $(dialogSelector).dialog("close");
-
-      displayCustomFieldRequired();
-      displayAddCustomField();
-
-      initCustomFieldActionDialogs();
-    }
-
-    function initAddCustomFieldDialog() {
-      var addCustomFieldOptions = {
-        dialogId: "wpfs-add-custom-field-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.addCustomFieldTitle,
-        normalTemplateSelector: "#wpfs-modal-add-custom-field",
-        clickSelector: ".js-add-custom-field",
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-add-custom-field-dialog",
-        formFields: {
-          "wpfs-custom-field-label": WPFS.createInputDescriptor(
-            FORM_FIELD_CUSTOM_FIELD_LABEL
-          ),
-        },
-        formType: "addCustomField",
-        validatorCallback: validateAddCustomFieldDialog,
-        extractDialogDataCallback: extractCustomFieldLabelDialog,
-        clientCallback: addCustomField,
-      };
-      initClientActionDialog(addCustomFieldOptions);
-    }
-
-    function initAddCustomFieldTemplate() {
-      WPFS.CustomFieldView = Backbone.View.extend({
-        className: "wpfs-field-list__item",
-        attributes: function () {
-          return {
-            "data-custom-field-name": this.model.get("name"),
-          };
-        },
-        template: _.template($("#wpfs-custom-field-template").html()),
-        render: function () {
-          this.$el.html(this.template(this.model.attributes));
-          return this;
-        },
+    function renderCustomFieldsList() {
+      var $list = $("#wpfs-custom-fields");
+      if (!$list.length) {
+        return;
+      }
+      var template = _.template($("#wpfs-custom-field-template").html());
+      $list.empty();
+      customFieldsState.fields.forEach(function (field, index) {
+        var $item = $('<div class="wpfs-field-list__item"></div>');
+        $item.attr("data-cf-index", index);
+        $item.attr("data-field-type", field.type);
+        $item.html(
+          template({
+            title: cfFieldTitle(field),
+            typeLabel: cfTypeLabel(field.type),
+            required: field.type !== "html" && !!field.required,
+          })
+        );
+        $list.append($item);
       });
-      WPFS.CustomFieldModel = Backbone.Model.extend({});
+      displayCustomFieldRequired();
+      displayAddCustomField();
+    }
+
+    function cfToggleSections($dialog) {
+      var type = $dialog.find(".js-cf-type").val();
+      var sections = {
+        label: type !== "html",
+        title: type === "html",
+        content: type === "html",
+        placeholder: cfTypeSupportsPlaceholder(type),
+        description: type !== "html",
+        options: cfIsOptionType(type),
+        rows: type === "textarea",
+        maxLength: type === "textarea",
+        number: type === "number",
+        date: type === "date",
+        required: type !== "html",
+      };
+      $dialog.find(".js-cf-section").each(function () {
+        var name = $(this).data("cf-section");
+        $(this).toggle(!!sections[name]);
+      });
+      $dialog
+        .find(".js-option-value")
+        .toggle($dialog.find(".js-cf-show-values").is(":checked"));
+
+      // Option based fields need at least one option; show a starter row.
+      if (
+        cfIsOptionType(type) &&
+        $dialog.find(".js-custom-field-options .js-custom-field-option")
+          .length === 0
+      ) {
+        addOptionRow($dialog, { label: "", value: "" });
+      }
+    }
+
+    function addOptionRow($dialog, option) {
+      var $container = $dialog.find(".js-custom-field-options");
+      var maxOptions = customFieldsState.l10n.maxOptions || 20;
+      if ($container.find(".js-custom-field-option").length >= maxOptions) {
+        window.alert(customFieldsState.l10n.maxOptionsReached);
+        return;
+      }
+      var template = _.template($("#wpfs-custom-field-option-row").html());
+      var $row = $(
+        template({
+          label: option.label || "",
+          value: option.value || "",
+        })
+      );
+      $row.find(".js-remove-option").on("click", function () {
+        $row.remove();
+      });
+      $row
+        .find(".js-option-value")
+        .toggle($dialog.find(".js-cf-show-values").is(":checked"));
+      $container.append($row);
+    }
+
+    function renderOptionRows($dialog, options) {
+      var $container = $dialog.find(".js-custom-field-options");
+      $container.empty();
+      (options || []).forEach(function (option) {
+        addOptionRow($dialog, option);
+      });
+    }
+
+    function collectOptions($dialog) {
+      var options = [];
+      var used = {};
+      $dialog.find(".js-custom-field-option").each(function () {
+        var label = $.trim($(this).find(".js-option-label").val());
+        var value = cfSanitizeValue($(this).find(".js-option-value").val());
+        if (!label && !value) {
+          return;
+        }
+        if (!value) {
+          value = cfSanitizeValue(label) || "option";
+        }
+        var base = value;
+        var counter = 2;
+        while (used[value]) {
+          value = base + "_" + counter;
+          counter++;
+        }
+        used[value] = true;
+        if (!label) {
+          label = value;
+        }
+        options.push({ label: label, value: value });
+      });
+      return options;
+    }
+
+    function clearCfErrors($dialog) {
+      $dialog.find(".wpfs-form-field-error").text("").hide();
+    }
+
+    function showCfError($dialog, name, message) {
+      $dialog.find(".js-cf-" + name + "-error").text(message).show();
+    }
+
+    function saveCustomFieldDialog($dialog) {
+      clearCfErrors($dialog);
+
+      var type = $dialog.find(".js-cf-type").val();
+      var editing = customFieldsState.editingIndex !== null;
+      var field = { type: type };
+      field.id =
+        editing && customFieldsState.fields[customFieldsState.editingIndex]
+          ? customFieldsState.fields[customFieldsState.editingIndex].id
+          : cfGenerateId();
+
+      var valid = true;
+      var maxLabelLength = customFieldsState.l10n.maxLabelLength || 40;
+
+      if (type === "html") {
+        var title = $.trim($dialog.find(".js-cf-title").val());
+        var content = $dialog.find(".js-cf-content").val();
+        if (!title) {
+          showCfError($dialog, "title", customFieldsState.l10n.titleRequired);
+          valid = false;
+        }
+        if (!$.trim(content)) {
+          showCfError(
+            $dialog,
+            "content",
+            customFieldsState.l10n.contentRequired
+          );
+          valid = false;
+        }
+        field.title = title;
+        field.content = content;
+      } else {
+        var label = $.trim($dialog.find(".js-cf-label").val());
+        if (!label) {
+          showCfError($dialog, "label", customFieldsState.l10n.labelRequired);
+          valid = false;
+        } else if ([...label].length > maxLabelLength) {
+          showCfError($dialog, "label", customFieldsState.l10n.labelTooLong);
+          valid = false;
+        }
+        field.label = label;
+        field.required = $dialog.find(".js-cf-required").is(":checked");
+
+        var description = $.trim($dialog.find(".js-cf-description").val());
+        if (description) {
+          field.description = description;
+        }
+
+        if (cfTypeSupportsPlaceholder(type)) {
+          var placeholder = $.trim($dialog.find(".js-cf-placeholder").val());
+          if (placeholder) {
+            field.placeholder = placeholder;
+          }
+        }
+
+        if (cfIsOptionType(type)) {
+          var options = collectOptions($dialog);
+          if (!options.length) {
+            showCfError(
+              $dialog,
+              "options",
+              customFieldsState.l10n.optionRequired
+            );
+            valid = false;
+          }
+          field.options = options;
+        }
+
+        if (type === "textarea") {
+          var rows = parseInt($dialog.find(".js-cf-rows").val(), 10);
+          if (rows > 0) {
+            field.rows = rows;
+          }
+          var maxLength = parseInt($dialog.find(".js-cf-maxlength").val(), 10);
+          if (maxLength > 0) {
+            field.maxLength = maxLength;
+          }
+        }
+
+        if (type === "number") {
+          ["min", "max", "step"].forEach(function (key) {
+            var raw = $dialog.find(".js-cf-" + key).val();
+            if (raw !== "" && !isNaN(parseFloat(raw))) {
+              field[key] = parseFloat(raw);
+            }
+          });
+        }
+
+        if (type === "date") {
+          var minDate = $dialog.find(".js-cf-mindate").val();
+          var maxDate = $dialog.find(".js-cf-maxdate").val();
+          if (minDate) {
+            field.minDate = minDate;
+          }
+          if (maxDate) {
+            field.maxDate = maxDate;
+          }
+        }
+      }
+
+      if (!valid) {
+        return;
+      }
+
+      if (editing) {
+        customFieldsState.fields[customFieldsState.editingIndex] = field;
+      } else {
+        customFieldsState.fields.push(field);
+      }
+
+      $("#wpfs-custom-field-dialog").dialog("close");
+      renderCustomFieldsList();
+    }
+
+    function openCustomFieldDialog(index) {
+      customFieldsState.editingIndex =
+        typeof index === "number" && !isNaN(index) ? index : null;
+
+      var field =
+        customFieldsState.editingIndex !== null
+          ? $.extend(
+              true,
+              {},
+              customFieldsState.fields[customFieldsState.editingIndex]
+            )
+          : { id: cfGenerateId(), type: "text", options: [] };
+
+      $("#wpfs-dialog-container")
+        .empty()
+        .append($("#wpfs-modal-custom-field").html());
+
+      var $dialog = $("#wpfs-custom-field-dialog");
+      $dialog.attr(
+        "title",
+        customFieldsState.editingIndex !== null
+          ? customFieldsState.l10n.editTitle
+          : customFieldsState.l10n.addTitle
+      );
+
+      $dialog.find(".js-cf-type").val(field.type);
+      $dialog.find(".js-cf-label").val(field.label || "");
+      $dialog.find(".js-cf-title").val(field.title || "");
+      $dialog.find(".js-cf-content").val(field.content || "");
+      $dialog.find(".js-cf-placeholder").val(field.placeholder || "");
+      $dialog.find(".js-cf-description").val(field.description || "");
+      $dialog.find(".js-cf-required").prop("checked", !!field.required);
+      $dialog.find(".js-cf-rows").val(field.rows != null ? field.rows : "");
+      $dialog
+        .find(".js-cf-maxlength")
+        .val(field.maxLength != null ? field.maxLength : "");
+      $dialog.find(".js-cf-min").val(field.min != null ? field.min : "");
+      $dialog.find(".js-cf-max").val(field.max != null ? field.max : "");
+      $dialog.find(".js-cf-step").val(field.step != null ? field.step : "");
+      $dialog.find(".js-cf-mindate").val(field.minDate || "");
+      $dialog.find(".js-cf-maxdate").val(field.maxDate || "");
+
+      renderOptionRows($dialog, field.options || []);
+
+      // Reveal the value column automatically when the field uses custom option
+      // values (i.e. values that are not just auto-generated from the label),
+      // so editors can see and edit values like "100"/"200" without hunting for
+      // the advanced toggle.
+      if (cfIsOptionType(field.type) && Array.isArray(field.options)) {
+        var hasCustomValues = field.options.some(function (option) {
+          return (
+            option &&
+            option.value &&
+            option.value !== cfSanitizeValue(option.label)
+          );
+        });
+        if (hasCustomValues) {
+          $dialog.find(".js-cf-show-values").prop("checked", true);
+        }
+      }
+
+      cfToggleSections($dialog);
+
+      $dialog.find(".js-cf-type").on("change", function () {
+        cfToggleSections($dialog);
+      });
+      $dialog.find(".js-cf-show-values").on("change", function () {
+        $dialog.find(".js-option-value").toggle($(this).is(":checked"));
+      });
+      $dialog.find(".js-add-option").on("click", function () {
+        addOptionRow($dialog, { label: "", value: "" });
+      });
+      $dialog.find(".js-save-custom-field-dialog").on("click", function () {
+        saveCustomFieldDialog($dialog);
+      });
+
+      if ($.fn.sortable) {
+        $dialog.find(".js-custom-field-options").sortable({
+          handle: ".js-option-handle",
+          items: "> .js-custom-field-option",
+        });
+      }
+
+      WPFS.Dialog.open("#wpfs-custom-field-dialog", { wide: true });
+    }
+
+    function openDeleteCustomFieldDialog(index) {
+      $("#wpfs-dialog-container")
+        .empty()
+        .append($("#wpfs-modal-delete-custom-field").html());
+
+      var $dialog = $("#wpfs-delete-custom-field-dialog");
+      $dialog.attr("title", customFieldsState.l10n.deleteTitle || "");
+      $dialog.find(".js-delete-custom-field-dialog").on("click", function () {
+        customFieldsState.fields.splice(index, 1);
+        $("#wpfs-delete-custom-field-dialog").dialog("close");
+        renderCustomFieldsList();
+      });
+
+      WPFS.Dialog.open("#wpfs-delete-custom-field-dialog");
+    }
+
+    function reorderCustomFieldsFromDom() {
+      var reordered = [];
+      $("#wpfs-custom-fields .wpfs-field-list__item").each(function () {
+        var index = parseInt($(this).attr("data-cf-index"), 10);
+        if (!isNaN(index) && customFieldsState.fields[index]) {
+          reordered.push(customFieldsState.fields[index]);
+        }
+      });
+      customFieldsState.fields = reordered;
+      renderCustomFieldsList();
+    }
+
+    function initCustomFieldsEditor() {
+      var $list = $("#wpfs-custom-fields");
+      if (!$list.length) {
+        return;
+      }
+
+      loadCustomFieldsState();
+
+      $list.off("click.wpfsCustomFields");
+      $list.on(
+        "click.wpfsCustomFields",
+        ".js-edit-custom-field",
+        function (e) {
+          e.preventDefault();
+          var index = parseInt(
+            $(this).closest(".wpfs-field-list__item").attr("data-cf-index"),
+            10
+          );
+          openCustomFieldDialog(index);
+        }
+      );
+      $list.on(
+        "click.wpfsCustomFields",
+        ".js-delete-custom-field",
+        function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var index = parseInt(
+            $(this).closest(".wpfs-field-list__item").attr("data-cf-index"),
+            10
+          );
+          openDeleteCustomFieldDialog(index);
+        }
+      );
+
+      $("#wpfs-add-custom-field")
+        .off("click.wpfsCustomFields")
+        .on("click.wpfsCustomFields", function (e) {
+          e.preventDefault();
+          var max = customFieldsState.l10n.maxCount || 0;
+          if (max && customFieldsState.fields.length >= max) {
+            window.alert(customFieldsState.l10n.maxFieldsReached);
+            return;
+          }
+          openCustomFieldDialog(null);
+        });
+
+      if ($.fn.sortable) {
+        // The whole bar is draggable; jQuery UI's default cancel excludes the
+        // edit/delete buttons so their clicks still work, and a click without
+        // movement on the bar opens the editor rather than starting a drag.
+        $list.sortable({
+          items: "> .wpfs-field-list__item",
+          cancel: "button, input, select, textarea",
+          update: function () {
+            reorderCustomFieldsFromDom();
+          },
+        });
+      }
+
+      renderCustomFieldsList();
+    }
+
+    function getFormEmailTemplateMacroSource() {
+      var macroKeys = wpfsAdminSettings.macroKeys ? wpfsAdminSettings.macroKeys : [];
+      var macroDescriptions = wpfsAdminSettings.macroDescriptions
+        ? wpfsAdminSettings.macroDescriptions
+        : {};
+
+      return createMacroDescriptions(macroKeys, macroDescriptions);
+    }
+
+    function ensureInsertTokenDialog() {
+      if ($("#wpfs-insert-token-dialog").length === 0) {
+        $("#wpfs-template-details-container").append(
+          $("#wpfs-form-insert-token-dialog-tmpl").html()
+        );
+      }
+    }
+
+    function teardownInsertTokenDialog() {
+      var $dialog = $("#wpfs-insert-token-dialog");
+      if ($dialog.length > 0 && $dialog.hasClass("ui-dialog-content")) {
+        $dialog.dialog("close");
+      }
+      $(document).off("keyup.wpfs-dialog");
+      $(".wpfs-dialog-container").remove();
+      $(".ui-widget-overlay").remove();
+      $(document.body).removeClass("wpfs-dialog-open");
+    }
+
+    function initFormEmailTemplateTokenInsertion() {
+      var source = getFormEmailTemplateMacroSource();
+      ensureInsertTokenDialog();
+      $(".js-insert-token-subject, .js-insert-token-body")
+        .off("click.wpfs-ensure-token")
+        .on("click.wpfs-ensure-token", function () {
+          ensureInsertTokenDialog();
+        });
+      WPFS.InsertToken.init(
+        source,
+        ".js-insert-token-subject",
+        ".js-token-target-subject"
+      );
+      WPFS.InsertToken.init(
+        source,
+        ".js-insert-token-body",
+        ".js-token-target-body"
+      );
     }
 
     function initEditFormEmailTemplates() {
@@ -2923,9 +3322,25 @@ jQuery.noConflict();
         className: "wpfs-form-block",
         events: {
           "click #wpfs-send-email-toggle": "toggleTemplate",
+          "blur .js-form-template-subject": "updateSubject",
+          "blur .js-form-template-body": "updateBody",
         },
         toggleTemplate: function (e) {
-          this.model.set("enabled", !this.model.get("enabled"));
+          var enabled = !this.model.get("enabled");
+          this.model.set("enabled", enabled);
+          this.$el
+            .find(".js-form-template-content")
+            .toggle(enabled);
+        },
+        updateSubject: function (e) {
+          var $el = $(e.target);
+          $el.data("selectionStart", $el.prop("selectionStart"));
+          this.model.set("subject", $el.val(), { silent: true });
+        },
+        updateBody: function (e) {
+          var $el = $(e.target);
+          $el.data("selectionStart", $el.prop("selectionStart"));
+          this.model.set("body", $el.val(), { silent: true });
         },
         template: _.template($("#wpfs-email-template-details").html()),
         render: function () {
@@ -2956,12 +3371,16 @@ jQuery.noConflict();
           if (WPFS.emailTemplateDetailsView !== undefined) {
             WPFS.emailTemplateDetailsView.undelegateEvents();
           }
+          teardownInsertTokenDialog();
           WPFS.emailTemplateDetailsView = new WPFS.EmailTemplateDetailsView({
             model: this.model,
           });
           $("#wpfs-template-details-container")
             .empty()
             .append(WPFS.emailTemplateDetailsView.render().el);
+          if (this.model.get("editable") === true) {
+            initFormEmailTemplateTokenInsertion();
+          }
         },
         template: _.template($("#wpfs-email-template").html()),
         render: function () {
@@ -3004,18 +3423,35 @@ jQuery.noConflict();
     }
 
     function transformCustomFields($form) {
-      var customFieldNames = [];
-
-      $("#wpfs-custom-fields .wpfs-field-list__item").each(function () {
-        customFieldNames.push($(this).data("custom-field-name"));
-      });
+      var config = {
+        version: 1,
+        fields: customFieldsState.fields,
+      };
 
       $form
         .find('input[name="wpfs-form-custom-fields"]')
-        .val(customFieldNames.join("{{"));
+        .val(JSON.stringify(config));
     }
 
     function transformEmailTemplates($form) {
+      if (
+        WPFS.emailTemplateDetailsView !== undefined &&
+        WPFS.emailTemplateDetailsView.model.get("editable") === true
+      ) {
+        var $subject = $(".js-form-template-subject");
+        var $body = $(".js-form-template-body");
+        if ($subject.length > 0) {
+          WPFS.emailTemplateDetailsView.model.set("subject", $subject.val(), {
+            silent: true,
+          });
+        }
+        if ($body.length > 0) {
+          WPFS.emailTemplateDetailsView.model.set("body", $body.val(), {
+            silent: true,
+          });
+        }
+      }
+
       $form
         .find('input[name="wpfs-form-email-templates"]')
         .val(encodeURIComponent(JSON.stringify(WPFS.emailTemplates)));
@@ -3215,12 +3651,7 @@ jQuery.noConflict();
     }
 
     function initEditFormCustomFields() {
-      initAddCustomFieldDialog();
-      initAddCustomFieldTemplate();
-      initCustomFieldActionDialogs();
-
-      displayCustomFieldRequired();
-      displayAddCustomField();
+      initCustomFieldsEditor();
     }
 
     function deleteSuggestedDonationAmount(model, dialogSelector) {

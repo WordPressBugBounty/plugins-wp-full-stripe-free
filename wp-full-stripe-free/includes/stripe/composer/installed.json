@@ -1,6 +1,6 @@
 {
-    "packages": {
-        "6": {
+    "packages": [
+        {
             "name": "stripe/stripe-php",
             "version": "v17.6.0",
             "version_normalized": "17.6.0.0",
@@ -62,7 +62,7 @@
             },
             "install-path": "../stripe/stripe-php"
         }
-    },
+    ],
     "dev": false,
     "dev-package-names": []
 }

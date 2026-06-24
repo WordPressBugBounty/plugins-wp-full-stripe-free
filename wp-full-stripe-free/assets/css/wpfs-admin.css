@@ -3793,6 +3793,10 @@ textarea.wpfs-form-control::placeholder {
   background-image: url(../images/payment-methods/przelewy24.svg);
   background-size: contain;
 }
+.wpfs-paynow {
+  background-image: url(../images/payment-methods/paynow.svg);
+  background-size: contain;
+}
 .wpfs-revolut_pay {
   background-image: url(../images/payment-methods/revolut_pay.svg);
   background-size: auto;
@@ -6190,4 +6194,79 @@ div.notice.themeisle-sale {
 .wpfs-btn-link--small {
   font-size: 12px;
   padding: 0;
+}
+
+/* Typed custom fields editor (issue #213) */
+.wpfs-custom-field-form .wpfs-form-row {
+  justify-content: flex-start;
+  gap: 8px;
+}
+.wpfs-custom-field-form .wpfs-form-row > .wpfs-form-control {
+  -webkit-box-flex: 1;
+  -ms-flex: 1 1 0px;
+  flex: 1 1 0;
+  width: auto;
+}
+.wpfs-custom-field-options {
+  margin-bottom: 8px;
+}
+.wpfs-custom-field-option {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.wpfs-custom-field-option .wpfs-form-control {
+  -webkit-box-flex: 1;
+  -ms-flex: 1 1 0px;
+  flex: 1 1 0;
+  width: auto;
+  margin: 0 !important;
+}
+.wpfs-custom-field-option .js-option-handle {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 20px;
+  flex: 0 0 20px;
+  cursor: move;
+  color: #6e7289;
+}
+.wpfs-custom-field-option .js-remove-option {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 40px;
+  flex: 0 0 40px;
+  height: 40px;
+  color: #6e7289;
+}
+.wpfs-form-field-error {
+  display: none;
+  margin-top: 6px;
+  font-size: 13px;
+  color: #d63638;
+}
+
+/* Required badge in the custom field list (issue #213) */
+.wpfs-field-list__badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  color: #d63638;
+  background: #fce8e8;
+  border-radius: 10px;
+  vertical-align: middle;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* WP core admin forms.css caps `select { max-width: 25em }`; let the typed
+   field-type select fill the dialog like the other inputs (issue #213). */
+.wpfs-custom-field-form select.wpfs-form-control,
+#wpfs-custom-field-dialog select.wpfs-form-control {
+  max-width: none !important;
 }

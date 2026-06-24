@@ -1196,6 +1196,7 @@ interface MM_WPFS_Admin_FormsOptionsViewConstants {
     const FIELD_FORMS_OPTIONS_DEFAULT_BILLING_COUNTRY       = 'wpfs-forms-default-billing-country';
     const FIELD_FORMS_OPTIONS_FILL_IN_EMAIL                 = 'wpfs-forms-options-fill-in-email';
     const FIELD_FORMS_OPTIONS_SET_FIELDS_VIA_URL_PARAMETERS = 'wpfs-forms-options-set-fields-via-url-parameters';
+    const FIELD_FORMS_OPTIONS_SHOW_PAYMENT_DETAIL           = 'wpfs-forms-options-show-payment-detail';
 
     const FIELD_ACTION_VALUE_SAVE_FORMS_OPTIONS = 'wpfs-save-forms-options';
 }
@@ -1207,6 +1208,8 @@ class MM_WPFS_Admin_FormsOptionsView extends MM_WPFS_AdminView {
     protected $fillInEmailForLoggedInUsers;
     /** @var MM_WPFS_Control */
     protected $setFormFieldsViaUrlParameters;
+    /** @var MM_WPFS_Control */
+    protected $showPaymentDetail;
 
     /**
      * MM_WPFS_Admin_FormsOptionsView constructor.
@@ -1241,6 +1244,13 @@ class MM_WPFS_Admin_FormsOptionsView extends MM_WPFS_AdminView {
             'type'      => 'checkbox',
             'class'     => 'wpfs-form-check-input'
         ]);
+
+        $this->showPaymentDetail = MM_WPFS_ControlUtils::createControl( $this->formHash, MM_WPFS_Admin_FormsOptionsViewConstants::FIELD_FORMS_OPTIONS_SHOW_PAYMENT_DETAIL, null, null,
+            /* translators: Form field label for the global default of how the payment details summary is displayed on new forms */
+            __( 'Default payment details display', 'wp-full-stripe-free' ), null );
+        $this->showPaymentDetail->setAttributes( [
+            'class'     => 'js-selectmenu'
+        ]);
     }
 
     /**
@@ -1249,7 +1259,8 @@ class MM_WPFS_Admin_FormsOptionsView extends MM_WPFS_AdminView {
     public static function getFields() {
         $fields = [
             MM_WPFS_Admin_FormsOptionsViewConstants::FIELD_FORMS_OPTIONS_DEFAULT_BILLING_COUNTRY => MM_WPFS_ControlUtils::input( MM_WPFS_Admin_FormsOptionsViewConstants::FIELD_FORMS_OPTIONS_DEFAULT_BILLING_COUNTRY ),
-            MM_WPFS_Admin_FormsOptionsViewConstants::FIELD_FORMS_OPTIONS_FILL_IN_EMAIL           => MM_WPFS_ControlUtils::input( MM_WPFS_Admin_FormsOptionsViewConstants::FIELD_FORMS_OPTIONS_FILL_IN_EMAIL )
+            MM_WPFS_Admin_FormsOptionsViewConstants::FIELD_FORMS_OPTIONS_FILL_IN_EMAIL           => MM_WPFS_ControlUtils::input( MM_WPFS_Admin_FormsOptionsViewConstants::FIELD_FORMS_OPTIONS_FILL_IN_EMAIL ),
+            MM_WPFS_Admin_FormsOptionsViewConstants::FIELD_FORMS_OPTIONS_SHOW_PAYMENT_DETAIL     => MM_WPFS_ControlUtils::input( MM_WPFS_Admin_FormsOptionsViewConstants::FIELD_FORMS_OPTIONS_SHOW_PAYMENT_DETAIL )
         ];
 
         return array_merge( $fields, parent::getFields() );
@@ -1287,6 +1298,13 @@ class MM_WPFS_Admin_FormsOptionsView extends MM_WPFS_AdminView {
      */
     public function setFormFieldsViaUrlParameters(): MM_WPFS_Control {
         return $this->setFormFieldsViaUrlParameters;
+    }
+
+    /**
+     * @return MM_WPFS_Control
+     */
+    public function showPaymentDetail(): MM_WPFS_Control {
+        return $this->showPaymentDetail;
     }
 }
 

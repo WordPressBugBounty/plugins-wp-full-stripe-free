@@ -2646,6 +2646,34 @@ class MM_WPFS_Database {
 		return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}fullstripe_payments WHERE eventID=%s", $eventId ) );
 	}
 
+	/**
+	 * True if a payment/donation/subscriber row already exists for this PaymentIntent.
+	 *
+	 * @param string $formType
+	 * @param string $paymentIntentId
+	 *
+	 * @return bool
+	 */
+	public function isCheckoutPaymentProcessedByPaymentIntent( $formType, $paymentIntentId ) {
+		if ( empty( $paymentIntentId ) ) {
+			return false;
+		}
+
+		if ( MM_WPFS_Utils::isCheckoutDonationFormType( $formType ) ) {
+			return ! is_null( $this->getDonationByPaymentIntentId( $paymentIntentId ) );
+		}
+
+		if ( MM_WPFS_Utils::isCheckoutSubscriptionFormType( $formType ) ) {
+			return ! is_null( $this->findSubscriberByPaymentIntentId( $paymentIntentId ) );
+		}
+
+		if ( MM_WPFS_Utils::isCheckoutPaymentFormType( $formType ) ) {
+			return ! is_null( $this->getPaymentByEventId( $paymentIntentId ) );
+		}
+
+		return false;
+	}
+
 	public function updatePaymentByEventId( $event_id, $data ) {
 		global $wpdb;
 

@@ -1694,6 +1694,20 @@ button.wpfs-btn-primary:disabled:not(:hover):not(:active):not(.has-text-color), 
   border-width: 7px;
   margin-left: -7px;
 }
+.wpfs-summary--collapsible {
+  margin: 0 0 16px;
+  padding: 16px;
+  background: var(--ui-summary-tooltip-bg-color);
+  border: 1px solid var(--ui-summary-tooltip-border-color);
+  border-radius: var(--default-border-radius);
+}
+.wpfs-summary--collapsible .wpfs-summary-heading {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--form-base-color);
+}
 .wpfs-summary--collapsible .wpfs-summary-table {
   font-size: 15px;
 }
@@ -2196,4 +2210,114 @@ button.wpfs-btn-primary:disabled:not(:hover):not(:active):not(.has-text-color), 
 }
 .wpfs-w-90 {
   max-width: 720px !important;
+}
+
+/* Processing overlay shown while a payment is being completed.
+   Keeps the form context instead of letting the page flash to the top. */
+.wpfs-processing-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(17, 21, 32, 0.55);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+.wpfs-processing-overlay--visible {
+  display: flex;
+}
+body.wpfs-processing-overlay-open {
+  overflow: hidden;
+}
+.wpfs-processing-overlay__card {
+  background: #fff;
+  border-radius: 16px;
+  max-width: 360px;
+  width: 100%;
+  padding: 34px 38px;
+  text-align: center;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+}
+.wpfs-processing-overlay__spinner {
+  width: 46px;
+  height: 46px;
+  margin: 0 auto 18px;
+  border: 4px solid #e7eaf2;
+  border-top-color: var(--secondary-color, #156ccc);
+  border-radius: 50%;
+  animation: wpfs-processing-spin 0.9s linear infinite;
+}
+.wpfs-processing-overlay__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary-color, #2c3149);
+  margin-bottom: 6px;
+}
+.wpfs-processing-overlay__text {
+  font-size: 14px;
+  color: #6e7289;
+}
+@keyframes wpfs-processing-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wpfs-processing-overlay__spinner { animation-duration: 1.8s; }
+}
+
+/* Typed custom fields (issue #213) */
+select.wpfs-form-control {
+  background: var(--form-control-bg-color);
+  background-image: none;
+  display: inline-block;
+  width: 100%;
+  height: 40px;
+  color: var(--primary-color);
+  font-family: var(--font-family);
+  font-size: 15px;
+  padding: 0 16px;
+  border: 1px solid var(--form-control-border-color);
+  border-radius: var(--default-border-radius);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  line-height: normal;
+  float: none;
+  margin: 0;
+  letter-spacing: normal;
+  font-weight: 400;
+}
+select.wpfs-form-control:focus {
+  outline: none;
+}
+.wpfs-custom-field textarea.wpfs-form-control {
+  height: auto;
+  min-height: 80px;
+  padding: 10px 16px;
+  line-height: 1.4;
+}
+.wpfs-form-field-description {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--form-secondary-color);
+  line-height: 1.4;
+}
+.wpfs-required-mark {
+  color: var(--error-color, #d63638);
+}
+.wpfs-custom-field--multiselect .wpfs-form-check-list,
+.wpfs-custom-field--checkbox .wpfs-form-check {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wpfs-custom-field--checkbox .wpfs-form-check,
+.wpfs-custom-field--multiselect .wpfs-form-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.wpfs-custom-field--multiselect .wpfs-form-check-label,
+.wpfs-custom-field--checkbox .wpfs-form-check-label {
+  margin: 0;
 }

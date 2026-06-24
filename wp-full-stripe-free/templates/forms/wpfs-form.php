@@ -60,11 +60,6 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
         include("components/wpfs-component-subscription-plans.php");
     }
 
-    // show coupon field
-    if ($view->isCouponFieldVisible()) {
-        include("components/wpfs-component-coupon-field.php");
-    }
-
     // (common)(field): custom inputs
     $showCustomInputGroup = isset($form->showCustomInput) && 1 == $form->showCustomInput;
     if ($view instanceof MM_WPFS_CheckoutSubscriptionFormView && 1 == $form->simpleButtonLayout) {
@@ -73,14 +68,8 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
     ?>
     <?php if ($showCustomInputGroup): ?>
         <?php foreach ($view->customInputs() as $input): ?>
-            <?php /** @var MM_WPFS_Control $input */?>
-            <div class="wpfs-form-group">
-                <label class="wpfs-form-label" for="<?php $input->id(); ?>">
-                    <?php $input->label(); ?>
-                </label>
-                <input id="<?php $input->id(); ?>" name="<?php $input->name(); ?>" type="text" class="wpfs-form-control"
-                    value="<?php $input->value(); ?>" <?php $input->attributes(); ?>>
-            </div>
+            <?php /** @var MM_WPFS_Control $input */ ?>
+            <?php include('components/wpfs-component-custom-field.php'); ?>
         <?php endforeach; ?>
     <?php endif; ?>
     <?php // (inline_payment|inline_subscription|inline_card_capture)(field): billing and shipping address ?>
@@ -228,6 +217,13 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
         </div>
     <?php endif; ?>
 
+    <?php
+    // show coupon field after the card details
+    if ($view->isCouponFieldVisible()) {
+        include("components/wpfs-component-coupon-field.php");
+    }
+    ?>
+
     <?php if ( MM_WPFS_Utils::hasFeeRecovery( $form ) && ! $view instanceof MM_WPFS_InlineSaveCardFormView ): ?>
         <div class="wpfs-form-check wpfs-form-fee-recovery">
             <input type="<?php echo $is_opt_in ? 'checkbox' : 'hidden'; ?>" class="wpfs-form-check-input" id="<?php $view->feeRecoveryAccepted()->id(); ?>"
@@ -279,41 +275,102 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
             </div>
         <?php endif; ?>
     <?php endif; ?>
+    <?php
+    // (common): payment details eligibility + display mode
+    $showPaymentDetails = false;
+    if ($view instanceof MM_WPFS_SubscriptionFormView) {
+        $showPaymentDetails = true;
+
+        if (($view instanceof MM_WPFS_CheckoutPaymentFormView || $view instanceof MM_WPFS_CheckoutSubscriptionFormView) && 1 == $form->simpleButtonLayout) {
+            $showPaymentDetails = false;
+        }
+        if ($view instanceof MM_WPFS_SubscriptionFormView && count($view->plans()->options()) == 0) {
+            $showPaymentDetails = false;
+        }
+    } else if (
+        $view instanceof MM_WPFS_InlinePaymentFormView &&
+        !($view instanceof MM_WPFS_InlineSaveCardFormView)
+    ) {
+        $showPaymentDetails = true;
+    } else if (
+        $view instanceof MM_WPFS_CheckoutPaymentFormView &&
+        !($view instanceof MM_WPFS_CheckoutSaveCardFormView)
+    ) {
+        $showPaymentDetails = true;
+    }
+
+    // Payment details display mode: 0 = hidden, 1 = on hover (link), 2 = always visible.
+    $paymentDetailMode = isset( $form->showPaymentDetail ) ? (int) $form->showPaymentDetail : 1;
+    if ( 0 === $paymentDetailMode ) {
+        $showPaymentDetails = false;
+    }
+    $alwaysShowPaymentDetails = ( $showPaymentDetails && 2 === $paymentDetailMode );
+
+    // The summary table is identical for both display modes; build it once and then render it
+    // either as an always-visible card (above the button) or inside the hover tooltip.
+    $summaryInnerMarkup = '';
+    if ($showPaymentDetails) {
+        ob_start();
+        ?>
+        <table class="wpfs-summary-table">
+            <tbody>
+                <tr class="wpfs-summary-table-row" data-wpfs-summary-row="setupFee">
+                    <td class="wpfs-summary-table-cell" data-wpfs-summary-row-label="setupFee"> </td>
+                    <td class="wpfs-summary-table-cell" data-wpfs-summary-row-value="setupFee">&nbsp;</td>
+                </tr>
+                <tr class="wpfs-summary-table-row" data-wpfs-summary-row="product">
+                    <td class="wpfs-summary-table-cell" data-wpfs-summary-row-label="product"> </td>
+                    <td class="wpfs-summary-table-cell" data-wpfs-summary-row-value="product">&nbsp;</td>
+                </tr>
+                <tr class="wpfs-summary-table-row" data-wpfs-summary-row="discount">
+                    <td class="wpfs-summary-table-cell" data-wpfs-summary-row-label="discount"> </td>
+                    <td class="wpfs-summary-table-cell" data-wpfs-summary-row-value="discount">&nbsp;</td>
+                </tr>
+                <tr class="wpfs-summary-table-row" data-wpfs-summary-row="tax-0">
+                    <td class="wpfs-summary-table-cell" data-wpfs-summary-row-label="tax-0"> </td>
+                    <td class="wpfs-summary-table-cell" data-wpfs-summary-row-value="tax-0">&nbsp;</td>
+                </tr>
+                <tr class="wpfs-summary-table-row" data-wpfs-summary-row="tax-1">
+                    <td class="wpfs-summary-table-cell" data-wpfs-summary-row-label="tax-1"> </td>
+                    <td class="wpfs-summary-table-cell" data-wpfs-summary-row-value="tax-1">&nbsp;</td>
+                </tr>
+                <tr class="wpfs-summary-table-row" data-wpfs-summary-row="fee-recovery">
+                    <td class="wpfs-summary-table-cell" data-wpfs-summary-row-label="fee-recovery"> </td>
+                    <td class="wpfs-summary-table-cell" data-wpfs-summary-row-value="fee-recovery">&nbsp;</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr class="wpfs-summary-table-total" data-wpfs-summary-row="total">
+                    <td class="wpfs-summary-table-cell" data-wpfs-summary-row-label="total">
+                        <?php /* translators: Label for the total price  */
+                        esc_html_e('Total', 'wp-full-stripe-free'); ?>
+                    </td>
+                    <td class="wpfs-summary-table-cell" data-wpfs-summary-row-value="total">&nbsp;</td>
+                </tr>
+            </tfoot>
+        </table>
+        <p class="wpfs-summary-description">&nbsp;</p>
+        <?php
+        $summaryInnerMarkup = ob_get_clean();
+    }
+    ?>
+    <?php // (inline_payment)(card): always-visible payment details, shown as a card above the submit button ?>
+    <?php if ($alwaysShowPaymentDetails): ?>
+        <div class="wpfs-summary wpfs-summary--collapsible">
+            <p class="wpfs-summary-heading">
+                <?php /* translators: Heading of the always-visible payment details summary */
+                esc_html_e('Payment details', 'wp-full-stripe-free'); ?>
+            </p>
+            <?php echo $summaryInnerMarkup; ?>
+        </div>
+    <?php endif; ?>
     <?php // (common)(button): submit ?>
     <div class="wpfs-form-actions">
         <button class="wpfs-btn wpfs-btn-primary wpfs-mr-2" id="<?php $view->submitButton()->id(); ?>" type="submit"
             <?php $view->submitButton()->attributes(); ?>>
             <?php $view->submitButton()->caption(); ?>
         </button>
-        <?php
-        // (inline_payment)(table): payment details
-        $showPaymentDetails = false;
-        if ($view instanceof MM_WPFS_SubscriptionFormView) {
-            $showPaymentDetails = true;
-
-            if (($view instanceof MM_WPFS_CheckoutPaymentFormView || $view instanceof MM_WPFS_CheckoutSubscriptionFormView) && 1 == $form->simpleButtonLayout) {
-                $showPaymentDetails = false;
-            }
-            if ($view instanceof MM_WPFS_SubscriptionFormView && count($view->plans()->options()) == 0) {
-                $showPaymentDetails = false;
-            }
-        } else if (
-            $view instanceof MM_WPFS_InlinePaymentFormView &&
-            !($view instanceof MM_WPFS_InlineSaveCardFormView)
-        ) {
-            $showPaymentDetails = true;
-        } else if (
-            $view instanceof MM_WPFS_CheckoutPaymentFormView &&
-            !($view instanceof MM_WPFS_CheckoutSaveCardFormView)
-        ) {
-            $showPaymentDetails = true;
-        }
-
-        if ( ! isset( $form->showPaymentDetail ) || ! $form->showPaymentDetail ) {
-            $showPaymentDetails = false;
-        }
-        ?>
-        <?php if ($showPaymentDetails): ?>
+        <?php if ($showPaymentDetails && ! $alwaysShowPaymentDetails): ?>
             <a href="" id="payment-details--<?php echo $view->getFormHash(); ?>"
                 class="wpfs-btn wpfs-btn-link wpfs-btn-link--sm" data-toggle="tooltip"
                 data-tooltip-content="<?php echo esc_attr('wpfs-form-summary-' . $view->getFormHash()); ?>">
@@ -323,44 +380,7 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
             <div class="wpfs-tooltip-content"
                 data-tooltip-id="<?php echo esc_attr('wpfs-form-summary-' . $view->getFormHash()); ?>">
                 <div class="wpfs-summary">
-                    <table class="wpfs-summary-table">
-                        <tbody>
-                            <tr class="wpfs-summary-table-row" data-wpfs-summary-row="setupFee">
-                                <td class="wpfs-summary-table-cell" data-wpfs-summary-row-label="setupFee"> </td>
-                                <td class="wpfs-summary-table-cell" data-wpfs-summary-row-value="setupFee">&nbsp;</td>
-                            </tr>
-                            <tr class="wpfs-summary-table-row" data-wpfs-summary-row="product">
-                                <td class="wpfs-summary-table-cell" data-wpfs-summary-row-label="product"> </td>
-                                <td class="wpfs-summary-table-cell" data-wpfs-summary-row-value="product">&nbsp;</td>
-                            </tr>
-                            <tr class="wpfs-summary-table-row" data-wpfs-summary-row="discount">
-                                <td class="wpfs-summary-table-cell" data-wpfs-summary-row-label="discount"> </td>
-                                <td class="wpfs-summary-table-cell" data-wpfs-summary-row-value="discount">&nbsp;</td>
-                            </tr>
-                            <tr class="wpfs-summary-table-row" data-wpfs-summary-row="tax-0">
-                                <td class="wpfs-summary-table-cell" data-wpfs-summary-row-label="tax-0"> </td>
-                                <td class="wpfs-summary-table-cell" data-wpfs-summary-row-value="tax-0">&nbsp;</td>
-                            </tr>
-                            <tr class="wpfs-summary-table-row" data-wpfs-summary-row="tax-1">
-                                <td class="wpfs-summary-table-cell" data-wpfs-summary-row-label="tax-1"> </td>
-                                <td class="wpfs-summary-table-cell" data-wpfs-summary-row-value="tax-1">&nbsp;</td>
-                            </tr>
-                            <tr class="wpfs-summary-table-row" data-wpfs-summary-row="fee-recovery">
-                                <td class="wpfs-summary-table-cell" data-wpfs-summary-row-label="fee-recovery"> </td>
-                                <td class="wpfs-summary-table-cell" data-wpfs-summary-row-value="fee-recovery">&nbsp;</td>
-                            </tr>
-                        </tbody>
-                        <tfoot>
-                            <tr class="wpfs-summary-table-total" data-wpfs-summary-row="total">
-                                <td class="wpfs-summary-table-cell" data-wpfs-summary-row-label="total">
-                                    <?php /* translators: Label for the total price  */
-                                    esc_html_e('Total', 'wp-full-stripe-free'); ?>
-                                </td>
-                                <td class="wpfs-summary-table-cell" data-wpfs-summary-row-value="total">&nbsp;</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                    <p class="wpfs-summary-description">&nbsp;</p>
+                    <?php echo $summaryInnerMarkup; ?>
                 </div>
             </div>
         <?php endif; ?>

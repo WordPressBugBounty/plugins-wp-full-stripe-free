@@ -328,6 +328,9 @@ abstract class WPFS_Transactions_Table extends WPFS_List_Table {
 				case 'p24':
 					$class = 'wpfs-przelewy24';
 					break;
+				case 'paynow':
+					$class = 'wpfs-paynow';
+					break;
 				case 'revolut_pay':
 					$class = 'wpfs-revolut_pay';
 					break;

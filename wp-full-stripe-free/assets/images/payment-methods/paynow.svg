@@ -1,0 +1,15 @@
+<svg width="64" height="40" viewBox="0 0 64 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="40" rx="4" fill="#F5F7FA"/>
+  <rect x="1" y="1" width="62" height="38" rx="3" stroke="#D8DEE8" stroke-width="2"/>
+  <path d="M12 12H8V8H12V12Z" fill="#1F2A44"/>
+  <path d="M22 12H18V8H22V12Z" fill="#1F2A44"/>
+  <path d="M12 22H8V18H12V22Z" fill="#1F2A44"/>
+  <path d="M18 18H14V14H18V18Z" fill="#6A2EB8"/>
+  <path d="M24 24H20V20H24V24Z" fill="#6A2EB8"/>
+  <path d="M18 28H14V24H18V28Z" fill="#1F2A44"/>
+  <path d="M24 16H20V12H24V16Z" fill="#1F2A44"/>
+  <path d="M28 10H24V6H28V10Z" fill="#D9214E"/>
+  <path d="M28 30H24V26H28V30Z" fill="#D9214E"/>
+  <text x="31" y="17" fill="#1F2A44" font-family="Arial, Helvetica, sans-serif" font-size="8.4" font-weight="700">Pay</text>
+  <text x="31" y="26" fill="#D9214E" font-family="Arial, Helvetica, sans-serif" font-size="8.4" font-weight="700">Now</text>
+</svg>

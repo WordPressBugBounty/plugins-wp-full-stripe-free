@@ -125,6 +125,15 @@ interface MM_WPFS_FormViewConstants {
 	const ATTR_DATA_WPFS_TERMS_OF_USE_NOT_CHECKED_ERROR_MESSAGE = 'data-wpfs-terms-of-use-not-checked-error-message';
 	const ATTR_DATA_WPFS_CUSTOM_INPUT_FIELD = 'data-wpfs-custom-input-field';
 	const ATTR_DATA_WPFS_CUSTOM_INPUT_LABEL = 'data-wpfs-custom-input-label';
+
+	// Metadata keys used to carry typed custom field information to the form template.
+	const CUSTOM_FIELD_META_TYPE        = 'type';
+	const CUSTOM_FIELD_META_REQUIRED    = 'required';
+	const CUSTOM_FIELD_META_DESCRIPTION = 'description';
+	const CUSTOM_FIELD_META_OPTIONS     = 'options';
+	const CUSTOM_FIELD_META_SETTINGS    = 'settings';
+	const CUSTOM_FIELD_META_FIELD_ID    = 'fieldId';
+	const CUSTOM_FIELD_META_CONTENT     = 'content';
 	const ATTR_DATA_WPFS_VAT_RATE_TYPE = 'data-wpfs-vat-rate-type';
 	const ATTR_DATA_WPFS_CURRENCY = 'data-wpfs-currency';
 	const ATTR_DATA_WPFS_ZERO_DECIMAL_SUPPORT = 'data-wpfs-zero-decimal-support';
@@ -152,6 +161,7 @@ interface MM_WPFS_FormViewConstants {
 	const ATTR_DATA_WPFS_FEE_RECOVERY_ENABLED = 'data-wpfs-fee-recovery-enabled';
 	const ATTR_DATA_WPFS_FEE_AMOUNT     = 'data-wpfs-fee-amount';
 	const ATTR_DATA_WPFS_FEE_PERCENTAGE = 'data-wpfs-fee-percentage';
+	const ATTR_DATA_WPFS_PAYMENT_METHOD_TYPES = 'data-wpfs-payment-method-types';
 
 	const ATTR_DATA_DEFAULT_VALUE = 'data-default-value';
 	const ATTR_DATA_MINIMUM_VALUE = 'data-min';
@@ -1186,39 +1196,105 @@ abstract class MM_WPFS_FormView implements MM_WPFS_FormViewConstants {
 	}
 
 	protected function prepareCustomInputs() {
-		if ( 1 == $this->form->showCustomInput ) {
-			// tnagy legacy forms have only one custom input field
-			if ( is_null( $this->form->customInputs ) ) {
-				$control = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_CUSTOM_INPUT, null, null, MM_WPFS_Localization::translateLabel( $this->form->customInputTitle ), null );
+		if ( 1 != $this->form->showCustomInput ) {
+			return;
+		}
+
+		// tnagy legacy forms have only one custom input field
+		if ( is_null( $this->form->customInputs ) ) {
+			$control = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_CUSTOM_INPUT, null, null, MM_WPFS_Localization::translateLabel( $this->form->customInputTitle ), null );
+			$control->setMetadata(
+				[
+					self::CUSTOM_FIELD_META_TYPE     => MM_WPFS_CustomFields::TYPE_TEXT,
+					self::CUSTOM_FIELD_META_REQUIRED => ( 1 == $this->form->customInputRequired ),
+				]
+			);
+			array_push( $this->customInputs, $control );
+
+			return;
+		}
+
+		$isJson = MM_WPFS_CustomFields::isJsonConfig( $this->form->customInputs );
+		$defs   = MM_WPFS_CustomFields::parse( $this->form->customInputs, $this->form->customInputRequired );
+
+		foreach ( $defs as $index => $def ) {
+			$elementIndex = $isJson ? $def->id : $index;
+
+			if ( MM_WPFS_CustomFields::TYPE_HTML === $def->type ) {
+				$control = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_CUSTOM_INPUT, null, null, '', $elementIndex );
+				$control->setMetadata(
+					[
+						self::CUSTOM_FIELD_META_TYPE    => MM_WPFS_CustomFields::TYPE_HTML,
+						self::CUSTOM_FIELD_META_CONTENT => $def->content,
+					]
+				);
 				array_push( $this->customInputs, $control );
+				continue;
+			}
+
+			$customInputLabel = MM_WPFS_Localization::translateLabel( $def->label );
+			$placeholder      = '' === $def->placeholder ? null : MM_WPFS_Localization::translateLabel( $def->placeholder );
+			$control          = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_CUSTOM_INPUT, $placeholder, null, $customInputLabel, $elementIndex );
+
+			// Field name: keyed by stable id for JSON configs, legacy indexed array otherwise.
+			if ( $isJson ) {
+				$control->setName( self::FIELD_CUSTOM_INPUT . '[' . $def->id . ']' );
+				$control->setMultiValue( $def->isMultiValue() );
 			} else {
-				$customInputLabels = MM_WPFS_Utils::decodeCustomFieldLabels( $this->form->customInputs );
-				foreach ( $customInputLabels as $index => $label ) {
-					$customInputLabel = MM_WPFS_Localization::translateLabel( $label );
-					$control = MM_WPFS_ControlUtils::createControl( $this->formHash, self::FIELD_CUSTOM_INPUT, null, null, $customInputLabel, $index );
-					$control->setMultiValue( true );
-					$control->setAttributes(
-						[
-							self::ATTR_DATA_WPFS_CUSTOM_INPUT_FIELD => 'input',
-							self::ATTR_DATA_WPFS_CUSTOM_INPUT_LABEL => $customInputLabel
-						]
-					);
+				$control->setMultiValue( true );
+			}
 
-					/** @var MM_WPFS_FormFieldConfiguration $customFieldConfig */
-					$customFieldConfig = $this->fieldConfiguration[ MM_WPFS_ConfigurableFormFields::FIELD_CUSTOM_PREFIX . ( $index + 1 ) ];
-					if ( $customFieldConfig->isConfigurable() && ! is_null( $customFieldConfig->getValue() ) ) {
-						$control->setValue( $customFieldConfig->getValue() );
+			$localizedOptions = [];
+			foreach ( $def->options as $option ) {
+				$localizedOptions[] = [
+					'label' => MM_WPFS_Localization::translateLabel( $option['label'] ),
+					'value' => $option['value'],
+				];
+			}
 
-						if ( $customFieldConfig->isReadonly() ) {
-							$control->setAttributes(
-								array_merge( $control->attributes( false ), [ 'readonly' => 'readonly' ] )
-							);
-						}
+			$control->setMetadata(
+				[
+					self::CUSTOM_FIELD_META_TYPE        => $def->type,
+					self::CUSTOM_FIELD_META_REQUIRED    => $def->required,
+					self::CUSTOM_FIELD_META_DESCRIPTION => MM_WPFS_Localization::translateLabel( $def->description ),
+					self::CUSTOM_FIELD_META_OPTIONS     => $localizedOptions,
+					self::CUSTOM_FIELD_META_SETTINGS    => $def->settings,
+					self::CUSTOM_FIELD_META_FIELD_ID    => $def->id,
+				]
+			);
+
+			$control->setAttributes(
+				[
+					self::ATTR_DATA_WPFS_CUSTOM_INPUT_FIELD => 'input',
+					self::ATTR_DATA_WPFS_CUSTOM_INPUT_LABEL => $customInputLabel,
+				]
+			);
+
+			// Existing positional prefill/readonly support applies to scalar text-like fields only.
+			$configKey = MM_WPFS_ConfigurableFormFields::FIELD_CUSTOM_PREFIX . ( $index + 1 );
+			$prefillTypes = [
+				MM_WPFS_CustomFields::TYPE_TEXT,
+				MM_WPFS_CustomFields::TYPE_PHONE,
+				MM_WPFS_CustomFields::TYPE_NUMBER,
+				MM_WPFS_CustomFields::TYPE_DATE,
+				MM_WPFS_CustomFields::TYPE_TEXTAREA,
+				MM_WPFS_CustomFields::TYPE_SELECT,
+			];
+			if ( in_array( $def->type, $prefillTypes, true ) && isset( $this->fieldConfiguration[ $configKey ] ) ) {
+				/** @var MM_WPFS_FormFieldConfiguration $customFieldConfig */
+				$customFieldConfig = $this->fieldConfiguration[ $configKey ];
+				if ( $customFieldConfig->isConfigurable() && ! is_null( $customFieldConfig->getValue() ) ) {
+					$control->setValue( $customFieldConfig->getValue() );
+
+					if ( $customFieldConfig->isReadonly() ) {
+						$control->setAttributes(
+							array_merge( $control->attributes( false ), [ 'readonly' => 'readonly' ] )
+						);
 					}
-
-					array_push( $this->customInputs, $control );
 				}
 			}
+
+			array_push( $this->customInputs, $control );
 		}
 	}
 
@@ -3110,6 +3186,32 @@ abstract class MM_WPFS_PaymentFormView extends MM_WPFS_FormView implements MM_WP
 		}
 		$attributes[ self::ATTR_DATA_WPFS_TAX_RATE_TYPE ] = $this->form->vatRateType;
 		$attributes[ self::ATTR_DATA_WPFS_SHOW_COUPON_FIELD ] = $this->isCouponFieldVisible() ? 'true' : 'false';
+		if ( ! empty( $this->form->paymentMethods ) ) {
+			$paymentMethods = is_array( $this->form->paymentMethods )
+				? $this->form->paymentMethods
+				: json_decode( $this->form->paymentMethods, true );
+
+			if ( is_array( $paymentMethods ) ) {
+				// Only expose methods supported for the form's currency. The Payment Element is
+				// created with an explicit paymentMethodTypes list, so a currency-incompatible
+				// method (e.g. PayNow/GrabPay on a non-SGD form) makes the whole element fail to
+				// load — taking card and Link down with it. card/Link have no currency
+				// restriction so they always pass this filter.
+				$currency = strtolower( (string) $this->form->currency );
+				$paymentMethods = array_values( array_filter(
+					$paymentMethods,
+					function ( $method ) use ( $currency ) {
+						return MM_WPFS_PaymentMethods::is_supported_currency( $method, $currency );
+					}
+				) );
+			}
+
+			// If nothing remains, leave the attribute unset so the client falls back to its
+			// default (card/Link) rather than an empty list.
+			if ( ! empty( $paymentMethods ) ) {
+				$attributes[ self::ATTR_DATA_WPFS_PAYMENT_METHOD_TYPES ] = json_encode( $paymentMethods );
+			}
+		}
 
 		return array_merge( $attributes, parent::getFormAttributes() );
 	}

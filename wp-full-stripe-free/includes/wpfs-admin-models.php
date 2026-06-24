@@ -540,6 +540,8 @@ class MM_WPFS_Admin_FormsOptionsModel implements MM_WPFS_Binder {
 	protected $defaultBillingCountry;
 	protected $fillInEmail;
 	protected $setFormFieldsViaUrlParameters;
+	/** @var string */
+	protected $showPaymentDetail;
 
 	public function __construct( $loggerService ) {
 		$this->initLogger( $loggerService, MM_WPFS_LoggerService::MODULE_ADMIN );
@@ -565,6 +567,13 @@ class MM_WPFS_Admin_FormsOptionsModel implements MM_WPFS_Binder {
 		return $this->setFormFieldsViaUrlParameters;
 	}
 
+	/**
+	 * @return string
+	 */
+	public function getShowPaymentDetail() {
+		return $this->showPaymentDetail;
+	}
+
 	public function bind() {
 		return $this->bindByArray( $_POST );
 	}
@@ -575,6 +584,7 @@ class MM_WPFS_Admin_FormsOptionsModel implements MM_WPFS_Binder {
 		$this->defaultBillingCountry = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormsOptionsViewConstants::FIELD_FORMS_OPTIONS_DEFAULT_BILLING_COUNTRY, MM_WPFS::DEFAULT_BILLING_COUNTRY_INITIAL_VALUE );
 		$this->fillInEmail = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormsOptionsViewConstants::FIELD_FORMS_OPTIONS_FILL_IN_EMAIL, 0 );
 		$this->setFormFieldsViaUrlParameters = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormsOptionsViewConstants::FIELD_FORMS_OPTIONS_SET_FIELDS_VIA_URL_PARAMETERS, 0 );
+		$this->showPaymentDetail = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormsOptionsViewConstants::FIELD_FORMS_OPTIONS_SHOW_PAYMENT_DETAIL, '1' );
 
 		if ( isset( $this->__validator ) ) {
 			$this->__validator->validate( $bindingResult, $this );
@@ -586,7 +596,8 @@ class MM_WPFS_Admin_FormsOptionsModel implements MM_WPFS_Binder {
 	public function getData() {
 		$data = [
 			'defaultBillingCountry' => $this->defaultBillingCountry,
-			'fillInEmail' => $this->fillInEmail
+			'fillInEmail' => $this->fillInEmail,
+			'showPaymentDetail' => $this->showPaymentDetail
 		];
 
 		return $data;
@@ -872,7 +883,9 @@ abstract class MM_WPFS_Admin_FormModel implements MM_WPFS_Binder {
 		$this->redirectPageOrPostId = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_REDIRECT_PAGE_POST_ID );
 		$this->redirectURl = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_REDIRECT_CUSTOM_URL );
 
-		$this->customFields = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_CUSTOM_FIELDS );
+		// Bound raw (not text-sanitized) so JSON structure and html block content survive;
+		// MM_WPFS_CustomFields::normalizeFromAdminJson() performs per-field sanitization in getData().
+		$this->customFields = $this->getArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_CUSTOM_FIELDS );
 		$this->makeCustomFieldsRequired = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_MAKE_CUSTOM_FIELDS_REQUIRED, 0 );
 
 		$this->webhook = $this->getSanitizedArrayParam( $postData, MM_WPFS_Admin_FormViewConstants::FIELD_FORM_WEBHOOK );
@@ -908,7 +921,7 @@ abstract class MM_WPFS_Admin_FormModel implements MM_WPFS_Binder {
 			'buttonTitle' => $this->buttonLabel,
 			'showCustomInput' => '1',
 			'customInputRequired' => $this->makeCustomFieldsRequired,
-			'customInputs' => $this->customFields,
+			'customInputs' => MM_WPFS_CustomFields::normalizeFromAdminJson( $this->customFields, MM_WPFS::getCustomFieldMaxCount( $this->staticContext ) ),
 			'redirectOnSuccess' => $this->redirectType !== MM_WPFS::REDIRECT_TYPE_SHOW_CONFIRMATION_MESSAGE ? '1' : '0',
 			'redirectPostID' => $this->redirectPageOrPostId,
 			'redirectUrl' => $this->redirectURl,

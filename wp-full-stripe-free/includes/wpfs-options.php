@@ -70,6 +70,7 @@ class MM_WPFS_Options {
 	const OPTION_FEE_RECOVERY_CURRENCY = 'fee_recovery_currency';
 	const OPTION_FEE_RECOVERY_FEE_PERCENTAGE = 'fee_recovery_fee_percentage';
 	const OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT = 'fee_recovery_fee_additional_amount';
+	const OPTION_DEFAULT_SHOW_PAYMENT_DETAIL = 'default_show_payment_detail';
 
 	public function __construct() {
 	}

@@ -1527,6 +1527,62 @@ class MM_WPFS_Stripe {
 	}
 
 	/**
+	 * Creates a PaymentIntent intended to back a deferred Payment Element (i.e. the client
+	 * confirms it later via stripe.confirmPayment). Unlike createPaymentIntent(), this does
+	 * nnot attach a payment method, does not confirm server-side, and relies on
+	 * automatic_payment_methods so the available payment methods follow the Stripe Dashboard
+	 * configuration (e.g. Link enabled/disabled), subject to the allow_redirects setting.
+	 *
+	 * Used by donation forms, which have no payment method selector of their own.
+	 *
+	 * @param string $currency
+	 * @param int $amount
+	 * @param string $allowRedirects 'never' or 'always', defaults to 'never'; any other value is normalized to 'never'
+	 *
+	 * @return stdClass
+	 *
+	 * @throws Stripe\Exception\ApiErrorException
+	 * @throws WPFS_UserFriendlyException
+	 */
+	function createPaymentIntentForElement( $currency, $amount, $allowRedirects = 'never' ) {
+		$allowRedirects = ( 'always' === $allowRedirects ) ? 'always' : 'never';
+		$paymentIntentParameters = [
+			'amount' => ! empty( $amount ) ? $amount : 100,
+			'currency' => $currency,
+			'expand' => [ 'latest_charge' ],
+			'automatic_payment_methods' => [
+				'enabled' => true,
+				'allow_redirects' => $allowRedirects,
+			],
+		];
+
+		if ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) {
+			$paymentIntentParameters['validLicense'] = $this->validLicense;
+			$intent = $this->remoteRequest(
+				'post',
+				'/payment_intents?mode=test&accountId=' . $this->testStripeAcountId . '&apiVersion=' . $this->userVersion,
+				apply_filters( 'fullstripe_payment_intent_parameters', $paymentIntentParameters )
+			);
+		} elseif ( $this->apiMode === 'live' && $this->usingWpLivePlatform ) {
+			$paymentIntentParameters['validLicense'] = $this->validLicense;
+			$intent = $this->remoteRequest(
+				'post',
+				'/payment_intents?mode=live&accountId=' . $this->liveStripeAcountId . '&apiVersion=' . $this->userVersion,
+				apply_filters( 'fullstripe_payment_intent_parameters', $paymentIntentParameters )
+			);
+		} else {
+			$intent = json_decode( $this->stripe->paymentIntents->create(
+				apply_filters(
+					'fullstripe_payment_intent_parameters',
+					$paymentIntentParameters
+				)
+			)->toJSON() );
+		}
+
+		return $intent;
+	}
+
+	/**
 	 * @throws WPFS_UserFriendlyException
 	 */
 	function getTestAccountLink( $accountId, $refreshUrl, $returnUrl ) {
@@ -2822,6 +2878,10 @@ class MM_WPFS_Stripe {
 			$updateIntentBody["amount"] = $paymentIntent->amount;
 		}
 
+		if ( ! empty( $paymentIntent->customerId ) ) {
+			$updateIntentBody['customer'] = $paymentIntent->customerId;
+		}
+
 		if ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) {
 			$this->remoteRequest(
 				'post',
@@ -2842,6 +2902,9 @@ class MM_WPFS_Stripe {
 			];
 			if ( $includeAmount && isset( $paymentIntent->amount ) ) {
 				$params["amount"] = $paymentIntent->amount;
+			}
+			if ( ! empty( $paymentIntent->customerId ) ) {
+				$params['customer'] = $paymentIntent->customerId;
 			}
 			$this->stripe->paymentIntents->update( $paymentIntent->id, $params );
 		}

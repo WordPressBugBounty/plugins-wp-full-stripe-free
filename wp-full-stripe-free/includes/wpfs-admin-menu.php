@@ -2096,12 +2096,14 @@ class MM_WPFS_Admin_Menu {
 		$options = $this->options->getSeveral( [ 
 			MM_WPFS_Options::OPTION_FILL_IN_EMAIL_FOR_LOGGED_IN_USERS,
 			MM_WPFS_Options::OPTION_SET_FORM_FIELDS_VIA_URL_PARAMETERS,
-			MM_WPFS_Options::OPTION_DEFAULT_BILLING_COUNTRY
+			MM_WPFS_Options::OPTION_DEFAULT_BILLING_COUNTRY,
+			MM_WPFS_Options::OPTION_DEFAULT_SHOW_PAYMENT_DETAIL
 		] );
 
 		$result->fillInEmailForUsers = $options[ MM_WPFS_Options::OPTION_FILL_IN_EMAIL_FOR_LOGGED_IN_USERS ];
 		$result->setFormFieldsViaUrlParameters = $options[ MM_WPFS_Options::OPTION_SET_FORM_FIELDS_VIA_URL_PARAMETERS ];
 		$result->defaultBillingCountry = $options[ MM_WPFS_Options::OPTION_DEFAULT_BILLING_COUNTRY ];
+		$result->showPaymentDetail = isset( $options[ MM_WPFS_Options::OPTION_DEFAULT_SHOW_PAYMENT_DETAIL ] ) ? $options[ MM_WPFS_Options::OPTION_DEFAULT_SHOW_PAYMENT_DETAIL ] : '1';
 
 		return $result;
 	}
@@ -2262,11 +2264,22 @@ class MM_WPFS_Admin_Menu {
 		foreach ( $templateDescriptors as $descriptor ) {
 			$result = $descriptor;
 
-			$type = $descriptor->type;
+			$type = (string) $descriptor->type;
 			if ( property_exists( $templates, $type ) ) {
 				$result->enabled = $templates->{$type}->enabled;
 			} else {
 				$result->enabled = false;
+			}
+			// Per-form subject/body customization is only available for plugin-generated templates; Stripe receipts keep their enabled-only behavior.
+			$result->editable = MM_WPFS_Mailer::isPluginEmailTemplate( $type );
+			$result->subject  = '';
+			$result->body     = '';
+			if ( $result->editable ) {
+				$content = MM_WPFS_Mailer::getFormTemplateContent( $form, $type );
+				if ( $content !== null ) {
+					$result->subject = isset( $content->subject ) ? $content->subject : '';
+					$result->body    = isset( $content->body ) ? $content->body : '';
+				}
 			}
 
 			array_push( $templateResult, $result );
@@ -2286,6 +2299,7 @@ class MM_WPFS_Admin_Menu {
 		$data->cardFieldLanguages = MM_WPFS_Languages::getStripeElementsLanguages();
 		$data->customFieldMaxCount = MM_WPFS::getCustomFieldMaxCount( $this->staticContext );
 		$data->customFieldLabels = MM_WPFS_Utils::decodeCustomFieldLabels( $form->customInputs );
+		$data->customFields = MM_WPFS_CustomFields::toConfigJson( MM_WPFS_CustomFields::parse( $form->customInputs, $form->customInputRequired ) );
 		$data->emailTemplates = $this->prepareEmailTemplates( MM_WPFS::FORM_TYPE_INLINE_SAVE_CARD, $form );
 
 		return $data;
@@ -2302,6 +2316,7 @@ class MM_WPFS_Admin_Menu {
 		$data->checkoutFormLanguages = MM_WPFS_Languages::getCheckoutLanguages();
 		$data->customFieldMaxCount = MM_WPFS::getCustomFieldMaxCount( $this->staticContext );
 		$data->customFieldLabels = MM_WPFS_Utils::decodeCustomFieldLabels( $form->customInputs );
+		$data->customFields = MM_WPFS_CustomFields::toConfigJson( MM_WPFS_CustomFields::parse( $form->customInputs, $form->customInputRequired ) );
 		$data->emailTemplates = $this->prepareEmailTemplates( MM_WPFS::FORM_TYPE_CHECKOUT_SAVE_CARD, $form );
 
 		return $data;
@@ -2318,6 +2333,7 @@ class MM_WPFS_Admin_Menu {
 		$data->cardFieldLanguages = MM_WPFS_Languages::getStripeElementsLanguages();
 		$data->customFieldMaxCount = MM_WPFS::getCustomFieldMaxCount( $this->staticContext );
 		$data->customFieldLabels = MM_WPFS_Utils::decodeCustomFieldLabels( $form->customInputs );
+		$data->customFields = MM_WPFS_CustomFields::toConfigJson( MM_WPFS_CustomFields::parse( $form->customInputs, $form->customInputRequired ) );
 		$data->emailTemplates = $this->prepareEmailTemplates( MM_WPFS::FORM_TYPE_INLINE_DONATION, $form );
 		$data->currencies = MM_WPFS_Currencies::getAvailableCurrencies();
 
@@ -2332,6 +2348,7 @@ class MM_WPFS_Admin_Menu {
 		$data->checkoutFormLanguages = MM_WPFS_Languages::getCheckoutLanguages();
 		$data->customFieldMaxCount = MM_WPFS::getCustomFieldMaxCount( $this->staticContext );
 		$data->customFieldLabels = MM_WPFS_Utils::decodeCustomFieldLabels( $form->customInputs );
+		$data->customFields = MM_WPFS_CustomFields::toConfigJson( MM_WPFS_CustomFields::parse( $form->customInputs, $form->customInputRequired ) );
 		$data->emailTemplates = $this->prepareEmailTemplates( MM_WPFS::FORM_TYPE_INLINE_DONATION, $form );
 		$data->currencies = MM_WPFS_Currencies::getAvailableCurrencies();
 
@@ -2349,6 +2366,7 @@ class MM_WPFS_Admin_Menu {
 		$data->cardFieldLanguages = MM_WPFS_Languages::getStripeElementsLanguages();
 		$data->customFieldMaxCount = MM_WPFS::getCustomFieldMaxCount( $this->staticContext );
 		$data->customFieldLabels = MM_WPFS_Utils::decodeCustomFieldLabels( $form->customInputs );
+		$data->customFields = MM_WPFS_CustomFields::toConfigJson( MM_WPFS_CustomFields::parse( $form->customInputs, $form->customInputRequired ) );
 		$data->emailTemplates = $this->prepareEmailTemplates( MM_WPFS::FORM_TYPE_INLINE_PAYMENT, $form );
 		$data->currencies = MM_WPFS_Currencies::getAvailableCurrencies();
 		$data->products = $this->prepareOnetimeProducts( $form );
@@ -2369,6 +2387,7 @@ class MM_WPFS_Admin_Menu {
 		$data->checkoutFormLanguages = MM_WPFS_Languages::getCheckoutLanguages();
 		$data->customFieldMaxCount = MM_WPFS::getCustomFieldMaxCount( $this->staticContext );
 		$data->customFieldLabels = MM_WPFS_Utils::decodeCustomFieldLabels( $form->customInputs );
+		$data->customFields = MM_WPFS_CustomFields::toConfigJson( MM_WPFS_CustomFields::parse( $form->customInputs, $form->customInputRequired ) );
 		$data->emailTemplates = $this->prepareEmailTemplates( MM_WPFS::FORM_TYPE_CHECKOUT_PAYMENT, $form );
 		$data->currencies = MM_WPFS_Currencies::getAvailableCurrencies();
 		$data->products = $this->prepareOnetimeProducts( $form );
@@ -2445,6 +2464,7 @@ class MM_WPFS_Admin_Menu {
 		$data->cardFieldLanguages = MM_WPFS_Languages::getStripeElementsLanguages();
 		$data->customFieldMaxCount = MM_WPFS::getCustomFieldMaxCount( $this->staticContext );
 		$data->customFieldLabels = MM_WPFS_Utils::decodeCustomFieldLabels( $form->customInputs );
+		$data->customFields = MM_WPFS_CustomFields::toConfigJson( MM_WPFS_CustomFields::parse( $form->customInputs, $form->customInputRequired ) );
 		$data->emailTemplates = $this->prepareEmailTemplates( MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION, $form );
 		$data->plans = $this->prepareRecurringProducts( $form );
 		$data->stripeApiModeInteger = MM_WPFS_Admin::getApiModeIntegerFromString( $this->getStripeApiMode() );
@@ -2464,6 +2484,7 @@ class MM_WPFS_Admin_Menu {
 		$data->checkoutFormLanguages = MM_WPFS_Languages::getCheckoutLanguages();
 		$data->customFieldMaxCount = MM_WPFS::getCustomFieldMaxCount( $this->staticContext );
 		$data->customFieldLabels = MM_WPFS_Utils::decodeCustomFieldLabels( $form->customInputs );
+		$data->customFields = MM_WPFS_CustomFields::toConfigJson( MM_WPFS_CustomFields::parse( $form->customInputs, $form->customInputRequired ) );
 		$data->emailTemplates = $this->prepareEmailTemplates( MM_WPFS::FORM_TYPE_CHECKOUT_SUBSCRIPTION, $form );
 		$data->plans = $this->prepareRecurringProducts( $form );
 		$data->stripeApiModeInteger = MM_WPFS_Admin::getApiModeIntegerFromString( $this->getStripeApiMode() );
@@ -3518,6 +3539,11 @@ class MM_WPFS_EditFormLocalizer extends MM_WPFS_AdminScriptLocalizer {
 			$this->formType === MM_WPFS::FORM_TYPE_CHECKOUT_PAYMENT
 		) {
 			$options['macroKeys'] = MM_WPFS_OneTimePaymentMacroReplacer::getMacroKeys();
+		} elseif (
+			$this->formType === MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION ||
+			$this->formType === MM_WPFS::FORM_TYPE_CHECKOUT_SUBSCRIPTION
+		) {
+			$options['macroKeys'] = MM_WPFS_SubscriptionMacroReplacer::getMacroKeys();
 		}
 
 		return $options;

@@ -39,4 +39,35 @@
             <span><?php esc_html_e('Enabled', 'wp-full-stripe-free'); ?></span>
         </label>
     </div>
+    <% if (editable === true) { %>
+    <div class="js-form-template-content" <% if (enabled !== true) { %>style="display: none;"<% } %>>
+        <div class="wpfs-form-group">
+            <label for="wpfs-form-template-subject" class="wpfs-form-label wpfs-form-label--actions">
+                <?php esc_html_e('Subject', 'wp-full-stripe-free'); ?>
+                <div class="wpfs-form-label__actions">
+                    <a class="wpfs-btn wpfs-btn-link js-insert-token-subject" href="#"><?php esc_html_e('Insert token', 'wp-full-stripe-free'); ?></a>
+                </div>
+            </label>
+            <input id="wpfs-form-template-subject" class="wpfs-form-control js-form-template-subject js-subject-position-tracking js-token-target-subject" type="text" value="<%- subject %>" placeholder="<?php esc_attr_e('Leave empty to use the global template', 'wp-full-stripe-free'); ?>">
+        </div>
+        <div class="wpfs-form-group">
+            <label for="wpfs-form-template-body" class="wpfs-form-label wpfs-form-label--actions">
+                <?php esc_html_e('Body', 'wp-full-stripe-free'); ?>
+                <div class="wpfs-form-label__actions">
+                    <a class="wpfs-btn wpfs-btn-link js-insert-token-body" href="#"><?php esc_html_e('Insert token', 'wp-full-stripe-free'); ?></a>
+                </div>
+            </label>
+            <textarea id="wpfs-form-template-body" class="wpfs-form-control js-form-template-body js-body-position-tracking js-token-target-body" rows="10" placeholder="<?php esc_attr_e('Leave empty to use the global template', 'wp-full-stripe-free'); ?>"><%- body %></textarea>
+        </div>
+    </div>
+    <% } %>
+</script>
+<script type="text/template" id="wpfs-form-insert-token-dialog-tmpl">
+    <div id="wpfs-insert-token-dialog" class="wpfs-dialog-content js-insert-token-dialog" title="<?php esc_attr_e('Insert token', 'wp-full-stripe-free'); ?>">
+        <div class="wpfs-dialog-token-list">
+            <div class="wpfs-form-group">
+                <input class="wpfs-form-control js-token-autocomplete" type="text" placeholder="<?php esc_attr_e('Search token', 'wp-full-stripe-free'); ?>">
+            </div>
+        </div>
+    </div>
 </script>

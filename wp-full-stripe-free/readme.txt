@@ -4,7 +4,7 @@ Tags: stripe, payment forms, donations, subscriptions, credit card
 Requires at least: 5.3
 Requires PHP: 7.4
 Tested up to: 7.0
-Stable tag: 8.4.3
+Stable tag: 8.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -283,12 +283,25 @@ WP Full Pay fully supports Strong Customer Authentication (SCA) requirements for
 
 == Changelog ==
 
-#####   Version 8.4.3 (2026-05-19)
+####   Version 8.5.0 (2026-06-24)
 
-- Fixed issue with One-time donations when duplicate row was inserted when form submit runs more than once for the same Payment
-- Fixed missing row when donor abandons after Stripe authentication in one-time donation
-- Fixed cancelled recurring donations being incorrectly included in donation goal totals
-- Updated dependencies
+### Improvements
+
+- Added support for multiple custom field types on forms — text, textarea, dropdown, multi-select, checkbox, date, number, phone, and HTML content
+- Added the PayNow payment method
+- Added support for custom email notification templates per payment form
+- Added an option to display the payment details on the form, either as a hover link or always visible
+- Improved UX during form submission
+- Enhanced security 
+
+### Bug Fixes
+
+- Fixed the custom amount field not appearing on forms
+- Fixed an unnecessary payment intent being created when the form loads
+- Fixed repeated notification emails being sent for the same payment
+- Fixed the coupon discount not syncing with Apple Pay confirmation
+- Fixed tax not being charged on Inline forms
+- Fixed donation forms not respecting the payment method settings configured in Stripe
 
 
 

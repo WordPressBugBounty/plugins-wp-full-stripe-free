@@ -1,0 +1,22 @@
+{
+  "id": "paynow",
+  "title": "PayNow",
+  "longTitle": "PayNow",
+  "countries": [
+    "sg"
+  ],
+  "currencies": [
+    "sgd"
+  ],
+  "version": "1.0.0",
+  "description": "PayNow allows customers in Singapore to pay by scanning a QR code with a participating banking or payment app.",
+  "icon": "paynow.svg",
+  "author": "themeisle",
+  "recurring": false,
+  "stripe_checkout": true,
+  "bnpl": false,
+  "wallet": false,
+  "external_docs": "https://docs.stripe.com/payments/paynow",
+  "internal_docs": "https://docs.stripe.com/payments/paynow",
+  "enabled": true
+}
