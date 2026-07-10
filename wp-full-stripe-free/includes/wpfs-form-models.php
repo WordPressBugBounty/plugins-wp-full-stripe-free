@@ -2210,7 +2210,9 @@ abstract class MM_WPFS_Public_PaymentFormModel extends MM_WPFS_Public_FormModel
 			if ( MM_WPFS_Utils::getFormType( $this->__form ) === MM_WPFS::FORM_TYPE_CHECKOUT_PAYMENT ) {
 				$this->__amount = MM_WPFS_Currencies::parseByForm($this->__form, $this->__form->currency, $this->__amount);
 			}
-			$this->__amount = MM_WPFS_Utils::parse_amount( $this->__form->currency, $this->__amount );
+			if ( is_numeric( $this->__amount ) ) {
+ 				$this->__amount = MM_WPFS_Currencies::convertAmountToMinorUnits( $this->__amount, $this->__form->currency );
+ 			}
 
 			$this->__productName = isset($this->__form->productDesc) ? $this->__form->productDesc : MM_WPFS_Utils::getDefaultProductDescription();
 			$this->__priceId = null;
@@ -2361,7 +2363,9 @@ abstract class MM_WPFS_Public_DonationFormModel extends MM_WPFS_Public_FormModel
 				$this->__amount = MM_WPFS_Currencies::parseByForm($this->__form, $this->__form->currency, $this->__amount);
 			}
 
-			$this->__amount = MM_WPFS_Utils::parse_amount( $this->__form->currency, $this->__amount );
+			if ( is_numeric( $this->__amount ) ) {
+ 				$this->__amount = MM_WPFS_Currencies::convertAmountToMinorUnits( $this->__amount, $this->__form->currency );
+ 			}
 		} else {
 			$donationAmounts = MM_WPFS_Utils::decodeJsonArray($this->__form->donationAmounts);
 			if (isset($this->customAmountIndex) && $this->customAmountIndex > self::INITIAL_CUSTOM_AMOUNT_INDEX && count($donationAmounts) > $this->customAmountIndex) {

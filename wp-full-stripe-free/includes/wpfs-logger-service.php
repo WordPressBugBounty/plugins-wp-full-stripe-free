@@ -409,7 +409,7 @@ class MM_WPFS_Logger {
 	 * @param $message
 	 * @param null|Throwable $exception
 	 */
-	public function error( $function, $message, Throwable $exception = null ) {
+	public function error( $function, $message, ?Throwable $exception = null ) {
 		if ( $this->isErrorEnabled() ) {
 			$this->loggerService->log( $this->module, $this->class, $function, MM_WPFS_LoggerService::LEVEL_ERROR, $message, $exception );
 		}

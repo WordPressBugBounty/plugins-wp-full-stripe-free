@@ -874,10 +874,22 @@ class MM_WPFS_Database {
 		global $wpdb;
 
 		$stripeCustomerID = $donationFormModel->getStripeCustomer()->id;
-		$stripeSubscriptionID = $donationFormModel->isRecurringDonation() ? $subscription->id : null;
-		$subscriptionStatus = $donationFormModel->isRecurringDonation() ? $subscription->status : null;
+		$isRecurring = $donationFormModel->isRecurringDonation();
+		$stripeSubscriptionID = $isRecurring ? $subscription->id : null;
+		$subscriptionStatus = $isRecurring ? $subscription->status : null;
 		$billingAddress = $donationFormModel->getBillingAddress();
 		$shippingAddress = $donationFormModel->getShippingAddress();
+
+		$stripePlanID = null;
+		if ( $isRecurring ) {
+			if ( isset( $subscription->plan->id ) ) {
+				$stripePlanID = $subscription->plan->id;
+			} elseif ( isset( $subscription->items->data[0]->plan->id ) ) {
+				$stripePlanID = $subscription->items->data[0]->plan->id;
+			} elseif ( isset( $subscription->items->data[0]->price->id ) ) {
+				$stripePlanID = $subscription->items->data[0]->price->id;
+			}
+		}
 
 		$description = $this->getTruncatedDescriptionFromPaymentIntent( $paymentIntent );
 		$data = [
@@ -885,7 +897,7 @@ class MM_WPFS_Database {
 			'stripeSubscriptionID' => $stripeSubscriptionID,
 			'stripePaymentIntentID' => $paymentIntent->id,
 			'stripeSetupIntentID' => $donationFormModel->getStripeSetupIntentId(),
-			'stripePlanID' => $donationFormModel->isRecurringDonation() ? $subscription->plan->id : null,
+			'stripePlanID' => $stripePlanID,
 			'description' => $description,
 			'paymentMethod' => 'card',
 			'paid' => $lastCharge->paid,

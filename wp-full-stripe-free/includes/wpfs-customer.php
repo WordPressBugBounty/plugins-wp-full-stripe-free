@@ -596,6 +596,9 @@ class MM_WPFS_Customer {
 	// recomputed from a clean base instead of an already tax-inclusive amount (#413).
 	const METADATA_KEY_PRETAX_BASE_AMOUNT = 'wpfs_pretax_base_amount';
 
+	/** @var string POST flag the front-end sets when the final payable amount is 0 (e.g. a 100%-off coupon). */
+	const PARAM_WPFS_FREE_TRANSACTION = 'wpfs-free-transaction';
+
 	/** @var $stripe MM_WPFS_Stripe */
 	protected $stripe = null;
 
@@ -872,6 +875,140 @@ class MM_WPFS_Customer {
 	 */
 	protected function createSubscription( $formModel, $transactionData, $options ) {
 		return $this->stripe->createSubscriptionForCustomer( $this->createSubscriptionContext( $formModel, $transactionData ), $options );
+	}
+
+	/**
+	 * Check if the current request is a free transaction request.
+	 * If so, we skip confirmation step and record the transaction directly.
+	 *
+	 * @return bool
+	 */
+	private function isFreeTransactionRequest() {
+		return isset( $_POST[ self::PARAM_WPFS_FREE_TRANSACTION ] )
+			&& '1' === sanitize_text_field( wp_unslash( $_POST[ self::PARAM_WPFS_FREE_TRANSACTION ] ) );
+	}
+
+	/**
+	 * Create or retrieve a Stripe Customer for a free inline Payment.
+	 *
+	 * @param MM_WPFS_Public_FormModel $formModel
+	 * @param MM_WPFS_CreateCustomerOptions $options
+	 * @return void
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
+	 * @throws WPFS_UserFriendlyException
+	 */
+	private function createCustomerWithoutPaymentMethod( $formModel, $options ) {
+		$ctx = $this->createCustomerContext( $formModel );
+		$stripeCustomer = $this->findExistingStripeCustomerAnywhereByEmail( $ctx->cardHolderEmail );
+		$metadata = $options->addMetadata ? $ctx->metadata : null;
+		if ( ! is_array( $metadata ) ) {
+			$metadata = [];
+		}
+		$metadata['webhookUrl'] = esc_attr( MM_WPFS_EventHandler::getWebhookEndpointURL( $this->staticContext ) );
+
+		if ( ! isset( $stripeCustomer ) ) {
+			$this->logger->debug( __FUNCTION__, 'Creating Stripe Customer without PaymentMethod (free transaction)...' );
+			$stripeCustomer = $this->stripe->createCustomerWithPaymentMethod(
+				null,
+				MM_WPFS_Utils::determineCustomerName( $ctx->cardHolderName, $ctx->businessName, $ctx->billingName ),
+				$ctx->cardHolderEmail,
+				$metadata,
+				$ctx->taxIdType,
+				$ctx->taxId,
+				$ctx->billingAddress,
+				$ctx->billingName,
+				$ctx->shippingAddress,
+				$ctx->shippingName
+			);
+		}
+
+		$formModel->setStripeCustomer( $stripeCustomer );
+	}
+
+	/**
+	 * Process a free inline Payment (e.g. 100%-off coupon) by creating a Stripe Customer.
+	 * 
+	 *
+	 * @param MM_WPFS_Public_PaymentFormModel $paymentFormModel
+	 * @return MM_WPFS_PaymentIntentResult
+	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
+	 * @throws WPFS_UserFriendlyException
+	 */
+	private function processFreePayment( $paymentFormModel ) {
+		$this->logger->debug( __FUNCTION__, 'CALLED' );
+
+		$paymentIntentResult = new MM_WPFS_PaymentIntentResult();
+		$paymentIntentResult->setNonce( $paymentFormModel->getNonce() );
+
+		$createCustomerOptions = new MM_WPFS_CreateCustomerOptions();
+		$createCustomerOptions->addMetadata = false;
+		$this->createCustomerWithoutPaymentMethod( $paymentFormModel, $createCustomerOptions );
+
+		$transactionData = MM_WPFS_TransactionDataService::createOneTimePaymentDataByModel( $paymentFormModel );
+		$transactionData->setAmount( 0 );
+		$transactionData->setProductAmountNet( 0 );
+		$transactionData->setProductAmountTax( 0 );
+		$transactionData->setProductAmountGross( 0 );
+
+		$this->fireBeforeInlinePaymentAction( $paymentFormModel, $transactionData );
+
+		$createdAt = time();
+		$liveMode = ( $this->options->get( MM_WPFS_Options::OPTION_API_MODE ) === 'live' );
+		$currency = strtolower( $paymentFormModel->getForm()->currency );
+
+		$stubPaymentIntent = new stdClass();
+		$stubPaymentIntent->id = 'wpfs_free_pi_' . wp_generate_uuid4();
+		$stubPaymentIntent->amount = 0;
+		$stubPaymentIntent->currency = $currency;
+		$stubPaymentIntent->created = $createdAt;
+		$stubPaymentIntent->livemode = $liveMode;
+		$stubPaymentIntent->application_fee_amount = 0;
+		$stubPaymentIntent->description = MM_WPFS_Utils::prepareStripeChargeDescription(
+			$this->staticContext,
+			$paymentFormModel,
+			$transactionData
+		);
+		$stubPaymentIntent->wpfs_form = $paymentFormModel->getFormName();
+
+		$stubCharge = new stdClass();
+		$stubCharge->paid = true;
+		$stubCharge->captured = true;
+		$stubCharge->refunded = false;
+		$stubCharge->failure_code = null;
+		$stubCharge->failure_message = null;
+		$stubCharge->status = 'succeeded';
+		$stubCharge->livemode = $liveMode;
+		$stubCharge->created = $createdAt;
+
+		$paymentFormModel->setStripePaymentMethodType(
+			$paymentFormModel->getStripePaymentMethodType() ?: 'card'
+		);
+		$paymentFormModel->setStripePaymentIntent( $stubPaymentIntent );
+		$paymentFormModel->setTransactionId( $stubPaymentIntent->id );
+		$transactionData->setTransactionId( $stubPaymentIntent->id );
+
+		$this->db->insertOrUpdatePayment( $paymentFormModel, $transactionData, $stubCharge );
+
+		$this->fireAfterInlinePaymentAction( $paymentFormModel, $transactionData, $stubPaymentIntent );
+
+		$paymentIntentResult->setRequiresAction( false );
+		$paymentIntentResult->setSuccess( true );
+		$paymentIntentResult->setMessageTitle(
+			/* translators: Banner title of successful transaction */
+			__( 'Success', 'wp-full-stripe-free' )
+		);
+		$paymentIntentResult->setMessage(
+			/* translators: Banner message of successful payment */
+			__( 'Payment Successful!', 'wp-full-stripe-free' )
+		);
+
+		$this->handleRedirect( $paymentFormModel, $transactionData, $paymentIntentResult );
+
+		if ( MM_WPFS_Mailer::canSendPaymentPluginReceipt( $paymentFormModel->getForm() ) ) {
+			$this->mailer->sendOneTimePaymentReceipt( $paymentFormModel->getForm(), $transactionData );
+		}
+
+		return $paymentIntentResult;
 	}
 
 	/**
@@ -2140,6 +2277,25 @@ class MM_WPFS_Customer {
 	 */
 	private function processPaymentIntentCharge( $paymentFormModel ) {
 		$this->logger->debug( __FUNCTION__, "CALLED" );
+
+		// Handle free transactions first, as they don't require a PaymentIntent.
+		if ( $this->isFreeTransactionRequest() ) {
+			$freeCheckData = MM_WPFS_TransactionDataService::createOneTimePaymentDataByModel( $paymentFormModel );
+			$resolved      = $this->computeInlinePaymentChargeAmount( $paymentFormModel, $freeCheckData );
+
+			if ( $resolved !== null ) {
+				// Tax and/or coupon was applied; $resolved[0] is the final charge amount.
+				list( $chargeAmount ) = $resolved;
+				$isFree = ( $chargeAmount <= 0 );
+			} else {
+				// No tax/coupon/fee adjustment: the raw model amount is the charge.
+				$isFree = ( (int) round( $paymentFormModel->getAmount() ) <= 0 );
+			}
+
+			if ( $isFree ) {
+				return $this->processFreePayment( $paymentFormModel );
+			}
+		}
 
 		$paymentIntentResult = new MM_WPFS_PaymentIntentResult();
 		$paymentIntentResult->setNonce( $paymentFormModel->getNonce() );

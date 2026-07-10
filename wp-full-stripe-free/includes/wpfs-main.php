@@ -10,7 +10,7 @@ https://themeisle.com
 */
 
 class MM_WPFS {
-	const VERSION = '8.5.0';
+	const VERSION = '8.5.1';
 	const REQUEST_PARAM_NAME_WPFS_RENDERED_FORMS = 'wpfs_rendered_forms';
 
 	const HANDLE_WP_FULL_STRIPE_JS = 'wp-full-stripe-js';
@@ -1385,7 +1385,7 @@ class WPFS_UserFriendlyException extends Exception {
 	 * @param int $code
 	 * @param Throwable|null $previous
 	 */
-	public function __construct( $message = "", $code = 0, Throwable $previous = null ) {
+	public function __construct( $message = "", $code = 0, ?Throwable $previous = null ) {
 		parent::__construct( $message, $code, $previous );
 	}
 

@@ -617,7 +617,7 @@ abstract class MM_WPFS_EventProcessor
 			$transactionData->setSetupFeeGrossAmountTotal($planSetupFeeGrossTotalComposite['gross']);
 			$transactionData->setSetupFeeTaxAmountTotal($planSetupFeeGrossTotalComposite['taxValue']);
 
-			$transactionData->setPlanNetAmount($stripePlan->amount);
+			$transactionData->setPlanNetAmount($stripePlan->unit_amount);
 			$transactionData->setPlanGrossAmount($planAmountGrossComposite['gross']);
 			$transactionData->setPlanTaxAmount($transactionData->getPlanGrossAmount() - $transactionData->getPlanNetAmount());
 			$transactionData->setPlanQuantity($wpfsSubscriber->quantity);

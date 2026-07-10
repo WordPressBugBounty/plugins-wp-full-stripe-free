@@ -3,10 +3,10 @@
 /** @var $textFilter */
 /** @var $modeFilter */
 ?>
-<form name="wpfs-search-donations" action="<?php echo $pageUrl; ?>" method="post">
+<form name="wpfs-search-donations" action="<?php echo esc_url( $pageUrl ); ?>" method="post">
     <div class="wpfs-page-controls">
         <div class="wpfs-form-search wpfs-page-controls__control wpfs-page-controls__control--w320 js-form-search">
-            <input class="wpfs-form-control wpfs-form-search__input" type="text" name="<?php echo MM_WPFS_Admin_Menu::PARAM_NAME_DONATIONS_TEXT_FILTER ?>" value="<?php echo !empty( $textFilter ) ? $textFilter : "";  ?>" placeholder="<?php esc_html_e( 'Search...', 'wp-full-stripe-free'); ?>">
+            <input class="wpfs-form-control wpfs-form-search__input" type="text" name="<?php echo MM_WPFS_Admin_Menu::PARAM_NAME_DONATIONS_TEXT_FILTER ?>" value="<?php echo !empty( $textFilter ) ? esc_attr( $textFilter ) : "";  ?>" placeholder="<?php esc_html_e( 'Search...', 'wp-full-stripe-free'); ?>">
             <button class="wpfs-form-search__btn">
                 <span class="wpfs-icon-search"></span>
             </button>

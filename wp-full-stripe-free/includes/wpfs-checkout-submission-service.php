@@ -379,6 +379,7 @@ class MM_WPFS_CheckoutSubmissionService {
 
 				$checkoutSession = $this->retrieveCheckoutSession( $popupFormSubmit->checkoutSessionId );
 				$paymentIntent = $this->findPaymentIntentInCheckoutSession( $checkoutSession );
+
 				if ( isset( $paymentIntent ) && \StripeWPFS\Stripe\PaymentIntent::STATUS_SUCCEEDED === $paymentIntent->status ) {
 
 					// Already processed by a prior run: resolve without resending notifications.
@@ -466,8 +467,10 @@ class MM_WPFS_CheckoutSubmissionService {
 					'setup_intent',
 					'setup_intent.payment_method',
 					'subscription',
-					'subscription.latest_invoice.payment_intent',
+					'subscription.latest_invoice',
+					'subscription.latest_invoice.payments',
 					'subscription.pending_setup_intent',
+					'subscription.default_payment_method',
 					'line_items',
 					'line_items.data.discounts',
 					'line_items.data.taxes',
@@ -546,9 +549,9 @@ class MM_WPFS_CheckoutSubmissionService {
 					[
 						'expand' => [
 							'latest_invoice',
-							'latest_invoice.payment_intent',
-							'latest_invoice.charge',
+							'latest_invoice.payments',
 							'pending_setup_intent',
+							'default_payment_method',
 							'discount.promotion_code'
 						]
 					]
@@ -562,36 +565,57 @@ class MM_WPFS_CheckoutSubmissionService {
 	/**
 	 * @param $stripeSubscription
 	 *
-	 * @return string|\StripeWPFS\Stripe\PaymentIntent|null
-	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
+	 * @return \StripeWPFS\Stripe\PaymentIntent|null
 	 */
 	public function findPaymentIntentInSubscription( $stripeSubscription ) {
 		$paymentIntent = null;
-		if ( isset( $stripeSubscription ) ) {
-			if ( isset( $stripeSubscription->latest_invoice ) ) {
-				$stripeInvoice = null;
-				if ( isset( $stripeSubscription->latest_invoice ) ) {
-					$stripeInvoice = $stripeSubscription->latest_invoice;
-				} else {
-					$retrieveParams = [
-						'expand' => [
-							'payment_intent',
-							'charge'
-						]
-					];
+		if ( ! isset( $stripeSubscription ) || ! isset( $stripeSubscription->latest_invoice ) ) {
+			return $paymentIntent;
+		}
 
-					$stripeInvoice = $this->stripe->retrieveInvoiceWithParams(
-						$stripeSubscription->latest_invoice,
-						$retrieveParams
-					);
+		$stripeInvoice = $stripeSubscription->latest_invoice;
+
+		if ( ! is_object( $stripeInvoice ) || ! isset( $stripeInvoice->payments ) ) {
+			$invoiceId = is_object( $stripeInvoice ) && isset( $stripeInvoice->id ) ? $stripeInvoice->id : $stripeInvoice;
+			try {
+				$stripeInvoice = $this->stripe->retrieveInvoiceWithParams(
+					$invoiceId,
+					[ 'expand' => [ 'payments' ] ]
+				);
+			} catch ( Exception $ex ) {
+				$this->logger->error( __FUNCTION__, 'Error while retrieving invoice for subscription', $ex );
+				return $paymentIntent;
+			}
+		}
+
+		$paymentIntentId = null;
+
+		if ( isset( $stripeInvoice->payments ) && isset( $stripeInvoice->payments->data ) ) {
+			foreach ( $stripeInvoice->payments->data as $payment ) {
+				if (
+					isset( $payment->payment ) &&
+					isset( $payment->payment->type ) &&
+					'payment_intent' === $payment->payment->type &&
+					isset( $payment->payment->payment_intent )
+				) {
+					$paymentIntentId = $payment->payment->payment_intent;
+					break;
 				}
-				if ( isset( $stripeInvoice->payment_intent ) ) {
-					if ( $stripeInvoice->payment_intent->id ) {
-						$paymentIntent = $stripeInvoice->payment_intent;
-					} else {
-						$paymentIntent = $this->stripe->retrievePaymentIntent( $stripeInvoice->payment_intent );
-					}
-				}
+			}
+		}
+
+		if ( is_null( $paymentIntentId ) && isset( $stripeInvoice->payment_intent ) ) {
+			if ( is_object( $stripeInvoice->payment_intent ) && isset( $stripeInvoice->payment_intent->id ) ) {
+				return $stripeInvoice->payment_intent;
+			}
+			$paymentIntentId = $stripeInvoice->payment_intent;
+		}
+
+		if ( ! empty( $paymentIntentId ) ) {
+			try {
+				$paymentIntent = $this->stripe->retrievePaymentIntent( $paymentIntentId );
+			} catch ( Exception $ex ) {
+				$this->logger->error( __FUNCTION__, 'Error while retrieving PaymentIntent from subscription invoice', $ex );
 			}
 		}
 
@@ -825,7 +849,7 @@ class MM_WPFS_CheckoutSubmissionService {
 	/**
 	 * @param \StripeWPFS\Stripe\Checkout\Session $checkoutSession
 	 *
-	 * @return \StripeWPFS\Stripe\Customer
+	 * @return \StripeWPFS\Stripe\Customer|null
 	 */
 	public function retrieveStripeCustomerByCheckoutSession( $checkoutSession ) {
 		$stripeCustomer = null;
@@ -1102,11 +1126,13 @@ class MM_WPFS_CheckoutSessionBuilder_Donation extends MM_WPFS_CheckoutSessionBui
 
 		$sessionData['mode'] = 'payment';
 		if (  $this->formModel->isRecurringDonation() ) {
+			$sessionData['mode'] = 'subscription';
+		} else {
 			$sessionData['payment_intent_data'] = [
 				'setup_future_usage' => 'off_session'
 			];
+			$sessionData['customer_creation'] = 'always'; // always capture a customer. we need it post payment for internal logic
 		}
-		$sessionData['customer_creation'] = 'always'; // always capture a customer. we need it post payment for internal logic
 
 		$productData = [
 			'name' => $this->getProductLabel()
@@ -1130,6 +1156,19 @@ class MM_WPFS_CheckoutSessionBuilder_Donation extends MM_WPFS_CheckoutSessionBui
 			'quantity' => 1,
 		];
 
+		$intervals = [
+			'daily' => 'day',
+			'weekly' => 'week',
+			'monthly' => 'month',
+			'annual' => 'year'
+		];
+
+		if ( $this->formModel->isRecurringDonation() ) {
+			$lineItem['price_data']['recurring'] = [
+				'interval' => $intervals[ $this->formModel->getDonationFrequency() ],
+			];
+		}
+
 		$sessionData['line_items'] = [ $lineItem ];
 
 		if ( $recoveryFee && ! empty( $recoveryFeeData ) ) {
@@ -1143,6 +1182,12 @@ class MM_WPFS_CheckoutSessionBuilder_Donation extends MM_WPFS_CheckoutSessionBui
 				],
 				'quantity' => 1
 			];
+
+			if ( $this->formModel->isRecurringDonation() ) {
+				$recoveryFeeLineItem['price_data']['recurring'] = [
+					'interval' => $intervals[ $this->formModel->getDonationFrequency() ],
+				];
+			}
 
 			array_push( $sessionData['line_items'], $recoveryFeeLineItem );
 		}

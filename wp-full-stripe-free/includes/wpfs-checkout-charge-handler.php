@@ -598,6 +598,36 @@ class MM_WPFS_CheckoutDonationChargeHandler extends MM_WPFS_CheckoutChargeHandle
     }
 
     /**
+     * Resolves the PaymentMethod to use for a subscription donation.
+     *
+     * @param \StripeWPFS\Stripe\Subscription $subscription
+     * @param \StripeWPFS\Stripe\PaymentIntent|null $paymentIntent
+     *
+     * @return \StripeWPFS\Stripe\PaymentMethod|null
+     * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
+     */
+    protected function resolvePaymentMethodForSubscription($subscription, $paymentIntent)
+    {
+        $paymentMethod = null;
+        if (!is_null($paymentIntent)) {
+            $paymentMethod = $this->checkoutSubmissionService->retrieveStripePaymentMethodByPaymentIntent($paymentIntent);
+        }
+        if (is_null($paymentMethod) && isset($subscription->default_payment_method)) {
+            $defaultPaymentMethod = $subscription->default_payment_method;
+            if (is_object($defaultPaymentMethod) && isset($defaultPaymentMethod->id)) {
+                $paymentMethod = $defaultPaymentMethod;
+            } elseif (is_string($defaultPaymentMethod) && !empty($defaultPaymentMethod)) {
+                try {
+                    $paymentMethod = $this->stripe->retrievePaymentMethod($defaultPaymentMethod);
+                } catch (Exception $ex) {
+                    $this->logger->error(__FUNCTION__, 'Error while retrieving subscription default PaymentMethod', $ex);
+                }
+            }
+        }
+        return $paymentMethod;
+    }
+
+    /**
      * @param MM_WPFS_Public_DonationFormModel $formModel
      * @param \StripeWPFS\Stripe\Checkout\Session $checkoutSession
      *
@@ -609,15 +639,67 @@ class MM_WPFS_CheckoutDonationChargeHandler extends MM_WPFS_CheckoutChargeHandle
     {
         $chargeResult = new MM_WPFS_DonationCheckoutResult();
 
+        $isSubscriptionMode = isset($checkoutSession->mode) && 'subscription' === $checkoutSession->mode;
+        $isRecurring = $this->isRecurringDonation($formModel);
+
         $stripeCustomer = $this->checkoutSubmissionService->retrieveStripeCustomerByCheckoutSession($checkoutSession);
-        $paymentIntent = $this->checkoutSubmissionService->retrieveStripePaymentIntentByCheckoutSession($checkoutSession);
-        $paymentMethod = $this->setDefaultPaymentMethodFromPaymentIntent($paymentIntent, $stripeCustomer, $formModel->isRecurringDonation() );
+        if (is_null($stripeCustomer)) {
+            $this->logger->error(__FUNCTION__, 'Error while handling checkout donation: cannot find Stripe customer.');
+        }
+
+        $subscription = null;
+        $paymentIntent = null;
+        $paymentMethod = null;
+
+        if ($isSubscriptionMode) {
+            $subscription = $this->checkoutSubmissionService->retrieveStripeSubscriptionByCheckoutSession($checkoutSession);
+            if (is_null($subscription)) {
+                $this->logger->error(__FUNCTION__, 'Error while handling checkout donation: cannot find Stripe Subscription on checkout session.');
+            } else {
+                $paymentIntent = $this->checkoutSubmissionService->findPaymentIntentInSubscription($subscription);
+                if (is_null($paymentIntent)) {
+                    $this->logger->error(__FUNCTION__, 'Error while handling checkout donation: cannot find PaymentIntent on subscription invoice.');
+                }
+
+                $paymentMethod = $this->resolvePaymentMethodForSubscription($subscription, $paymentIntent);
+                if (!is_null($paymentMethod) && !is_null($stripeCustomer)) {
+                    $paymentMethod = $this->stripe->attachPaymentMethodToCustomerIfMissing(
+                        $stripeCustomer,
+                        $paymentMethod,
+                        /* set to default */
+                        true
+                    );
+                }
+            }
+        } else {
+            $paymentIntent = $this->checkoutSubmissionService->retrieveStripePaymentIntentByCheckoutSession($checkoutSession);
+            if (is_null($paymentIntent)) {
+                $this->logger->error(__FUNCTION__, 'Error while handling checkout donation: cannot find PaymentIntent on checkout session.');
+            } else {
+                $paymentMethod = $this->setDefaultPaymentMethodFromPaymentIntent($paymentIntent, $stripeCustomer, $isRecurring);
+            }
+        }
+
+        if (is_null($stripeCustomer) || is_null($paymentIntent) || ($isSubscriptionMode && is_null($subscription))) {
+            $chargeResult->setSuccess(false);
+            $chargeResult->setMessageTitle(
+                /* translators: Banner title of failed transaction */
+                __('Failed', 'wp-full-stripe-free')
+            );
+            $chargeResult->setMessage(
+                /* It's an internal error, no need to localize it */
+                'Cannot complete donation: missing Stripe customer / payment details.'
+            );
+            return $chargeResult;
+        }
 
         $this->fixCustomerNamesAndAddresses($stripeCustomer, $paymentMethod, $checkoutSession);
-
         $formModel->setTransactionId($paymentIntent->id);
         $formModel->setStripePaymentMethod($paymentMethod);
         $formModel->setStripeCustomer($stripeCustomer, true);
+        if (!is_null($subscription)) {
+            $formModel->setStripeSubscription($subscription);
+        }
 
         $transactionData = MM_WPFS_TransactionDataService::createDonationDataByFormModel($formModel);
 
@@ -625,18 +707,23 @@ class MM_WPFS_CheckoutDonationChargeHandler extends MM_WPFS_CheckoutChargeHandle
         $this->addFormNameToPaymentIntent($paymentIntent, $formModel->getFormName());
 
         if ($formModel->getForm()->generateInvoice == 1) {
-            $createInvoiceOptions = new MM_WPFS_CreateOneTimeInvoiceOptions();
-            $createInvoiceOptions->autoAdvance = false;
-            $stripeInvoice = $this->createInvoiceForOneTimePaymentByFormModel($formModel, $createInvoiceOptions);
+            if ($isSubscriptionMode) {
+                $invoice = isset($subscription->latest_invoice) && is_object($subscription->latest_invoice)
+                    ? $subscription->latest_invoice
+                    : null;
+                if (!is_null($invoice)) {
+                    $this->setTransactionDataFromInvoice($transactionData, $invoice);
+                }
+            } else {
+                $createInvoiceOptions = new MM_WPFS_CreateOneTimeInvoiceOptions();
+                $createInvoiceOptions->autoAdvance = false;
+                $stripeInvoice = $this->createInvoiceForOneTimePaymentByFormModel($formModel, $createInvoiceOptions);
 
-            $paidStripeInvoice = $this->stripe->payInvoiceOutOfBand($stripeInvoice->id);
-            $this->setTransactionDataFromInvoice($transactionData, $paidStripeInvoice);
+                $paidStripeInvoice = $this->stripe->payInvoiceOutOfBand($stripeInvoice->id);
+                $this->setTransactionDataFromInvoice($transactionData, $paidStripeInvoice);
+            }
         }
 
-        $subscription = null;
-        if ($this->isRecurringDonation($formModel)) {
-            $subscription = $this->createSubscriptionForDonation($formModel);
-        }
         $latest_charge = $this->stripe->getLatestCharge($paymentIntent);
 
         $this->db->insertCheckoutDonation($formModel, $paymentIntent, $subscription, $latest_charge);

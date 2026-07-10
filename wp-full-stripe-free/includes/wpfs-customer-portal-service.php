@@ -2085,6 +2085,29 @@ class MM_WPFS_CustomerPortalService
     }
 
     /**
+     * Resolves the customer portal session for the current request, requiring both a valid
+     * customer portal cookie and a successfully consumed security code
+     * before any protected REST API action may proceed.
+     *
+     * @return object|WP_Error
+     */
+    private function getAuthenticatedCardUpdateSession()
+    {
+        $cardUpdateSessionHash = $this->findSessionCookieValue();
+        $cardUpdateSession = is_null($cardUpdateSessionHash) ? null : $this->findCustomerPortalSessionByHash($cardUpdateSessionHash);
+
+        if (is_null($cardUpdateSession) || !$this->isConfirmed($cardUpdateSession)) {
+            return new WP_Error(
+                'wpfs_customer_portal_not_authenticated',
+                __('Unauthorized', 'wp-full-stripe-free'),
+                ['status' => 401]
+            );
+        }
+
+        return $cardUpdateSession;
+    }
+
+    /**
      * Fetch Stripe Subscriptions for a given customer to supply data for a Backbone Collection
      *
      * @param WP_REST_Request $request
@@ -2096,25 +2119,24 @@ class MM_WPFS_CustomerPortalService
         $data = [];
         try {
 
-            $cardUpdateSessionHash = $this->findSessionCookieValue();
-            if (!is_null($cardUpdateSessionHash)) {
-                $cardUpdateSession = $this->findCustomerPortalSessionByHash($cardUpdateSessionHash);
-                if (!is_null($cardUpdateSession)) {
-                    $model = new MM_WPFS_CustomerPortalModel();
-                    if (is_user_logged_in()) {
-                        $model->setAuthenticationType(MM_WPFS_CustomerPortalModel::AUTHENTICATION_TYPE_WORDPRESS);
-                    } else {
-                        $model->setAuthenticationType(MM_WPFS_CustomerPortalModel::AUTHENTICATION_TYPE_PLUGIN);
-                    }
-                    $model->setStripeClient($this->stripe);
-                    $stripeCustomer = $this->findExistingStripeCustomerAnywhereByEmail($cardUpdateSession->email);
-                    $stripeCustomer = $this->stripe->retrieveCustomerWithParams($stripeCustomer->id, ['expand' => ['sources']]);
-                    $this->fetchDataIntoCustomerPortalModel($model, $stripeCustomer);
-
-
-                    $this->buildManagedSubscriptionsArray($model->getSubscriptions(), $data);
-                }
+            $cardUpdateSession = $this->getAuthenticatedCardUpdateSession();
+            if (is_wp_error($cardUpdateSession)) {
+                return $cardUpdateSession;
             }
+
+            $model = new MM_WPFS_CustomerPortalModel();
+            if (is_user_logged_in()) {
+                $model->setAuthenticationType(MM_WPFS_CustomerPortalModel::AUTHENTICATION_TYPE_WORDPRESS);
+            } else {
+                $model->setAuthenticationType(MM_WPFS_CustomerPortalModel::AUTHENTICATION_TYPE_PLUGIN);
+            }
+            $model->setStripeClient($this->stripe);
+            $stripeCustomer = $this->findExistingStripeCustomerAnywhereByEmail($cardUpdateSession->email);
+            $stripeCustomer = $this->stripe->retrieveCustomerWithParams($stripeCustomer->id, ['expand' => ['sources']]);
+            $this->fetchDataIntoCustomerPortalModel($model, $stripeCustomer);
+
+
+            $this->buildManagedSubscriptionsArray($model->getSubscriptions(), $data);
 
         } catch (Exception $ex) {
             $this->logger->error(__FUNCTION__, 'Error while fetching subscriptions', $ex);
@@ -2140,33 +2162,53 @@ class MM_WPFS_CustomerPortalService
         $cancelAtPeriodEnd = MM_WPFS_Utils::getCancelSubscriptionsAtPeriodEnd($this->staticContext);
 
         try {
+            $cardUpdateSession = $this->getAuthenticatedCardUpdateSession();
+            if (is_wp_error($cardUpdateSession)) {
+                return $cardUpdateSession;
+            }
+
             $updatedSubscription = $request->get_json_params();
             if (is_array($updatedSubscription)) {
                 if (array_key_exists('id', $updatedSubscription) && array_key_exists('action', $updatedSubscription)) {
                     $stripeSubscriptionId = sanitize_text_field($updatedSubscription['id']);
                     if ('cancel' === $updatedSubscription['action']) {
-                        $cardUpdateSessionHash = $this->findSessionCookieValue();
-                        if (!is_null($stripeSubscriptionId) && !is_null($cardUpdateSessionHash)) {
-                            $cardUpdateSession = $this->findCustomerPortalSessionByHash($cardUpdateSessionHash);
-                            if (!is_null($cardUpdateSession) && $this->isConfirmed($cardUpdateSession)) {
-                                $stripeCustomer = $this->stripe->retrieveCustomer($cardUpdateSession->stripeCustomerId);
-                                if (isset($stripeCustomer)) {
-                                    $this->cancelSubscriptionInDatabase($stripeSubscriptionId);
-                                    $this->stripe->cancelSubscription($stripeCustomer->id, $stripeSubscriptionId, $cancelAtPeriodEnd);
-                                }
+                        if (!is_null($stripeSubscriptionId)) {
+                                $subscriptionParams = [
+                                'expand' => [
+                                    'items.data.price'
+                                ]
+                            ];
+                            $subscription = $this->stripe->retrieveSubscriptionWithParams($stripeSubscriptionId, $subscriptionParams);
+                            $subscriptionCustomerId = (is_object($subscription) && isset($subscription->customer)) ? $subscription->customer : null;
+                            if ($subscriptionCustomerId !== $cardUpdateSession->stripeCustomerId) {
+                                return new WP_Error(
+                                    'wpfs_customer_portal_forbidden',
+                                    __('Unauthorized', 'wp-full-stripe-free'),
+                                    ['status' => 403]
+                                );
                             }
+
+                            if (self::isDonationPlan($subscription)) {
+                                $this->db->cancelDonationByStripeSubscriptionId($stripeSubscriptionId);
+                            } else {
+                                $this->db->cancelSubscriptionByStripeSubscriptionId($stripeSubscriptionId);
+                            }
+                            $this->stripe->cancelSubscription($cardUpdateSession->stripeCustomerId, $stripeSubscriptionId, $cancelAtPeriodEnd);
                         }
                     } elseif ('activate' === $updatedSubscription['action']) {
-                        $cardUpdateSessionHash = $this->findSessionCookieValue();
-                        if (!is_null($stripeSubscriptionId) && !is_null($cardUpdateSessionHash)) {
-                            $cardUpdateSession = $this->findCustomerPortalSessionByHash($cardUpdateSessionHash);
-                            if (!is_null($cardUpdateSession) && $this->isConfirmed($cardUpdateSession)) {
-                                $stripeCustomer = $this->stripe->retrieveCustomer($cardUpdateSession->stripeCustomerId);
-                                if (isset($stripeCustomer)) {
-                                    $this->activateSubscriptionInDatabase($stripeSubscriptionId);
-                                    $this->stripe->activateCancelledSubscription($stripeSubscriptionId);
-                                }
+                        if (!is_null($stripeSubscriptionId)) {
+                            $subscription = $this->stripe->retrieveSubscription($stripeSubscriptionId);
+                            $subscriptionCustomerId = (is_object($subscription) && isset($subscription->customer)) ? $subscription->customer : null;
+                            if ($subscriptionCustomerId !== $cardUpdateSession->stripeCustomerId) {
+                                return new WP_Error(
+                                    'wpfs_customer_portal_forbidden',
+                                    __('Unauthorized', 'wp-full-stripe-free'),
+                                    ['status' => 403]
+                                );
                             }
+
+                            $this->activateSubscriptionInDatabase($stripeSubscriptionId);
+                            $this->stripe->activateCancelledSubscription($stripeSubscriptionId);
                         }
                     }
                 } elseif (array_key_exists('id', $updatedSubscription)) {
@@ -2178,18 +2220,19 @@ class MM_WPFS_CustomerPortalService
                         $newQuantity = 1;
                     }
                     if (isset($stripeSubscriptionId) && isset($newPlanId) && is_numeric($newQuantity) && $newQuantity > 0) {
-                        $cardUpdateSessionHash = $this->findSessionCookieValue();
-                        if (!is_null($stripeSubscriptionId) && !is_null($cardUpdateSessionHash)) {
-                            $cardUpdateSession = $this->findCustomerPortalSessionByHash($cardUpdateSessionHash);
-                            if (!is_null($cardUpdateSession) && $this->isConfirmed($cardUpdateSession)) {
-                                $stripeCustomer = $this->stripe->retrieveCustomer($cardUpdateSession->stripeCustomerId);
-                                if (isset($stripeCustomer)) {
-                                    $success = $this->stripe->updateSubscriptionPlanAndQuantity($stripeCustomer->id, $stripeSubscriptionId, $newPlanId, $newQuantity);
-                                    if ($success) {
-                                        $this->db->updateSubscriptionPlanAndQuantityByStripeSubscriptionId($stripeSubscriptionId, $newPlanId, $newQuantity);
-                                    }
-                                }
-                            }
+                        $subscription = $this->stripe->retrieveSubscription($stripeSubscriptionId);
+                        $subscriptionCustomerId = (is_object($subscription) && isset($subscription->customer)) ? $subscription->customer : null;
+                        if ($subscriptionCustomerId !== $cardUpdateSession->stripeCustomerId) {
+                            return new WP_Error(
+                                'wpfs_customer_portal_forbidden',
+                                __('Unauthorized', 'wp-full-stripe-free'),
+                                ['status' => 403]
+                            );
+                        }
+
+                        $success = $this->stripe->updateSubscriptionPlanAndQuantity($cardUpdateSession->stripeCustomerId, $stripeSubscriptionId, $newPlanId, $newQuantity);
+                        if ($success) {
+                            $this->db->updateSubscriptionPlanAndQuantityByStripeSubscriptionId($stripeSubscriptionId, $newPlanId, $newQuantity);
                         }
                     }
                 }

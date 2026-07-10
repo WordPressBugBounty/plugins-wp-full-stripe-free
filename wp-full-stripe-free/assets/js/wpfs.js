@@ -192,6 +192,73 @@ jQuery.noConflict();
 			return isPaymentForm( $form ) || isSubscriptionForm( $form );
 		}
 
+		/**
+		 * Returns the final payable amount in minor units for a given form.
+		 * For inline payment forms, this reads the amount from the selected product's data attribute, or computes it for custom-amount forms.
+		 * @param {object} $form The jQuery object representing the form.
+		 * @returns {number|null} The final payable amount in minor units, or null if not applicable.
+		 */
+		function getFinalPayableAmountInMinorUnits( $form ) {
+			const formType = $form.data( FROM_TYPE_DOM );
+
+			if ( FORM_TYPE_INLINE_PAYMENT === formType ) {
+				const $selectedProduct = findSelectedOneTimeProductNode( $form );
+				if ( ! $selectedProduct || $selectedProduct.length === 0 ) {
+					return null;
+				}
+				const amountAttr = $selectedProduct.data(
+					'wpfs-amount-in-smallest-common-currency'
+				);
+				if ( amountAttr !== undefined && amountAttr !== null && amountAttr !== '' ) {
+					const amount = parseInt( amountAttr, 10 );
+					if ( ! isNaN( amount ) ) {
+						return amount;
+					}
+				}
+
+				const amountData = findPaymentAmountData( $form );
+				if ( ! amountData.valid ) {
+					return null;
+				}
+				const coupon = WPFS.getCoupon( extractFormNameFromNode( $form ) );
+				const couponResult = applyCoupon( amountData.currency, amountData.amount, coupon );
+				return couponResult.total;
+			}
+
+			return null;
+		}
+
+		/**
+		 * Check if the current request is a free inline submission (final payable amount is 0, e.g. a 100%-off coupon).
+		 * @param {object} $form The jQuery object representing the form.
+		 * @returns {boolean} True if the submission is free, false otherwise.
+		 */
+		function isFreeInlineSubmission( $form ) {
+			const formType = $form.data( FROM_TYPE_DOM );
+			const isEligible = FORM_TYPE_INLINE_PAYMENT === formType;
+			if ( ! isEligible ) {
+				return false;
+			}
+			const total = getFinalPayableAmountInMinorUnits( $form );
+			return total !== null && total <= 0;
+		}
+
+		/**
+		 * Appends a hidden input to the form to mark it as a free transaction.
+		 * This is used to signal the back-end to skip the confirmation step and record the transaction directly.
+		 * @param {object} $form The jQuery object representing the form.
+		 */
+		function appendFreeTransactionInput( $form ) {
+			removeFreeTransactionInput( $form );
+			$( '<input>' )
+				.attr( {
+					type: 'hidden',
+					name: 'wpfs-free-transaction',
+					value: '1',
+				} )
+				.appendTo( $form );
+		}
+
 		/*
 		 * DOM checkers
 		 */
@@ -1242,6 +1309,16 @@ jQuery.noConflict();
 			resetBillingAndShippingAddressSelector( $form );
 			removeHiddenFormFields( $form );
 
+			// Reset the payment details to the original pricing data for this form.
+			WPFS.removePaymentDetails( formId );
+			if (
+				typeof wpfsProductPricing !== 'undefined' &&
+				wpfsProductPricing.hasOwnProperty( formId )
+			) {
+				WPFS.setPaymentDetails( formId, wpfsProductPricing[ formId ] );
+			}
+			refreshProductPricing( $form );
+
 			selectFirstCustomAmount( $form );
 			selectFirstSubscriptionPlan( $form );
 			selectFirstDonationFrequency( $form );
@@ -1258,6 +1335,7 @@ jQuery.noConflict();
 			removeSubscriptionIdInput( $form );
 			removeCustomAmountIndexInput( $form );
 			removeWPFSNonceInput( $form );
+			removeFreeTransactionInput( $form );
 		}
 
 		function showLoadingAnimation( $form ) {
@@ -1460,6 +1538,10 @@ jQuery.noConflict();
 
 		function removeSubscriptionIdInput( $form ) {
 			$( 'input[name="wpfs-stripe-subscription-id"]', $form ).remove();
+		}
+
+		function removeFreeTransactionInput( $form ) {
+			$( 'input[name="wpfs-free-transaction"]', $form ).remove();
 		}
 
 		function findListOfAmountsElement( $form ) {
@@ -3931,6 +4013,14 @@ jQuery.noConflict();
 						}
 					}
 	
+					// handle free inline submission.
+					if ( isFreeInlineSubmission( $form ) ) {
+						showProcessingOverlay( $form );
+						appendFreeTransactionInput( $form );
+						submitPaymentData( $form, cardElement );
+						return false;
+					}
+
 					const paymentMethodData = {};
 	
 					// capture cardholder email
@@ -4309,7 +4399,8 @@ jQuery.noConflict();
 
 			if (
 				FORM_TYPE_INLINE_PAYMENT === formType ||
-				$form.find( 'input[name="wpfs-donation-frequency"]:checked' ).val() === 'one-time'
+				$form.find( 'input[name="wpfs-donation-frequency"]:checked' ).val() === 'one-time' ||
+				$form.find( 'input[type="hidden"][name="wpfs-donation-frequency"]' ).val() === 'one-time'
 			) {
 				const amountData = findPaymentAmountData( $form );
 				const currency = amountData.valid ? amountData.currency : ( $form.data( 'wpfs-currency' ) || 'usd' );
@@ -4520,10 +4611,6 @@ jQuery.noConflict();
 					$coupon.prop( 'disabled', true );
 					showRedeemLoadingAnimation( $form );
 
-					// Holds the fetchUpdates() promise when Elements need re-syncing.
-					// complete() defers UI re-enable until it settles.
-					let pendingFetch = null;
-
 					$.ajax( {
 						type: 'POST',
 						url: wpfsFormSettings.ajaxUrl,
@@ -4549,22 +4636,37 @@ jQuery.noConflict();
 								refreshProductPricing( $form );
 								refreshPaymentDetails( $form );
 
-								// Re-sync the Stripe Elements instance from the updated
-								// PaymentIntent so Apple Pay / Payment Request shows the
-								// discounted amount.  Keep buttons disabled until this
-								// resolves so the user cannot open the payment sheet with
-								// stale data (see complete() handler below).
+								// Elements was created in deferred mode (no clientSecret),
+								// so fetchUpdates() is unavailable. Use elements.update()
+								// with the discounted minor-unit total so Apple Pay /
+								// Express Checkout immediately reflects the new amount.
 								const formName = extractFormNameFromNode( $form );
 								const stripeElements = WPFS.getStripeElements( formName );
 								if ( stripeElements && $form.data( 'wpfs-intent-type' ) === 'payment' ) {
-									pendingFetch = stripeElements.fetchUpdates().catch( function ( err ) {
-											showErrorGlobalMessage(
-												$form,
-												wpfsFormSettings.l10n.stripe_errors
-													.internal_error_title,
-												err.message
-											);
-										} );
+									try {
+										const priceId = findPriceIdForSelectedProduct( $form );
+										const paymentDetails = WPFS.getPaymentDetailsForPrice( formName, priceId );
+										if ( paymentDetails !== null ) {
+											let newAmount = 0;
+											paymentDetails.forEach( function ( item ) {
+												if ( !( item.subType === PRICE_LINE_ITEM_SUBTYPE_TAX && item.inclusive ) ) {
+													newAmount += item.amount;
+												}
+											} );
+											const currency = ( $form.data( 'wpfs-currency' ) || 'usd' ).toLowerCase();
+											if ( newAmount > 0 ) {
+												stripeElements.update( { amount: newAmount, currency } );
+											}
+										}
+									} catch ( e ) {
+										showFieldError(
+											$form,
+											COUPON_FIELD_NAME,
+											$coupon.attr( 'id' ),
+											e.message
+										);
+										console.error( e );
+									}
 								}
 							} else if ( couponRedeemData.bindingResult ) {
 								processValidationErrors(
@@ -4600,19 +4702,9 @@ jQuery.noConflict();
 							);
 						},
 						complete() {
-							const enableUI = function () {
-								$coupon.prop( 'disabled', false );
-								hideRedeemLoadingAnimation( $form );
-								enableFormButtons( $form );
-							};
-							// If fetchUpdates() is in flight, defer re-enabling until
-							// the Elements instance has refreshed from the updated
-							// PaymentIntent.  Otherwise re-enable immediately.
-							if ( pendingFetch ) {
-								pendingFetch.finally( enableUI );
-							} else {
-								enableUI();
-							}
+							$coupon.prop( 'disabled', false );
+							hideRedeemLoadingAnimation( $form );
+							enableFormButtons( $form );
 						},
 					} );
 				}

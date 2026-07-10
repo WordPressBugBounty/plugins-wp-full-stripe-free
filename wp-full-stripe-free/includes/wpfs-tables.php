@@ -1890,7 +1890,7 @@ class WPFS_Base_Table extends WPFS_List_Table {
 	 *
 	 * @return string
 	 */
-	protected function format_column_header_title( $title, array $aggregated_columns = null ) {
+	protected function format_column_header_title( $title, ?array $aggregated_columns = null ) {
 		$column_label = "<b>{$title}</b>";
 		if ( ! empty( $aggregated_columns ) ) {
 			$size = sizeof( $aggregated_columns );
