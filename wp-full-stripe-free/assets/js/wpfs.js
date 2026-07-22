@@ -2979,6 +2979,9 @@ jQuery.noConflict();
 				data.stripePaymentIntentId = $form.data(
 					'wpfs-stripe-payment-intent-id'
 				);
+				data.stripeClientSecret = $form.data(
+					'wpfs-stripe-client-secret'
+				);
 				data.stripePriceId = $selectedProductElement.data(
 					'wpfs-amount-price-id'
 				);
@@ -4596,11 +4599,14 @@ jQuery.noConflict();
 
 				const taxData = gatherFormDataForTaxCalculation( $form );
 				taxData.coupon = $coupon.val();
-				// include payment intent id if available
+				// include payment intent id and its client secret if available
 				const intentType = $form.data( 'wpfs-intent-type' );
 				if ( intentType && intentType === 'payment' ) {
 					taxData.stripePaymentIntentId = $form.data(
 						'wpfs-stripe-payment-intent-id'
+					);
+					taxData.stripeClientSecret = $form.data(
+						'wpfs-stripe-client-secret'
 					);
 				}
 

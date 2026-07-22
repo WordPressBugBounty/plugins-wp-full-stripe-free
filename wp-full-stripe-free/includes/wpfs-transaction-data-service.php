@@ -122,7 +122,7 @@ class MM_WPFS_TransactionDataService {
         $transactionData->setCurrency( $paymentFormModel->getForm()->currency );
         $transactionData->setAmount( $paymentFormModel->getAmount() );
         $transactionData->setCouponCode( $paymentFormModel->getCouponCode() );
-        $transactionData->setCouponId( ! is_null( $paymentFormModel->getStripeCoupon() ? $paymentFormModel->getStripeCoupon()->id : null ));
+        $transactionData->setCouponId( $paymentFormModel->getStripeCoupon()->id );
         $transactionData->setProductName( $paymentFormModel->getProductName() );
         $transactionData->setBillingName( $paymentFormModel->getBillingName() );
         $transactionData->setBillingAddress( $paymentFormModel->getBillingAddress() );

@@ -1079,7 +1079,10 @@ class MM_WPFS_Customer {
 					"never"
 				);
 				$intent_type = "payment";
-			} elseif ( $supportRecurring ) {
+			} elseif (
+				MM_WPFS::PAYMENT_TYPE_CARD_CAPTURE === ( $paymentFormModel->getForm()->customAmount ?? null )
+				|| $supportRecurring
+			) {
 				// depending on the form capabilities we need to create payment intent or setup intent
 				$result = $this->stripe->createSetupIntent( $customerId );
 				$intent_type = "setup";
@@ -3648,6 +3651,16 @@ class MM_WPFS_Customer {
 					$pricingData->formId = $formId;
 					$pricingData->country = $this->readSanitizedPostValue( $taxData, 'country' );
 					$pricingData->stripePaymentIntentId = $this->readSanitizedPostValue( $taxData, 'stripePaymentIntentId' );
+					$stripeClientSecret = $this->readSanitizedPostValue( $taxData, 'stripeClientSecret' );
+
+					$verifiedPaymentIntent = null;
+					if ( ! empty( $pricingData->stripePaymentIntentId ) ) {
+						$verifiedPaymentIntent = $this->getVerifiedPaymentIntent( $pricingData->stripePaymentIntentId, $stripeClientSecret );
+						if ( empty( $verifiedPaymentIntent ) ) {
+							wp_send_json_error( [ 'message' => __( 'Unauthorized', 'wp-full-stripe-free' ) ], 403 );
+						}
+					}
+
 					$pricingData->state = $this->readSanitizedPostValue( $taxData, 'state' );
 					$pricingData->zip = $this->readSanitizedPostValue( $taxData, 'zip' );
 					$pricingData->taxIdType = $this->readSanitizedPostValue( $taxData, 'taxIdType' );
@@ -3678,9 +3691,9 @@ class MM_WPFS_Customer {
 					if ( ! empty( $productPricing ) && ! $bindingResult->hasErrors() ) {
 						// for payment intent scenarios we need to update the payment intent 
 						// with an updated amount as they don't support coupons
-						if ( ! empty( $pricingData->stripePaymentIntentId ) ) {
+						if ( ! empty( $verifiedPaymentIntent ) ) {
 							try {
-								$this->updatePaymentIntentAmount( $pricingData->stripePaymentIntentId, $productPricing, $pricingData->priceId );
+								$this->updatePaymentIntentAmount( $verifiedPaymentIntent, $productPricing, $pricingData->priceId );
 							} catch ( Exception $ex ) {
 								$bindingResult->addGlobalError( $ex->getMessage() );
 							}
@@ -3718,7 +3731,38 @@ class MM_WPFS_Customer {
 		exit;
 	}
 
-	private function updatePaymentIntentAmount( $paymentIntentId, $productPricing, $selectedPriceId ) {
+	/**
+	 * Verify that the given PaymentIntent id and client_secret match a real PaymentIntent.
+	 *
+	 * @param string      $paymentIntentId The client-supplied PaymentIntent id.
+	 * @param string|null $clientSecret The client-supplied client_secret for that PaymentIntent.
+	 * @return \StripeWPFS\Stripe\PaymentIntent|null The verified PaymentIntent, or null if verification fails.
+	 */
+	private function getVerifiedPaymentIntent( $paymentIntentId, $clientSecret ) {
+		if ( empty( $paymentIntentId ) || empty( $clientSecret ) ) {
+			return null;
+		}
+
+		try {
+			$paymentIntent = $this->stripe->retrievePaymentIntent( $paymentIntentId );
+		} catch (Exception $ex) {
+			return null;
+		}
+
+		if ( empty( $paymentIntent ) || empty( $paymentIntent->client_secret ) ||
+			! hash_equals( $paymentIntent->client_secret, $clientSecret ) ) {
+			return null;
+		}
+
+		return $paymentIntent;
+	}
+
+	/**
+	 * @param \StripeWPFS\Stripe\PaymentIntent $paymentIntent The PaymentIntent to update.
+	 * @param array<string,mixed> $productPricing The current product pricing data.
+	 * @param string|null $selectedPriceId The ID of the selected price, if any.
+	 */
+	private function updatePaymentIntentAmount( $paymentIntent, $productPricing, $selectedPriceId ) {
 		$new_amount = 0;
 		// When a specific price is selected and exists in pricing data, sum only that price's line items.
 		// Otherwise (custom amount / fixed-price forms without a Stripe Price key) sum all line items.
@@ -3731,7 +3775,6 @@ class MM_WPFS_Customer {
 				$new_amount += $price->amount;
 			}
 		}
-		$paymentIntent = $this->stripe->retrievePaymentIntent( $paymentIntentId );
 		// find the selected price and then update the payment intent
 		if ( $new_amount > 0 ) {
 			$paymentIntent->amount = $new_amount;
@@ -3770,6 +3813,17 @@ class MM_WPFS_Customer {
 		$return = [
 			'success' => false
 		];
+
+		$stripePaymentIntentId = $this->readSanitizedPostValue( $_POST, 'stripePaymentIntentId' );
+		$stripeClientSecret = $this->readSanitizedPostValue( $_POST, 'stripeClientSecret' );
+
+		$verifiedPaymentIntent = null;
+		if ( ! empty( $stripePaymentIntentId ) ) {
+			$verifiedPaymentIntent = $this->getVerifiedPaymentIntent( $stripePaymentIntentId, $stripeClientSecret );
+			if ( empty( $verifiedPaymentIntent ) ) {
+				wp_send_json_error( [ 'message' => __( 'Unauthorized', 'wp-full-stripe-free' ) ], 403 );
+			}
+		}
 
 		$couponInput = $this->readSanitizedPostValue( $_POST, 'coupon', '' );
 		if ( ! empty( $couponInput ) ) {
@@ -3825,9 +3879,8 @@ class MM_WPFS_Customer {
 		}
 
 		if ( ! empty( $pricing ) && ! $bindingResult->hasErrors() ) {
-			$stripePaymentIntentId = $this->readSanitizedPostValue( $_POST, 'stripePaymentIntentId' );
-			if ( ! empty( $stripePaymentIntentId ) ) {
-				$this->updatePaymentIntentAmount( $stripePaymentIntentId, $pricing, $pricingData->stripePriceId );
+			if ( ! empty( $verifiedPaymentIntent ) ) {
+				$this->updatePaymentIntentAmount( $verifiedPaymentIntent, $pricing, $pricingData->stripePriceId );
 			}
 			$return = [
 				'success' => true,
@@ -4310,10 +4363,8 @@ class MM_WPFS_Customer {
 			$paymentIntentId = isset( $_POST['paymentIntentId'] ) ? sanitize_text_field( wp_unslash( $_POST['paymentIntentId'] ) ) : null;
 			$clientSecret = isset( $_POST['clientSecret'] ) ? sanitize_text_field( wp_unslash( $_POST['clientSecret'] ) ) : null;
 
-			$paymentIntent = $this->stripe->retrievePaymentIntent( $paymentIntentId );
-
-			// Verify the caller owns this PI: client_secret is only known to the browser that initiated checkout.
-			if ( empty( $clientSecret ) || ! hash_equals( $paymentIntent->client_secret, $clientSecret ) ) {
+			$paymentIntent = $this->getVerifiedPaymentIntent( $paymentIntentId, $clientSecret );
+			if ( empty( $paymentIntent ) ) {
 				wp_send_json_error( [ 'message' => __( 'Unauthorized', 'wp-full-stripe-free' ) ], 403 );
 			}
 
