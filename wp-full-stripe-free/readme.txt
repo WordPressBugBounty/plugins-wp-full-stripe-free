@@ -4,7 +4,7 @@ Tags: stripe, payment forms, donations, subscriptions, credit card
 Requires at least: 5.3
 Requires PHP: 7.4
 Tested up to: 7.0
-Stable tag: 8.5.2
+Stable tag: 8.5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -283,12 +283,11 @@ WP Full Pay fully supports Strong Customer Authentication (SCA) requirements for
 
 == Changelog ==
 
-#####   Version 8.5.2 (2026-07-22)
+#####   Version 8.5.3 (2026-08-04)
 
-- Fixed an issue where the coupon applied to a payment was not recorded on the transaction details.
-- Fixed an issue where forms set up to save a card without charging it could create unintended one-dollar payment attempts in Stripe.
-- Improved the reliability of payment, subscription, and checkout flows through expanded automated testing of the plugin.
-- Security Fixes
+- Custom metadata added to donation forms is now sent to Stripe for recurring donation subscriptions, just as it already was for one-time donations
+- Fixed an issue where the payment modal stayed stuck on the processing overlay after a donation completed.
+- Corrected the cover the processing fee calculation on payment and donation forms, so the extra amount added now properly covers both the percentage and the fixed Stripe fee.
 
 
 

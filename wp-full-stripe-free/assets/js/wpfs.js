@@ -1309,15 +1309,17 @@ jQuery.noConflict();
 			resetBillingAndShippingAddressSelector( $form );
 			removeHiddenFormFields( $form );
 
-			// Reset the payment details to the original pricing data for this form.
-			WPFS.removePaymentDetails( formId );
-			if (
-				typeof wpfsProductPricing !== 'undefined' &&
-				wpfsProductPricing.hasOwnProperty( formId )
-			) {
-				WPFS.setPaymentDetails( formId, wpfsProductPricing[ formId ] );
+			if ( isCouponFieldVisible( $form ) ) {
+				// Reset the payment details to the original pricing data for this form.
+				WPFS.removePaymentDetails( formId );
+				if (
+					typeof wpfsProductPricing !== 'undefined' &&
+					wpfsProductPricing.hasOwnProperty( formId )
+				) {
+					WPFS.setPaymentDetails( formId, wpfsProductPricing[ formId ] );
+				}
+				refreshProductPricing( $form );
 			}
-			refreshProductPricing( $form );
 
 			selectFirstCustomAmount( $form );
 			selectFirstSubscriptionPlan( $form );
@@ -2825,11 +2827,19 @@ jQuery.noConflict();
 				let total = 0;
 				let taxIdx = 0;
 				displayItems.forEach( ( lineItem ) => {
-					lineItem.amount = convertNonZeroDecimalAmount(
-						$form,
-						lineItem.amount,
-						paymentDetailsConfig
-					);
+					if (
+						lineItem.type === PAYMENT_DETAIL_FEE_RECOVERY &&
+						PRICE_ID_CUSTOM_AMOUNT === paymentDetailsConfig.priceId &&
+						! paymentDetailsConfig.zeroDecimalSupport
+					) {
+						lineItem.amount = lineItem.amount / 100;
+					} else {
+						lineItem.amount = convertNonZeroDecimalAmount(
+							$form,
+							lineItem.amount,
+							paymentDetailsConfig
+						);
+					}
 					const amount = formatter.format(
 						formatCurrencyAmount(
 							lineItem.amount,
@@ -3697,9 +3707,9 @@ jQuery.noConflict();
 
 			// Calculate original amount required to cover fees
 			const originalAmountInCents =
-				( ( amountInCents + fixedFeeInCents ) * percentageFee ) / 100;
+				(amountInCents + fixedFeeInCents) / (1 - percentageFee / 100);
 
-			return Math.round(originalAmountInCents);
+			return Math.round(originalAmountInCents - amountInCents);
 		}
 
 
@@ -3722,16 +3732,25 @@ jQuery.noConflict();
 			const formType = $form.data( FROM_TYPE_DOM );
 			const allowCustomAmountValue = 1 === $form.data( 'wpfs-allow-list-of-amounts-custom' );
 			const $selectedAmount = findSelectedAmountFromListOfAmounts( $form );
+			const amountType = $form.data( 'wpfs-amount-type' );
 			let selected_amount = '';
+			let is_custom_amount = false;
 			if ( $selectedAmount && $selectedAmount.length > 0 ) {
 				selected_amount = $selectedAmount.val();
 			}
 
-			if ( allowCustomAmountValue && AMOUNT_OTHER == selected_amount ) {
+			if ( PAYMENT_TYPE_CUSTOM_AMOUNT == amountType ) {
 				amount = $(
 					'input[name="wpfs-custom-amount-unique"]',
 					$form
 				).val();
+				is_custom_amount = true;
+			} else if ( allowCustomAmountValue && AMOUNT_OTHER == selected_amount ) {
+				amount = $(
+					'input[name="wpfs-custom-amount-unique"]',
+					$form
+				).val();
+				is_custom_amount = true;
 			} else if (
 				FORM_TYPE_INLINE_SUBSCRIPTION === formType ||
 				FORM_TYPE_CHECKOUT_SUBSCRIPTION === formType
@@ -3746,7 +3765,7 @@ jQuery.noConflict();
 				amount = $selectedElement.data('wpfs-amount-in-smallest-common-currency');
 			} 
 
-			if ( ! paymentDetailsConfig.zeroDecimalSupport ) {
+			if ( ! is_custom_amount && ! paymentDetailsConfig.zeroDecimalSupport ) {
 				amount = amount / 100;
 			}
 			const feeRecoveryAmount = calculateRecoveryFee( amount, paymentDetailsConfig );
@@ -6518,10 +6537,17 @@ jQuery.noConflict();
 		}
 
 		function refreshProductPricing( $form ) {
+			const productPriceSetter = createProductPriceSetter( $form );
+
+			// Donation forms have no price setter; a TypeError here would
+			// strand the processing overlay (#609).
+			if ( ! productPriceSetter ) {
+				return;
+			}
+
 			const pricingData = WPFS.getPaymentDetails(
 				extractFormNameFromNode( $form )
 			);
-			const productPriceSetter = createProductPriceSetter( $form );
 
 			for ( const priceId in pricingData ) {
 				if ( priceId === PRICE_ID_CUSTOM_AMOUNT ) {

@@ -309,11 +309,12 @@ class MM_WPFS_Stripe {
 	 * @param string $stripeCustomerId
 	 * @param string $stripePlanId
 	 * @param float $amount
+	 * @param array<string, string> $metadata
 	 *
 	 * @return \StripeWPFS\Stripe\Subscription
 	 * @throws Exception
 	 */
-	public function subscribeCustomerToPlan( $stripeCustomerId, $stripePlanId, $amount ) {
+	public function subscribeCustomerToPlan( $stripeCustomerId, $stripePlanId, $amount, $metadata = [] ) {
 		$subscriptionData = [
 			'customer' => $stripeCustomerId,
 			'items' => [
@@ -329,6 +330,10 @@ class MM_WPFS_Stripe {
 				'pending_setup_intent'
 			],
 		];
+
+		if ( ! empty( $metadata ) ) {
+			$subscriptionData['metadata'] = $metadata;
+		}
 
 		if ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) {
 			$subscriptionData = array_merge( $subscriptionData, [ 'validLicense' => $this->validLicense ] );

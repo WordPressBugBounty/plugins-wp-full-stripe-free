@@ -566,7 +566,7 @@ trait MM_WPFS_DonationTools_AddOn {
 	protected function createSubscriptionForDonation( $donationFormModel ) {
 		$plan = $this->createOrRetrieveDonationPlan( $donationFormModel->getForm()->currency, $donationFormModel->getDonationFrequency() );
 		$amount = $donationFormModel->getAmount();
-		$subscription = $this->stripe->subscribeCustomerToPlan( $donationFormModel->getStripeCustomer()->id, $plan->id, $amount );
+		$subscription = $this->stripe->subscribeCustomerToPlan( $donationFormModel->getStripeCustomer()->id, $plan->id, $amount, $donationFormModel->getMetadata() );
 
 		$recoveryFee = $donationFormModel->getFeeRecoveryAccepted();
 		$recoveryFeeData = MM_WPFS_Utils::getFeeRecoveryData( $donationFormModel->getForm() );

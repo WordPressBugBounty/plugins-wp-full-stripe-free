@@ -1152,9 +1152,9 @@ class MM_WPFS_Utils {
         $percentageFee = min( 99.99, $percentageFee ); // Prevent division by zero or negative scenarios.
 
         // Calculate the original amount needed to cover both the charge and the fees
-        $originalAmountInCents = (  ( $amountInCents + $fixedFeeInCents ) * $percentageFee ) / 100;
+        $originalAmountInCents = ( $amountInCents + $fixedFeeInCents ) / ( 1 - $percentageFee / 100 );
 
         // Return how much should we charge extra to cover the fees.
-        return intval( round( $originalAmountInCents ) );
+        return intval( round( $originalAmountInCents - $amountInCents ) );
     }
 }
