@@ -412,6 +412,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	const PARAM_WPFS_REFERRER = 'wpfs-referrer';
 	const PARAM_WPFS_STRIPE_PAYMENT_METHOD_ID = 'wpfs-stripe-payment-method-id';
 	const PARAM_WPFS_STRIPE_PAYMENT_INTENT_ID = 'wpfs-stripe-payment-intent-id';
+	const PARAM_WPFS_STRIPE_CLIENT_SECRET = 'wpfs-stripe-client-secret';
 	const PARAM_WPFS_STRIPE_SETUP_INTENT_ID = 'wpfs-stripe-setup-intent-id';
 	const PARAM_WPFS_CARD_HOLDER_NAME = 'wpfs-card-holder-name';
 	const PARAM_WPFS_CARD_HOLDER_EMAIL = 'wpfs-card-holder-email';
@@ -519,6 +520,13 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	protected $options;
 
 	/**
+	 * Stripe Client Secret.
+	 *
+	 * @var string|null
+	 */
+	protected $stripeClientSecret;
+
+	/**
 	 * MM_WPFS_Public_FormModel constructor.
 	 */
 	public function __construct($loggerService)
@@ -574,6 +582,7 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 		$this->stripePaymentMethodId = $this->getSanitizedArrayParam($postData, self::PARAM_WPFS_STRIPE_PAYMENT_METHOD_ID);
 		$this->stripePaymentIntentId = $this->getSanitizedArrayParam($postData, self::PARAM_WPFS_STRIPE_PAYMENT_INTENT_ID);
 		$this->stripeSetupIntentId = $this->getSanitizedArrayParam($postData, self::PARAM_WPFS_STRIPE_SETUP_INTENT_ID);
+		$this->stripeClientSecret = $this->getSanitizedArrayParam($postData, self::PARAM_WPFS_STRIPE_CLIENT_SECRET);
 		$this->couponCode = $this->getSanitizedArrayParam($postData, self::PARAM_WPFS_COUPON);
 		$this->cardHolderName = $this->getSanitizedArrayParam($postData, self::PARAM_WPFS_CARD_HOLDER_NAME);
 		$this->cardHolderEmail = $this->getSanitizedArrayParam($postData, self::PARAM_WPFS_CARD_HOLDER_EMAIL, null, MM_WPFS_ModelConstants::SANITATION_TYPE_EMAIL);
@@ -859,6 +868,16 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	public function getStripePaymentMethodType()
 	{
 		return $this->stripePaymentMethodType;
+	}
+
+	/**
+	 * Get Stripe Client Secret.
+	 *
+	 * @return mixed
+	 */
+	public function getStripePaymentIntentClientSecret()
+	{
+		return $this->stripeClientSecret;
 	}
 
 	/**

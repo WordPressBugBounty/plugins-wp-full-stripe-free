@@ -599,6 +599,9 @@ class MM_WPFS_Customer {
 	/** @var string POST flag the front-end sets when the final payable amount is 0 (e.g. a 100%-off coupon). */
 	const PARAM_WPFS_FREE_TRANSACTION = 'wpfs-free-transaction';
 
+	/** @var string POST field carrying the client_secret of the PaymentIntent being submitted. */
+	const PARAM_WPFS_STRIPE_CLIENT_SECRET = 'wpfs-stripe-client-secret';
+
 	/** @var $stripe MM_WPFS_Stripe */
 	protected $stripe = null;
 
@@ -1028,7 +1031,21 @@ class MM_WPFS_Customer {
 				For all the form that enters, the `validateForm` method is working only with MM_WPFS_Public_InlinePaymentFormModel and MM_WPFS_Public_InlineDonationFormModel branch check. This makes that $paymentFormModel->getForm() to be null for all other forms (since it fails the DB lookup), thus using only the `createSetupIntent`.
 			*/
 			$paymentFormModel = $this->getFormModel( $form_type );
-			$paymentFormModel->bind();
+			$bindingResult = $paymentFormModel->bind();
+
+			// Donation forms create a real PaymentIntent here — block on validation errors (e.g. missing reCAPTCHA) before that (#520). Other types bind partially (NOTE 1.1) and are checked at charge.
+			if ( MM_WPFS::FORM_TYPE_INLINE_DONATION === $form_type && $bindingResult->hasErrors() ) {
+				$return = MM_WPFS_Utils::generateReturnValueFromBindings( $bindingResult );
+				// Top-level message so the front-end error handler can display it.
+				$fieldErrors = $bindingResult->getFieldErrors();
+				$globalErrors = $bindingResult->getGlobalErrors();
+				$return['message'] = ! empty( $fieldErrors ) ? $fieldErrors[0]['message'] : reset( $globalErrors );
+
+				header( "Content-Type: application/json" );
+				status_header( 400 );
+				echo json_encode( $return );
+				exit;
+			}
 
 			// Find or create customer by email to attach to SetupIntent to prevent errors when a user re-use the email.
 			$customerId = null;
@@ -1071,12 +1088,20 @@ class MM_WPFS_Customer {
 				}
 			}
 
+			// Bind the intent to this form transaction, so the public pricing endpoints can verify
+			// later that a client-supplied PaymentIntent id really belongs to this checkout.
+			$bindingMetadata = MM_WPFS_PaymentIntentBinding::createBindingMetadata(
+				$form_type,
+				$paymentFormModel->getForm()
+			);
+
 			if ( MM_WPFS::FORM_TYPE_INLINE_DONATION === $form_type && ! $paymentFormModel->isRecurringDonation() ) {
 				// Donation forms have no payment method selector, so rely on automatic payment methods (Stripe Dashboard config) rather than a hard-coded ['card','link'] list.
 				$result = $this->stripe->createPaymentIntentForElement(
 					$paymentFormModel->getForm()->currency,
 					$paymentFormModel->getAmount(),
-					"never"
+					"never",
+					$bindingMetadata
 				);
 				$intent_type = "payment";
 			} elseif (
@@ -1094,7 +1119,7 @@ class MM_WPFS_Customer {
 					$paymentFormModel->getAmount(),
 					null, // manual capture or not
 					null, // description is updated later
-					null, //meta data
+					! empty( $bindingMetadata ) ? $bindingMetadata : null,
 					null, // stripe email
 					"always",
 					! empty( $supportedPaymentMethods ) ? $supportedPaymentMethods : [ 'card', 'link' ]
@@ -1119,7 +1144,7 @@ class MM_WPFS_Customer {
 		}
 
 		header( "Content-Type: application/json" );
-		echo json_encode( [ 'clientSecret' => $result, 'intentType' => $intent_type ] );
+		echo json_encode( [ 'clientSecret' => $result, 'intentType' => $intent_type, 'nonce' => $paymentFormModel->getNonce() ] );
 		exit;
 	}
 
@@ -2175,6 +2200,23 @@ class MM_WPFS_Customer {
 	}
 
 	/**
+	 * Get the expected charge amount.
+	 *
+	 * @param MM_WPFS_Public_PaymentFormModel $paymentFormModel
+	 * @param MM_WPFS_OneTimePaymentTransactionData $transactionData
+	 * @return int
+	 */
+	private function resolveExpectedChargeAmount( $paymentFormModel, $transactionData ) {
+		$grossAmount = (int) round( $transactionData->getProductAmountGross() );
+
+		if ( $grossAmount > 0 ) {
+			return $grossAmount;
+		}
+
+		return (int) round( $paymentFormModel->getAmount() );
+	}
+
+	/**
 	 * Re-sync an existing PaymentIntent's amount with the tax/fee-inclusive total before it is
 	 * (re-)confirmed, for the legacy/existing-PI charge path.
 	 *
@@ -2304,7 +2346,42 @@ class MM_WPFS_Customer {
 		$paymentIntentResult->setNonce( $paymentFormModel->getNonce() );
 		// get the payment intent from Stripe to be able to react to status etc.
 		if ( $paymentFormModel->getStripePaymentIntentId() && ! empty( $paymentFormModel->getStripePaymentIntentId() ) ) {
-			$paymentFormModel->setStripePaymentIntent( $this->stripe->retrievePaymentIntent( $paymentFormModel->getStripePaymentIntentId() ) );
+			$paymentIntentId = $paymentFormModel->getStripePaymentIntentId();
+			$clientSecret = $this->readSanitizedPostValue( $_POST, 'payment_intent_client_secret' );
+			$clientSecret = $clientSecret ? $clientSecret : $paymentFormModel->getStripePaymentIntentClientSecret();
+
+			$submittedPaymentIntent = $this->getClientSecretVerifiedPaymentIntent( $paymentIntentId, $clientSecret );
+
+			if (
+				! is_null( $submittedPaymentIntent )
+				&& ! $this->isPaymentIntentBoundToForm(
+					$submittedPaymentIntent,
+					MM_WPFS_Utils::getFormType( $paymentFormModel->getForm() ),
+					$paymentFormModel->getForm()
+				)
+			) {
+				$submittedPaymentIntent = null;
+			}
+
+			if ( is_null( $submittedPaymentIntent ) ) {
+				$this->logger->error(
+					__FUNCTION__,
+					sprintf(
+						'PaymentIntent %1$s does not belong to the transaction submitted on form %2$s, refusing the charge.',
+						$paymentIntentId,
+						$paymentFormModel->getFormName()
+					)
+				);
+
+				return $this->createPaymentIntentResultFailed(
+					$paymentIntentResult,
+					/* translators: Banner title of failed transaction */
+					__( 'Failed', 'wp-full-stripe-free' ),
+					__( 'Invalid request', 'wp-full-stripe-free' )
+				);
+			}
+
+			$paymentFormModel->setStripePaymentIntent( $submittedPaymentIntent );
 			if ( isset( $paymentFormModel->getStripePaymentIntent()->latest_charge ) ) {
 				$latest_charge = $paymentFormModel->getStripePaymentIntent()->latest_charge;
 				if ( is_string( $latest_charge ) ) {
@@ -2445,7 +2522,12 @@ class MM_WPFS_Customer {
 				if ( isset( $paymentIntent->metadata ) && is_array( $paymentIntent->metadata ) ) {
 					$paymentIntent->metadata = array_merge( $paymentFormModel->getMetadata(), $paymentIntent->metadata );
 				} else {
-					$paymentIntent->metadata = $paymentFormModel->getMetadata();
+					// Keep the transaction binding: the PaymentIntent may be re-priced again after a
+					// declined card, and an unbound PaymentIntent would be rejected then.
+					$paymentIntent->metadata = MM_WPFS_PaymentIntentBinding::preserveBindingMetadata(
+						$paymentIntent,
+						$paymentFormModel->getMetadata()
+					);
 				}
 
 				if ( $paymentFormModel->getStripeCustomer() ) {
@@ -2492,25 +2574,53 @@ class MM_WPFS_Customer {
 			) {
 				$this->logger->debug( __FUNCTION__, "processPaymentIntentCharge(): PaymentIntent succeeded." );
 
-				$paymentIntent->wpfs_form = $paymentFormModel->getFormName();
-				$paymentFormModel->setStripePaymentIntent( $paymentIntent );
-				if ( ! isset( $latest_charge ) || empty( $latest_charge ) ) {
-					$latest_charge = $this->stripe->getLatestCharge( $paymentIntent );
+				$resolvedChargeAmount = $this->computeInlinePaymentChargeAmount( $paymentFormModel, $transactionData );
+				if ( ! is_null( $resolvedChargeAmount ) ) {
+					list( $expectedAmount ) = $resolvedChargeAmount;
+				} else {
+					$expectedAmount = $this->resolveExpectedChargeAmount( $paymentFormModel, $transactionData );
 				}
-				$this->db->insertOrUpdatePayment( $paymentFormModel, $transactionData, $latest_charge );
+				$chargedAmount = (int) $paymentIntent->amount;
 
-				$this->fireAfterInlinePaymentAction( $paymentFormModel, $transactionData, $paymentIntent );
+				if ( $expectedAmount > 0 && $chargedAmount !== $expectedAmount ) {
+					$this->logger->error(
+						__FUNCTION__,
+						sprintf(
+							'PaymentIntent %1$s charged %2$d but the product submitted on form %3$s costs %4$d, refusing to record the transaction.',
+							$paymentIntent->id,
+							$chargedAmount,
+							$paymentFormModel->getFormName(),
+							$expectedAmount
+						)
+					);
 
-				$paymentIntentResult->setRequiresAction( false );
-				$paymentIntentResult->setSuccess( true );
-				$paymentIntentResult->setMessageTitle(
-					/* translators: Banner title of successful transaction */
-					__( 'Success', 'wp-full-stripe-free' )
-				);
-				$paymentIntentResult->setMessage(
-					/* translators: Banner message of successful payment */
-					__( 'Payment Successful!', 'wp-full-stripe-free' )
-				);
+					$this->createPaymentIntentResultFailed(
+						$paymentIntentResult,
+						/* translators: Banner title of failed transaction */
+						__( 'Failed', 'wp-full-stripe-free' ),
+						__( 'Invalid request', 'wp-full-stripe-free' )
+					);
+				} else {
+					$paymentIntent->wpfs_form = $paymentFormModel->getFormName();
+					$paymentFormModel->setStripePaymentIntent( $paymentIntent );
+					if ( ! isset( $latest_charge ) || empty( $latest_charge ) ) {
+						$latest_charge = $this->stripe->getLatestCharge( $paymentIntent );
+					}
+					$this->db->insertOrUpdatePayment( $paymentFormModel, $transactionData, $latest_charge );
+
+					$this->fireAfterInlinePaymentAction( $paymentFormModel, $transactionData, $paymentIntent );
+
+					$paymentIntentResult->setRequiresAction( false );
+					$paymentIntentResult->setSuccess( true );
+					$paymentIntentResult->setMessageTitle(
+						/* translators: Banner title of successful transaction */
+						__( 'Success', 'wp-full-stripe-free' )
+					);
+					$paymentIntentResult->setMessage(
+						/* translators: Banner message of successful payment */
+						__( 'Payment Successful!', 'wp-full-stripe-free' )
+					);
+				}
 			} else {
 				$paymentIntentResult->setSuccess( false );
 				$paymentIntentResult->setMessageTitle(
@@ -2822,23 +2932,59 @@ class MM_WPFS_Customer {
 		} else {
 			$this->logger->debug( __FUNCTION__, "Retrieving Subscription..." );
 
-			if ( ! empty( $subscriptionFormModel->getStripePaymentIntentId() ) ) {
-				$stripePaymentIntent = $this->stripe->retrievePaymentIntent( $subscriptionFormModel->getStripePaymentIntentId() );
-				if ( isset( $stripePaymentIntent ) && ! empty( $stripePaymentIntent ) ) {
-					// Update payment intent for metadata
-					$this->updatePaymentIntentWithMetadataAndWebhookUrl( $stripePaymentIntent, $subscriptionFormModel );
+			$paymentIntentId = $subscriptionFormModel->getStripePaymentIntentId();
+			$paymentIntentClientSecret = $subscriptionFormModel->getStripePaymentIntentClientSecret();
 
-					$stripeCustomer = $this->stripe->retrieveCustomer( $stripePaymentIntent->customer );
-					$subscriptionFormModel->setStripeCustomer( $stripeCustomer );
-					// tnagy update transaction id
-					$wpfsSubscriber = $this->db->findSubscriberByPaymentIntentId( $stripePaymentIntent->id );
-					if ( isset( $wpfsSubscriber ) && isset( $wpfsSubscriber->stripeSubscriptionID ) ) {
-						$subscriptionFormModel->setTransactionId( $wpfsSubscriber->stripeSubscriptionID );
-						$transactionData->setTransactionId( $subscriptionFormModel->getTransactionId() );
-						$stripeSubscription = $this->stripe->retrieveSubscription( $wpfsSubscriber->stripeSubscriptionID );
-					}
-				} else {
-					$this->logger->error( __FUNCTION__, "Existing subscription has no payment intent." );
+			if ( ! empty( $paymentIntentId ) ) {
+				$stripePaymentIntent = $this->getClientSecretVerifiedPaymentIntent( $paymentIntentId, $paymentIntentClientSecret );
+
+				if (
+					! is_null( $stripePaymentIntent )
+					&& ! $this->isPaymentIntentBoundToForm(
+						$stripePaymentIntent,
+						MM_WPFS_Utils::getFormType( $subscriptionFormModel->getForm() ),
+						$subscriptionFormModel->getForm()
+					)
+				) {
+					$stripePaymentIntent = null;
+				}
+
+				if ( is_null( $stripePaymentIntent ) ) {
+					$this->logger->error(
+						__FUNCTION__,
+						sprintf(
+							'PaymentIntent %1$s does not belong to the transaction submitted on form %2$s, refusing the subscription.',
+							$paymentIntentId,
+							$subscriptionFormModel->getFormName()
+						)
+					);
+
+					$subscriptionResult->setSuccess( false );
+					$subscriptionResult->setMessageTitle(
+						/* translators: Banner title of failed transaction */
+						__( 'Failed', 'wp-full-stripe-free' )
+					);
+					$subscriptionResult->setMessage( __( 'Invalid request', 'wp-full-stripe-free' ) );
+
+					return $subscriptionResult;
+				}
+
+				// Update payment intent for metadata, keeping the binding it was created with.
+				$this->updatePaymentIntentWithMetadataAndWebhookUrl(
+					$stripePaymentIntent,
+					$subscriptionFormModel,
+					MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION,
+					false
+				);
+
+				$stripeCustomer = $this->stripe->retrieveCustomer( $stripePaymentIntent->customer );
+				$subscriptionFormModel->setStripeCustomer( $stripeCustomer );
+				// tnagy update transaction id
+				$wpfsSubscriber = $this->db->findSubscriberByPaymentIntentId( $stripePaymentIntent->id );
+				if ( isset( $wpfsSubscriber ) && isset( $wpfsSubscriber->stripeSubscriptionID ) ) {
+					$subscriptionFormModel->setTransactionId( $wpfsSubscriber->stripeSubscriptionID );
+					$transactionData->setTransactionId( $subscriptionFormModel->getTransactionId() );
+					$stripeSubscription = $this->stripe->retrieveSubscription( $wpfsSubscriber->stripeSubscriptionID );
 				}
 			}
 			if ( ! empty( $subscriptionFormModel->getStripeSetupIntentId() ) ) {
@@ -3010,14 +3156,24 @@ class MM_WPFS_Customer {
 	/**
 	 * @param $stripePaymentIntent
 	 * @param $subscriptionFormModel
+	 * @param string $formType Form type the subscription belongs to.
+	 * @param bool $createBinding Whether to bind the PaymentIntent to the form.
 	 * @return void
 	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 */
-	public function updatePaymentIntentWithMetadataAndWebhookUrl( $stripePaymentIntent, $subscriptionFormModel ): void {
+	public function updatePaymentIntentWithMetadataAndWebhookUrl( $stripePaymentIntent, $subscriptionFormModel, $formType = MM_WPFS::FORM_TYPE_INLINE_SUBSCRIPTION, $createBinding = true ): void {
 		// Update payment intent for metadata
 		$metadata = $subscriptionFormModel->getMetadata();
 		$metadata['webhookUrl'] = esc_attr( MM_WPFS_EventHandler::getWebhookEndpointURL( $this->staticContext ) );
-		$stripePaymentIntent->metadata = $metadata;
+
+		$metadata = MM_WPFS_PaymentIntentBinding::preserveBindingMetadata( $stripePaymentIntent, $metadata );
+		$stripePaymentIntent->metadata = $createBinding ?
+			MM_WPFS_PaymentIntentBinding::createBindingMetadata(
+				$formType,
+				$subscriptionFormModel->getForm(),
+				$metadata
+			) :
+			$metadata;
 
 		$this->stripe->updatePaymentIntent( $stripePaymentIntent, false, MM_WPFS_Mailer::canSendSubscriptionStripeReceipt( $subscriptionFormModel->getForm() ) ? $subscriptionFormModel->getCardHolderEmail() : null );
 	}
@@ -3371,13 +3527,29 @@ class MM_WPFS_Customer {
 	 * @throws Exception
 	 */
 	function saveDraftTransaction( $paymentFormModel ) {
-		$transactionData = MM_WPFS_TransactionDataService::createOneTimePaymentDataByModel( $paymentFormModel );
-		// payment intent is most likely missing
-		$paymentIntent = $paymentFormModel->getStripePaymentIntent();
+		// Verify that the PaymentIntent about to be confirmed belongs to this form transaction before
+		// a draft is recorded for it.
+		$paymentIntent = $this->getTransactionBoundPaymentIntent(
+			$paymentFormModel->getStripePaymentIntentId(),
+			$this->readSanitizedPostValue( $_POST, self::PARAM_WPFS_STRIPE_CLIENT_SECRET ),
+			MM_WPFS_Utils::getFormType( $paymentFormModel->getForm() ),
+			$paymentFormModel->getForm(),
+			$paymentFormModel->getPriceId()
+		);
+
 		if ( empty( $paymentIntent ) ) {
-			$paymentIntent = $this->stripe->retrievePaymentIntent( $paymentFormModel->getStripePaymentIntentId() );
-			$paymentFormModel->setStripePaymentIntent( $paymentIntent );
+			return [
+				'success' => false,
+				'messageTitle' =>
+					/* translators: Banner title of internal error */
+					__( 'Internal Error', 'wp-full-stripe-free' ),
+				'message' => __( 'Invalid request', 'wp-full-stripe-free' ),
+			];
 		}
+
+		$paymentFormModel->setStripePaymentIntent( $paymentIntent );
+
+		$transactionData = MM_WPFS_TransactionDataService::createOneTimePaymentDataByModel( $paymentFormModel );
 
 		// save the draft transaction
 		$latest_charge = new stdClass();
@@ -3393,7 +3565,33 @@ class MM_WPFS_Customer {
 		// the pre-tax amount even though the form preview shows tax (#413). Returns null for
 		// plain forms, where the up-front amount already matches and we leave it untouched.
 		$resolved = $this->computeInlinePaymentChargeAmount( $paymentFormModel, $transactionData );
-		if ( ! is_null( $resolved ) ) {
+
+		// Ensure the PaymentIntent amount matches the submitted product price.
+		if ( is_null( $resolved ) ) {
+			$expectedAmount = (int) round( $paymentFormModel->getAmount() );
+			$carriedAmount = (int) $paymentIntent->amount;
+
+			if ( $expectedAmount > 0 && $carriedAmount !== $expectedAmount ) {
+				$this->logger->error(
+					__FUNCTION__,
+					sprintf(
+						'PaymentIntent %1$s carries %2$d but the product submitted on form %3$s costs %4$d, refusing the draft transaction.',
+						$paymentIntent->id,
+						$carriedAmount,
+						$paymentFormModel->getFormName(),
+						$expectedAmount
+					)
+				);
+
+				return [
+					'success' => false,
+					'messageTitle' =>
+						/* translators: Banner title of internal error */
+						__( 'Internal Error', 'wp-full-stripe-free' ),
+					'message' => __( 'Invalid request', 'wp-full-stripe-free' ),
+				];
+			}
+		} else {
 			list( $chargeAmount, $baseAmount ) = $resolved;
 
 			// Stamp the pre-tax base whenever it is missing, so a later recompute (e.g. on redirect
@@ -3655,9 +3853,15 @@ class MM_WPFS_Customer {
 
 					$verifiedPaymentIntent = null;
 					if ( ! empty( $pricingData->stripePaymentIntentId ) ) {
-						$verifiedPaymentIntent = $this->getVerifiedPaymentIntent( $pricingData->stripePaymentIntentId, $stripeClientSecret );
+						$verifiedPaymentIntent = $this->getTransactionBoundPaymentIntent(
+							$pricingData->stripePaymentIntentId,
+							$stripeClientSecret,
+							$formType,
+							$form,
+							$this->readSanitizedPostValue( $taxData, 'currentPriceId' )
+						);
 						if ( empty( $verifiedPaymentIntent ) ) {
-							wp_send_json_error( [ 'message' => __( 'Unauthorized', 'wp-full-stripe-free' ) ], 403 );
+							wp_send_json_error( [ 'message' => __( 'Invalid request', 'wp-full-stripe-free' ) ], 403 );
 						}
 					}
 
@@ -3732,13 +3936,113 @@ class MM_WPFS_Customer {
 	}
 
 	/**
-	 * Verify that the given PaymentIntent id and client_secret match a real PaymentIntent.
+	 * Retrieve a client-supplied PaymentIntent and verify that it belongs to the current form
+	 * transaction.
+	 *
+	 * @param string      $paymentIntentId PaymentIntent id.
+	 * @param string|null $clientSecret client_secret for that PaymentIntent.
+	 * @param string|null $formType Form type.
+	 * @param object|null $form The current form.
+	 * @param string|null $selectedPriceId Selected price id.
+	 * @return \StripeWPFS\Stripe\PaymentIntent|null The bound PaymentIntent, or null when validation fails.
+	 */
+	protected function getTransactionBoundPaymentIntent( $paymentIntentId, $clientSecret, $formType, $form, $selectedPriceId = null ) {
+		if ( empty( $paymentIntentId ) || empty( $clientSecret ) || empty( $formType ) || empty( $form ) ) {
+			$this->logger->error(
+				__FUNCTION__,
+				'PaymentIntent rejected: missing PaymentIntent id, client secret or form context'
+			);
+
+			return null;
+		}
+
+		try {
+			$paymentIntent = $this->stripe->retrievePaymentIntent( $paymentIntentId );
+		} catch (Exception $ex) {
+			$this->logger->error( __FUNCTION__, 'Cannot retrieve PaymentIntent to validate its binding', $ex );
+
+			return null;
+		}
+
+		$formName = isset( $form->name ) ? $form->name : null;
+		$products = $this->getProductsOfForm( $formType, $formName );
+
+		$context = new MM_WPFS_PaymentIntentBindingContext();
+		$context->formType = $formType;
+		$context->formName = $formName;
+		$context->formId = MM_WPFS_Utils::getFormId( $form );
+		// Subscription form records keep no currency of their own, it comes with their plans.
+		$context->currency = ! empty( $form->currency ) ?
+			$form->currency :
+			MM_WPFS_PaymentIntentBinding::extractCurrencyFromProducts( $products );
+		$context->selectedPriceId = $selectedPriceId;
+		$context->allowsCustomAmount = MM_WPFS_PaymentIntentBinding::allowsCustomAmount( $form );
+		$context->allowedPriceIds = empty( $products ) ?
+			null :
+			MM_WPFS_Pricing::extractPriceIdsFromProductsStatic( $products );
+
+		$result = MM_WPFS_PaymentIntentBinding::validate( $paymentIntent, $clientSecret, $context );
+
+		if ( ! $result->isValid() ) {
+			$this->logger->error(
+				__FUNCTION__,
+				sprintf(
+					'PaymentIntent %1$s rejected for form %2$s/%3$s, reason=%4$s',
+					$paymentIntentId,
+					$formType,
+					$context->formName,
+					$result->getReasonCode()
+				)
+			);
+
+			return null;
+		}
+
+		return $paymentIntent;
+	}
+
+	/**
+	 * Whether a PaymentIntent retrieved from Stripe carries the binding of the given form.
+	 *
+	 * @param object|null $paymentIntent PaymentIntent as retrieved from Stripe.
+	 * @param string|null $formType Form type of the submitted form.
+	 * @param object|null $form The submitted form record.
+	 * @return bool
+	 */
+	protected function isPaymentIntentBoundToForm( $paymentIntent, $formType, $form ) {
+		$context = new MM_WPFS_PaymentIntentBindingContext();
+		$context->formType = $formType;
+		$context->formName = isset( $form->name ) ? $form->name : null;
+		$context->formId = MM_WPFS_Utils::getFormId( $form );
+
+		$result = MM_WPFS_PaymentIntentBinding::matchesForm( $paymentIntent, $context );
+
+		if ( ! $result->isValid() ) {
+			$this->logger->error(
+				__FUNCTION__,
+				sprintf(
+					'PaymentIntent %1$s rejected for form %2$s/%3$s, reason=%4$s',
+					isset( $paymentIntent->id ) ? $paymentIntent->id : '(none)',
+					$formType,
+					$context->formName,
+					$result->getReasonCode()
+				)
+			);
+
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Retrieve a PaymentIntent and verify only that the client knows its client_secret.
 	 *
 	 * @param string      $paymentIntentId The client-supplied PaymentIntent id.
 	 * @param string|null $clientSecret The client-supplied client_secret for that PaymentIntent.
 	 * @return \StripeWPFS\Stripe\PaymentIntent|null The verified PaymentIntent, or null if verification fails.
 	 */
-	private function getVerifiedPaymentIntent( $paymentIntentId, $clientSecret ) {
+	private function getClientSecretVerifiedPaymentIntent( $paymentIntentId, $clientSecret ) {
 		if ( empty( $paymentIntentId ) || empty( $clientSecret ) ) {
 			return null;
 		}
@@ -3758,23 +4062,36 @@ class MM_WPFS_Customer {
 	}
 
 	/**
+	 * The products configured on a form, read from the form record: decoratedProducts for payment
+	 * forms, decoratedPlans for subscription forms. Custom-amount-only forms have none.
+	 *
+	 * @param string $formType
+	 * @param string|null $formName
+	 * @return array<int,object> Products of the form, empty when they cannot be determined.
+	 */
+	private function getProductsOfForm( $formType, $formName ) {
+		if ( empty( $formName ) ) {
+			return [];
+		}
+
+		try {
+			return MM_WPFS::getInstance()->getProductsByFormTypeAndId( $formType, $formName );
+		} catch (Exception $ex) {
+			$this->logger->error( __FUNCTION__, 'Cannot read the products of the form', $ex );
+
+			return [];
+		}
+	}
+
+	/**
 	 * @param \StripeWPFS\Stripe\PaymentIntent $paymentIntent The PaymentIntent to update.
 	 * @param array<string,mixed> $productPricing The current product pricing data.
 	 * @param string|null $selectedPriceId The ID of the selected price, if any.
 	 */
 	private function updatePaymentIntentAmount( $paymentIntent, $productPricing, $selectedPriceId ) {
-		$new_amount = 0;
-		// When a specific price is selected and exists in pricing data, sum only that price's line items.
-		// Otherwise (custom amount / fixed-price forms without a Stripe Price key) sum all line items.
-		$price_matched = ! is_null( $selectedPriceId ) && array_key_exists( $selectedPriceId, $productPricing );
-		foreach ( $productPricing as $key => $productPrice ) {
-			if ( $price_matched && $key !== $selectedPriceId ) {
-				continue;
-			}
-			foreach ( $productPrice as $price ) {
-				$new_amount += $price->amount;
-			}
-		}
+		// The amount always comes from the server-calculated pricing data, never from the browser.
+		$new_amount = MM_WPFS_PaymentIntentBinding::calculatePayableAmount( $productPricing, $selectedPriceId );
+
 		// find the selected price and then update the payment intent
 		if ( $new_amount > 0 ) {
 			$paymentIntent->amount = $new_amount;
@@ -3817,11 +4134,34 @@ class MM_WPFS_Customer {
 		$stripePaymentIntentId = $this->readSanitizedPostValue( $_POST, 'stripePaymentIntentId' );
 		$stripeClientSecret = $this->readSanitizedPostValue( $_POST, 'stripeClientSecret' );
 
+		$formType = $this->readSanitizedPostValue( $_POST, 'formType' );
+		$formId = $this->readSanitizedPostValue( $_POST, 'formId' );
+
+		$form = MM_WPFS::getInstance()->getFormByTypeAndName( $formType, $formId );
+
+		if ( empty( $form ) ) {
+			$this->logger->error( __FUNCTION__, sprintf( 'Unknown form %1$s/%2$s', $formType, $formId ) );
+			wp_send_json_error( [ 'message' => __( 'Invalid request', 'wp-full-stripe-free' ) ], 403 );
+		}
+
+		$customAmount = $this->readSanitizedPostValue( $_POST, 'customAmount' );
+		$stripePriceId = $this->readSanitizedPostValue( $_POST, 'stripePriceId' );
+
+		$selectedPriceId = ! empty( $stripePriceId ) ?
+			$stripePriceId :
+			$this->readSanitizedPostValue( $_POST, 'currentPriceId' );
+
 		$verifiedPaymentIntent = null;
 		if ( ! empty( $stripePaymentIntentId ) ) {
-			$verifiedPaymentIntent = $this->getVerifiedPaymentIntent( $stripePaymentIntentId, $stripeClientSecret );
+			$verifiedPaymentIntent = $this->getTransactionBoundPaymentIntent(
+				$stripePaymentIntentId,
+				$stripeClientSecret,
+				$formType,
+				$form,
+				$selectedPriceId
+			);
 			if ( empty( $verifiedPaymentIntent ) ) {
-				wp_send_json_error( [ 'message' => __( 'Unauthorized', 'wp-full-stripe-free' ) ], 403 );
+				wp_send_json_error( [ 'message' => __( 'Invalid request', 'wp-full-stripe-free' ) ], 403 );
 			}
 		}
 
@@ -3830,14 +4170,6 @@ class MM_WPFS_Customer {
 			$coupon = $this->stripe->retrieveCouponByPromotionalCodeOrCouponCode( $couponInput );
 			$couponId = ! is_null( $coupon ) ? $coupon->id : null;
 		}
-
-		$formType = $this->readSanitizedPostValue( $_POST, 'formType' );
-		$formId = $this->readSanitizedPostValue( $_POST, 'formId' );
-
-		$form = MM_WPFS::getInstance()->getFormByTypeAndName( $formType, $formId );
-
-		$customAmount = $this->readSanitizedPostValue( $_POST, 'customAmount' );
-		$stripePriceId = $this->readSanitizedPostValue( $_POST, 'stripePriceId' );
 
 		$pricingData = new \StdClass;
 		$pricingData->formType = $formType;
@@ -3978,13 +4310,15 @@ class MM_WPFS_Customer {
 	 * @return array<string,bool>
 	 */
 	private function saveOnetimeDonation( $donationFormModel ) {
-		// payment intent is most likely missing
-		if ( empty( $donationFormModel->getStripePaymentIntent() ) ) {
-			$paymentIntent = $this->stripe->retrievePaymentIntent( $donationFormModel->getStripePaymentIntentId() );
-			$donationFormModel->setStripePaymentIntent( $paymentIntent );
-		} else {
-			$paymentIntent = $donationFormModel->getStripePaymentIntent();
+		$paymentIntentId = $donationFormModel->getStripePaymentIntentId();
+		$clientSecret = $donationFormModel->getStripePaymentIntentClientSecret();
+
+		$paymentIntent = $this->getClientSecretVerifiedPaymentIntent( $paymentIntentId, $clientSecret );
+		if ( empty( $paymentIntent ) ) {
+			wp_send_json_error( [ 'message' => __( 'Unauthorized', 'wp-full-stripe-free' ) ], 403 );
 		}
+
+		$donationFormModel->setStripePaymentIntent( $paymentIntent );
 
 		$amount = $donationFormModel->getAmount();
 		$currency = $donationFormModel->getForm()->currency;
@@ -4036,11 +4370,16 @@ class MM_WPFS_Customer {
 		$metadata['form_type'] = MM_WPFS::FORM_TYPE_INLINE_DONATION;
 		$metadata['custom_fields'] = $donationFormModel->getCustomFieldsJSON();
 		$metadata['customer_id'] = $donationFormModel->getStripeCustomer()->id;
-		
-		$paymentIntent->amount = $amount;
-		$paymentIntent->metadata = $metadata;
 
-		$this->stripe->updatePaymentIntent( $paymentIntent, true );
+		// Stripe updates need metadata as a plain key/value map, a retrieved
+		// PaymentIntent declares metadata as a StripeObject, so build a separate payload.
+		$paymentIntentUpdate = new stdClass();
+		$paymentIntentUpdate->id = $paymentIntent->id;
+		$paymentIntentUpdate->amount = $amount;
+		$paymentIntentUpdate->description = isset( $paymentIntent->description ) ? $paymentIntent->description : null;
+		$paymentIntentUpdate->metadata = MM_WPFS_PaymentIntentBinding::preserveBindingMetadata( $paymentIntent, $metadata );
+
+		$this->stripe->updatePaymentIntent( $paymentIntentUpdate, true );
 
 		return [
 			'success' => true
@@ -4246,9 +4585,12 @@ class MM_WPFS_Customer {
 			if ( isset( $paymentIntent->metadata ) && is_array( $paymentIntent->metadata ) && ! array_key_exists( 'webhookUrl', $paymentIntent->metadata ) ) {
 				$metadata = $donationFormModel->getMetadata();
 				$metadata['webhookUrl'] = esc_attr( MM_WPFS_EventHandler::getWebhookEndpointURL( $this->staticContext ) );
-				$paymentIntent->metadata = $metadata;
+				$paymentIntent->metadata = MM_WPFS_PaymentIntentBinding::preserveBindingMetadata( $paymentIntent, $metadata );
 			} else {
-				$paymentIntent->metadata = $donationFormModel->getMetadata();
+				$paymentIntent->metadata = MM_WPFS_PaymentIntentBinding::preserveBindingMetadata(
+					$paymentIntent,
+					$donationFormModel->getMetadata()
+				);
 			}
 
 			// update description and metadata 
@@ -4363,7 +4705,7 @@ class MM_WPFS_Customer {
 			$paymentIntentId = isset( $_POST['paymentIntentId'] ) ? sanitize_text_field( wp_unslash( $_POST['paymentIntentId'] ) ) : null;
 			$clientSecret = isset( $_POST['clientSecret'] ) ? sanitize_text_field( wp_unslash( $_POST['clientSecret'] ) ) : null;
 
-			$paymentIntent = $this->getVerifiedPaymentIntent( $paymentIntentId, $clientSecret );
+			$paymentIntent = $this->getClientSecretVerifiedPaymentIntent( $paymentIntentId, $clientSecret );
 			if ( empty( $paymentIntent ) ) {
 				wp_send_json_error( [ 'message' => __( 'Unauthorized', 'wp-full-stripe-free' ) ], 403 );
 			}

@@ -1333,6 +1333,7 @@ jQuery.noConflict();
 		function removeHiddenFormFields( $form ) {
 			removePaymentMethodIdInput( $form );
 			removePaymentIntentIdInput( $form );
+			removePaymentIntentClientSecretInput( $form );
 			removeSetupIntentIdInput( $form );
 			removeSubscriptionIdInput( $form );
 			removeCustomAmountIndexInput( $form );
@@ -1491,6 +1492,23 @@ jQuery.noConflict();
 			}
 		}
 
+		// The charge endpoint verifies the PaymentIntent against the client_secret before it records
+		// anything, so the second submit of an SCA flow has to send back the secret the server
+		// handed out with the requires-action response.
+		function addPaymentIntentClientSecretInput( $form, clientSecret ) {
+			if ( typeof clientSecret === 'undefined' || ! clientSecret ) {
+				return;
+			}
+
+			$( '<input>' )
+				.attr( {
+					type: 'hidden',
+					name: 'wpfs-stripe-client-secret',
+					value: clientSecret,
+				} )
+				.appendTo( $form );
+		}
+
 		function addSetupIntentIdInput( $form, result ) {
 			if (
 				typeof result !== 'undefined' &&
@@ -1532,6 +1550,10 @@ jQuery.noConflict();
 
 		function removePaymentIntentIdInput( $form ) {
 			$( 'input[name="wpfs-stripe-payment-intent-id"]', $form ).remove();
+		}
+
+		function removePaymentIntentClientSecretInput( $form ) {
+			$( 'input[name="wpfs-stripe-client-secret"]', $form ).remove();
 		}
 
 		function removeSetupIntentIdInput( $form ) {
@@ -1711,6 +1733,11 @@ jQuery.noConflict();
 								'SUCCESS response=' + JSON.stringify( data )
 							);
 						}
+						// Carry the solved-captcha nonce to save/charge (#520).
+						if ( data.nonce ) {
+							removeWPFSNonceInput( $form );
+							addWPFSNonceInput( $form, data );
+						}
 						resolve( data );
 					},
 					error( jqXHR, textStatus, errorThrown ) {
@@ -1737,6 +1764,13 @@ jQuery.noConflict();
 									.internal_error
 							);
 						}
+
+						// The submit handler disabled the buttons and started the
+						// loader before this request; the failure aborts the flow,
+						// so restore the form or the donor is locked out until they
+						// reload (e.g. a failed/missing reCAPTCHA — #520).
+						enableFormButtons( $form );
+						hideLoadingAnimation( $form );
 
 						reject( errorThrown );
 					},
@@ -1881,7 +1915,12 @@ jQuery.noConflict();
 					);
 				} else {
 					removePaymentIntentIdInput( $form );
+					removePaymentIntentClientSecretInput( $form );
 					addPaymentIntentIdInput( $form, result );
+					addPaymentIntentClientSecretInput(
+						$form,
+						data.paymentIntentClientSecret
+					);
 					disableFormButtons( $form );
 					showLoadingAnimation( $form );
 					submitPaymentData( $form, card );
@@ -1932,8 +1971,13 @@ jQuery.noConflict();
 					);
 				} else {
 					removePaymentIntentIdInput( $form );
+					removePaymentIntentClientSecretInput( $form );
 					removeSetupIntentIdInput( $form );
 					addPaymentIntentIdInput( $form, result );
+					addPaymentIntentClientSecretInput(
+						$form,
+						data.paymentIntentClientSecret
+					);
 					addSetupIntentIdInput( $form, result );
 					disableFormButtons( $form );
 					showLoadingAnimation( $form );

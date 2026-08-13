@@ -10,7 +10,7 @@ https://themeisle.com
 */
 
 class MM_WPFS {
-	const VERSION = '8.5.3';
+	const VERSION = '8.5.4';
 	const REQUEST_PARAM_NAME_WPFS_RENDERED_FORMS = 'wpfs_rendered_forms';
 
 	const HANDLE_WP_FULL_STRIPE_JS = 'wp-full-stripe-js';
@@ -342,6 +342,7 @@ class MM_WPFS {
 		include 'wpfs-pricing.php';
 		include 'wpfs-customer-portal-service.php';
 		include 'wpfs-thank-you.php';
+		include 'wpfs-payment-intent-binding.php';
 		include 'wpfs-customer.php';
 		include 'wpfs-checkout-charge-handler.php';
 		include 'wpfs-checkout-submission-service.php';

@@ -1543,13 +1543,14 @@ class MM_WPFS_Stripe {
 	 * @param string $currency
 	 * @param int $amount
 	 * @param string $allowRedirects 'never' or 'always', defaults to 'never'; any other value is normalized to 'never'
+	 * @param array<string,mixed>|null $metadata Metadata to store on the PaymentIntent
 	 *
 	 * @return stdClass
 	 *
 	 * @throws Stripe\Exception\ApiErrorException
 	 * @throws WPFS_UserFriendlyException
 	 */
-	function createPaymentIntentForElement( $currency, $amount, $allowRedirects = 'never' ) {
+	function createPaymentIntentForElement( $currency, $amount, $allowRedirects = 'never', $metadata = null ) {
 		$allowRedirects = ( 'always' === $allowRedirects ) ? 'always' : 'never';
 		$paymentIntentParameters = [
 			'amount' => ! empty( $amount ) ? $amount : 100,
@@ -1560,6 +1561,10 @@ class MM_WPFS_Stripe {
 				'allow_redirects' => $allowRedirects,
 			],
 		];
+
+		if ( ! empty( $metadata ) ) {
+			$paymentIntentParameters['metadata'] = $metadata;
+		}
 
 		if ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) {
 			$paymentIntentParameters['validLicense'] = $this->validLicense;

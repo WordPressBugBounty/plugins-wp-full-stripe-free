@@ -758,7 +758,10 @@ class MM_WPFS_InlineDonationFormValidator extends MM_WPFS_DonationFormValidator 
 		if ( $formModelObject instanceof MM_WPFS_Public_InlineDonationFormModel ) {
 			$this->validateInlineFields( $bindingResult, $formModelObject );
 
-			if ( 'wp_get_Setup_Intent_Client_Secret' !== $formModelObject->getAction() && 'wpfs-save-one-time-donation' !== $formModelObject->getAction() ) {
+			// Gate the client-secret step that creates the PaymentIntent (#520). Save stays
+			// excluded: its payload is serialized before client-secret injects the nonce,
+			// so it would re-verify the already-spent captcha token and fail.
+			if ( 'wpfs-save-one-time-donation' !== $formModelObject->getAction() ) {
 				$this->validateGoogleReCaptcha( $bindingResult, $formModelObject );
 			}
 		}

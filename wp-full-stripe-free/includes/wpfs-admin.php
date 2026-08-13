@@ -151,6 +151,15 @@ class MM_WPFS_Admin {
 	 * @return void
 	 */
 	public static function wpfp_config_notice() {
+		$capability = 'manage_options';
+		if ( MM_WPFS_Utils::isDemoMode() ) {
+			$capability = 'read';
+		}
+
+		if ( ! current_user_can( $capability ) ) {
+			return;
+		}
+
 		$options = new MM_WPFS_Options();
 
 		if ( $options->get( MM_WPFS_Options::OPTION_STRIPE_CONNECT_NOTICE ) ||
@@ -206,9 +215,7 @@ class MM_WPFS_Admin {
 	 * @return void
 	 */
 	public function wpfp_dismiss_notice() {
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			wp_send_json_error( [ 'message' => __( 'Invalid nonce.', 'wp-full-stripe-free' ) ] );
-		}
+		$this->validate_request( $_POST );
 
 		$options = new MM_WPFS_Options();
 		$options->set( MM_WPFS_Options::OPTION_STRIPE_CONNECT_NOTICE, true );
@@ -303,9 +310,7 @@ class MM_WPFS_Admin {
 	 * @return void
 	 */
 	public function wpfp_dismiss_transaction_volume_notice() {
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'wp-full-stripe-admin-nonce' ) ) {
-			wp_send_json_error( [ 'message' => __( 'Invalid nonce.', 'wp-full-stripe-free' ) ] );
-		}
+		$this->validate_request( $_POST );
 
 		$options = new MM_WPFS_Options();
 		$options->set( MM_WPFS_Options::OPTION_TRANSACTION_VOLUME_NOTICE, true );
@@ -583,13 +588,8 @@ class MM_WPFS_Admin {
 	}
 
 	function saveInlineSaveCardForm() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 
 			$inlineSaveCardFormModel = new MM_WPFS_Admin_InlineSaveCardFormModel( $this->loggerService );
@@ -635,13 +635,8 @@ class MM_WPFS_Admin {
 	}
 
 	function saveInlinePaymentForm() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 
 			$inlinePaymentFormModel = new MM_WPFS_Admin_InlinePaymentFormModel( $this->loggerService );
@@ -687,13 +682,8 @@ class MM_WPFS_Admin {
 	}
 
 	function saveCheckoutPaymentForm() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 
 			$checkoutPaymentFormModel = new MM_WPFS_Admin_CheckoutPaymentFormModel( $this->loggerService );
@@ -738,13 +728,8 @@ class MM_WPFS_Admin {
 	}
 
 	function saveInlineSubscriptionForm() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 			$inlineSubscriptionFormModel = new MM_WPFS_Admin_InlineSubscriptionFormModel( $this->loggerService );
 			$bindingResult = $inlineSubscriptionFormModel->bind();
@@ -789,13 +774,8 @@ class MM_WPFS_Admin {
 	}
 
 	function saveCheckoutSubscriptionForm() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 
 			$checkoutSubscriptionFormModel = new MM_WPFS_Admin_CheckoutSubscriptionFormModel( $this->loggerService );
@@ -841,13 +821,8 @@ class MM_WPFS_Admin {
 	}
 
 	function saveInlineDonationForm() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 			$inlineDonationFormModel = new MM_WPFS_Admin_InlineDonationFormModel( $this->loggerService );
 			$bindingResult = $inlineDonationFormModel->bind();
@@ -892,13 +867,8 @@ class MM_WPFS_Admin {
 	}
 
 	function saveCheckoutDonationForm() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 			$checkoutDonationFormModel = new MM_WPFS_Admin_CheckoutDonationFormModel( $this->loggerService );
 			$bindingResult = $checkoutDonationFormModel->bind();
@@ -933,13 +903,8 @@ class MM_WPFS_Admin {
 	}
 
 	function saveCheckoutSaveCardForm() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 
 			$checkoutSaveCardFormModel = new MM_WPFS_Admin_CheckoutSaveCardFormModel( $this->loggerService );
@@ -1093,13 +1058,8 @@ class MM_WPFS_Admin {
 
 
 	function cancelSubscription() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		$id = $_POST['id'];
 
 		try {
@@ -1148,13 +1108,8 @@ class MM_WPFS_Admin {
 	}
 
 	function cancelDonation() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		$id = $_POST['id'];
 
 		try {
@@ -1201,13 +1156,8 @@ class MM_WPFS_Admin {
 	}
 
 	public function deleteSubscription() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		$id = $_POST['id'];
 
 		try {
@@ -1249,13 +1199,8 @@ class MM_WPFS_Admin {
 	}
 
 	function deletePayment() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		$id = $_POST['id'];
 
 		try {
@@ -1296,13 +1241,8 @@ class MM_WPFS_Admin {
 	}
 
 	function deleteDonation() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		$id = $_POST['id'];
 
 		try {
@@ -1779,13 +1719,8 @@ class MM_WPFS_Admin {
 	}
 
 	function refundPayment() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		$id = $_POST['id'];
 
 		try {
@@ -1827,13 +1762,8 @@ class MM_WPFS_Admin {
 	}
 
 	function refundDonation() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		$id = $_POST['id'];
 
 		try {
@@ -1982,13 +1912,8 @@ class MM_WPFS_Admin {
 	}
 
 	function capturePayment() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		$id = $_POST['id'];
 
 		try {
@@ -2196,13 +2121,8 @@ class MM_WPFS_Admin {
 
 
 	function deleteSavedCard() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		$id = $_POST['id'];
 
 		try {
@@ -2244,13 +2164,8 @@ class MM_WPFS_Admin {
 	}
 
 	public function cloneForm() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		$id = stripslashes( $_POST['id'] );
 		$type = stripslashes( $_POST['type'] );
 		$layout = stripslashes( $_POST['layout'] );
@@ -2293,13 +2208,8 @@ class MM_WPFS_Admin {
 	}
 
 	public function deleteForm() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		$id = stripslashes( $_POST['id'] );
 		$type = stripslashes( $_POST['type'] );
 		$layout = stripslashes( $_POST['layout'] );
@@ -2342,13 +2252,8 @@ class MM_WPFS_Admin {
 	}
 
 	public function saveStripeAccount() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 			$stripeAccountModel = new MM_WPFS_Admin_StripeAccountModel( $this->loggerService );
 			$bindingResult = $stripeAccountModel->bind();
@@ -2382,13 +2287,8 @@ class MM_WPFS_Admin {
 	}
 
 	public function addStripeAccount() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		$accountId = isset( $_POST['account_id'] ) ? sanitize_text_field( $_POST['account_id'] ) : '';
 		$mode = isset( $_POST['mode'] ) ? sanitize_text_field( $_POST['mode'] ) : '';
 
@@ -2402,13 +2302,8 @@ class MM_WPFS_Admin {
 	}
 
 	public function createStripeConnectAccount() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		$currentUrl = isset( $_POST['current_page_url'] ) ? sanitize_text_field( $_POST['current_page_url'] ) : '';
 		$mode = isset( $_POST['mode'] ) ? sanitize_text_field( $_POST['mode'] ) : '';
 
@@ -2440,13 +2335,8 @@ class MM_WPFS_Admin {
 
 	// function to clear stripe settings
 	public function clearStripeSettings() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		$mode = isset( $_POST['mode'] ) ? sanitize_text_field( $_POST['mode'] ) : '';
 		if ( $mode == 'test' ) {
 			$this->options->setSeveral( [ 
@@ -2496,13 +2386,8 @@ class MM_WPFS_Admin {
 	 *
 	 */
 	public function saveMyAccount() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 			$myAccountModel = new MM_WPFS_Admin_MyAccountModel( $this->loggerService );
 			$bindingResult = $myAccountModel->bind();
@@ -2550,13 +2435,8 @@ class MM_WPFS_Admin {
 	 *
 	 */
 	public function saveWordpressDashboard() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 			$wpDashboardModel = new MM_WPFS_Admin_WordpressDashboardModel( $this->loggerService );
 			$bindingResult = $wpDashboardModel->bind();
@@ -2601,13 +2481,8 @@ class MM_WPFS_Admin {
 	}
 
 	public function saveLogs() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 			$logsModel = new MM_WPFS_Admin_LogsModel( $this->loggerService );
 			$bindingResult = $logsModel->bind();
@@ -2641,13 +2516,8 @@ class MM_WPFS_Admin {
 	}
 
 	public function emptyLogs() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 			$this->db->deleteLogs();
 			$redirectUrl = admin_url( 'admin.php?page=' . MM_WPFS_Admin_Menu::SLUG_SETTINGS );
@@ -2674,13 +2544,8 @@ class MM_WPFS_Admin {
 	}
 
 	public function toggleLicense() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		$key    = isset( $_POST['key'] ) ? sanitize_text_field( $_POST['key'] ) : '';
 		$action = isset( $_POST['licenseAction'] ) ? sanitize_text_field( $_POST['licenseAction'] ) : '';
 
@@ -2734,13 +2599,8 @@ class MM_WPFS_Admin {
 	 *
 	 */
 	public function saveSecurity() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 			$securityModel = new MM_WPFS_Admin_SecurityModel( $this->loggerService );
 			$bindingResult = $securityModel->bind();
@@ -2799,13 +2659,8 @@ class MM_WPFS_Admin {
 	 *
 	 */
 	public function saveEmailOptions() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 			$optionsModel = new MM_WPFS_Admin_EmailOptionsModel( $this->loggerService );
 			$bindingResult = $optionsModel->bind();
@@ -2855,13 +2710,8 @@ class MM_WPFS_Admin {
 	 *
 	 */
 	public function saveEmailTemplates() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 			$templatesModel = new MM_WPFS_Admin_EmailTemplatesModel( $this->loggerService );
 			$bindingResult = $templatesModel->bind();
@@ -2915,13 +2765,8 @@ class MM_WPFS_Admin {
 	 *
 	 */
 	public function saveFormsOptions() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 			$formsOptionsModel = new MM_WPFS_Admin_FormsOptionsModel( $this->loggerService );
 			$bindingResult = $formsOptionsModel->bind();
@@ -2969,13 +2814,8 @@ class MM_WPFS_Admin {
 	 *
 	 */
 	public function saveFormsAppearance() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 			$formsAppearanceModel = new MM_WPFS_Admin_FormsAppearanceModel( $this->loggerService );
 			$bindingResult = $formsAppearanceModel->bind();
@@ -3013,13 +2853,8 @@ class MM_WPFS_Admin {
 	}
 
 	public function createForm() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 			$createFormModel = new MM_WPFS_Admin_CreateFormModel( $this->loggerService );
 			$bindingResult = $createFormModel->bind();
@@ -3071,6 +2906,8 @@ class MM_WPFS_Admin {
 	}
 
 	public function getOnetimeProducts() {
+		$this->validate_request( $_POST );
+
 		try {
 			$onetimeProducts = $this->getOnetimeProductsForSelector();
 
@@ -3117,6 +2954,8 @@ class MM_WPFS_Admin {
 	}
 
 	public function getTaxRates() {
+		$this->validate_request( $_POST );
+
 		try {
 			$taxRates = $this->getTaxRatesForSelector();
 
@@ -3139,13 +2978,8 @@ class MM_WPFS_Admin {
 	}
 
 	public function sendTestEmail() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			http_response_code( 400 );
-			echo json_encode( [ 'success' => false, 'msg' => 'Invalid nonce in ' . __FUNCTION__ ] );
-			exit;
-		}
+		$this->validate_request( $_POST );
+
 		try {
 			$data = json_decode( rawurldecode( stripslashes( $_POST['data'] ) ) );
 			$this->mailer->sendTestEmail( $data->recipients, $data->subject, $data->body, $data->emailTemplateType );
@@ -3213,11 +3047,7 @@ class MM_WPFS_Admin {
 	}
 
 	public function createProduct() {
-		// check for nonce and return 400 error if not valid
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			$this->logger->error( __FUNCTION__, 'Nonce missing in POST or is invalid ' . json_encode( $_POST ) );
-			wp_send_json_error( [ 'msg' => 'Invalid nonce in ' . __FUNCTION__ ], 400 );
-		}
+		$this->validate_request( $_POST );
 
 		if ( ! isset( $_POST['data'] ) || ! is_array( $_POST['data'] ) ) {
 			wp_send_json_error( [ 'msg' => 'Invalid data provided.' ] );
@@ -3248,6 +3078,8 @@ class MM_WPFS_Admin {
 	}
 
 	public function getRecurringProducts() {
+		$this->validate_request( $_POST );
+
 		try {
 			$recurringProducts = $this->getRecurringProductsForSelector();
 
@@ -3481,13 +3313,7 @@ class MM_WPFS_Admin {
 	 * Form preview.
 	 */
 	public function previewForm() {
-		if ( ! is_user_logged_in() || ! current_user_can( 'manage_options' ) ) {
-			wp_die( 'Unauthorized' );
-		}
-
-		if ( ! isset( $_GET['nonce'] ) || ! wp_verify_nonce( $_GET['nonce'], 'wp-full-stripe-admin-nonce' ) ) {
-			wp_die( 'Invalid nonce' );
-		}
+		$this->validate_request( $_GET );
 
 		if ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) {
 			wp_die( 'Invalid request' );
