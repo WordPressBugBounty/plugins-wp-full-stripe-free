@@ -2,8 +2,8 @@
   'root' => 
   array (
     'name' => 'codeinwp/wp-full-stripe',
-    'pretty_version' => '8.5.4',
-    'version' => '8.5.4.0',
+    'pretty_version' => '8.5.5',
+    'version' => '8.5.5.0',
     'reference' => NULL,
     'type' => 'wordpress-plugin',
     'install_path' => __DIR__ . '/../',

@@ -2343,14 +2343,17 @@ class MM_WPFS_Stripe {
 	 * @param $stripeCustomerId
 	 * @param $stripeSubscriptionId
 	 * @param bool $atPeriodEnd
+	 * @param object|null $subscription The subscription, when the caller already retrieved it. Saves a Stripe GET.
 	 *
 	 * @return bool
 	 * @throws \StripeWPFS\Stripe\Exception\ApiErrorException
 	 * @throws WPFS_UserFriendlyException
 	 */
-	public function cancelSubscription( $stripeCustomerId, $stripeSubscriptionId, $atPeriodEnd = false ) {
+	public function cancelSubscription( $stripeCustomerId, $stripeSubscriptionId, $atPeriodEnd = false, $subscription = null ) {
 		if ( ! empty( $stripeSubscriptionId ) ) {
-			$subscription = $this->retrieveSubscription( $stripeSubscriptionId );
+			if ( is_null( $subscription ) ) {
+				$subscription = $this->retrieveSubscription( $stripeSubscriptionId );
+			}
 
 			if ( $subscription ) {
 				$this->fireBeforeSubscriptionCancellationAction( $stripeSubscriptionId );

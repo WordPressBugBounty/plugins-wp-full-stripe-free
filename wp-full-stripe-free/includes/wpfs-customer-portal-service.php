@@ -2012,11 +2012,29 @@ class MM_WPFS_CustomerPortalService
     }
 
     /**
-     * @param $subscriptionId string
+     * @param object $subscription the Stripe subscription, expanded with its prices
      *
      * @throws Exception
      */
-    private function cancelSubscriptionInDatabase($subscriptionId)
+    private function cancelSubscriptionInDatabase($subscription)
+    {
+        if (self::isDonationPlan($subscription)) {
+            $this->db->cancelDonationByStripeSubscriptionId($subscription->id);
+        } else {
+            $this->db->cancelSubscriptionByStripeSubscriptionId($subscription->id);
+        }
+    }
+
+    /**
+     * Retrieves a Stripe subscription only if it belongs to the given customer.
+     *
+     * @param string $subscriptionId
+     * @param string $stripeCustomerId
+     *
+     * @return object|null the subscription, or null when it does not belong to the customer
+     * @throws Exception
+     */
+    private function findSubscriptionOfCustomer($subscriptionId, $stripeCustomerId)
     {
         $subscriptionParams = [
             'expand' => [
@@ -2024,12 +2042,9 @@ class MM_WPFS_CustomerPortalService
             ]
         ];
         $subscription = $this->stripe->retrieveSubscriptionWithParams($subscriptionId, $subscriptionParams);
+        $subscriptionCustomerId = (is_object($subscription) && isset($subscription->customer)) ? $subscription->customer : null;
 
-        if (self::isDonationPlan($subscription)) {
-            $this->db->cancelDonationByStripeSubscriptionId($subscriptionId);
-        } else {
-            $this->db->cancelSubscriptionByStripeSubscriptionId($subscriptionId);
-        }
+        return $subscriptionCustomerId === $stripeCustomerId ? $subscription : null;
     }
 
     /**
@@ -2050,22 +2065,44 @@ class MM_WPFS_CustomerPortalService
 
         try {
             $subscriptionIdsToCancel = isset($_POST[self::PARAM_WPFS_SUBSCRIPTION_ID]) ? $_POST[self::PARAM_WPFS_SUBSCRIPTION_ID] : null;
-            if (isset($subscriptionIdsToCancel) && count($subscriptionIdsToCancel) > 0) {
+            if (isset($subscriptionIdsToCancel) && is_array($subscriptionIdsToCancel) && count($subscriptionIdsToCancel) > 0) {
+                // stays true unless a confirmed session, its customer and every posted subscription check out
+                $unauthorized = true;
                 $cardUpdateSessionHash = $this->findSessionCookieValue();
-                if (!is_null($subscriptionIdsToCancel) && !is_null($cardUpdateSessionHash)) {
+                if (!is_null($cardUpdateSessionHash)) {
                     $cardUpdateSession = $this->findCustomerPortalSessionByHash($cardUpdateSessionHash);
                     if (!is_null($cardUpdateSession) && $this->isConfirmed($cardUpdateSession)) {
                         $stripeCustomer = $this->stripe->retrieveCustomer($cardUpdateSession->stripeCustomerId);
                         if (isset($stripeCustomer)) {
+                            $unauthorized = false;
+                            // resolve every subscription first, so a foreign id cancels nothing at all
+                            $subscriptionsToCancel = [];
                             foreach ($subscriptionIdsToCancel as $subscriptionId) {
-                                $this->cancelSubscriptionInDatabase($subscriptionId);
-                                $this->stripe->cancelSubscription($stripeCustomer->id, $subscriptionId, $cancelAtPeriodEnd);
+                                $subscription = $this->findSubscriptionOfCustomer(sanitize_text_field($subscriptionId), $stripeCustomer->id);
+                                if (is_null($subscription)) {
+                                    $unauthorized = true;
+                                    break;
+                                }
+                                $subscriptionsToCancel[] = $subscription;
+                            }
+
+                            if (!$unauthorized) {
+                                foreach ($subscriptionsToCancel as $subscription) {
+                                    $this->cancelSubscriptionInDatabase($subscription);
+                                    $this->stripe->cancelSubscription($stripeCustomer->id, $subscription->id, $cancelAtPeriodEnd, $subscription);
+                                }
                             }
                         }
                     }
                 }
-                $return['success'] = true;
-                $return['message'] = __('The subscriptions have been cancelled', 'wp-full-stripe-free');
+
+                if ($unauthorized) {
+                    $return['success'] = false;
+                    $return['message'] = __('Unauthorized', 'wp-full-stripe-free');
+                } else {
+                    $return['success'] = true;
+                    $return['message'] = __('The subscriptions have been cancelled', 'wp-full-stripe-free');
+                }
             } else {
                 $return['success'] = false;
                 $return['message'] = __('Select at least one subscription!', 'wp-full-stripe-free');
@@ -2079,9 +2116,7 @@ class MM_WPFS_CustomerPortalService
             $return['ex_message'] = $ex->getMessage();
         }
 
-        header("Content-Type: application/json");
-        echo json_encode($return);
-        exit;
+        wp_send_json($return);
     }
 
     /**
@@ -2173,14 +2208,8 @@ class MM_WPFS_CustomerPortalService
                     $stripeSubscriptionId = sanitize_text_field($updatedSubscription['id']);
                     if ('cancel' === $updatedSubscription['action']) {
                         if (!is_null($stripeSubscriptionId)) {
-                                $subscriptionParams = [
-                                'expand' => [
-                                    'items.data.price'
-                                ]
-                            ];
-                            $subscription = $this->stripe->retrieveSubscriptionWithParams($stripeSubscriptionId, $subscriptionParams);
-                            $subscriptionCustomerId = (is_object($subscription) && isset($subscription->customer)) ? $subscription->customer : null;
-                            if ($subscriptionCustomerId !== $cardUpdateSession->stripeCustomerId) {
+                            $subscription = $this->findSubscriptionOfCustomer($stripeSubscriptionId, $cardUpdateSession->stripeCustomerId);
+                            if (is_null($subscription)) {
                                 return new WP_Error(
                                     'wpfs_customer_portal_forbidden',
                                     __('Unauthorized', 'wp-full-stripe-free'),
@@ -2188,12 +2217,8 @@ class MM_WPFS_CustomerPortalService
                                 );
                             }
 
-                            if (self::isDonationPlan($subscription)) {
-                                $this->db->cancelDonationByStripeSubscriptionId($stripeSubscriptionId);
-                            } else {
-                                $this->db->cancelSubscriptionByStripeSubscriptionId($stripeSubscriptionId);
-                            }
-                            $this->stripe->cancelSubscription($cardUpdateSession->stripeCustomerId, $stripeSubscriptionId, $cancelAtPeriodEnd);
+                            $this->cancelSubscriptionInDatabase($subscription);
+                            $this->stripe->cancelSubscription($cardUpdateSession->stripeCustomerId, $stripeSubscriptionId, $cancelAtPeriodEnd, $subscription);
                         }
                     } elseif ('activate' === $updatedSubscription['action']) {
                         if (!is_null($stripeSubscriptionId)) {

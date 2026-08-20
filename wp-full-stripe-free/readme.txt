@@ -4,7 +4,7 @@ Tags: stripe, payment forms, donations, subscriptions, credit card
 Requires at least: 5.3
 Requires PHP: 7.4
 Tested up to: 7.0
-Stable tag: 8.5.4
+Stable tag: 8.5.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -283,10 +283,10 @@ WP Full Pay fully supports Strong Customer Authentication (SCA) requirements for
 
 == Changelog ==
 
-#####   Version 8.5.4 (2026-08-13)
+#####   Version 8.5.5 (2026-08-20)
 
-- Improved spam protection for inline donation forms by validating reCAPTCHA before any payment attempt is created.
-- Enhanced security
+- Fixed wallet payment sheets showing zero for user-defined payment amounts.
+- Improved authorization checks in the customer portal subscription management.
 
 
 

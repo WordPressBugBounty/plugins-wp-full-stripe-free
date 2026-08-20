@@ -3112,6 +3112,26 @@ jQuery.noConflict();
 				clearRecoveryItem( paymentDetailsConfig );
 			}
 			showPaymentDetails( $form, paymentDetailsConfig );
+
+			// Elements was created in deferred mode with a placeholder amount
+			// (the custom amount is unknown at init). Sync the selected/typed
+			// amount so wallet payment sheets (Revolut Pay, Apple Pay, Google
+			// Pay) show the real amount instead of the placeholder (issue #410).
+			const stripeElements = WPFS.getStripeElements(
+				extractFormNameFromNode( $form )
+			);
+			if (
+				stripeElements &&
+				'payment' === $form.data( 'wpfs-intent-type' )
+			) {
+				const amountData = findPaymentAmountData( $form );
+				if ( amountData.valid && amountData.amount > 0 ) {
+					stripeElements.update( {
+						amount: amountData.amount,
+						currency: amountData.currency.toLowerCase(),
+					} );
+				}
+			}
 		}
 
 		function handlePaymentAmountChange( $form, $selectedProductElement ) {
@@ -3531,11 +3551,18 @@ jQuery.noConflict();
 					);
 				}
 			}
+			// The currency comes from the form/amount element markup, so expose
+			// it even while the amount is empty or invalid — the Payment Element
+			// is initialized before the customer types a valid amount, and
+			// falling back to 'usd' on non-USD forms makes confirmPayment fail
+			// with a currency mismatch (issue #410).
+			if ( currency ) {
+				result.currency = currency;
+			}
 			if ( amount === null || isNaN( amount ) || amount < 0 ) {
 				result.valid = false;
 			} else {
 				result.valid = true;
-				result.currency = currency;
 				result.amount = amount;
 			}
 
@@ -4469,7 +4496,7 @@ jQuery.noConflict();
 				$form.find( 'input[type="hidden"][name="wpfs-donation-frequency"]' ).val() === 'one-time'
 			) {
 				const amountData = findPaymentAmountData( $form );
-				const currency = amountData.valid ? amountData.currency : ( $form.data( 'wpfs-currency' ) || 'usd' );
+				const currency = amountData.currency || $form.data( 'wpfs-currency' ) || 'usd';
 				intentType = 'payment';
 				const zeroDecimalSupport = resolveZeroDecimalSupport( $form );
 				const minimumAmount = zeroDecimalSupport ? 1 : 50;
@@ -4502,8 +4529,17 @@ jQuery.noConflict();
 					currency: ( $form.data( 'wpfs-currency' ) || 'usd' ).toLowerCase(),
 				};
 			}
-			if ( intentType === 'payment' && paymentMethodTypes ) {
-				options.paymentMethodTypes = paymentMethodTypes;
+			if ( intentType === 'payment' ) {
+				// Mirror the server-side fallback (wpfs-customer.php,
+				// get_Setup_Intent_Client_Secret): the PaymentIntent is always
+				// created with explicit payment_method_types, defaulting to
+				// card/link when the form has none configured. Without the same
+				// default here, Elements runs in "automatic payment methods"
+				// mode and Stripe refuses to confirm the explicit-types intent.
+				options.paymentMethodTypes = paymentMethodTypes || [
+					'card',
+					'link',
+				];
 			}
 
 			// Use the jQuery .data() setter (not .attr) so it matches the .data()
