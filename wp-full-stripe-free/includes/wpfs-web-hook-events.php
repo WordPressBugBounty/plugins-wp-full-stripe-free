@@ -446,15 +446,21 @@ abstract class MM_WPFS_EventProcessor
 	}
 
 	/**
+	 * Upper bound for the processed-event-ID list kept per subscriber. Stripe retries a
+	 * failed delivery for at most 72 hours, so only recent IDs matter for replay protection.
+	 */
+	const MAX_PROCESSED_EVENT_IDS = 100;
+
+	/**
 	 * Adds an event ID to a JSON encoded array if the ID is not in the array
 	 *
-	 * @param string $encodedStripeEventIDs JSON encoded event ID array
-	 * @param \StripeWPFS\Stripe\Event $stripeEvent
+	 * @param string|null $encodedStripeEventIDs JSON encoded event ID array
+	 * @param object|null $stripeEvent
 	 * @param bool $success output variable to determine whether the event ID has been added to the array
 	 *
-	 * @return string the new JSON encoded array
+	 * @return string|null the new JSON encoded array
 	 */
-	protected function insertIfNotExists($encodedStripeEventIDs, $stripeEvent, &$success)
+	protected function insertIfNotExists(?string $encodedStripeEventIDs, ?object $stripeEvent, bool &$success): ?string
 	{
 		$decodedStripeEventIDs = [];
 		if (isset($encodedStripeEventIDs)) {
@@ -472,6 +478,8 @@ abstract class MM_WPFS_EventProcessor
 				$success = false;
 			} else {
 				array_push($decodedStripeEventIDs, $stripeEvent->id);
+				// Cap the list so the TEXT column stays bounded for long-running subscriptions.
+				$decodedStripeEventIDs = array_slice($decodedStripeEventIDs, -self::MAX_PROCESSED_EVENT_IDS);
 				$data = json_encode($decodedStripeEventIDs);
 				if (json_last_error() === JSON_ERROR_NONE) {
 					$success = true;
@@ -751,6 +759,22 @@ abstract class MM_WPFS_InvoiceEventProcessor extends MM_WPFS_EventProcessor
 	}
 
 	/**
+	 * Lets the customer keep the period they just paid for: Stripe cancels the
+	 * subscription when the current period ends, and the resulting
+	 * customer.subscription.deleted event marks the local record as ended.
+	 *
+	 * @param object $wpfsSubscriber
+	 * @param MM_WPFS_LiveModeAwareEventProcessorContext $context
+	 *
+	 * @throws Exception
+	 */
+	protected function scheduleSubscriptionEnd(object $wpfsSubscriber, MM_WPFS_LiveModeAwareEventProcessorContext $context): void
+	{
+		$this->logger->debug(__FUNCTION__, "maximum charge count reached, cancelling subscription '{$wpfsSubscriber->stripeSubscriptionID}' at period end");
+		$context->getStripe()->cancelSubscription($wpfsSubscriber->stripeCustomerID, $wpfsSubscriber->stripeSubscriptionID, true);
+	}
+
+	/**
 	 * @param $wpfsSubscriber
 	 * @param \StripeWPFS\Stripe\Event $stripeEvent
 	 *
@@ -758,15 +782,15 @@ abstract class MM_WPFS_InvoiceEventProcessor extends MM_WPFS_EventProcessor
 	 */
 	protected function updateSubscriberWithPaymentAndEvent($wpfsSubscriber, \StripeWPFS\Stripe\Event $stripeEvent)
 	{
-		if (isset($wpfsSubscriber->processedEventIDs)) {
-			$encodedStripeEventIDs = $wpfsSubscriber->processedEventIDs;
+		if (isset($wpfsSubscriber->processedStripeEventIDs)) {
+			$encodedStripeEventIDs = $wpfsSubscriber->processedStripeEventIDs;
 		} else {
 			$encodedStripeEventIDs = null;
 		}
 		$inserted = false;
 		$processedStripeEventIDs = $this->insertIfNotExists($encodedStripeEventIDs, $stripeEvent, $inserted);
 		if ($inserted) {
-			return $this->db->updateSubscriberWithPaymentAndEvent($wpfsSubscriber->stripeSubscriptionID, $processedStripeEventIDs);
+			return $this->db->updateSubscriberWithPaymentAndEvent($wpfsSubscriber->stripeSubscriptionID, $processedStripeEventIDs, $stripeEvent->id);
 		}
 
 		return false;
@@ -780,15 +804,15 @@ abstract class MM_WPFS_InvoiceEventProcessor extends MM_WPFS_EventProcessor
 	 */
 	protected function updateSubscriberWithInvoiceAndEvent($wpfsSubscriber, \StripeWPFS\Stripe\Event $stripeEvent)
 	{
-		if (isset($wpfsSubscriber->processedEventIDs)) {
-			$encodedStripeEventIDs = $wpfsSubscriber->processedEventIDs;
+		if (isset($wpfsSubscriber->processedStripeEventIDs)) {
+			$encodedStripeEventIDs = $wpfsSubscriber->processedStripeEventIDs;
 		} else {
 			$encodedStripeEventIDs = null;
 		}
 		$inserted = false;
 		$processedStripeEventIDs = $this->insertIfNotExists($encodedStripeEventIDs, $stripeEvent, $inserted);
 		if ($inserted) {
-			return $this->db->updateSubscriberWithInvoiceAndEvent($wpfsSubscriber->stripeSubscriptionID, $processedStripeEventIDs);
+			return $this->db->updateSubscriberWithInvoiceAndEvent($wpfsSubscriber->stripeSubscriptionID, $processedStripeEventIDs, $stripeEvent->id);
 		}
 
 		return false;
@@ -900,8 +924,8 @@ class MM_WPFS_CustomerSubscriptionDeleted extends MM_WPFS_EventProcessor
 
 	private function updateSubscriberWithEvent($wpfsSubscriber, \StripeWPFS\Stripe\Event $stripeEvent)
 	{
-		if (isset($wpfsSubscriber->processedEventIDs)) {
-			$encodedStripeEventIDs = $wpfsSubscriber->processedEventIDs;
+		if (isset($wpfsSubscriber->processedStripeEventIDs)) {
+			$encodedStripeEventIDs = $wpfsSubscriber->processedStripeEventIDs;
 		} else {
 			$encodedStripeEventIDs = null;
 		}
@@ -958,12 +982,17 @@ class MM_WPFS_InvoicePaymentSucceeded extends MM_WPFS_InvoiceEventProcessor
 						MM_WPFS::SUBSCRIBER_STATUS_ENDED !== $wpfsSubscriber->status &&
 						MM_WPFS::SUBSCRIBER_STATUS_CANCELLED !== $wpfsSubscriber->status
 					) {
-						$this->updateSubscriberWithPaymentAndEvent($wpfsSubscriber, $event);
+						$subscriberUpdated = $this->updateSubscriberWithPaymentAndEvent($wpfsSubscriber, $event);
+						if (!$subscriberUpdated) {
+							$this->logger->debug(__FUNCTION__, 'event already processed, skip subscription cancellation scheduling');
+							continue;
+						}
+
 						$wpfsSubscriber = $this->findSubscriberByStripeSubscriptionId($stripeSubscriptionId);
 
 						if ($wpfsSubscriber->chargeMaximumCount > 0) {
-							if ($wpfsSubscriber->chargeCurrentCount > $wpfsSubscriber->chargeMaximumCount) {
-								$this->endSubscription($wpfsSubscriber, $context);
+							if ($wpfsSubscriber->chargeCurrentCount >= $wpfsSubscriber->chargeMaximumCount) {
+								$this->scheduleSubscriptionEnd($wpfsSubscriber, $context);
 							} else {
 								$this->logger->debug(__FUNCTION__, 'subscription charged until maximum charge reached');
 							}
@@ -1008,12 +1037,13 @@ class MM_WPFS_InvoicePaymentSucceeded extends MM_WPFS_InvoiceEventProcessor
 
 		if ( ! $data ) {
 			$data = $this->db->getSubscriptionByStripeSubscriptionId( $event->subscription );
+
+			if ( ! $data ) {
+				return;
+			}
+
 			$form = $this->getSubscriptionFormBySubscriber( $data );
 			$data->formType = MM_WPFS_Utils::getFormType( $form );
-		}
-
-		if ( ! $data ) {
-			return;
 		}
 
 		$report = $this->db->getReportByPaymentIntentID( $event->payment_intent );

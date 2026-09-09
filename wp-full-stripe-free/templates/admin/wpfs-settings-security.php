@@ -17,6 +17,10 @@
                     <div class="wpfs-form__col">
                         <div class="wpfs-form-block">
                             <div class="wpfs-form-block__title"><?php esc_html_e( 'Google reCAPTCHA', 'wp-full-stripe-free' ); ?></div>
+                            <p id="wpfs-recaptcha-version-help" class="wpfs-form-help">
+                                <?php esc_html_e( 'Requires Google reCAPTCHA v2 (Checkbox or Invisible badge).', 'wp-full-stripe-free' ); ?>
+                                <a href="https://docs.themeisle.com/article/2099-registering-your-website-for-google-recaptcha" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'View registration guide', 'wp-full-stripe-free' ); ?></a>
+                            </p>
                             <div class="wpfs-form-group">
                                 <label class="wpfs-form-label"><?php esc_html_e( 'Secure with reCAPTCHA', 'wp-full-stripe-free' ); ?></label>
                                 <div class="wpfs-form-check-list">

@@ -204,11 +204,26 @@ class MM_WPFS_LoggerService {
 		$loggedMessage = $message . ( is_null( $throwable ) ? '' : ' - ' . $throwable->getMessage() );
 		$loggedStackTrace = is_null( $throwable ) ? '' : $throwable->getTraceAsString();
 
-		$this->db->insertLog( $module, $class, $function, $level, $loggedMessage, $loggedStackTrace );
+		try {
+			$this->db->insertLog( $module, $class, $function, $level, $loggedMessage, $loggedStackTrace );
+		} catch ( Throwable $loggingError ) {
+			$loggedStackTrace .= ( empty( $loggedStackTrace ) ? '' : "\n" )
+				. 'Database logging failed: ' . $loggingError->getMessage()
+				. "\n" . $loggingError->getTraceAsString();
+		}
 
 		if ( $this->isPhpLoggingEnabled ) {
-			error_log( $this->formatLogEntryAsParams( '', $level, $module, $class, $function, $loggedMessage, $loggedStackTrace ) );
+			$this->writePhpLog( $this->formatLogEntryAsParams( '', $level, $module, $class, $function, $loggedMessage, $loggedStackTrace ) );
 		}
+	}
+
+	/**
+	 * Write an entry to the configured PHP error log.
+	 *
+	 * @param string $message Log entry.
+	 */
+	protected function writePhpLog( $message ): void {
+		error_log( $message );
 	}
 
 	public static function localizeLogLevel( $level ) {

@@ -1695,9 +1695,14 @@ class MM_WPFS_Database {
 	 * @return false|int
 	 * @throws Exception
 	 */
-	public function updateSubscriberWithInvoiceAndEvent( $stripeSubscriptionID, $processedStripeEventIDs ) {
+	public function updateSubscriberWithInvoiceAndEvent( $stripeSubscriptionID, $processedStripeEventIDs, ?string $stripeEventID = null ) {
 		global $wpdb;
-		$queryResult = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->prefix}fullstripe_subscribers SET invoiceCreatedCount=invoiceCreatedCount + 1, processedStripeEventIDs=%s WHERE stripeSubscriptionID=%s", $processedStripeEventIDs, $stripeSubscriptionID ) );
+		if ( empty( $stripeEventID ) ) {
+			$queryResult = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->prefix}fullstripe_subscribers SET invoiceCreatedCount=invoiceCreatedCount + 1, processedStripeEventIDs=%s WHERE stripeSubscriptionID=%s", $processedStripeEventIDs, $stripeSubscriptionID ) );
+		} else {
+			// The event-ID guard keeps concurrent duplicate deliveries from both incrementing the counter.
+			$queryResult = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->prefix}fullstripe_subscribers SET invoiceCreatedCount=invoiceCreatedCount + 1, processedStripeEventIDs=%s WHERE stripeSubscriptionID=%s AND (processedStripeEventIDs IS NULL OR processedStripeEventIDs NOT LIKE %s)", $processedStripeEventIDs, $stripeSubscriptionID, '%' . $wpdb->esc_like( $stripeEventID ) . '%' ) );
+		}
 		self::handleDbError( $queryResult, __FUNCTION__ . '(): an error occurred during update!' );
 
 		return $queryResult;
@@ -1707,13 +1712,19 @@ class MM_WPFS_Database {
 	/**
 	 * @param $stripeSubscriptionID
 	 * @param $processedStripeEventIDs
+	 * @param string|null $stripeEventID When given, the row is only updated if this event has not been recorded yet.
 	 *
 	 * @return bool|int
 	 * @throws Exception
 	 */
-	public function updateSubscriberWithPaymentAndEvent( $stripeSubscriptionID, $processedStripeEventIDs ) {
+	public function updateSubscriberWithPaymentAndEvent( $stripeSubscriptionID, $processedStripeEventIDs, ?string $stripeEventID = null ) {
 		global $wpdb;
-		$queryResult = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->prefix}fullstripe_subscribers SET chargeCurrentCount=chargeCurrentCount+1, processedStripeEventIDs=%s WHERE stripeSubscriptionID=%s", $processedStripeEventIDs, $stripeSubscriptionID ) );
+		if ( empty( $stripeEventID ) ) {
+			$queryResult = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->prefix}fullstripe_subscribers SET chargeCurrentCount=chargeCurrentCount+1, processedStripeEventIDs=%s WHERE stripeSubscriptionID=%s", $processedStripeEventIDs, $stripeSubscriptionID ) );
+		} else {
+			// The event-ID guard keeps concurrent duplicate deliveries from both incrementing the counter.
+			$queryResult = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->prefix}fullstripe_subscribers SET chargeCurrentCount=chargeCurrentCount+1, processedStripeEventIDs=%s WHERE stripeSubscriptionID=%s AND (processedStripeEventIDs IS NULL OR processedStripeEventIDs NOT LIKE %s)", $processedStripeEventIDs, $stripeSubscriptionID, '%' . $wpdb->esc_like( $stripeEventID ) . '%' ) );
+		}
 		self::handleDbError( $queryResult, __FUNCTION__ . '(): an error occurred during update!' );
 
 		return $queryResult;

@@ -943,7 +943,7 @@ class MM_WPFS_CheckoutSubscriptionChargeHandler extends MM_WPFS_CheckoutChargeHa
             $discountItem = $lineItem->discounts[0];
 
             $result->discountAmount = $discountItem->amount;
-            $result->couponCode = $discountItem->discount->coupon['name'];
+            $result->couponCode = $discountItem->discount->coupon->name;
         } else {
             $result->discountAmount = 0;
             $result->couponCode = '';

@@ -4,7 +4,7 @@
 
 namespace StripeWPFS\Composer\Autoload;
 
-class ComposerStaticInit3951a07159ab768396b4f5d073c93f1d
+class ComposerStaticInit969ede60ad6ffeb3abbe53981fa5c94f
 {
     public static $prefixLengthsPsr4 = array (
         'S' =>
@@ -398,9 +398,9 @@ class ComposerStaticInit3951a07159ab768396b4f5d073c93f1d
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit3951a07159ab768396b4f5d073c93f1d::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit3951a07159ab768396b4f5d073c93f1d::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit3951a07159ab768396b4f5d073c93f1d::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit969ede60ad6ffeb3abbe53981fa5c94f::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit969ede60ad6ffeb3abbe53981fa5c94f::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit969ede60ad6ffeb3abbe53981fa5c94f::$classMap;
 
         }, null, ClassLoader::class);
     }

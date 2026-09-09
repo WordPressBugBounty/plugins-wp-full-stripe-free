@@ -4529,13 +4529,10 @@ jQuery.noConflict();
 					currency: ( $form.data( 'wpfs-currency' ) || 'usd' ).toLowerCase(),
 				};
 			}
-			if ( intentType === 'payment' ) {
-				// Mirror the server-side fallback (wpfs-customer.php,
-				// get_Setup_Intent_Client_Secret): the PaymentIntent is always
-				// created with explicit payment_method_types, defaulting to
-				// card/link when the form has none configured. Without the same
-				// default here, Elements runs in "automatic payment methods"
-				// mode and Stripe refuses to confirm the explicit-types intent.
+			if ( intentType === 'payment' && FORM_TYPE_INLINE_PAYMENT === formType  ) {
+				// If the form is a payment form, we need to specify the payment method types to use.
+				// If the form has a data attribute for payment method types, we use that.
+				// Otherwise, we default to card and link.
 				options.paymentMethodTypes = paymentMethodTypes || [
 					'card',
 					'link',
