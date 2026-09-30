@@ -86,7 +86,7 @@ $commission   = 'yes' === $user_version ? '1.9%' : '5%';
                                                 </button>
                                             </p>
 
-                                            <?php if ( ! WPFS_License::is_active() && ( $stripeData->useWpLivePlatform || $stripeData->useWpTestPlatform ) ): ?>
+                                            <?php if ( ! WPFS_License::has_valid_key_for_fees() && ( $stripeData->useWpLivePlatform || $stripeData->useWpTestPlatform ) ): ?>
                                                 <p>
                                                     <?php
                                                       echo sprintf(
@@ -195,7 +195,7 @@ $commission   = 'yes' === $user_version ? '1.9%' : '5%';
                                                 </button>
                                             </p>
 
-                                            <?php if ( ! WPFS_License::is_active() && ( $stripeData->useWpLivePlatform || $stripeData->useWpTestPlatform ) ): ?>
+                                            <?php if ( ! WPFS_License::has_valid_key_for_fees() && ( $stripeData->useWpLivePlatform || $stripeData->useWpTestPlatform ) ): ?>
                                                 <p>
                                                     <?php
                                                       echo sprintf(

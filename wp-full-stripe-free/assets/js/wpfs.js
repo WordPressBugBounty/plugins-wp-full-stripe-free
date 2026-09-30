@@ -1771,6 +1771,9 @@ jQuery.noConflict();
 						// reload (e.g. a failed/missing reCAPTCHA — #520).
 						enableFormButtons( $form );
 						hideLoadingAnimation( $form );
+						// This step verifies and spends the token, so a retry needs
+						// a fresh one (#660).
+						resetCaptcha( $form );
 
 						reject( errorThrown );
 					},
@@ -4347,6 +4350,14 @@ jQuery.noConflict();
 								const freshClientSecret = await WPFS.submitStripeElement( elements, $form );
 								if ( ! freshClientSecret ) return;
 
+								// Preserve the solved nonce to avoid re-verifying token.
+								const wpfsNonce = $form
+									.find( 'input[name="wpfs-nonce"]' )
+									.val();
+								if ( wpfsNonce ) {
+									data[ 'wpfs-nonce' ] = wpfsNonce;
+								}
+
 								data[ 'wpfs-stripe-client-secret' ] = freshClientSecret;
 								data[ 'wpfs-stripe-payment-intent-id' ] = freshClientSecret.substr(
 									0,
@@ -4566,6 +4577,9 @@ jQuery.noConflict();
 		function abortWithStripeError( $form, error ) {
 			enableFormButtons( $form );
 			hideLoadingAnimation( $form );
+			// The captcha token was spent getting the client secret, so the retry
+			// needs a new one or it is rejected until the page reloads (#660).
+			resetCaptcha( $form );
 			showErrorGlobalMessage(
 				$form,
 				wpfsFormSettings.l10n.stripe_errors.internal_error_title,

@@ -5,7 +5,7 @@ Plugin Name: WP Full Pay
 Plugin URI: https://paymentsplugin.com
 Description: Use WP Full Pay to accept Stripe payments on your WordPress. Prebuilt forms to accept payments, donations and subscriptions. 
 Author: Themeisle
-Version: 8.5.6
+Version: 8.5.7
 Author URI: https://themeisle.com
 Text Domain: wp-full-stripe-free
 Domain Path: /languages
@@ -128,6 +128,7 @@ if ( $wpfsDiagCheck ) {
 
     // We hide the license notice as it is not required for this plugin.
     add_filter( $namespace . '_hide_license_notices', '__return_true', 10, 1 );
+    add_action( 'admin_notices', [ 'WPFS_License', 'maybe_render_fee_fallback_notice' ] );
     add_filter( $namespace . '_hide_license_field', '__return_true' );
 
     add_filter( $namespace . '_about_us_metadata', function ( $config ) {
@@ -137,6 +138,23 @@ if ( $wpfsDiagCheck ) {
             'has_upgrade_menu' => ! WPFS_License::is_active(),
             'upgrade_link'     => tsdk_utmify( 'https://paymentsplugin.com/pricing/' ,'admin-menu'),
             'upgrade_text'     => __( 'Get Pro Version', 'wp-full-stripe-free' ),
+        ];
+    } );
+
+    add_filter( $namespace . '_ai_connect_metadata', function () {
+        return [
+            'name'         => 'WP Full Pay',
+            'notice_cases' => [
+                __( 'create payment forms', 'wp-full-stripe-free' ),
+                __( 'look up payments', 'wp-full-stripe-free' ),
+                __( 'review your subscriptions', 'wp-full-stripe-free' ),
+            ],
+            'prompts'      => [
+                __( 'Create an inline donation form called "Spring fundraiser" in WP Full Pay and add it to my Donate page.', 'wp-full-stripe-free' ),
+                __( 'How much did each form take this month?', 'wp-full-stripe-free' ),
+                __( 'Which subscriptions failed to renew this month?', 'wp-full-stripe-free' ),
+            ],
+            'ability_prefix'    => 'fullpay',
         ];
     } );
 

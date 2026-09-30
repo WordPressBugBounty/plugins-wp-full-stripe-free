@@ -94,9 +94,6 @@ class MM_WPFS_Stripe {
 	/* @var string */
 	private $testStripeAcountId;
 
-	/* @var bool */
-	private $validLicense;
-
 	/* @var string */
 	private $connectMode;
 
@@ -133,7 +130,18 @@ class MM_WPFS_Stripe {
 				$this->logger->error( __FUNCTION__, 'Error while initializing the Stripe client', $ex );
 			}
 		}
-		$this->validLicense = WPFS_License::is_active();
+	}
+
+	/**
+	 * Whether the platform may waive its commission. Decided per request:
+	 * this service is constructed while plugins load, before the SDK
+	 * registers its license filter on init, so a boot-time verdict would be
+	 * stale for every payment that follows.
+	 *
+	 * @return bool
+	 */
+	private function hasValidLicense() {
+		return WPFS_License::has_valid_key_for_fees();
 	}
 
 	/**
@@ -336,14 +344,14 @@ class MM_WPFS_Stripe {
 		}
 
 		if ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) {
-			$subscriptionData = array_merge( $subscriptionData, [ 'validLicense' => $this->validLicense ] );
+			$subscriptionData = array_merge( $subscriptionData, [ 'validLicense' => $this->hasValidLicense() ] );
 			$stripeSubscription = $this->remoteRequest(
 				'post',
 				'/subscriptions?mode=test&accountId=' . $this->testStripeAcountId . '&apiVersion=' . $this->userVersion,
 				$subscriptionData
 			);
 		} elseif ( $this->apiMode === 'live' && $this->usingWpLivePlatform ) {
-			$subscriptionData = array_merge( $subscriptionData, [ 'validLicense' => $this->validLicense ] );
+			$subscriptionData = array_merge( $subscriptionData, [ 'validLicense' => $this->hasValidLicense() ] );
 			$stripeSubscription = $this->remoteRequest(
 				'post',
 				'/subscriptions?mode=live&accountId=' . $this->liveStripeAcountId . '&apiVersion=' . $this->userVersion,
@@ -540,14 +548,14 @@ class MM_WPFS_Stripe {
 
 		$stripeSubscription = null;
 		if ( $useTestFunctions ) {
-			$subscriptionData = array_merge( $subscriptionData, [ 'validLicense' => $this->validLicense ] );
+			$subscriptionData = array_merge( $subscriptionData, [ 'validLicense' => $this->hasValidLicense() ] );
 			$stripeSubscription = $this->remoteRequest(
 				'post',
 				'/subscriptions?mode=test&accountId=' . $this->testStripeAcountId . '&apiVersion=' . $this->userVersion,
 				$subscriptionData
 			);
 		} elseif ( $useLiveFunctions ) {
-			$subscriptionData = array_merge( $subscriptionData, [ 'validLicense' => $this->validLicense ] );
+			$subscriptionData = array_merge( $subscriptionData, [ 'validLicense' => $this->hasValidLicense() ] );
 			$stripeSubscription = $this->remoteRequest(
 				'post',
 				'/subscriptions?mode=live&accountId=' . $this->liveStripeAcountId . '&apiVersion=' . $this->userVersion,
@@ -1498,7 +1506,7 @@ class MM_WPFS_Stripe {
 			$paymentIntentParameters = array_merge(
 				$paymentIntentParameters,
 				[
-					'validLicense' => $this->validLicense,
+					'validLicense' => $this->hasValidLicense(),
 				]
 			);
 			$intent = $this->remoteRequest(
@@ -1510,7 +1518,7 @@ class MM_WPFS_Stripe {
 			$paymentIntentParameters = array_merge(
 				$paymentIntentParameters,
 				[
-					'validLicense' => $this->validLicense,
+					'validLicense' => $this->hasValidLicense(),
 				]
 			);
 			$intent = $this->remoteRequest(
@@ -1567,14 +1575,14 @@ class MM_WPFS_Stripe {
 		}
 
 		if ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) {
-			$paymentIntentParameters['validLicense'] = $this->validLicense;
+			$paymentIntentParameters['validLicense'] = $this->hasValidLicense();
 			$intent = $this->remoteRequest(
 				'post',
 				'/payment_intents?mode=test&accountId=' . $this->testStripeAcountId . '&apiVersion=' . $this->userVersion,
 				apply_filters( 'fullstripe_payment_intent_parameters', $paymentIntentParameters )
 			);
 		} elseif ( $this->apiMode === 'live' && $this->usingWpLivePlatform ) {
-			$paymentIntentParameters['validLicense'] = $this->validLicense;
+			$paymentIntentParameters['validLicense'] = $this->hasValidLicense();
 			$intent = $this->remoteRequest(
 				'post',
 				'/payment_intents?mode=live&accountId=' . $this->liveStripeAcountId . '&apiVersion=' . $this->userVersion,
@@ -1684,7 +1692,7 @@ class MM_WPFS_Stripe {
 
 		if ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) {
 			// add the license key to the invoice params
-			$invoiceParams = array_merge( $invoiceParams, [ 'validLicense' => $this->validLicense ] );
+			$invoiceParams = array_merge( $invoiceParams, [ 'validLicense' => $this->hasValidLicense() ] );
 			// create invoice
 			$createdInvoice = $this->remoteRequest(
 				'post',
@@ -1701,7 +1709,7 @@ class MM_WPFS_Stripe {
 			);
 		} elseif ( $this->apiMode === 'live' && $this->usingWpLivePlatform ) {
 			// add the license key to the invoice params
-			$invoiceParams = array_merge( $invoiceParams, [ 'validLicense' => $this->validLicense ] );
+			$invoiceParams = array_merge( $invoiceParams, [ 'validLicense' => $this->hasValidLicense() ] );
 			// create invoice
 			$createdInvoice = $this->remoteRequest(
 				'post',
@@ -2069,10 +2077,6 @@ class MM_WPFS_Stripe {
 				$params
 			);
 		} else {
-			// We have to use these for non-connect accounts
-			unset( $params['automatic_payment_methods'] );
-			$params['payment_method_types'] = [ 'card', 'link' ];
-
 			$setupIntent = json_decode( $this->stripe->setupIntents->create( $params )->toJSON() );
 		}
 
@@ -2880,7 +2884,6 @@ class MM_WPFS_Stripe {
 		$updateIntentBody = [
 			"metadata" => $paymentIntent->metadata,
 			"description" => $paymentIntent->description,
-			"validLicense" => $this->validLicense,
 		];
 
 		if ( isset( $stripeReceiptEmailAddress ) ) {
@@ -2896,12 +2899,14 @@ class MM_WPFS_Stripe {
 		}
 
 		if ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) {
+			$updateIntentBody['validLicense'] = $this->hasValidLicense();
 			$this->remoteRequest(
 				'post',
 				'/payment_intents/' . $paymentIntent->id . '?mode=test&accountId=' . $this->testStripeAcountId . '&apiVersion=' . $this->userVersion,
 				$updateIntentBody
 			);
 		} elseif ( $this->apiMode === 'live' && $this->usingWpLivePlatform ) {
+			$updateIntentBody['validLicense'] = $this->hasValidLicense();
 			$this->remoteRequest(
 				'post',
 				'/payment_intents/' . $paymentIntent->id . '?mode=live&accountId=' . $this->liveStripeAcountId . '&apiVersion=' . $this->userVersion,
@@ -3074,14 +3079,14 @@ class MM_WPFS_Stripe {
 		$session = null;
 		$parameters = apply_filters( 'fullstripe_checkout_session_parameters', $parameters );
 		if ( $this->apiMode === 'test' && $this->usingWpTestPlatform ) {
-			$parameters = array_merge( $parameters, [ 'validLicense' => $this->validLicense ] );
+			$parameters = array_merge( $parameters, [ 'validLicense' => $this->hasValidLicense() ] );
 			$session = $this->remoteRequest(
 				'post',
 				'/checkout?mode=test&accountId=' . $this->testStripeAcountId . '&apiVersion=' . $this->userVersion,
 				apply_filters( 'fullstripe_checkout_session_parameters', $parameters )
 			);
 		} elseif ( $this->apiMode === 'live' && $this->usingWpLivePlatform ) {
-			$parameters = array_merge( $parameters, [ 'validLicense' => $this->validLicense ] );
+			$parameters = array_merge( $parameters, [ 'validLicense' => $this->hasValidLicense() ] );
 			$session = $this->remoteRequest(
 				'post',
 				'/checkout?mode=live&accountId=' . $this->liveStripeAcountId . '&apiVersion=' . $this->userVersion,

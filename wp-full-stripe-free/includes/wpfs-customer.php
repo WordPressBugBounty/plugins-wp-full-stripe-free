@@ -1031,13 +1031,30 @@ class MM_WPFS_Customer {
 				For all the form that enters, the `validateForm` method is working only with MM_WPFS_Public_InlinePaymentFormModel and MM_WPFS_Public_InlineDonationFormModel branch check. This makes that $paymentFormModel->getForm() to be null for all other forms (since it fails the DB lookup), thus using only the `createSetupIntent`.
 			*/
 			$paymentFormModel = $this->getFormModel( $form_type );
+			// This step creates the Stripe object, so the captcha must be verified against
+			// Google here; the nonce it returns is proof for the later save/charge steps only.
+			$paymentFormModel->setRequireFreshCaptcha( true );
 			$bindingResult = $paymentFormModel->bind();
 
-			// Donation forms create a real PaymentIntent here — block on validation errors (e.g. missing reCAPTCHA) before that (#520). Other types bind partially (NOTE 1.1) and are checked at charge.
-			if ( MM_WPFS::FORM_TYPE_INLINE_DONATION === $form_type && $bindingResult->hasErrors() ) {
+			// Block donation forms on validation errors before creating a PaymentIntent.
+			$blockBeforeIntent = MM_WPFS::FORM_TYPE_INLINE_DONATION === $form_type
+				? $bindingResult->hasErrors()
+				: (
+					// Other inline forms create Stripe objects here, so bad or
+					// missing captcha must block them all.
+					$bindingResult->hasFieldErrors( MM_WPFS_Public_FormModel::PARAM_GOOGLE_RECAPTCHA_RESPONSE )
+					// Only resolved inline payments can have meaningful global errors.
+					|| (
+						MM_WPFS::FORM_TYPE_INLINE_PAYMENT === MM_WPFS_Utils::getFormType( $paymentFormModel->getForm() )
+						&& $bindingResult->hasGlobalErrors()
+					)
+				);
+
+			if ( $blockBeforeIntent ) {
 				$return = MM_WPFS_Utils::generateReturnValueFromBindings( $bindingResult );
-				// Top-level message so the front-end error handler can display it.
-				$fieldErrors = $bindingResult->getFieldErrors();
+				// Prefer the captcha error for the front-end handler.
+				$captchaErrors = $bindingResult->getFieldErrors( MM_WPFS_Public_FormModel::PARAM_GOOGLE_RECAPTCHA_RESPONSE );
+				$fieldErrors = ! empty( $captchaErrors ) ? $captchaErrors : $bindingResult->getFieldErrors();
 				$globalErrors = $bindingResult->getGlobalErrors();
 				$return['message'] = ! empty( $fieldErrors ) ? $fieldErrors[0]['message'] : reset( $globalErrors );
 

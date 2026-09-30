@@ -477,6 +477,9 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	protected $couponCode;
 	protected $ipAddress;
 
+	/** @var bool */
+	protected $__requireFreshCaptcha = false;
+
 	protected $__form;
 	protected $__formHash;
 	protected $__billingAddressCountryComposite;
@@ -1106,6 +1109,27 @@ abstract class MM_WPFS_Public_FormModel implements MM_WPFS_Binder
 	public function setNonce($nonce)
 	{
 		$this->nonce = $nonce;
+	}
+
+	/**
+	 * Forces reCAPTCHA verification against Google, ignoring any nonce in the
+	 * request. Set by handlers that create Stripe objects.
+	 *
+	 * @param bool $requireFreshCaptcha
+	 *
+	 * @return void
+	 */
+	public function setRequireFreshCaptcha($requireFreshCaptcha)
+	{
+		$this->__requireFreshCaptcha = (bool) $requireFreshCaptcha;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function getRequireFreshCaptcha()
+	{
+		return $this->__requireFreshCaptcha;
 	}
 
 	/**

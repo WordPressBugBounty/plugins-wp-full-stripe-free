@@ -441,7 +441,8 @@ class MM_WPFS_FormValidator extends MM_WPFS_Validator {
 			if ( is_null( $formModelObject->getGoogleReCaptchaResponse() ) ) {
 				$bindingResult->addFieldError( $fieldName, $fieldId, $error );
 			} else {
-				if ( empty( $formModelObject->getNonce() ) ) {
+				// Set by the handler; do not trust the bound action.
+				if ( $formModelObject->getRequireFreshCaptcha() || empty( $formModelObject->getNonce() ) ) {
 					$googleReCaptchaVerificationResult = MM_WPFS_ReCaptcha::verifyReCAPTCHA( $this->staticContext, $formModelObject->getGoogleReCaptchaResponse() );
 					if ( $googleReCaptchaVerificationResult === false ) {
 						$bindingResult->addFieldError( $fieldName, $fieldId, $error );
@@ -643,11 +644,7 @@ class MM_WPFS_InlinePaymentFormValidator extends MM_WPFS_PaymentFormValidator {
 			if ( $formModelObject instanceof MM_WPFS_Public_InlinePaymentFormModel ) {
 				$this->validateInlineFields( $bindingResult, $formModelObject );
 				$this->validateInlineTaxFields( $bindingResult, $formModelObject );
-
-				// Skip reCaptcha validation for Setup Intents.
-				if ( 'wp_get_Setup_Intent_Client_Secret' !== $formModelObject->getAction() ) {
-					$this->validateGoogleReCaptcha( $bindingResult, $formModelObject );
-				}
+				$this->validateGoogleReCaptcha( $bindingResult, $formModelObject );
 			}
 		}
 	}

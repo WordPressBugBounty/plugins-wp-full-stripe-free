@@ -4,8 +4,8 @@
  *
  */
 
-// Don't show if user already has a valid license
-if ( WPFS_License::is_active() ) {
+// Don't show if the user is not being charged the transaction fee
+if ( WPFS_License::has_valid_key_for_fees() ) {
 	return;
 }
 
