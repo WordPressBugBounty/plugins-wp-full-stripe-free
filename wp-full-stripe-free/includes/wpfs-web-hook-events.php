@@ -1494,7 +1494,8 @@ class MM_WPFS_ChargeSucceeded extends MM_WPFS_EventProcessor
 				'formName' => isset( $metadata->form_name ) ? $metadata->form_name : '',
 				'ipAddressSubmit' => isset( $metadata->ip_address ) ? $metadata->ip_address : '',
 				'customFields' => isset( $metadata->custom_fields ) ? $metadata->custom_fields : null,
-				'phoneNumber' => ! empty( $metadata->cardholder_phone ) ? $metadata->cardholder_phone : null
+				'phoneNumber' => ! empty( $metadata->cardholder_phone ) ? $metadata->cardholder_phone : null,
+				'afterChargeActionFired' => 0,
 			];
 
 			global $wpdb;

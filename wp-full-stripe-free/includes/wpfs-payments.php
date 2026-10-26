@@ -156,6 +156,21 @@ class MM_WPFS_Stripe {
 	}
 
 	/**
+	 * Makes sure the Stripe client is usable before it is dereferenced.
+	 *
+	 * The constructor leaves it null when no API token is stored or the client cannot be built,
+	 * so every direct-client branch has to check it.
+	 *
+	 * @return void
+	 * @throws WPFS_UserFriendlyException
+	 */
+	private function assertStripeClient(): void {
+		if ( is_null( $this->stripe ) ) {
+			throw new WPFS_UserFriendlyException( __( 'Stripe client is not initialized.', 'wp-full-stripe-free' ) );
+		}
+	}
+
+	/**
 	 * @param $context MM_WPFS_StaticContext
 	 * @param $liveMode
 	 * @return mixed
@@ -646,9 +661,7 @@ class MM_WPFS_Stripe {
 				'/customers/' .$customerId . '?mode=live&accountId=' . $this->liveStripeAcountId . '&' . $query_string
 			);
 		} else {
-			if ( is_null( $this->stripe ) ) {
-				throw new WPFS_UserFriendlyException( __( 'Stripe client is not initialized.', 'wp-full-stripe-free' ) );
-			}
+			$this->assertStripeClient();
 			$customer = json_decode( $this->stripe->customers->retrieve( $customerId, $params )->toJSON() );
 		}
 
@@ -972,9 +985,7 @@ class MM_WPFS_Stripe {
 			);
 			$customers = $customers->data;
 		} else {
-			if ( is_null( $this->stripe ) ) {
-				throw new WPFS_UserFriendlyException( __( 'Stripe client is not initialized.', 'wp-full-stripe-free' ) );
-			}
+			$this->assertStripeClient();
 			$customers = json_decode( $this->stripe->customers->all( $params )->toJSON() );
 		}
 		return $customers;
@@ -1115,9 +1126,7 @@ class MM_WPFS_Stripe {
 				);
 				$prices = array_merge( $prices, $priceCollection->data );
 			} else {
-				if ( is_null( $this->stripe ) ) {
-					throw new WPFS_UserFriendlyException( __( 'Stripe client is not initialized.', 'wp-full-stripe-free' ) );
-				}
+				$this->assertStripeClient();
 				$priceCollection = $this->stripe->prices->all( $params );
 				$prices = array_merge( $prices, $priceCollection['data'] );
 			}
@@ -1527,6 +1536,7 @@ class MM_WPFS_Stripe {
 				apply_filters( 'fullstripe_payment_intent_parameters', $paymentIntentParameters )
 			);
 		} else {
+			$this->assertStripeClient();
 			$paymentIntentParameters['automatic_payment_methods']['enabled'] = false;
 			$intent = json_decode( $this->stripe->paymentIntents->create(
 				apply_filters(
@@ -1589,6 +1599,7 @@ class MM_WPFS_Stripe {
 				apply_filters( 'fullstripe_payment_intent_parameters', $paymentIntentParameters )
 			);
 		} else {
+			$this->assertStripeClient();
 			$intent = json_decode( $this->stripe->paymentIntents->create(
 				apply_filters(
 					'fullstripe_payment_intent_parameters',
@@ -1982,6 +1993,7 @@ class MM_WPFS_Stripe {
 				'/checkout/' .$sessionId . '?mode=live&accountId=' . $this->liveStripeAcountId . '&' . $query_string
 			);
 		} else {
+			$this->assertStripeClient();
 			$checkoutSession = json_decode( $this->stripe->checkout->sessions->retrieve( $sessionId, $params )->toJSON() );
 		}
 
@@ -2077,6 +2089,7 @@ class MM_WPFS_Stripe {
 				$params
 			);
 		} else {
+			$this->assertStripeClient();
 			$setupIntent = json_decode( $this->stripe->setupIntents->create( $params )->toJSON() );
 		}
 
@@ -2522,9 +2535,7 @@ class MM_WPFS_Stripe {
 				'/subscriptions/' . $subscriptionID . '?mode=live&accountId=' . $this->liveStripeAcountId
 			);
 		} else {
-			if ( is_null( $this->stripe ) ) {
-				throw new WPFS_UserFriendlyException( __( 'Stripe client is not initialized.', 'wp-full-stripe-free' ) );
-			}
+			$this->assertStripeClient();
 			$subscription = json_decode( $this->stripe->subscriptions->retrieve( $subscriptionID )->toJSON() );
 		}
 		return $subscription;
@@ -2552,9 +2563,7 @@ class MM_WPFS_Stripe {
 				'/subscriptions/' . $subscriptionId . '?mode=live&accountId=' . $this->liveStripeAcountId . '&' . $query_string
 			);
 		} else {
-			if ( is_null( $this->stripe ) ) {
-				throw new WPFS_UserFriendlyException( __( 'Stripe client is not initialized.', 'wp-full-stripe-free' ) );
-			}
+			$this->assertStripeClient();
 			$stripeSubscription = json_decode( $this->stripe->subscriptions->retrieve(
 				$subscriptionId,
 				$params

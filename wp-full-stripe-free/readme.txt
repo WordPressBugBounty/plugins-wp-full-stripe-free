@@ -4,7 +4,7 @@ Tags: stripe, payment forms, donations, subscriptions, credit card
 Requires at least: 5.3
 Requires PHP: 7.4
 Tested up to: 7.1
-Stable tag: 8.5.7
+Stable tag: 8.5.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -283,12 +283,11 @@ WP Full Pay fully supports Strong Customer Authentication (SCA) requirements for
 
 == Changelog ==
 
-#####   Version 8.5.7 (2026-09-30)
+#####   Version 8.5.8 (2026-10-26)
 
-- Fixed inline payment forms creating Stripe payment attempts before reCAPTCHA validation.
-- Fixed inline subscriptions failing when merchants use direct Stripe API keys.
-- Fixed 5% fees on licensed sites when payments use a different URL.
-- Added AI agent support: let AI assistants read and change your WP Full Pay forms and settings.
+- Fixed payment forms crashing when Stripe client is unavailable
+- Fixed Stripe client retrieval before creating the checkout session
+- Fixed donation action firing only once per PaymentIntent
 - Updated dependencies
 
 

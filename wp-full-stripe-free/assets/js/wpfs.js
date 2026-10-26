@@ -4322,6 +4322,8 @@ jQuery.noConflict();
 												name: 'wpfs-stripe-payment-method-id',
 												value: confirmResult.paymentIntent.payment_method,
 											} ).appendTo( $form );
+											removePaymentIntentClientSecretInput( $form );
+											addPaymentIntentClientSecretInput( $form, freshClientSecret );
 											submitPaymentData( $form, cardElement );
 										} else {
 											if ( data && ( data.messageTitle || data.message ) ) {

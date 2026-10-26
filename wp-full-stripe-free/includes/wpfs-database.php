@@ -575,6 +575,7 @@ class MM_WPFS_Database {
         ipAddressSubmit VARCHAR(64),
         customFields TEXT,
         phoneNumber VARCHAR(64),
+        afterChargeActionFired TINYINT(1) NOT NULL DEFAULT '1',
         PRIMARY KEY (donationID),
 		KEY stripeSubscriptionID (stripeSubscriptionID),
 		KEY stripePaymentIntentID (stripePaymentIntentID),
@@ -822,7 +823,8 @@ class MM_WPFS_Database {
 			'formName' => $donationFormModel->getForm()->name,
 			'ipAddressSubmit' => $donationFormModel->getIpAddress(),
 			'customFields' => $donationFormModel->getCustomFieldsJSON(),
-			'phoneNumber' => empty( $donationFormModel->getCardHolderPhone() ) ? null : $donationFormModel->getCardHolderPhone()
+			'phoneNumber' => empty( $donationFormModel->getCardHolderPhone() ) ? null : $donationFormModel->getCardHolderPhone(),
+			'afterChargeActionFired' => 0,
 		];
 
 		$insertResult = $wpdb->insert( $wpdb->prefix . 'fullstripe_donations', apply_filters( 'fullstripe_insert_donation_data', $data ) );
@@ -2723,6 +2725,41 @@ class MM_WPFS_Database {
 		global $wpdb;
 
 		return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}fullstripe_donations WHERE stripePaymentIntentID=%s", $paymentIntentId ) );
+	}
+
+	/**
+	 * Claims the after-charge action for a PaymentIntent, so it is dispatched exactly once.
+	 *
+	 * All callers conditionally claim the earliest donation row for this PaymentIntent. This prevents
+	 * duplicate claims when concurrent check-then-insert races create multiple rows. Rows written without
+	 * an explicit 0 - from before the claim existed - default to 1, so they are never claimable.
+	 *
+	 * @param string $paymentIntentId The PaymentIntent of the donation.
+	 *
+	 * @return bool true when this caller claimed the action, false when it is already claimed or no
+	 *              donation row exists to claim.
+	 */
+	public function claimDonationAfterChargeAction( $paymentIntentId ) {
+		global $wpdb;
+
+		if ( empty( $paymentIntentId ) ) {
+			return false;
+		}
+
+		$claimed = $wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$wpdb->prefix}fullstripe_donations SET afterChargeActionFired=1
+				  WHERE donationID = ( SELECT donationID FROM (
+				           SELECT MIN(donationID) AS donationID FROM {$wpdb->prefix}fullstripe_donations WHERE stripePaymentIntentID=%s
+				       ) AS earliest )
+				    AND afterChargeActionFired=0",
+				$paymentIntentId
+			)
+		);
+
+		self::handleDbError( $claimed, __FUNCTION__ . '(): an error occurred during update!' );
+
+		return is_numeric( $claimed ) && $claimed > 0;
 	}
 
 	public function updateDonationByPaymentIntentId( $paymentIntentId, $data ) {

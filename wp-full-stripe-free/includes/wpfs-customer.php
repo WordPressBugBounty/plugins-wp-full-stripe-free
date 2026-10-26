@@ -1855,6 +1855,11 @@ class MM_WPFS_Customer {
 	 * @param $paymentIntent \StripeWPFS\Stripe\PaymentIntent
 	 */
 	protected function fireAfterInlineDonationAction( $donationFormModel, $transactionData, $paymentIntent ) {
+		// Exactly once per PaymentIntent, whichever request or webhook recorded the row.
+		if ( ! $this->db->claimDonationAfterChargeAction( $paymentIntent->id ) ) {
+			return;
+		}
+
 		$replacer = new MM_WPFS_DonationMacroReplacer( $donationFormModel->getForm(), $transactionData, $this->loggerService );
 
 		$params = [
@@ -1954,12 +1959,13 @@ class MM_WPFS_Customer {
 				);
 			} elseif ( $paymentIntent !== null && $this->paymentIntentSucceeded( $paymentIntent ) ) {
 
+				$this->setInvoiceDataFromPaymentIntent( $paymentIntent, $transactionData );
+
 				if ( null === $this->db->getDonationByPaymentIntentId( $paymentIntent->id ) ) {
-					$this->setInvoiceDataFromPaymentIntent( $paymentIntent, $transactionData );
-	
-					$this->db->insertInlineDonation( $donationFormModel, $paymentIntent, $subscription, $latestCharge );	
-					$this->fireAfterInlineDonationAction( $donationFormModel, $transactionData, $paymentIntent );
+					$this->db->insertInlineDonation( $donationFormModel, $paymentIntent, $subscription, $latestCharge );
 				}
+
+				$this->fireAfterInlineDonationAction( $donationFormModel, $transactionData, $paymentIntent );
 
 				$this->createPaymentIntentResultSuccess(
 					$paymentIntentResult,
@@ -4079,6 +4085,25 @@ class MM_WPFS_Customer {
 	}
 
 	/**
+	 * The submitted PaymentIntent, only if the client knows its client_secret and it is bound to the donation form.
+	 *
+	 * @param MM_WPFS_Public_InlineDonationFormModel $donationFormModel The donation form model.
+	 * @return \StripeWPFS\Stripe\PaymentIntent|null
+	 */
+	private function getVerifiedDonationPaymentIntent( MM_WPFS_Public_InlineDonationFormModel $donationFormModel ) {
+		$paymentIntent = $this->getClientSecretVerifiedPaymentIntent(
+			$donationFormModel->getStripePaymentIntentId(),
+			$donationFormModel->getStripePaymentIntentClientSecret()
+		);
+
+		if ( is_null( $paymentIntent ) || ! $this->isPaymentIntentBoundToForm( $paymentIntent, MM_WPFS::FORM_TYPE_INLINE_DONATION, $donationFormModel->getForm() ) ) {
+			return null;
+		}
+
+		return $paymentIntent;
+	}
+
+	/**
 	 * The products configured on a form, read from the form record: decoratedProducts for payment
 	 * forms, decoratedPlans for subscription forms. Custom-amount-only forms have none.
 	 *
@@ -4494,7 +4519,27 @@ class MM_WPFS_Customer {
 		$paymentIntentResult->setNonce( $donationFormModel->getNonce() );
 		// get the payment intent from Stripe to be able to react to status etc.
 		if ( $donationFormModel->getStripePaymentIntentId() ) {
-			$donationFormModel->setStripePaymentIntent( $this->stripe->retrievePaymentIntent( $donationFormModel->getStripePaymentIntentId() ) );
+			$submittedPaymentIntent = $this->getVerifiedDonationPaymentIntent( $donationFormModel );
+
+			if ( is_null( $submittedPaymentIntent ) ) {
+				$this->logger->error(
+					__FUNCTION__,
+					sprintf(
+						'PaymentIntent %1$s does not belong to the donation submitted on form %2$s, refusing the charge.',
+						$donationFormModel->getStripePaymentIntentId(),
+						$donationFormModel->getFormName()
+					)
+				);
+
+				return $this->createPaymentIntentResultFailed(
+					$paymentIntentResult,
+					/* translators: Banner title of failed transaction */
+					__( 'Failed', 'wp-full-stripe-free' ),
+					__( 'Invalid request', 'wp-full-stripe-free' )
+				);
+			}
+
+			$donationFormModel->setStripePaymentIntent( $submittedPaymentIntent );
 			if ( isset( $donationFormModel->getStripePaymentIntent()->latest_charge ) ) {
 				$latest_charge = $donationFormModel->getStripePaymentIntent()->latest_charge;
 				if ( is_string( $latest_charge ) ) {
@@ -4649,10 +4694,12 @@ class MM_WPFS_Customer {
 				$latestCharge = $this->stripe->getLatestCharge( $paymentIntent );
 
 				if ( $latestCharge !== null ) {
- 					if ( null === $this->db->getDonationByPaymentIntentId( $paymentIntent->id ) ) {
- 						$this->db->insertInlineDonation( $donationFormModel, $paymentIntent, null, $latestCharge );
- 						$this->fireAfterInlineDonationAction( $donationFormModel, $transactionData, $paymentIntent );
- 					}
+					if ( null === $this->db->getDonationByPaymentIntentId( $paymentIntent->id ) ) {
+						$this->db->insertInlineDonation( $donationFormModel, $paymentIntent, null, $latestCharge );
+					}
+
+					// Not tied to the insert: the webhook fallback may have recorded the donation first.
+					$this->fireAfterInlineDonationAction( $donationFormModel, $transactionData, $paymentIntent );
 
 					$this->createPaymentIntentResultSuccess(
 						$paymentIntentResult,
