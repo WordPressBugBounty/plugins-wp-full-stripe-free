@@ -1,11 +1,15 @@
 <?php
-    /** @var $view MM_WPFS_Admin_PaymentFormView */
+use ThemeIsle\WPFullPay\Admin\Views\PaymentFormView;
+use ThemeIsle\WPFullPay\Locale\Currencies;
+use ThemeIsle\WPFullPay\Main;
+
+    /** @var $view PaymentFormView */
     /** @var $form */
     /** @var $data */
 ?>
 <div class="wpfs-form-group js-payment-type" data-payment-type="list-of-products">
     <label for="" class="wpfs-form-label"><?php esc_html_e( 'Available products', 'wp-full-stripe-free' ); ?></label>
-    <div id="<?php echo MM_WPFS_Admin_PaymentFormView::FIELD_FORM_ONETIME_PRODUCTS_ERROR; ?>" class="wpfs-field-list" data-field-name="<?php echo MM_WPFS_Admin_PaymentFormView::FIELD_FORM_ONETIME_PRODUCTS_ERROR; ?>">
+    <div id="<?php echo PaymentFormView::FIELD_FORM_ONETIME_PRODUCTS_ERROR; ?>" class="wpfs-field-list" data-field-name="<?php echo PaymentFormView::FIELD_FORM_ONETIME_PRODUCTS_ERROR; ?>">
         <div id="wpfs-onetime-products" class="wpfs-field-list__list js-sortable ui-sortable"></div>
         <a class="wpfs-field-list__add js-add-onetime-product" href="">
             <div class="wpfs-icon-add-circle wpfs-field-list__icon"></div>
@@ -20,15 +24,15 @@
 <input id="<?php $view->onetimeProducts()->id(); ?>" name="<?php $view->onetimeProducts()->name(); ?>" value="" <?php $view->onetimeProducts()->attributes(); ?>>
 <script type="text/javascript">
     var wpfsOnetimeProducts = <?php echo json_encode( $data->products ); ?>;
-    var wpfsCurrencies = <?php echo json_encode( MM_WPFS_Currencies::getAvailableCurrencies() ); ?>;
+    var wpfsCurrencies = <?php echo json_encode( Currencies::getAvailableCurrencies() ); ?>;
 </script>
 <script type="text/template" id="wpfs-modal-remove-onetime-product">
     <div class="wpfs-dialog-scrollable">
         <p class="wpfs-dialog-content-text"><%- confirmationMessage %></p>
     </div>
     <div class="wpfs-dialog-content-actions">
-        <button class="wpfs-btn wpfs-btn-danger js-remove-onetime-product-dialog"><?php _e( 'Remove product', 'wp-full-stripe-free'); ?></button>
-        <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php _e( 'Keep product', 'wp-full-stripe-free' ); ?></button>
+        <button class="wpfs-btn wpfs-btn-danger js-remove-onetime-product-dialog"><?php esc_html_e( 'Remove product', 'wp-full-stripe-free'); ?></button>
+        <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php esc_html_e( 'Keep product', 'wp-full-stripe-free' ); ?></button>
     </div>
 </script>
 <script type="text/template" id="wpfs-onetime-product-template">
@@ -75,16 +79,16 @@
     <div class="js-add-product-step-4">
         <div class="wpfs-dialog-scrollable">
             <div class="wpfs-form-group">
-                <label for="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-name" class="wpfs-form-label"><?php esc_html_e('Product Name', 'wp-full-stripe-free'); ?></label>
-                <input id="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-name" class="wpfs-form-control" type="text" name="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-name">
+                <label for="wpfs-create-product-label--<?php echo Main::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-name" class="wpfs-form-label"><?php esc_html_e('Product Name', 'wp-full-stripe-free'); ?></label>
+                <input id="wpfs-create-product-label--<?php echo Main::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-name" class="wpfs-form-control" type="text" name="wpfs-create-product-label--<?php echo Main::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-name">
             </div>
             <div class="wpfs-form-group">
-                <label for="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-price" class="wpfs-form-label"><?php esc_html_e('Produce Price', 'wp-full-stripe-free'); ?></label>
+                <label for="wpfs-create-product-label--<?php echo Main::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-price" class="wpfs-form-label"><?php esc_html_e('Produce Price', 'wp-full-stripe-free'); ?></label>
                 <div class="wpfs-input-group">
                     <div class="wpfs-input-group-prepend">
-                        <span class="wpfs-input-group-text wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-currency-placeholder">$</span>
+                        <span class="wpfs-input-group-text wpfs-create-product-label--<?php echo Main::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-currency-placeholder">$</span>
                     </div>
-                    <input id="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-price" class="wpfs-input-group-form-control" type="text" name="wpfs-create-product-label--<?php echo MM_WPFS::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-price">
+                    <input id="wpfs-create-product-label--<?php echo Main::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-price" class="wpfs-input-group-form-control" type="text" name="wpfs-create-product-label--<?php echo Main::FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT; ?>-price">
                 </div>
             </div>
         </div>

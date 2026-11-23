@@ -1,5 +1,7 @@
 <?php
-    /** @var $view MM_WPFS_Admin_FormsAppearanceView */
+use ThemeIsle\WPFullPay\Admin\Views\FormsAppearanceView;
+
+    /** @var $view FormsAppearanceView */
     /** @var $formsAppearance */
 ?>
 <form <?php $view->formAttributes(); ?>>
@@ -26,7 +28,7 @@
                     <div class="wpfs-inline-message__title"><?php esc_html_e( 'About custom CSS styles', 'wp-full-stripe-free' ); ?></div>
                     <p><?php esc_html_e( "Add styling to your forms. Proceed only if you know what you're doing!", 'wp-full-stripe-free' ); ?></p>
                     <p>
-                        <a class="wpfs-btn wpfs-btn-link" href="https://docs.themeisle.com/article/2114-customizing-forms-with-css" target="_blank"><?php esc_html_e( 'Learn more about custom CSS styles', 'wp-full-stripe-free' ); ?></a>
+                        <a class="wpfs-btn wpfs-btn-link" href="<?php echo esc_url( tsdk_utmify( 'https://docs.themeisle.com/wp-full-pay/customizing-forms-with-css', 'custom-css', 'settings' ) ); ?>" target="_blank"><?php esc_html_e( 'Learn more about custom CSS styles', 'wp-full-stripe-free' ); ?></a>
                     </p>
                 </div>
             </div>

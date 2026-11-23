@@ -11,21 +11,21 @@
         echo '</div></div>';
         }
         $currentGroup = $item['group']['slug'];
-        echo '<div class="wpfs-page-settings-sidebar-group" id="group-' . $currentGroup . '"><h3>' . $item['group']['title'] . '</h3><div class="wpfs-page-settings-sidebar-items">';
+        echo '<div class="wpfs-page-settings-sidebar-group" id="group-' . $currentGroup . '"><h3>' . esc_html( $item['group']['title'] ) . '</h3><div class="wpfs-page-settings-sidebar-items">';
     }
     ?>
     <?php if ($item['disabled']) { ?>
         <div class="wpfs-page-settings-sidebar__item" style="opacity: 0.5; cursor: not-allowed;">
         <div class="<?php echo $item['cssClasses']; ?> wpfs-page-settings-sidebar__icon"></div>
         <div class="wpfs-page-settings-sidebar__title">
-        <?php echo $item['title']; ?>
+        <?php echo esc_html( $item['title'] ); ?>
         </div>
         </div>
     <?php } else { ?>
         <a class="wpfs-page-settings-sidebar__item<?php echo ( $item['slug'] === $pageSlug ) ? ' active' : ''; ?>" href="<?php echo $item['url']; ?>">
         <div class="<?php echo $item['cssClasses']; ?> wpfs-page-settings-sidebar__icon"></div>
         <div class="wpfs-page-settings-sidebar__title">
-        <?php echo $item['title']; ?>
+        <?php echo esc_html( $item['title'] ); ?>
         </div>
         </a>
     <?php } ?>

@@ -1,6 +1,10 @@
 <?php
+use ThemeIsle\WPFullPay\CustomerPortal\CustomerPortalModel;
+use ThemeIsle\WPFullPay\CustomerPortal\CustomerPortalService;
+use ThemeIsle\WPFullPay\ViewTemplateUtils;
+
 /**
- * @var MM_WPFS_CustomerPortalModel $model
+ * @var CustomerPortalModel $model
  */
 ?>
 <div id="wpfs-manage-subscriptions-container" class="wpfs-form wpfs-w-60">
@@ -8,17 +12,17 @@
 	<div class="wpfs-form-lead">
 		<div class="wpfs-form-description wpfs-form-description--sm">
             <?php
-                $orNeeded = $model->getAuthenticationType() == MM_WPFS_CustomerPortalModel::AUTHENTICATION_TYPE_PLUGIN && $model->isAccountSelectorNeeded();
-                $commaNeeded = $model->getAuthenticationType() == MM_WPFS_CustomerPortalModel::AUTHENTICATION_TYPE_PLUGIN && $model->isAccountSelectorNeeded();
+                $orNeeded = $model->getAuthenticationType() == CustomerPortalModel::AUTHENTICATION_TYPE_PLUGIN && $model->isAccountSelectorNeeded();
+                $commaNeeded = $model->getAuthenticationType() == CustomerPortalModel::AUTHENTICATION_TYPE_PLUGIN && $model->isAccountSelectorNeeded();
             ?>
-			<?php echo sprintf( /* translators: p1: Subscriber's email address p2: Stripe customer id */ __( 'You can manage the payment method and subscriptions associated with <strong title="%2$s">%1$s</strong>.', 'wp-full-stripe-free' ), $model->getCustomerEmail(), $model->getStripeCustomer()->id ); ?>
+			<?php echo wp_kses_post( sprintf( /* translators: p1: Subscriber's email address p2: Stripe customer id */ __( 'You can manage the payment method and subscriptions associated with <strong title="%2$s">%1$s</strong>.', 'wp-full-stripe-free' ), esc_html( $model->getCustomerEmail() ), esc_attr( $model->getStripeCustomer()->id ) ) ); ?>
             <?php if ( $model->isAccountSelectorNeeded() ) { ?>
                     <a href="" id="wpfs-anchor-select-account"><?php /* translators: Link text for select account link */ esc_html_e( 'Select account', 'wp-full-stripe-free' ); ?></a>
             <?php } ?>
             <?php if ( $orNeeded ) { ?>
             <?php /* translators: We must display 'or' when there are two possible actions */ esc_html_e( 'or', 'wp-full-stripe-free' ); ?>
             <?php } ?>
-            <?php if ( $model->getAuthenticationType() == MM_WPFS_CustomerPortalModel::AUTHENTICATION_TYPE_PLUGIN ): ?>
+            <?php if ( $model->getAuthenticationType() == CustomerPortalModel::AUTHENTICATION_TYPE_PLUGIN ): ?>
                 <a href="" id="wpfs-anchor-logout" ><?php /* translators: Link text for log out link */ esc_html_e( 'Log out', 'wp-full-stripe-free' ); ?></a>
             <?php endif; ?>
             <?php if ( $commaNeeded ) { ?>
@@ -26,7 +30,7 @@
             <?php } ?>
 		</div>
 	</div>
-	<?php MM_WPFS_ViewTemplateUtils::fullstripe_customer_portal_header( $model ); ?>
+	<?php ViewTemplateUtils::fullstripe_customer_portal_header( $model ); ?>
 	<div class="wpfs-form-subtitle"><?php /* translators: Label for the Update card section */ esc_html_e( 'Credit/debit card', 'wp-full-stripe-free' ); ?></div>
 	<form id="wpfs-default-card-form">
 		<div class="wpfs-credit-cards">
@@ -68,8 +72,16 @@
     <div class="wpfs-form-subtitle" id="wpfs-invoices-subtitle"><?php /* translators: Label for the Invoices section */ esc_html_e( 'Invoices', 'wp-full-stripe-free' ); ?></div>
     <form id="wpfs-view-invoices-form">
         <div id="wpfs-invoices-table" class="wpfs-invoices"></div>
+        <?php if ( $model->isInvoiceListTruncated() ) : ?>
+        <div class="wpfs-form-description wpfs-form-description--sm">
+            <?php
+            /* translators: %s: the most invoices the customer portal lists, e.g. "1,000" */
+            echo esc_html( sprintf( __( 'Only your %s most recent invoices are shown.', 'wp-full-stripe-free' ), number_format_i18n( CustomerPortalService::INVOICE_LIST_MAX_INVOICES ) ) );
+            ?>
+        </div>
+        <?php endif; ?>
     </form>
-	<?php MM_WPFS_ViewTemplateUtils::fullstripe_customer_portal_footer( $model ); ?>
+	<?php ViewTemplateUtils::fullstripe_customer_portal_footer( $model ); ?>
 </div>
 <script type="text/template" id="wpfs-invoice-show-row">
     <div class="wpfs-icon-accounting-document wpfs-invoice-icon"></div>

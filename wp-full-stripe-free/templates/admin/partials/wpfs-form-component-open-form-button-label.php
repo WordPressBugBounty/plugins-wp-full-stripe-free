@@ -1,5 +1,7 @@
 <?php
-    /** @var $view MM_WPFS_Admin_CheckoutFormView */
+use ThemeIsle\WPFullPay\Admin\Views\CheckoutFormView;
+
+    /** @var $view CheckoutFormView */
     /** @var $form */
     /** @var $openButtonDescription */
 ?>

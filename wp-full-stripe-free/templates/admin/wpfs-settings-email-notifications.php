@@ -1,11 +1,15 @@
 <?php
+use ThemeIsle\WPFullPay\Admin\Menu;
+use ThemeIsle\WPFullPay\Admin\Views\EmailOptionsView;
+use ThemeIsle\WPFullPay\Admin\Views\EmailTemplatesView;
+
     /** @var $tabId */
-    /** @var $this MM_WPFS_Admin_Menu */
+    /** @var $this Menu */
 
     $pageStyle = 'wpfs-page-settings-email-options';
-    if ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS ) {
+    if ( $tabId === Menu::PARAM_VALUE_TAB_OPTIONS ) {
         $pageStyle = 'wpfs-page-settings-email-options';
-    } elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_TEMPLATES ) {
+    } elseif ( $tabId === Menu::PARAM_VALUE_TAB_TEMPLATES ) {
         $pageStyle = 'wpfs-page-settings-email-templates';
     }
 ?>
@@ -23,20 +27,20 @@
                 <?php
                 $pageUrl = add_query_arg(
                     [
-                        'page' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_EMAIL_NOTIFICATIONS,
+                        'page' => Menu::SLUG_SETTINGS_EMAIL_NOTIFICATIONS,
                         'tab'  => $tabId
                     ],
                     admin_url( 'admin.php' )
                 );
 
-                if ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS ) {
+                if ( $tabId === Menu::PARAM_VALUE_TAB_OPTIONS ) {
                     $emailOptions = $this->getEmailOptionsData();
-                    $view = new MM_WPFS_Admin_EmailOptionsView( $emailOptions->adminName, $emailOptions->adminEmail );
+                    $view = new EmailOptionsView( $emailOptions->adminName, $emailOptions->adminEmail );
 
                     include('partials/wpfs-settings-email-options.php');
-                } elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_TEMPLATES ) {
+                } elseif ( $tabId === Menu::PARAM_VALUE_TAB_TEMPLATES ) {
                     $emailTemplates = $this->getEmailTemplatesData();
-                    $view = new MM_WPFS_Admin_EmailTemplatesView();
+                    $view = new EmailTemplatesView();
 
                     include('partials/wpfs-settings-email-templates.php');
                 }

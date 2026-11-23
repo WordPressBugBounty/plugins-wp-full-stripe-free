@@ -1,0 +1,1170 @@
+<?php
+
+namespace ThemeIsle\WPFullPay;
+
+use ThemeIsle\WPFullPay\Payments\PaymentReconciler;
+use ThemeIsle\WPFullPay\Admin\Admin;
+use ThemeIsle\WPFullPay\Admin\Menu;
+use ThemeIsle\WPFullPay\Admin\StripeAccessRevocation;
+use ThemeIsle\WPFullPay\Admin\StripeConnect;
+use ThemeIsle\WPFullPay\Api\ApiV2;
+use ThemeIsle\WPFullPay\Checkout\CheckoutSubmissionService;
+use ThemeIsle\WPFullPay\Context\StaticContext;
+use ThemeIsle\WPFullPay\Customer\Customer;
+use ThemeIsle\WPFullPay\CustomerPortal\CustomerPortalService;
+use ThemeIsle\WPFullPay\Exceptions\UserFriendlyException;
+use ThemeIsle\WPFullPay\Forms\Fields\ConfigurableFormFields;
+use ThemeIsle\WPFullPay\Forms\Fields\ConfigurableFormFieldsFactory;
+use ThemeIsle\WPFullPay\Forms\FormTypes;
+use ThemeIsle\WPFullPay\Forms\RenderedFormData;
+use ThemeIsle\WPFullPay\Forms\Views\CheckoutDonationFormView;
+use ThemeIsle\WPFullPay\Forms\Views\CheckoutPaymentFormView;
+use ThemeIsle\WPFullPay\Forms\Views\CheckoutSaveCardFormView;
+use ThemeIsle\WPFullPay\Forms\Views\CheckoutSubscriptionFormView;
+use ThemeIsle\WPFullPay\Forms\Views\InlineDonationFormView;
+use ThemeIsle\WPFullPay\Forms\Views\InlinePaymentFormView;
+use ThemeIsle\WPFullPay\Forms\Views\InlineSaveCardFormView;
+use ThemeIsle\WPFullPay\Forms\Views\InlineSubscriptionFormView;
+use ThemeIsle\WPFullPay\Forms\Views\SubscriptionFormView;
+use ThemeIsle\WPFullPay\Logging\LoggerService;
+use ThemeIsle\WPFullPay\Logging\TrackingActivationEndpoint;
+use ThemeIsle\WPFullPay\Mailer\Mailer;
+use ThemeIsle\WPFullPay\Patcher\Patcher;
+use ThemeIsle\WPFullPay\Pricing\Pricing;
+use ThemeIsle\WPFullPay\Subscriptions\FeeSync;
+use ThemeIsle\WPFullPay\ThankYou\ThankYou;
+use ThemeIsle\WPFullPay\TransactionData\TransactionDataService;
+
+/*
+WP Full Pay
+https://paymentsplugin.com
+Complete Stripe payments integration for WordPress
+Themeisle
+7.1.6
+https://themeisle.com
+*/
+
+class Main {
+	const VERSION = '8.6.0';
+	const REQUEST_PARAM_NAME_WPFS_RENDERED_FORMS = 'wpfs_rendered_forms';
+
+	const HANDLE_WP_FULL_STRIPE_JS = 'wp-full-stripe-js';
+
+	const SHORTCODE_FULLSTRIPE_FORM = 'fullstripe_form';
+	const HANDLE_WP_FULL_STRIPE_UTILS_JS = 'wp-full-stripe-utils-js';
+	/**
+	 * @deprecated The script is no longer registered; the plugin uses wp.i18n.sprintf.
+	 *             Kept so code that references MM_WPFS::HANDLE_SPRINTF_JS does not fatal.
+	 */
+	const HANDLE_SPRINTF_JS = 'sprintf-js';
+	const HANDLE_STRIPE_JS_V_3 = 'stripe-js-v3';
+	const HANDLE_STYLE_WPFS_VARIABLES = 'wpfs-variables-css';
+	const HANDLE_STYLE_WPFS_FORMS = 'wpfs-forms-css';
+	const HANDLE_GOOGLE_RECAPTCHA_V_2 = 'google-recaptcha-v2';
+	const SOURCE_GOOGLE_RECAPTCHA_V2_API_JS = 'https://www.google.com/recaptcha/api.js';
+	const PRICING_URL = 'https://paymentsplugin.com/pricing/';
+
+	// Generic form types
+	const FORM_TYPE_PAYMENT = 'payment';
+	const FORM_TYPE_SUBSCRIPTION = 'subscription';
+	const FORM_TYPE_DONATION = 'donation';
+	const FORM_TYPE_SAVE_CARD = 'save_card';
+
+	const FORM_TYPE_INLINE_PAYMENT = 'inline_payment';
+	const FORM_TYPE_CHECKOUT_PAYMENT = 'checkout_payment';
+	const FORM_TYPE_INLINE_SUBSCRIPTION = 'inline_subscription';
+	const FORM_TYPE_CHECKOUT_SUBSCRIPTION = 'checkout_subscription';
+	const FORM_TYPE_INLINE_SAVE_CARD = 'inline_save_card';
+	const FORM_TYPE_CHECKOUT_SAVE_CARD = 'checkout_save_card';
+	const FORM_TYPE_INLINE_DONATION = 'inline_donation';
+	const FORM_TYPE_CHECKOUT_DONATION = 'checkout_donation';
+
+	// legacy form types, used only for shortcodes
+	const FORM_TYPE_POPUP_PAYMENT = 'popup_payment';
+	const FORM_TYPE_POPUP_SUBSCRIPTION = 'popup_subscription';
+	const FORM_TYPE_POPUP_SAVE_CARD = 'popup_save_card';
+	const FORM_TYPE_POPUP_DONATION = 'popup_donation';
+
+	const FORM_TYPE_ADMIN_CREATE_FORM = 'createForm';
+	const FORM_TYPE_ADMIN_CONFIGURE_STRIPE_ACCOUNT = 'configureStripeAccount';
+	const FORM_TYPE_ADMIN_CONFIGURE_CUSTOMER_PORTAL = 'configureMyAccount';
+	const FORM_TYPE_ADMIN_CONFIGURE_SECURITY = 'configureSecurity';
+	const FORM_TYPE_ADMIN_CONFIGURE_EMAIL_OPTIONS = 'configureEmailOptions';
+	const FORM_TYPE_ADMIN_CONFIGURE_EMAIL_TEMPLATES = 'configureEmailTemplates';
+	const FORM_TYPE_ADMIN_CONFIGURE_FORMS_OPTIONS = 'configureFormsOptions';
+	const FORM_TYPE_ADMIN_CONFIGURE_FORMS_APPEARANCE = 'configureFormsAppearance';
+	const FORM_TYPE_ADMIN_CONFIGURE_WP_DASHBOARD = 'configureWpDashboard';
+	const FORM_TYPE_ADMIN_CONFIGURE_FEE_RECOVERY = 'configurefeeRecovery';
+	const FORM_TYPE_ADMIN_CONFIGURE_LOGGING = 'configureLogging';
+	const FORM_TYPE_ADMIN_EMPTY_LOG = 'emptyLog';
+
+	const FORM_TYPE_ADMIN_INLINE_SAVE_CARD_FORM = 'inlineSaveCardForm';
+	const FORM_TYPE_ADMIN_CHECKOUT_SAVE_CARD_FORM = 'checkoutSaveCardForm';
+	const FORM_TYPE_ADMIN_INLINE_DONATION_FORM = 'inlineDonationForm';
+	const FORM_TYPE_ADMIN_CHECKOUT_DONATION_FORM = 'checkoutDonationForm';
+	const FORM_TYPE_ADMIN_ADD_CUSTOM_FIELD = 'addCustomField';
+	const FORM_TYPE_ADMIN_CREATE_ONETIME_PRODUCT = 'createOnetimeProduct';
+	const FORM_TYPE_ADMIN_CREATE_RECURRING_PRODUCT = 'addPlanProperties';
+	const FORM_TYPE_ADMIN_ADD_SUGGESTED_DONATION_AMOUNT = 'addSuggestedDonationAmount';
+	const FORM_TYPE_ADMIN_INLINE_PAYMENT_FORM = 'inlinePaymentForm';
+	const FORM_TYPE_ADMIN_CHECKOUT_PAYMENT_FORM = 'checkoutPaymentForm';
+	const FORM_TYPE_ADMIN_INLINE_SUBSCRIPTION_FORM = 'inlineSubscriptionForm';
+	const FORM_TYPE_ADMIN_CHECKOUT_SUBSCRIPTION_FORM = 'checkoutSubscriptionForm';
+	const FORM_TYPE_ADMIN_ADD_PLAN_PROPERTIES = 'addPlanProperties';
+	const FORM_TYPE_ADMIN_EDIT_PRODUCT_PROPERTIES = 'editProductProperties';
+	const FORM_TYPE_ADMIN_SEND_TEST_EMAIL = 'sendTestEmail';
+
+	const FORM_LAYOUT_INLINE = 'inline';
+	const FORM_LAYOUT_CHECKOUT = 'checkout';
+
+	const STRIPE_API_MODE_TEST = 'test';
+	const STRIPE_API_MODE_LIVE = 'live';
+
+	const TEST_ACCOUNT_ID = 'testAccountId';
+	const LIVE_ACCOUNT_ID = 'liveAccountId';
+	const USE_WP_TEST_PLATFORM = 'useWpTestPlatform';
+	const USE_WP_LIVE_PLATFORM = 'useWpLivePlatform';
+
+	const REDIRECT_TYPE_SHOW_CONFIRMATION_MESSAGE = 'showConfirmationMessage';
+	const REDIRECT_TYPE_TO_PAGE_OR_POST = 'redirectToPageOrPost';
+	const REDIRECT_TYPE_TO_CUSTOM_URL = 'redirecToCustomUrl';
+
+	const VAT_RATE_TYPE_NO_VAT = 'no_vat';
+	const VAT_RATE_TYPE_FIXED_VAT = 'fixed_vat';
+	const VAT_RATE_TYPE_CUSTOM_VAT = 'custom_vat';
+
+	const NO_VAT_PERCENT = 0.0;
+
+	const DEFAULT_BILLING_COUNTRY_INITIAL_VALUE = 'US';
+
+	const PREFERRED_LANGUAGE_AUTO = 'auto';
+
+	const DEFAULT_CUSTOM_INPUT_FIELD_MAX_COUNT = 10;
+
+	const PAYMENT_TYPE_LIST_OF_AMOUNTS = 'list_of_amounts';
+	const PAYMENT_TYPE_CUSTOM_AMOUNT = 'custom_amount';
+	const PAYMENT_TYPE_SPECIFIED_AMOUNT = 'specified_amount';
+	const PAYMENT_TYPE_CARD_CAPTURE = 'card_capture';
+
+	const CURRENCY_USD = 'usd';
+	const CURRENCY_EUR = 'eur';
+
+	const CANCEL_SUBSCRIPTION_IMMEDIATELY = 'immediately';
+	const CANCEL_SUBSCRIPTION_AT_PERIOD_END = 'atPeriodEnd';
+
+	const DECIMAL_SEPARATOR_SYMBOL_DOT = 'dot';
+	const DECIMAL_SEPARATOR_SYMBOL_COMMA = 'comma';
+
+	const CHARGE_TYPE_IMMEDIATE = 'immediate';
+	const CHARGE_TYPE_AUTHORIZE_AND_CAPTURE = 'authorize_and_capture';
+
+	const PAYMENT_METHOD_CARD = 'card';
+	const PAYMENT_METHOD_LINK = 'link';
+
+	const STRIPE_CHARGE_STATUS_SUCCEEDED = 'succeeded';
+	const STRIPE_CHARGE_STATUS_PENDING = 'pending';
+	const STRIPE_CHARGE_STATUS_FAILED = 'failed';
+
+	const PAYMENT_STATUS_UNKNOWN = 'unknown';
+	const PAYMENT_STATUS_FAILED = 'failed';
+	const PAYMENT_STATUS_REFUNDED = 'refunded';
+	const PAYMENT_STATUS_EXPIRED = 'expired';
+	const PAYMENT_STATUS_PAID = 'paid';
+	const PAYMENT_STATUS_AUTHORIZED = 'authorized';
+	const PAYMENT_STATUS_PENDING = 'pending';
+	const PAYMENT_STATUS_RELEASED = 'released';
+
+	const REFUND_STATUS_SUCCEEDED = 'succeeded';
+	const REFUND_STATUS_FAILED = 'failed';
+	const REFUND_STATUS_PENDING = 'pending';
+	const REFUND_STATUS_CANCELED = 'canceled';
+
+	const SUBSCRIPTION_STATUS_ENDED = 'ended';
+	const SUBSCRIPTION_STATUS_CANCELLED = 'cancelled';
+
+	const SELECTOR_STYLE_RADIO_BUTTONS = 'radio-buttons';
+	const SELECTOR_STYLE_DROPDOWN = 'dropdown';
+	const SELECTOR_STYLE_BUTTON_GROUP = 'button-group';
+	const ELEMENTS_THEME_STRIPE = 'stripe';
+	const ELEMENTS_THEME_NIGHT = 'night';
+	const ELEMENTS_THEME_FLAT = 'flat';
+
+	const PLAN_SELECTOR_STYLE_DROPDOWN = 'dropdown';
+	const PLAN_SELECTOR_STYLE_RADIO_BUTTONS = 'radio-buttons';
+
+	const JS_VARIABLE_WPFS_FORM_OPTIONS = 'wpfsFormSettings';
+	const JS_VARIABLE_AJAX_URL = 'ajaxUrl';
+	const JS_VARIABLE_STRIPE_KEY = 'stripeKey';
+	const JS_VARIABLE_STRIPE_PLATFORM_KEY = 'stripePlatformKey';
+	const JS_VARIABLE_STRIPE_ACCOUNT_ID = 'stripeAccountId';
+	const JS_VARIABLE_GOOGLE_RECAPTCHA_SITE_KEY = 'googleReCaptchaSiteKey';
+	const JS_VARIABLE_L10N = 'l10n';
+	const JS_VARIABLE_FORM_FIELDS = 'formFields';
+	const JS_VARIABLE_NONCE = 'nonce';
+	const NONCE_ACTION_UPDATE_FAILED_PAYMENT_STATUS = 'wpfs_update_failed_payment_status';
+
+	const ACTION_NAME_BEFORE_SAVE_CARD = 'fullstripe_before_card_capture';
+	const ACTION_NAME_AFTER_SAVE_CARD = 'fullstripe_after_card_capture';
+	const ACTION_NAME_BEFORE_CHECKOUT_SAVE_CARD = 'fullstripe_before_checkout_card_capture';
+	const ACTION_NAME_AFTER_CHECKOUT_SAVE_CARD = 'fullstripe_after_checkout_card_capture';
+
+	const ACTION_NAME_BEFORE_PAYMENT_CHARGE = 'fullstripe_before_payment_charge';
+	const ACTION_NAME_AFTER_PAYMENT_CHARGE = 'fullstripe_after_payment_charge';
+	const ACTION_NAME_BEFORE_CHECKOUT_PAYMENT_CHARGE = 'fullstripe_before_checkout_payment_charge';
+	const ACTION_NAME_AFTER_CHECKOUT_PAYMENT_CHARGE = 'fullstripe_after_checkout_payment_charge';
+
+	const ACTION_NAME_BEFORE_DONATION_CHARGE = 'fullstripe_before_donation_charge';
+	const ACTION_NAME_AFTER_DONATION_CHARGE = 'fullstripe_after_donation_charge';
+	const ACTION_NAME_BEFORE_CHECKOUT_DONATION_CHARGE = 'fullstripe_before_checkout_donation_charge';
+	const ACTION_NAME_AFTER_CHECKOUT_DONATION_CHARGE = 'fullstripe_after_checkout_donation_charge';
+
+	const ACTION_NAME_BEFORE_SUBSCRIPTION_CHARGE = 'fullstripe_before_subscription_charge';
+	const ACTION_NAME_AFTER_SUBSCRIPTION_CHARGE = 'fullstripe_after_subscription_charge';
+	const ACTION_NAME_BEFORE_CHECKOUT_SUBSCRIPTION_CHARGE = 'fullstripe_before_checkout_subscription_charge';
+	const ACTION_NAME_AFTER_CHECKOUT_SUBSCRIPTION_CHARGE = 'fullstripe_after_checkout_subscription_charge';
+
+	const ACTION_NAME_BEFORE_SUBSCRIPTION_CANCELLATION = 'fullstripe_before_subscription_cancellation';
+	const ACTION_NAME_AFTER_SUBSCRIPTION_CANCELLATION = 'fullstripe_after_subscription_cancellation';
+
+	const ACTION_NAME_BEFORE_SUBSCRIPTION_UPDATE = 'fullstripe_before_subscription_update';
+	const ACTION_NAME_AFTER_SUBSCRIPTION_UPDATE = 'fullstripe_after_subscription_update';
+
+	const ACTION_NAME_BEFORE_SUBSCRIPTION_ACTIVATION = 'fullstripe_before_subscription_activation';
+	const ACTION_NAME_AFTER_SUBSCRIPTION_ACTIVATION = 'fullstripe_after_subscription_activation';
+
+	const ACTION_NAME_FIRE_WEBHOOK = 'fullstripe_fire_webhook';
+
+	const FILTER_NAME_SELECT_SUBSCRIPTION_PLAN = 'fullstripe_select_subscription_plan';
+	const FILTER_NAME_SET_CUSTOM_AMOUNT = 'fullstripe_set_custom_amount';
+	const FILTER_NAME_ADD_TRANSACTION_METADATA = 'fullstripe_add_transaction_metadata';
+	const FILTER_NAME_MODIFY_CUSTOM_FIELD_VALUES = 'fullstripe_modify_custom_field_values';
+	const FILTER_NAME_MODIFY_EMAIL_MESSAGE = 'fullstripe_modify_email_message';
+	const FILTER_NAME_MODIFY_EMAIL_SUBJECT = 'fullstripe_modify_email_subject';
+	const FILTER_NAME_GET_UPGRADE_DOWNGRADE_PLANS = 'fullstripe_get_upgrade_downgrade_plans';
+
+	const FILTER_NAME_CUSTOMER_PORTAL_HEADER = 'fullstripe_customer_portal_header';
+	const FILTER_NAME_CUSTOMER_PORTAL_FOOTER = 'fullstripe_customer_portal_footer';
+	const FILTER_NAME_CUSTOMER_PORTAL_PRICE_TAX_LABEL = 'fullstripe_customer_portal_price_tax_label';
+
+	const FILTER_NAME_FORM_FIELD_CONFIGURATION = 'fullstripe_form_field_configuration';
+
+	const FILTER_NAME_DETERMINE_TAX_LABEL = 'fullstripe_determine_tax_label';
+
+	const STRIPE_OBJECT_ID_PREFIX_PAYMENT_INTENT = 'pi_';
+	const STRIPE_OBJECT_ID_PREFIX_CHARGE = 'ch_';
+	const PAYMENT_OBJECT_TYPE_UNKNOWN = 'Unknown';
+	const PAYMENT_OBJECT_TYPE_STRIPE_PAYMENT_INTENT = '\StripeWPFS\Stripe\PaymentIntent';
+	const PAYMENT_OBJECT_TYPE_STRIPE_CHARGE = '\StripeWPFS\Stripe\Charge';
+
+	const SUBSCRIBER_STATUS_CANCELLED = 'cancelled';
+	const SUBSCRIBER_STATUS_RUNNING = 'running';
+	const SUBSCRIBER_STATUS_ENDED = 'ended';
+	const SUBSCRIBER_STATUS_INCOMPLETE = 'incomplete';
+
+	const DONATION_STATUS_UNKNOWN = 'unknown';
+	const DONATION_STATUS_PAID = 'paid';
+	const DONATION_STATUS_RUNNING = 'running';
+	const DONATION_STATUS_REFUNDED = 'refunded';
+
+	const HTTP_PARAM_NAME_PLAN = 'wpfsPlan';
+	const HTTP_PARAM_NAME_AMOUNT = 'wpfsAmount';
+
+	const DONATION_PLAN_ID_PREFIX = "wpfsDonationPlanV2";
+	const SUBSCRIPTION_PLAN_ID_PREFIX = "wpfsSubscriptionPlan";
+	/** Lookup key of the shared price whose product inline subscriptions bill their setup fee on. */
+	const SETUP_FEE_PRICE_LOOKUP_KEY = 'wpfsSetupFee';
+
+	const EMAIL_TEMPLATE_ID_PAYMENT_RECEIPT = 'paymentMade';
+	const EMAIL_TEMPLATE_ID_PAYMENT_RECEIPT_STRIPE = 'paymentMadeStripe';
+	const EMAIL_TEMPLATE_ID_CARD_SAVED = 'cardCaptured';
+	const EMAIL_TEMPLATE_ID_SUBSCRIPTION_RECEIPT = 'subscriptionStarted';
+	const EMAIL_TEMPLATE_ID_SUBSCRIPTION_RECEIPT_STRIPE = 'subscriptionStartedStripe';
+	const EMAIL_TEMPLATE_ID_SUBSCRIPTION_ENDED = 'subscriptionFinished';
+	const EMAIL_TEMPLATE_ID_DONATION_RECEIPT = 'donationMade';
+	const EMAIL_TEMPLATE_ID_DONATION_RECEIPT_STRIPE = 'donationMadeStripe';
+	const EMAIL_TEMPLATE_ID_CUSTOMER_PORTAL_SECURITY_CODE = 'cardUpdateConfirmationRequest';
+
+	const COUNTRY_CODE_UNITED_STATES = 'US';
+
+	// These values go into the database as well, don't change them
+	const FIELD_VALUE_TAX_RATE_NO_TAX = 'taxRateNoTax';
+	const FIELD_VALUE_TAX_RATE_STRIPE_TAX = 'taxRateStripeTax';
+	const FIELD_VALUE_TAX_RATE_FIXED = 'taxRateFixed';
+	const FIELD_VALUE_TAX_RATE_DYNAMIC = 'taxRateDynamic';
+
+	// This value is transient, used only on the Admin UI
+	const FIELD_VALUE_TAX_RATE_TAX_RATES = 'taxRateTaxRates';
+
+	const PRICE_ID_CUSTOM_AMOUNT = 'customAmount';
+	const LINE_ITEM_TYPE_CUSTOM_AMOUNT = 'customAmount';
+	const LINE_ITEM_TYPE_SETUP_FEE = 'setupFee';
+	const LINE_ITEM_TYPE_PRODUCT = 'product';
+	/** The recovery fee, previewed as its own invoice line, as the charge adds it. */
+	const LINE_ITEM_TYPE_FEE_RECOVERY = 'fee-recovery';
+	/** What a trial plan's first invoice charges: its setup fee, with the coupon and tax. */
+	const LINE_ITEM_TYPE_TRIAL_FIRST_CHARGE = 'trial-first-charge';
+	const LINE_ITEM_SUBTYPE_DISCOUNT = 'discount';
+	const LINE_ITEM_SUBTYPE_TAX = 'tax';
+
+	const DISCOUNT_TYPE_PROMOTION_CODE = 'promotionCode';
+	const DISCOUNT_TYPE_COUPON = 'coupon';
+
+	const ONBOARDING_WIZARD_OPTION_NAME = 'fullstripe_onboarding_wizard';
+
+	const FEE_RECOVERY_ENABLE = 'enable';
+	const FEE_RECOVERY_DISABLE = 'disable';
+
+	public static $instance;
+
+	private $loggerService;
+	private $logger;
+
+	/** @var Options */
+	private $options = null;
+	/** @var Customer */
+	private $customer = null;
+	/** @var Database */
+	private $database = null;
+	/** @var Stripe */
+	private $stripe = null;
+	/** @var TransactionDataService */
+	private $transactionDataService = null;
+	/** @var CustomerPortalService */
+	private $customerPortalService = null;
+	/** @var ThankYou */
+	private $thankYou = null;
+	/** @var CheckoutSubmissionService */
+	private $checkoutSubmissionService = null;
+	/** @var StaticContext */
+	private $staticContext = null;
+	/**
+	 * @var bool Choose to load scripts and styles the WordPress way. We should move this field to a wp_option later.
+	 */
+	private $loadScriptsAndStylesWithActionHook = false;
+	/**
+	 * @var bool Turn this off if you don't want to load the form CSS styles
+	 */
+	private $includeDefaultStyles = true;
+
+	public function __construct() {
+
+		$this->includes();
+		$this->setup();
+		$this->hooks();
+
+	}
+
+	function includes() {
+		if ( ! class_exists( 'WP_List_Table' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
+		}
+
+		Abilities::init();
+
+		do_action( 'fullstripe_includes_action' );
+	}
+
+	function setup() {
+
+		$this->options = new Options();
+		$this->updateOptionDefaults();
+		if ( $this->options->getVersion() != self::VERSION ) {
+			$this->upgradeOptions();
+			Main::setup_db( false );
+		}
+
+		$this->loggerService = new LoggerService( $this->options->get( Options::OPTION_LOG_LEVEL ), $this->options->get( Options::OPTION_LOG_TO_WEB_SERVER ) == 1 );
+		$this->logger = $this->loggerService->createAdminLogger( __CLASS__ );
+		$this->staticContext = new StaticContext( $this->loggerService, $this->options );
+
+		$this->setupErrorHandlers();
+
+		// Both constructors register their own hooks; the instances are not needed afterwards.
+		new Admin( $this->loggerService );
+		new Menu( $this->loggerService );
+		new StripeAccessRevocation( $this->loggerService );
+		new StripeConnect( $this->loggerService );
+		new FeeSync( $this->loggerService );
+		new PaymentReconciler( $this->loggerService );
+		$this->customer = new Customer( $this->loggerService );
+		$this->database = new Database();
+		$this->stripe = new Stripe( Stripe::getStripeAuthenticationToken( $this->staticContext ), $this->loggerService );
+		$this->transactionDataService = new TransactionDataService();
+		$this->customerPortalService = new CustomerPortalService( $this->loggerService );
+		$this->checkoutSubmissionService = new CheckoutSubmissionService( $this->loggerService );
+		$this->thankYou = new ThankYou( $this->loggerService );
+		new Block();
+
+		do_action( 'fullstripe_setup_action' );
+	}
+
+	protected function setupErrorHandlers() {
+		if ( boolval( $this->options->get( Options::OPTION_CATCH_UNCAUGHT_ERRORS ) ) ) {
+			set_error_handler( [ $this, 'handleError' ], E_ALL | E_STRICT );
+			set_exception_handler( [ $this, 'handleException' ] );
+			ini_set( 'display_errors', '0' );
+		}
+	}
+
+	public function handleError( int $errNo, string $errStr, string $errFile, int $errLine ) {
+		$this->logger->error( __FUNCTION__, "Uncaught error in {$errFile}:{$errLine}: {$errNo} - {$errStr}" );
+	}
+
+	public function handleException( \Throwable $ex ) {
+		$this->logger->error( __FUNCTION__, "Uncaught exception - " . $ex->getMessage(), $ex );
+	}
+
+	protected function upgradeOptions() {
+		$this->options->set( Options::OPTION_VERSION, self::VERSION );
+
+		$emailReceipts = json_decode( $this->options->get( Options::OPTION_EMAIL_TEMPLATES ) );
+		Mailer::updateMissingEmailTemplatesWithDefaults( $emailReceipts );
+		$this->options->set( Options::OPTION_EMAIL_TEMPLATES, json_encode( $emailReceipts ) );
+
+		if ( $this->options->get( Options::OPTION_CUSTOM_INPUT_FIELD_MAX_COUNT ) != Main::DEFAULT_CUSTOM_INPUT_FIELD_MAX_COUNT ) {
+			$this->options->set( Options::OPTION_CUSTOM_INPUT_FIELD_MAX_COUNT, Main::DEFAULT_CUSTOM_INPUT_FIELD_MAX_COUNT );
+		}
+	}
+	protected function updateOptionDefaults() {
+		$updateSet = [ 
+			Options::OPTION_VERSION => self::VERSION,
+			Options::OPTION_API_TEST_SECRET_KEY => 'YOUR_TEST_SECRET_KEY',
+			Options::OPTION_API_TEST_PUBLISHABLE_KEY => 'YOUR_TEST_PUBLISHABLE_KEY',
+			Options::OPTION_API_LIVE_SECRET_KEY => 'YOUR_LIVE_SECRET_KEY',
+			Options::OPTION_API_LIVE_PUBLISHABLE_KEY => 'YOUR_LIVE_PUBLISHABLE_KEY',
+			Options::OPTION_API_MODE => Main::STRIPE_API_MODE_TEST,
+			Options::OPTION_FORM_CUSTOM_CSS => '',
+			Options::OPTION_RECEIPT_EMAIL_TYPE => Options::OPTION_VALUE_RECEIPT_EMAIL_PLUGIN,
+			Options::OPTION_EMAIL_TEMPLATES => json_encode( Mailer::getDefaultEmailTemplates() ),
+			Options::OPTION_EMAIL_NOTIFICATION_SENDER_ADDRESS => get_bloginfo( 'admin_email' ),
+			Options::OPTION_EMAIL_NOTIFICATION_BCC_ADDRESSES => json_encode( [] ),
+			Options::OPTION_FILL_IN_EMAIL_FOR_LOGGED_IN_USERS => '1',
+			Options::OPTION_WEBHOOK_TOKEN => $this->createWebhookToken(),
+			Options::OPTION_CUSTOM_INPUT_FIELD_MAX_COUNT => Main::DEFAULT_CUSTOM_INPUT_FIELD_MAX_COUNT,
+			Options::OPTION_SECURE_INLINE_FORMS_WITH_GOOGLE_RE_CAPTCHA => '0',
+			Options::OPTION_SECURE_CHECKOUT_FORMS_WITH_GOOGLE_RE_CAPTCHA => '0',
+			Options::OPTION_SECURE_CUSTOMER_PORTAL_WITH_GOOGLE_RE_CAPTCHA => '0',
+			Options::OPTION_GOOGLE_RE_CAPTCHA_SITE_KEY => 'YOUR_GOOGLE_RECAPTCHA_SITE_KEY',
+			Options::OPTION_GOOGLE_RE_CAPTCHA_SECRET_KEY => 'YOUR_GOOGLE_RECAPTCHA_SECRET_KEY',
+			Options::OPTION_CUSTOMER_PORTAL_SHOW_SUBSCRIPTIONS_TO_CUSTOMERS => '1',
+			Options::OPTION_CUSTOMER_PORTAL_LET_SUBSCRIBERS_CANCEL_SUBSCRIPTIONS => '1',
+			Options::OPTION_CUSTOMER_PORTAL_LET_SUBSCRIBERS_UPDOWNGRADE_SUBSCRIPTIONS => '0',
+			Options::OPTION_CUSTOMER_PORTAL_WHEN_CANCEL_SUBSCRIPTIONS => Main::CANCEL_SUBSCRIPTION_IMMEDIATELY,
+			Options::OPTION_CUSTOMER_PORTAL_SHOW_INVOICES_SECTION => '1',
+			Options::OPTION_CUSTOMER_PORTAL_SHOW_ALL_INVOICES => '0',
+			Options::OPTION_CUSTOMER_PORTAL_SCROLLING_PANE_INTO_VIEW => '1',
+			Options::OPTION_CUSTOMER_PORTAL_USE_STRIPE_CUSTOMER_PORTAL => '0',
+			Options::OPTION_DECIMAL_SEPARATOR_SYMBOL => Main::DECIMAL_SEPARATOR_SYMBOL_DOT,
+			Options::OPTION_SHOW_CURRENCY_SYMBOL_INSTEAD_OF_CODE => '1',
+			Options::OPTION_SHOW_CURRENCY_SIGN_AT_FIRST_POSITION => '1',
+			Options::OPTION_PUT_WHITESPACE_BETWEEN_CURRENCY_AND_AMOUNT => '0',
+			Options::OPTION_LAST_WEBHOOK_EVENT_TEST => null,
+			Options::OPTION_LAST_WEBHOOK_EVENT_LIVE => null,
+			Options::OPTION_LOG_LEVEL => LoggerService::LEVEL_ERROR,
+			Options::OPTION_LOG_TO_WEB_SERVER => 0,
+			Options::OPTION_CATCH_UNCAUGHT_ERRORS => 0,
+			Options::OPTION_SET_FORM_FIELDS_VIA_URL_PARAMETERS => 0,
+			Options::OPTION_DEFAULT_BILLING_COUNTRY => Main::DEFAULT_BILLING_COUNTRY_INITIAL_VALUE,
+			Options::OPTION_DEFAULT_SHOW_PAYMENT_DETAIL => '1',
+			Options::OPTION_USE_WP_TEST_PLATFORM => '0',
+			Options::OPTION_USE_WP_LIVE_PLATFORM => '0',
+			Options::OPTION_TEST_ACCOUNT_ID => null,
+			Options::OPTION_LIVE_ACCOUNT_ID => null,
+			Options::OPTION_LIVE_ACCOUNT_STATUS => null,
+			Options::OPTION_TEST_ACCOUNT_STATUS => null,
+			Options::OPTION_CONNECT_MODE => 'prod',
+		];
+
+		$this->options->setNonExistentSeveral( $updateSet );
+
+		$liveSecret = $this->options->get( Options::OPTION_API_LIVE_SECRET_KEY );
+
+		$testSecret = $this->options->get( Options::OPTION_API_TEST_SECRET_KEY );
+
+		$useLivePlatform = $liveSecret === 'YOUR_LIVE_SECRET_KEY';
+		$useTestPlatform = $testSecret === 'YOUR_TEST_SECRET_KEY';
+
+		$updateSet = [ 
+			Options::OPTION_USE_WP_TEST_PLATFORM => $useTestPlatform ? '1' : '0',
+			Options::OPTION_USE_WP_LIVE_PLATFORM => $useLivePlatform ? '1' : '0',
+		];
+
+		$this->options->setNonExistentSeveral( $updateSet );
+
+		return $updateSet;
+	}
+
+	/**
+	 * Generates a unique random token for authenticating webhook callbacks.
+	 *
+	 * @return string
+	 */
+	private function createWebhookToken() {
+		$siteURL = get_site_url();
+		$randomToken = hash( 'md5', rand() );
+		$generatedPassword = substr( hash( 'sha512', rand() ), 0, 6 );
+
+		return hash( 'md5', $siteURL . '|' . $randomToken . '|' . $generatedPassword );
+	}
+
+	public static function setup_db( $network_wide ) {
+		if ( $network_wide ) {
+			Utils::log( "setup_db() - Activating network-wide" );
+			if ( function_exists( 'get_sites' ) && function_exists( 'get_current_network_id' ) ) {
+				$site_ids = get_sites( [ 'fields' => 'ids', 'network_id' => get_current_network_id() ] );
+			} else {
+				$site_ids = Database::get_site_ids();
+			}
+
+			foreach ( $site_ids as $site_id ) {
+				switch_to_blog( $site_id );
+				self::setup_db_single_site();
+				restore_current_blog();
+			}
+		} else {
+			Utils::log( "setup_db() - Activating for single site" );
+			self::setup_db_single_site();
+		}
+	}
+
+	public static function setup_db_single_site() {
+		Database::fullstripe_setup_db();
+		Patcher::applyPatches();
+	}
+
+	function hooks() {
+
+		add_filter( 'plugin_action_links', [ $this, 'plugin_action_links' ], 10, 2 );
+		add_filter( Main::FILTER_NAME_FORM_FIELD_CONFIGURATION, [ $this, 'loggedInEmailConfiguration' ], 5, 2 );
+		add_filter( Main::FILTER_NAME_FORM_FIELD_CONFIGURATION, [ $this, 'enableAllFormFields' ], 9, 2 );
+
+		add_action( 'fullstripe_update_email_template_defaults', [ $this, 'updateEmailTemplateDefaults' ], 10, 0 );
+		add_action( 'wp_head', [ $this, 'fullstripe_wp_head' ] );
+		add_action( 'wp_enqueue_scripts', [ $this, 'fullstripe_enqueue_scripts_and_styles' ] );
+		add_action( 'init', [ $this, 'init_user_version' ] );
+
+		add_shortcode( self::SHORTCODE_FULLSTRIPE_FORM, [ $this, 'fullstripe_form' ] );
+
+		add_filter( 'script_loader_tag', [ $this, 'addAsyncDeferAttributes' ], 10, 2 );
+
+		TrackingActivationEndpoint::register();
+
+		do_action( 'fullstripe_main_hooks_action' );
+	}
+
+	public function addAsyncDeferAttributes( $tag, $handle ) {
+		if ( Main::HANDLE_GOOGLE_RECAPTCHA_V_2 !== $handle ) {
+			return $tag;
+		}
+
+		return str_replace( ' src', ' async defer src', $tag );
+	}
+
+	public static function getInstance() {
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new Main();
+		}
+
+		return self::$instance;
+	}
+
+	public function updateEmailTemplateDefaults() {
+		Mailer::updateDefaultEmailTemplatesInOptions( $this->options );
+	}
+
+	/**
+	 * @param StaticContext $context
+	 * @return float|int|string
+	 */
+	public static function getCustomFieldMaxCount( $context ) {
+		$customInputFieldMaxCount = $context->getOptions()->get( Options::OPTION_CUSTOM_INPUT_FIELD_MAX_COUNT );
+		if ( is_numeric( $customInputFieldMaxCount ) ) {
+			return $customInputFieldMaxCount;
+		}
+
+		return self::DEFAULT_CUSTOM_INPUT_FIELD_MAX_COUNT;
+	}
+
+	public function plugin_action_links( $links, $file ) {
+		static $currentPlugin;
+
+		if ( ! $currentPlugin ) {
+			$currentPlugin = plugin_basename( 'wp-full-stripe/wp-full-stripe.php' );
+		}
+
+		if ( $file == $currentPlugin ) {
+			$settingsLabel =
+				/* translators: Link label displayed on the Plugins page in WP admin */
+				__( 'Settings', 'wp-full-stripe-free' );
+			$settingsLink = '<a href="' . menu_page_url( Menu::SLUG_SETTINGS, false ) . '">' . esc_html( $settingsLabel ) . '</a>';
+			array_unshift( $links, $settingsLink );
+		}
+
+		return $links;
+	}
+
+	public function enableAllFormFields( $config, $params ) {
+		$result = $config;
+
+		$setFormFieldsViaURlParameters = $this->options->get( Options::OPTION_SET_FORM_FIELDS_VIA_URL_PARAMETERS ) == '1';
+		if ( $setFormFieldsViaURlParameters ) {
+			foreach ( $result as $field => $config ) {
+				ApiV2::setIsFormFieldConfigurable( $result, $field, true );
+			}
+		}
+
+		return $result;
+	}
+
+	public function loggedInEmailConfiguration( $config, $params ) {
+		$result = $config;
+
+		$fillInEmail = $this->options->get( Options::OPTION_FILL_IN_EMAIL_FOR_LOGGED_IN_USERS ) == '1';
+		if ( $fillInEmail && is_user_logged_in() ) {
+			if ( empty( ApiV2::getFormFieldValue( $result, ConfigurableFormFields::FIELD_EMAIL ) ) ) {
+				ApiV2::setIsFormFieldConfigurable( $result, ConfigurableFormFields::FIELD_EMAIL, true );
+				ApiV2::setFormFieldValue( $result, ConfigurableFormFields::FIELD_EMAIL, wp_get_current_user()->user_email );
+			}
+		}
+
+		return $result;
+	}
+
+	public function getFormFieldConfiguration( $urlParams, $formType, $formName ) {
+		$result = ConfigurableFormFields::generateFieldConfiguration(
+			ConfigurableFormFieldsFactory::createConfiguration( $formType )->getFields()
+		);
+		$result = ConfigurableFormFields::addUrlParamsToConfiguration( $result, $urlParams );
+
+		try {
+			$params = [ 
+				'formType' => $formType,
+				'formName' => $formName,
+			];
+
+			$result = apply_filters( Main::FILTER_NAME_FORM_FIELD_CONFIGURATION, $result, $params );
+		} catch (\Exception $ex) {
+			$this->logger->error( __FUNCTION__, "Cannot filter configurable form fields for form '{$formName}'", $ex );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Generalized function to handle the new shortcode format
+	 *
+	 * @param $atts
+	 *
+	 * @return mixed|void
+	 */
+	function fullstripe_form( $atts ) {
+		if ( ! Utils::isConnected() ) {
+			$content = '';
+
+			if ( current_user_can( 'administrator' ) ) {
+				$content = sprintf(
+					/* translators: %1$s: opening p tag, %2$s: opening link tag, %3$s: closing link tag, %4$s: closing p tag. */
+					__( '%1$sYou are not connected to Stripe. Please connect to Stripe %2$sin the plugin settings%3$s.%4$s', 'wp-full-stripe-free' ),
+					'<p>',
+					'<a href="' . Menu::getAdminUrlBySlug( Menu::SLUG_SETTINGS_STRIPE ) . '">',
+					'</a>',
+					'</p>'
+				);
+			}
+
+			return $content;
+		}
+
+		$content = '';
+		$formMissing = false;
+		ob_start();
+
+		$this->logger->debug( __FUNCTION__, 'CALLED' );
+
+		try {
+			$formType = self::FORM_TYPE_INLINE_PAYMENT;
+			$formName = 'default';
+			if ( array_key_exists( 'type', $atts ) ) {
+				$formType = $atts['type'];
+			}
+			if ( array_key_exists( 'name', $atts ) ) {
+				$formName = $atts['name'];
+			}
+			$formType = str_replace( [ "\u{201c}", "\u{201d}" ], '', $formType );
+			$formName = str_replace( [ "\u{201c}", "\u{201d}" ], '', $formName );
+			$formType = Shortcode::normalizeShortCodeFormType( $formType );
+			$form = $this->getFormByTypeAndName( $formType, $formName );
+
+			if ( is_null( $form ) ) {
+				$formMissing = true;
+				throw new UserFriendlyException( __( 'Form does not exist.', 'wp-full-stripe-free' ) );
+			}
+
+			$fieldConfiguration = $this->getFormFieldConfiguration( $_GET, $formType, $formName );
+
+			if ( ( self::FORM_TYPE_INLINE_PAYMENT === $formType ||
+				self::FORM_TYPE_CHECKOUT_PAYMENT === $formType ) &&
+				Main::PAYMENT_TYPE_CUSTOM_AMOUNT == $form->customAmount ) {
+
+				$customAmountParamValue = isset( $_GET[ self::HTTP_PARAM_NAME_AMOUNT ] ) ? sanitize_text_field( $_GET[ self::HTTP_PARAM_NAME_AMOUNT ] ) : null;
+
+				if ( ! empty( $customAmountParamValue ) ) {
+					$customAmount = apply_filters( self::FILTER_NAME_SET_CUSTOM_AMOUNT, 0, $formName, $customAmountParamValue );
+
+					if ( $customAmount !== 0 ) {
+						ApiV2::setFormFieldValue( $fieldConfiguration, ConfigurableFormFields::FIELD_AMOUNT, $customAmount );
+					}
+				}
+			}
+
+			if ( ! is_null( $form ) ) {
+				$view = null;
+
+				if ( self::FORM_TYPE_INLINE_PAYMENT === $formType ) {
+					$view = new InlinePaymentFormView( $form, $fieldConfiguration, $this->stripe, $this->loggerService );
+				} elseif ( self::FORM_TYPE_INLINE_SUBSCRIPTION === $formType ) {
+					$view = new InlineSubscriptionFormView( $form, $fieldConfiguration, $this->stripe, $this->loggerService );
+				} elseif ( self::FORM_TYPE_INLINE_SAVE_CARD === $formType ) {
+					$view = new InlineSaveCardFormView( $form, $fieldConfiguration, $this->loggerService );
+				} elseif ( self::FORM_TYPE_INLINE_DONATION === $formType ) {
+					/** @noinspection PhpUnusedLocalVariableInspection */
+					$view = new InlineDonationFormView( $form, $fieldConfiguration, $this->loggerService );
+				} elseif ( self::FORM_TYPE_CHECKOUT_PAYMENT === $formType ) {
+					/** @noinspection PhpUnusedLocalVariableInspection */
+					$view = new CheckoutPaymentFormView( $form, $fieldConfiguration, $this->stripe, $this->loggerService );
+				} elseif ( self::FORM_TYPE_CHECKOUT_SUBSCRIPTION === $formType ) {
+					/** @noinspection PhpUnusedLocalVariableInspection */
+					$view = new CheckoutSubscriptionFormView( $form, $fieldConfiguration, $this->stripe, $this->loggerService );
+				} elseif ( self::FORM_TYPE_CHECKOUT_SAVE_CARD === $formType ) {
+					/** @noinspection PhpUnusedLocalVariableInspection */
+					$view = new CheckoutSaveCardFormView( $form, $fieldConfiguration, $this->loggerService );
+				} elseif ( self::FORM_TYPE_CHECKOUT_DONATION === $formType ) {
+					/** @noinspection PhpUnusedLocalVariableInspection */
+					$view = new CheckoutDonationFormView( $form, $fieldConfiguration, $this->loggerService );
+				}
+
+				$selectedPlanId = null;
+				if ( $view instanceof SubscriptionFormView ) {
+					$isSimpleButtonSubscription = $view instanceof CheckoutSubscriptionFormView && 1 == $form->simpleButtonLayout;
+					if ( ! $isSimpleButtonSubscription ) {
+						$selectedPlanParamValue = isset( $_GET[ self::HTTP_PARAM_NAME_PLAN ] ) ? sanitize_text_field( $_GET[ self::HTTP_PARAM_NAME_PLAN ] ) : null;
+						// $selectedPlanId is used in the view included below
+						$selectedPlanId = apply_filters( self::FILTER_NAME_SELECT_SUBSCRIPTION_PLAN, null, $view->getFormName(), $view->getSelectedStripePlanIds(), $selectedPlanParamValue );
+					}
+				}
+
+				if ( false === $this->loadScriptsAndStylesWithActionHook ) {
+					$renderedForms = self::getRenderedForms()->renderLater( $formType );
+					if ( $renderedForms->getTotal() == 1 ) {
+						$this->fullstripe_load_css();
+						$this->fullstripe_load_js();
+						$this->fullstripe_set_common_js_variables();
+					}
+				}
+
+				$popupFormSubmit = null;
+				if ( isset( $_GET[ CheckoutSubmissionService::STRIPE_CALLBACK_PARAM_WPFS_POPUP_FORM_SUBMIT_HASH ] ) ) {
+					$submitHash = $_GET[ CheckoutSubmissionService::STRIPE_CALLBACK_PARAM_WPFS_POPUP_FORM_SUBMIT_HASH ];
+					/** @noinspection PhpUnusedLocalVariableInspection */
+					$popupFormSubmit = $this->checkoutSubmissionService->retrieveSubmitEntry( $submitHash );
+
+					$this->logger->debug( __FUNCTION__, 'popupFormSubmit=' . print_r( $popupFormSubmit, true ) );
+
+					// The recovery completes a submission whose return failed; its message shows until then.
+					$isAwaitingRecovery = isset( $popupFormSubmit ) && CheckoutSubmissionService::POPUP_FORM_SUBMIT_STATUS_PENDING === $popupFormSubmit->status && ! empty( $popupFormSubmit->lastMessage );
+					if ( isset( $popupFormSubmit ) && $popupFormSubmit->formHash === $view->getFormHash() && ! $isAwaitingRecovery ) {
+						if (
+							CheckoutSubmissionService::POPUP_FORM_SUBMIT_STATUS_CREATED === $popupFormSubmit->status
+							|| CheckoutSubmissionService::POPUP_FORM_SUBMIT_STATUS_PENDING === $popupFormSubmit->status
+							|| CheckoutSubmissionService::POPUP_FORM_SUBMIT_STATUS_COMPLETE === $popupFormSubmit->status
+						) {
+							// tnagy we do not render messages for created/complete submissions
+							$popupFormSubmit = null;
+						} else {
+							// tnagy we set the form submission to complete, the last message will be shown when the shortcode renders
+							$this->checkoutSubmissionService->updateSubmitEntryWithComplete( $popupFormSubmit );
+						}
+					}
+				}
+
+				if ( ! empty( $form->stripeElementsCustomCss ) ) {
+					$custom_css = wp_strip_all_tags( $form->stripeElementsCustomCss );
+					echo '<style type="text/css" media="screen">' . $custom_css . '</style>';
+				}
+
+				/** @noinspection PhpIncludeInspection */
+				include Assets::templates( 'forms/wpfs-form.php' );
+			} else {
+				include Assets::templates( 'forms/wpfs-form-not-found.php' );
+			}
+
+		} catch (\Exception $ex) {
+			// The block editor renders saved posts when it loads them, so a deleted form would be logged on every load.
+			if ( ! ( $formMissing && self::isEditorRender() ) ) {
+				$this->logger->error( __FUNCTION__, 'Error while rendering shortcode', $ex );
+			}
+
+			include Assets::templates( 'forms/wpfs-form-error.php' );
+		}
+
+		$content = ob_get_clean();
+
+		return apply_filters( 'fullstripe_form_output', $content );
+	}
+
+	/**
+	 * Whether the content is being rendered for the admin or a REST API request, not for a visitor.
+	 *
+	 * @return bool
+	 */
+	private static function isEditorRender() {
+		// The editor preloads the post in the admin with rest_do_request(), which before WP 6.5 can't be detected as REST.
+		if ( is_admin() ) {
+			return true;
+		}
+
+		if ( function_exists( 'wp_is_rest_endpoint' ) ) {
+			return wp_is_rest_endpoint();
+		}
+
+		return defined( 'REST_REQUEST' ) && REST_REQUEST;
+	}
+
+	/**
+	 * Returns a form from database identified by type and name.
+	 *
+	 * @param $formType
+	 * @param $formName
+	 *
+	 * @return mixed|null
+	 */
+	function getFormByTypeAndName( $formType, $formName ) {
+		return FormTypes::exists( $formType ) ? $this->database->getFormByName( $formType, $formName ) : null;
+	}
+
+	/**
+	 * @return RenderedFormData
+	 */
+	public static function getRenderedForms() {
+		if ( ! array_key_exists( self::REQUEST_PARAM_NAME_WPFS_RENDERED_FORMS, $_REQUEST ) ) {
+			$_REQUEST[ self::REQUEST_PARAM_NAME_WPFS_RENDERED_FORMS ] = new RenderedFormData();
+		}
+
+		return $_REQUEST[ self::REQUEST_PARAM_NAME_WPFS_RENDERED_FORMS ];
+	}
+
+	/**
+	 * Register and enqueue WPFS styles
+	 */
+	public function fullstripe_load_css() {
+		if ( $this->includeDefaultStyles ) {
+
+			wp_register_style( self::HANDLE_STYLE_WPFS_VARIABLES, Assets::css( 'wpfs-variables.css' ), null, Main::VERSION );
+			wp_register_style( self::HANDLE_STYLE_WPFS_FORMS, Assets::css( 'wpfs-forms.css' ), [ self::HANDLE_STYLE_WPFS_VARIABLES ], Main::VERSION );
+
+			wp_enqueue_style( self::HANDLE_STYLE_WPFS_FORMS );
+		}
+
+		do_action( 'fullstripe_load_css_action' );
+	}
+
+	/**
+	 * Register and enqueue WPFS scripts
+	 */
+	public function fullstripe_load_js() {
+		if ( ! Utils::isConnected() ) {
+			return;
+		}
+
+		$source = add_query_arg(
+			[
+				'render' => 'explicit'
+			],
+			self::SOURCE_GOOGLE_RECAPTCHA_V2_API_JS
+		);
+		wp_register_script( self::HANDLE_GOOGLE_RECAPTCHA_V_2, $source, [], Main::VERSION, true /* in footer */ );
+		wp_register_script( self::HANDLE_STRIPE_JS_V_3, 'https://js.stripe.com/v3/', [ 'jquery' ] );
+		wp_register_script( self::HANDLE_WP_FULL_STRIPE_UTILS_JS, Assets::scripts( 'wpfs-utils.js' ), [ 'wp-i18n' ], Main::VERSION );
+
+		wp_enqueue_script( self::HANDLE_STRIPE_JS_V_3 );
+		wp_enqueue_script( self::HANDLE_WP_FULL_STRIPE_UTILS_JS );
+		if (
+			ReCaptcha::getSecureInlineForms( $this->staticContext )
+			|| ReCaptcha::getSecureCheckoutForms( $this->staticContext )
+		) {
+			$dependencies = [
+				'jquery',
+				'jquery-ui-core',
+				'jquery-ui-selectmenu',
+				'jquery-ui-autocomplete',
+				'jquery-ui-tooltip',
+				'jquery-ui-spinner',
+				'wp-i18n',
+				self::HANDLE_WP_FULL_STRIPE_UTILS_JS,
+				self::HANDLE_STRIPE_JS_V_3,
+				self::HANDLE_GOOGLE_RECAPTCHA_V_2
+			];
+		} else {
+			$dependencies = [
+				'jquery',
+				'jquery-ui-core',
+				'jquery-ui-selectmenu',
+				'jquery-ui-autocomplete',
+				'jquery-ui-tooltip',
+				'jquery-ui-spinner',
+				'wp-i18n',
+				self::HANDLE_WP_FULL_STRIPE_UTILS_JS,
+				self::HANDLE_STRIPE_JS_V_3
+			];
+		}
+		wp_enqueue_script( self::HANDLE_WP_FULL_STRIPE_JS, Assets::scripts( 'wpfs.js' ), $dependencies, Main::VERSION );
+		wp_set_script_translations( self::HANDLE_WP_FULL_STRIPE_JS, 'wp-full-stripe-free' );
+
+		do_action( 'fullstripe_load_js_action' );
+	}
+
+	function fullstripe_set_common_js_variables() {
+		$wpfsFormOptions = [
+			self::JS_VARIABLE_AJAX_URL => admin_url( 'admin-ajax.php' ),
+			self::JS_VARIABLE_NONCE => wp_create_nonce( self::NONCE_ACTION_UPDATE_FAILED_PAYMENT_STATUS ),
+			self::JS_VARIABLE_GOOGLE_RECAPTCHA_SITE_KEY => ReCaptcha::getSiteKey( $this->staticContext ),
+			self::JS_VARIABLE_FORM_FIELDS => [
+				'inlinePayment' => InlinePaymentFormView::getFields(),
+				'inlineSaveCard' => InlineSaveCardFormView::getFields(),
+				'inlineSubscription' => InlineSubscriptionFormView::getFields(),
+				'inlineDonation' => InlineDonationFormView::getFields(),
+				'checkoutPayment' => CheckoutPaymentFormView::getFields(),
+				'checkoutSaveCard' => CheckoutSaveCardFormView::getFields(),
+				'checkoutSubscription' => CheckoutSubscriptionFormView::getFields(),
+				'checkoutDonation' => CheckoutDonationFormView::getFields(),
+			],
+			// Static UI text is translated in wpfs.js with wp.i18n. These messages stay
+			// here because the server resolves the same Stripe error codes.
+			self::JS_VARIABLE_L10N => [
+				'stripe_errors' => [
+					Stripe::INVALID_NUMBER_ERROR => $this->stripe->resolveErrorMessageByCode( Stripe::INVALID_NUMBER_ERROR ),
+					Stripe::INVALID_NUMBER_ERROR_EXP_MONTH => $this->stripe->resolveErrorMessageByCode( Stripe::INVALID_NUMBER_ERROR_EXP_MONTH ),
+					Stripe::INVALID_NUMBER_ERROR_EXP_YEAR => $this->stripe->resolveErrorMessageByCode( Stripe::INVALID_NUMBER_ERROR_EXP_YEAR ),
+					Stripe::INVALID_EXPIRY_MONTH_ERROR => $this->stripe->resolveErrorMessageByCode( Stripe::INVALID_EXPIRY_MONTH_ERROR ),
+					Stripe::INVALID_EXPIRY_YEAR_ERROR => $this->stripe->resolveErrorMessageByCode( Stripe::INVALID_EXPIRY_YEAR_ERROR ),
+					Stripe::INVALID_CVC_ERROR => $this->stripe->resolveErrorMessageByCode( Stripe::INVALID_CVC_ERROR ),
+					Stripe::INCORRECT_NUMBER_ERROR => $this->stripe->resolveErrorMessageByCode( Stripe::INCORRECT_NUMBER_ERROR ),
+					Stripe::EXPIRED_CARD_ERROR => $this->stripe->resolveErrorMessageByCode( Stripe::EXPIRED_CARD_ERROR ),
+					Stripe::INCORRECT_CVC_ERROR => $this->stripe->resolveErrorMessageByCode( Stripe::INCORRECT_CVC_ERROR ),
+					Stripe::INCORRECT_ZIP_ERROR => $this->stripe->resolveErrorMessageByCode( Stripe::INCORRECT_ZIP_ERROR ),
+					Stripe::CARD_DECLINED_ERROR => $this->stripe->resolveErrorMessageByCode( Stripe::CARD_DECLINED_ERROR ),
+					Stripe::MISSING_ERROR => $this->stripe->resolveErrorMessageByCode( Stripe::MISSING_ERROR ),
+					Stripe::PROCESSING_ERROR => $this->stripe->resolveErrorMessageByCode( Stripe::PROCESSING_ERROR ),
+					Stripe::MISSING_PAYMENT_INFORMATION => $this->stripe->resolveErrorMessageByCode( Stripe::MISSING_PAYMENT_INFORMATION ),
+					Stripe::COULD_NOT_FIND_PAYMENT_INFORMATION => $this->stripe->resolveErrorMessageByCode( Stripe::COULD_NOT_FIND_PAYMENT_INFORMATION )
+				],
+			],
+			'isAdmin' => current_user_can( 'administrator' ),
+			'isConnected' => Utils::isConnected()
+		];
+
+		$apiMode = $this->options->get( Options::OPTION_API_MODE );
+		$isTestMode = $apiMode === Main::STRIPE_API_MODE_TEST;
+		$isTestPlatform = $this->options->get( Options::OPTION_USE_WP_TEST_PLATFORM );
+		$isLivePlatform = $this->options->get( Options::OPTION_USE_WP_LIVE_PLATFORM );
+
+		$wpfsFormOptions[ self::JS_VARIABLE_STRIPE_ACCOUNT_ID ] = $isTestMode
+			? $this->options->get( Options::OPTION_TEST_ACCOUNT_ID )
+			: $this->options->get( Options::OPTION_LIVE_ACCOUNT_ID );
+
+		if ( $apiMode === self::STRIPE_API_MODE_TEST && $isTestPlatform ) {
+			$wpfsFormOptions[ self::JS_VARIABLE_STRIPE_KEY ] = Options::OPTION_TEST_STRIPE_PLATFORM_PK;
+		} elseif ( $apiMode === self::STRIPE_API_MODE_LIVE && $isLivePlatform ) {
+			$wpfsFormOptions[ self::JS_VARIABLE_STRIPE_KEY ] = Options::OPTION_LIVE_STRIPE_PLATFORM_PK;
+		} else {
+			$wpfsFormOptions[ self::JS_VARIABLE_STRIPE_KEY ] = $isTestMode
+				? $this->options->get( Options::OPTION_API_TEST_PUBLISHABLE_KEY )
+				: $this->options->get( Options::OPTION_API_LIVE_PUBLISHABLE_KEY );
+		}
+
+		wp_localize_script( self::HANDLE_WP_FULL_STRIPE_JS, self::JS_VARIABLE_WPFS_FORM_OPTIONS, $wpfsFormOptions );
+	}
+
+	function fullstripe_wp_head() {
+		echo '<style type="text/css" media="screen">' . $this->options->get( Options::OPTION_FORM_CUSTOM_CSS ) . '</style>';
+	}
+
+	/**
+	 * Register and enqueue styles and scripts to load for this addon
+	 */
+	public function fullstripe_enqueue_scripts_and_styles() {
+		if ( $this->loadScriptsAndStylesWithActionHook ) {
+			global $wp;
+
+			$this->logger->debug( __FUNCTION__, 'CALLED, wp=' . print_r( $wp, true ) );
+
+			if ( ! is_null( $wp ) && isset( $wp->request ) ) {
+				$pageByPath = get_page_by_path( $wp->request );
+				if ( ! is_null( $pageByPath ) && isset( $pageByPath->post_content ) ) {
+					if (
+						has_shortcode( $pageByPath->post_content, self::SHORTCODE_FULLSTRIPE_FORM )
+					) {
+						$this->fullstripe_load_css();
+						$this->fullstripe_load_js();
+						$this->fullstripe_set_common_js_variables();
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Initialize the user version of the plugin.
+	 */
+	public function init_user_version() {
+		if ( false !== get_option( 'wpfp_user_v1' ) ) {
+			return;
+		}
+
+		$stripe_connected = $this->options->getSeveral( [ 
+			Options::OPTION_LIVE_ACCOUNT_ID,
+			Options::OPTION_TEST_ACCOUNT_ID
+		] );
+
+		if ( ! empty( array_filter( $stripe_connected ) ) ) {
+			update_option( 'wpfp_user_v1', 'yes' );
+		} else {
+			update_option( 'wpfp_user_v1', 'no' );
+		}
+	}
+
+	/**
+	 * Get API version based on wpfp_user_v1 option
+	 * 
+	 * @return string
+	 */
+	public static function get_user_version() {
+		$version = get_option( 'wpfp_user_v1', 'no' );
+		return 'yes' === $version ? 'v1' : 'v2';
+	}
+
+	private function retrieveProductIdsByPriceIds( $priceIds ) {
+		try {
+
+			$productIds = $this->stripe->retrieveProductIdsByPriceIds( $priceIds );
+
+			return $productIds;
+		} catch (\Exception $ex) {
+			$this->logger->error( __FUNCTION__, "Cannot retrieve products by price ids", $ex );
+
+			return [];
+		}
+	}
+
+	/**
+	 * @param $priceIds
+	 * @param $couponProducts
+	 * @return bool
+	 */
+	private function doPricesIntersectWithCouponProducts( $priceIds, $couponProducts ): bool {
+		$result = false;
+
+		$productIds = $this->retrieveProductIdsByPriceIds( $priceIds );
+		$intersect = array_intersect( $couponProducts, $productIds );
+
+		if ( count( $intersect ) === 0 ) {
+			$result = false;
+		} else {
+			$result = true;
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @param $form
+	 * @return array
+	 */
+	private function getProductsByForm( $form ): array {
+		$result = [];
+
+		if ( isset( $form->decoratedProducts ) ) {
+			$result = Utils::decodeJsonArray( $form->decoratedProducts );
+		} elseif ( isset( $form->decoratedPlans ) ) {
+			$result = Utils::decodeJsonArray( $form->decoratedPlans );
+		}
+		return $result;
+	}
+
+	/**
+	 * @param $formType
+	 * @param $formId
+	 * @return array
+	 */
+	public function getProductsByFormTypeAndId( $formType, $formId ): array {
+		$form = $this->getFormByTypeAndName( $formType, $formId );
+
+		return $this->getProductsByForm( $form );
+	}
+
+	/**
+	 * @param $coupon
+	 * @param $formType
+	 * @param $formId
+	 * @return \StdClass
+	 */
+	public function isCouponApplicableToForm( $coupon, $formType, $formId, $currentPriceId ): \StdClass {
+		$result = new \StdClass;
+		$result->applicableToForm = true;
+		$result->applicableToProduct = true;
+
+		if ( isset( $coupon->applies_to ) && isset( $coupon->applies_to->products ) ) {
+			$savedProducts = $this->getProductsByFormTypeAndId( $formType, $formId );
+
+			if ( isset( $savedProducts ) && ! empty( $savedProducts ) ) {
+				$priceIds = Pricing::extractPriceIdsFromProductsStatic( $savedProducts );
+
+				if ( isset( $priceIds ) && ! empty( $priceIds ) ) {
+					$result->applicableToForm = $this->doPricesIntersectWithCouponProducts( $priceIds, $coupon->applies_to->products );
+
+					if ( $result->applicableToForm ) {
+						$result->applicableToProduct = $this->doPricesIntersectWithCouponProducts( [ $currentPriceId ], $coupon->applies_to->products );
+					} else {
+						$result->applicableToProduct = false;
+					}
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	private function retrievePriceIdsProductIdsAssociativeArray( $priceIds ) {
+		$result = [];
+
+		foreach ( $priceIds as $priceId ) {
+			try {
+				$price = $this->stripe->retrievePriceWithProductExpanded( $priceId );
+				$result[ $priceId ] = $price->product->id;
+			} catch (\Exception $ex) {
+				$this->logger->error( __FUNCTION__, "Cannot retrieve price", $ex );
+			}
+		}
+
+		return $result;
+	}
+
+	public function getDiscountedPriceIdsByCouponAndForm( $coupon, $formType, $formId ) {
+		$result = [];
+
+		$formProducts = $this->getProductsByFormTypeAndId( $formType, $formId );
+		$priceIds = Pricing::extractPriceIdsFromProductsStatic( $formProducts );
+
+		if ( isset( $coupon->applies_to ) && isset( $coupon->applies_to->products ) ) {
+			$pricesProducts = $this->retrievePriceIdsProductIdsAssociativeArray( $priceIds );
+			$discountedPrices = array_intersect( $pricesProducts, $coupon->applies_to->products );
+
+			$result = array_keys( $discountedPrices );
+		} else {
+			$result = $priceIds;
+		}
+
+		return $result;
+	}
+
+}

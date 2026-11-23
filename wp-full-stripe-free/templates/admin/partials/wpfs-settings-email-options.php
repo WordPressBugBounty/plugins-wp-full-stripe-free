@@ -1,5 +1,7 @@
 <?php
-    /** @var $view MM_WPFS_Admin_EmailOptionsView */
+use ThemeIsle\WPFullPay\Admin\Views\EmailOptionsView;
+
+    /** @var $view EmailOptionsView */
     /** @var $emailOptions */
 ?>
 <form <?php $view->formAttributes(); ?>>
@@ -64,7 +66,7 @@
                     <div class="wpfs-inline-message__title"><?php esc_html_e( 'Configure plugin email notifications', 'wp-full-stripe-free' ); ?></div>
                     <p><?php esc_html_e( 'These settings apply to plugin email notifications only.', 'wp-full-stripe-free' ); ?></p>
                     <p>
-                        <a class="wpfs-btn wpfs-btn-link" href="https://docs.themeisle.com/article/2101-configuring-email-notifications" target="_blank"><?php esc_html_e( 'Learn more about Email notifications', 'wp-full-stripe-free' ); ?></a>
+                        <a class="wpfs-btn wpfs-btn-link" href="<?php echo esc_url( tsdk_utmify( 'https://docs.themeisle.com/wp-full-pay/configuring-email-notifications', 'email-notifications', 'settings' ) ); ?>" target="_blank"><?php esc_html_e( 'Learn more about Email notifications', 'wp-full-stripe-free' ); ?></a>
                     </p>
                 </div>
             </div>

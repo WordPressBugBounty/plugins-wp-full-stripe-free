@@ -1,5 +1,7 @@
 <?php
-/** @var $view MM_WPFS_Admin_DonationFormView */
+use ThemeIsle\WPFullPay\Admin\Views\DonationFormView;
+
+/** @var $view DonationFormView */
 /** @var $form */
 ?>
 <div class="wpfs-form-group" id="wpfs-minimum-donation-amount">

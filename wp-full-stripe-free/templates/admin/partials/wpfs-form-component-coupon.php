@@ -1,5 +1,8 @@
 <?php
-    /** @var $view MM_WPFS_Admin_PaymentFormView|MM_WPFS_Admin_SubscriptionFormView */
+use ThemeIsle\WPFullPay\Admin\Views\PaymentFormView;
+use ThemeIsle\WPFullPay\Admin\Views\SubscriptionFormView;
+
+    /** @var $view PaymentFormView|SubscriptionFormView */
     /** @var $form */
     /** @var $data */
 ?>

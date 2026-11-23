@@ -1,5 +1,8 @@
 <?php
-    /** @var $view MM_WPFS_Admin_EmailTemplatesView */
+use ThemeIsle\WPFullPay\Admin\Views\EmailTemplatesView;
+use ThemeIsle\WPFullPay\Main;
+
+    /** @var $view EmailTemplatesView */
     /** @var $emailTemplates */
 ?>
 <form class="wpfs-form" <?php $view->formAttributes(); ?>>
@@ -10,7 +13,7 @@
             <div class="wpfs-list-title"><?php esc_html_e( 'Available templates:', 'wp-full-stripe-free' ); ?></div>
             <div class="wpfs-list wpfs-list--sm">
             <?php foreach ( $emailTemplates->templates as $template ) { ?>
-                <a class="wpfs-list__item js-email-template" href="" data-template-id="<?php echo $template->id; ?>" data-template-name="<?php echo $template->caption; ?>">
+                <a class="wpfs-list__item js-email-template" href="" data-template-id="<?php echo $template->id; ?>" data-template-name="<?php echo esc_attr( $template->caption ); ?>">
                     <div class="wpfs-list__text">
                         <div class="wpfs-list__title"><?php echo esc_html( $template->caption ); ?></div>
                     </div>
@@ -81,10 +84,10 @@
     </div>
 </script>
 <script type="text/template" id="wpfs-modal-send-email-test">
-    <form data-wpfs-form-type="<?php echo MM_WPFS::FORM_TYPE_ADMIN_SEND_TEST_EMAIL; ?>" class="wpfs-send-test-email-form">
+    <form data-wpfs-form-type="<?php echo Main::FORM_TYPE_ADMIN_SEND_TEST_EMAIL; ?>" class="wpfs-send-test-email-form">
         <div class="wpfs-dialog-scrollable">
             <div class="wpfs-tags-input-wrapper js-tags-input">
-                <input id="wpfs-test-email-addresses--<?php echo MM_WPFS::FORM_TYPE_ADMIN_SEND_TEST_EMAIL ?>" class="wpfs-tags-input" type="text" name="wpfs-test-email-addresses" placeholder="<?php esc_html_e('Add email addresses', 'wp-full-stripe-free'); ?>">
+                <input id="wpfs-test-email-addresses--<?php echo Main::FORM_TYPE_ADMIN_SEND_TEST_EMAIL ?>" class="wpfs-tags-input" type="text" name="wpfs-test-email-addresses" placeholder="<?php esc_html_e('Add email addresses', 'wp-full-stripe-free'); ?>">
             </div>
             <div class="wpfs-typo-body wpfs-typo-body--sm"><?php esc_html_e('Use space to separate email addresses', 'wp-full-stripe-free'); ?></div>
         </div>
@@ -111,6 +114,6 @@
         </div>
     </div>
     <div class="wpfs-dialog-content-actions">
-        <a class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php _e( 'Close', 'wp-full-stripe-free' ); ?></a>
+        <a class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php esc_html_e( 'Close', 'wp-full-stripe-free' ); ?></a>
     </div>
 </script>

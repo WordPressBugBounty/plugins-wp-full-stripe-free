@@ -1,5 +1,7 @@
 <?php
-/** @var MM_WPFS_FormView $view */
+use ThemeIsle\WPFullPay\Forms\Views\FormView;
+
+/** @var FormView $view */
 /** @var \StdClass $form */
 ?>
 <div class="wpfs-form-group">

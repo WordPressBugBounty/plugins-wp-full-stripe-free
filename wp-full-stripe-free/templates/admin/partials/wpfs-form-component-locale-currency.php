@@ -1,5 +1,8 @@
 <?php
-    /** @var $view MM_WPFS_Admin_FormView */
+use ThemeIsle\WPFullPay\Admin\Menu;
+use ThemeIsle\WPFullPay\Admin\Views\FormView;
+
+    /** @var $view FormView */
     /** @var $form */
 ?>
 <div class="wpfs-form-group">
@@ -11,8 +14,8 @@
         <?php
             echo sprintf(
                 /* translators: %1$s: opening anchor tag, %2$s: closing anchor tag */
-                __( 'Inherit locale settings from %1$sglobal configurations%2$s.', 'wp-full-stripe-free' ),
-                '<a target="_blank" href="' . MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS_WORDPRESS_DASHBOARD ) . '">',
+                esc_html__( 'Inherit locale settings from %1$sglobal configurations%2$s.', 'wp-full-stripe-free' ),
+                '<a target="_blank" href="' . Menu::getAdminUrlBySlug( Menu::SLUG_SETTINGS_WORDPRESS_DASHBOARD ) . '">',
                 '</a>'
             );
         ?>

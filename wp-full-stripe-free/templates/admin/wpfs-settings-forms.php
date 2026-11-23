@@ -1,11 +1,15 @@
 <?php
+use ThemeIsle\WPFullPay\Admin\Menu;
+use ThemeIsle\WPFullPay\Admin\Views\FormsAppearanceView;
+use ThemeIsle\WPFullPay\Admin\Views\FormsOptionsView;
+
 /** @var $tabId */
-/** @var $this MM_WPFS_Admin_Menu */
+/** @var $this Menu */
 
 $pageStyle = 'wpfs-page-settings-forms-options';
-if ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS ) {
+if ( $tabId === Menu::PARAM_VALUE_TAB_OPTIONS ) {
     $pageStyle = 'wpfs-page-settings-forms-options';
-} elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE ) {
+} elseif ( $tabId === Menu::PARAM_VALUE_TAB_APPEARANCE ) {
     $pageStyle = 'wpfs-page-settings-forms-appearance';
 }
 ?>
@@ -23,20 +27,20 @@ if ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS ) {
                 <?php
                 $pageUrl = add_query_arg(
                     [
-                        'page' => MM_WPFS_Admin_Menu::SLUG_SETTINGS_FORMS,
+                        'page' => Menu::SLUG_SETTINGS_FORMS,
                         'tab'  => $tabId
                     ],
                     admin_url( 'admin.php' )
                 );
 
-                if ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_OPTIONS ) {
+                if ( $tabId === Menu::PARAM_VALUE_TAB_OPTIONS ) {
                     $formsOptions = $this->getFormsOptionsData();
-                    $view = new MM_WPFS_Admin_FormsOptionsView();
+                    $view = new FormsOptionsView();
 
                     include('partials/wpfs-settings-forms-options.php');
-                } elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE ) {
+                } elseif ( $tabId === Menu::PARAM_VALUE_TAB_APPEARANCE ) {
                     $formsAppearance = $this->getFormsAppearanceData();
-                    $view = new MM_WPFS_Admin_FormsAppearanceView();
+                    $view = new FormsAppearanceView();
 
                     include('partials/wpfs-settings-forms-appearance.php');
                 }

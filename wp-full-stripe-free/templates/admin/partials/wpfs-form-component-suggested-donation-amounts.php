@@ -1,5 +1,9 @@
 <?php
-    /** @var $view MM_WPFS_Admin_DonationFormView */
+use ThemeIsle\WPFullPay\Admin\Views\DonationFormView;
+use ThemeIsle\WPFullPay\Locale\Currencies;
+use ThemeIsle\WPFullPay\Main;
+
+    /** @var $view DonationFormView */
     /** @var $form */
     /** @var $data */
 ?>
@@ -21,19 +25,19 @@
 </div>
 <script type="text/javascript">
     var wpfsSuggestedDonationAmounts = <?php echo $form->donationAmounts; ?>;
-    var wpfsCurrencies = <?php echo json_encode( MM_WPFS_Currencies::getAvailableCurrencies() ); ?>;
+    var wpfsCurrencies = <?php echo json_encode( Currencies::getAvailableCurrencies() ); ?>;
 </script>
 <script type="text/template" id="wpfs-modal-add-suggested-donation-amount">
-    <form data-wpfs-form-type="<?php echo MM_WPFS::FORM_TYPE_ADMIN_ADD_SUGGESTED_DONATION_AMOUNT; ?>" class="wpfs-custom-field-form">
+    <form data-wpfs-form-type="<?php echo Main::FORM_TYPE_ADMIN_ADD_SUGGESTED_DONATION_AMOUNT; ?>" class="wpfs-custom-field-form">
         <div class="wpfs-dialog-scrollable wpfs-form-group">
-            <label for="wpfs-suggested-donation-amount--<?php echo MM_WPFS::FORM_TYPE_ADMIN_ADD_SUGGESTED_DONATION_AMOUNT; ?>" class="wpfs-form-label"><?php esc_html_e('Donation amount', 'wp-full-stripe-free'); ?></label>
+            <label for="wpfs-suggested-donation-amount--<?php echo Main::FORM_TYPE_ADMIN_ADD_SUGGESTED_DONATION_AMOUNT; ?>" class="wpfs-form-label"><?php esc_html_e('Donation amount', 'wp-full-stripe-free'); ?></label>
             <div class="wpfs-input-group wpfs-input-group--sm">
                 <% if ( wpfsAdminSettings.preferences.currencyShowIdentifierOnLeft == '1' ) { %>
                 <div class="wpfs-input-group-prepend">
                     <span class="wpfs-input-group-text"><%= pageData.currencySymbol %></span>
                 </div>
                 <% } %>
-                <input id="wpfs-suggested-donation-amount--<?php echo MM_WPFS::FORM_TYPE_ADMIN_ADD_SUGGESTED_DONATION_AMOUNT; ?>" class="wpfs-input-group-form-control" type="text" name="wpfs-suggested-donation-amount">
+                <input id="wpfs-suggested-donation-amount--<?php echo Main::FORM_TYPE_ADMIN_ADD_SUGGESTED_DONATION_AMOUNT; ?>" class="wpfs-input-group-form-control" type="text" name="wpfs-suggested-donation-amount">
                 <% if ( wpfsAdminSettings.preferences.currencyShowIdentifierOnLeft == '0' ) { %>
                 <div class="wpfs-input-group-append">
                     <span class="wpfs-input-group-text"><%= pageData.currencySymbol %></span>
@@ -52,8 +56,8 @@
         <p class="wpfs-dialog-content-text"><%- confirmationMessage %></p>
     </div>
     <div class="wpfs-dialog-content-actions">
-        <button class="wpfs-btn wpfs-btn-danger js-delete-suggested-donation-amount-dialog"><?php _e( 'Delete amount', 'wp-full-stripe-free'); ?></button>
-        <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php _e( 'Keep amount', 'wp-full-stripe-free' ); ?></button>
+        <button class="wpfs-btn wpfs-btn-danger js-delete-suggested-donation-amount-dialog"><?php esc_html_e( 'Delete amount', 'wp-full-stripe-free'); ?></button>
+        <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php esc_html_e( 'Keep amount', 'wp-full-stripe-free' ); ?></button>
     </div>
 </script>
 <script type="text/template" id="wpfs-suggested-donation-amount-template">

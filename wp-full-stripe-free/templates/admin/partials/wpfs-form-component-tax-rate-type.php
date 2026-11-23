@@ -1,5 +1,9 @@
 <?php
-/** @var $view MM_WPFS_Admin_PaymentFormView|MM_WPFS_Admin_SubscriptionFormView */
+use ThemeIsle\WPFullPay\Admin\Views\PaymentFormView;
+use ThemeIsle\WPFullPay\Admin\Views\SubscriptionFormView;
+use ThemeIsle\WPFullPay\Main;
+
+/** @var $view PaymentFormView|SubscriptionFormView */
 /** @var $form */
 ?>
 <div class="wpfs-form-group" id="tax-rate-type" style="<?php echo $view->doesFormUseTaxRates( $form ) ? '' : 'display: none;' ?>">
@@ -8,7 +12,7 @@
         <div class="wpfs-form-check">
             <?php
                 $options = $view->taxRateType()->options();
-                $initValue = $view->doesFormUseTaxRates( $form ) ? $form->vatRateType : MM_WPFS::FIELD_VALUE_TAX_RATE_FIXED;
+                $initValue = $view->doesFormUseTaxRates( $form ) ? $form->vatRateType : Main::FIELD_VALUE_TAX_RATE_FIXED;
             ?>
             <input id="<?php $options[0]->id(); ?>" name="<?php $options[0]->name(); ?>" <?php $options[0]->attributes(); ?> value="<?php $options[0]->value(); ?>" <?php echo $initValue == $options[0]->value(false) ? 'checked' : ''; ?>>
             <label class="wpfs-form-check-label" for="<?php $options[0]->id(); ?>"><?php $options[0]->label(); ?></label>

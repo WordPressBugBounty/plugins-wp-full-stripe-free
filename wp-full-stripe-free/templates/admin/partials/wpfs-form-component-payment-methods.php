@@ -1,5 +1,8 @@
 <?php
-/** @var MM_WPFS_Control $option*/
+use ThemeIsle\WPFullPay\Assets;
+use ThemeIsle\WPFullPay\Forms\Views\Control;
+
+/** @var Control $option*/
 
 $payment_methods = [];
 if ( isset( $form->paymentMethods ) && ! empty( $form->paymentMethods ) ) {
@@ -34,11 +37,11 @@ if (
 		for="<?php $option->id(); ?>"
 	>
 		<span class="wpfs-form-check-label__title">
-			<?php $option->label(); ?> (<a href="<?php echo esc_url( $option->metadata()['external_docs'] ); ?>" target="_blank" rel="noopener noreferrer">Stripe docs</a>)
+			<?php $option->label(); ?> (<a href="<?php echo esc_url( $option->metadata()['external_docs'] ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Stripe docs', 'wp-full-stripe-free' ); ?></a>)
 		</span>
 		<?php if ( isset( $option->metadata()['currencies'] ) and count( $option->metadata()['currencies'] ) > 0 ) : ?>
 			<div class="wpfs-form-check-label__desc">
-				Currencies:
+				<?php esc_html_e( 'Currencies:', 'wp-full-stripe-free' ); ?>
 				<code style="line-height: 26px;">
 					<?php
 					if ( is_array( $option->metadata()['currencies'] ) && count( $option->metadata()['currencies'] ) > 1 ) {
@@ -52,7 +55,7 @@ if (
 		<?php endif; ?>
 		<?php if ( isset( $option->metadata()['countries'] ) and count( $option->metadata()['countries'] ) > 0 ) : ?>
 			<div class="wpfs-form-check-label__desc">
-				Countries:
+				<?php esc_html_e( 'Countries:', 'wp-full-stripe-free' ); ?>
 				<code style="line-height: 26px;">
 					<?php
 					if ( is_array( $option->metadata()['countries'] ) && count( $option->metadata()['countries'] ) > 1 ) {
@@ -64,21 +67,17 @@ if (
 				</code>
 			</div>
 		<?php endif; ?>
-		<?php if ( isset( $option->metadata()['bnpl'] ) and $option->metadata()['bnpl'] ) : ?>
+		<?php if ( isset( $option->metadata()['recurring'] ) and $option->metadata()['recurring'] ) : ?>
 			<div class="wpfs-form-check-label__desc info">
-				Payment type: Buy now, pay later
-			</div>
-		<?php elseif ( isset( $option->metadata()['recurring'] ) and $option->metadata()['recurring'] ) : ?>
-			<div class="wpfs-form-check-label__desc info">
-				Payment type: Recurring
+				<?php esc_html_e( 'Payment type: Recurring', 'wp-full-stripe-free' ); ?>
 			</div>
 		<?php elseif ( isset( $option->metadata()['recurring'] ) and $option->metadata()['recurring'] === false ) : ?>
 			<div class="wpfs-form-check-label__desc info">
-				Payment type: One-off only
+				<?php esc_html_e( 'Payment type: One-off only', 'wp-full-stripe-free' ); ?>
 			</div>
 		<?php endif; ?>
 		<span class="wpfs-form-check-label__illu">
-			<img src="<?php echo esc_url( MM_WPFS_Assets::images( 'payment-methods/' . $option->metadata()['icon'] ) ); ?>" alt="" />
+			<img src="<?php echo esc_url( Assets::images( 'payment-methods/' . $option->metadata()['icon'] ) ); ?>" alt="" />
 		</span>
 	</label>
 </div>

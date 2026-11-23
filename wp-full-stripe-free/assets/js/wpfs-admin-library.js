@@ -1,8 +1,10 @@
+/* global wpfsIsInViewport, wpfsScrollToElement, wpfsScrollToFirstFieldError, wpfsGetFieldDescriptor, wpfsFieldErrorSelector, wpfsClearFieldErrors, wpfsGlobalErrorMessages */
 function initWpfsAdminLibrary($, ctx) {
+  const { __ } = wp.i18n;
+
   const PROPERTY_NAME_BINDING_RESULT = "bindingResult";
 
   const ERROR_MESSAGE_FIELD_CLASS = "wpfs-form-error-message";
-  const FIELD_DESCRIPTOR_MACRO_FIELD_ID = "{fieldId}";
 
   const FIELD_TYPE_INPUT = "input";
   const FIELD_TYPE_INPUT_DECORATED = "input-decorated";
@@ -677,77 +679,20 @@ function initWpfsAdminLibrary($, ctx) {
           })
           .join("\n");
 
-        var mode = null;
-        if (this.dataset["editorMode"] === "html") {
-          mode = "html";
-          this.value = html_beautify(this.value, {
-            indent_size: "2",
-            extra_liners: [],
-          });
-        } else if (this.dataset["editorMode"] === "css") {
-          mode = "css";
-          this.value = css_beautify(this.value, {
-            indent_size: "2",
-          });
-        }
-
-        ace.config.set("basePath", wpfsAdminSettings.aceEditorPath);
-        var editor = ace.edit(this);
-        editor.setOptions({
-          minLines: 20,
-          maxLines: 20,
-          selectionStyle: "text",
-          highlightActiveLine: false,
-          highlightSelectedWord: true,
+        this.value = css_beautify(this.value, {
+          indent_size: "2",
         });
-        editor.setTheme("ace/theme/solarized_dark");
-        editor.session.setMode("ace/mode/" + mode);
-        editor.session.setTabSize(2);
-        editor.session.setUseWrapMode(true);
-        editor.getSession().setUseWorker(false);
 
-        ctx.CodeEditor.editors.push(editor);
+        var editor = null;
+        if (wpfsAdminSettings.codeEditorSettings) {
+          editor = wp.codeEditor.initialize(this, wpfsAdminSettings.codeEditorSettings);
+        }
+        ctx.CodeEditor.editors.push({ textarea: this, editor: editor });
       });
     },
     getEditorValue: function (idx) {
-      return ctx.CodeEditor.editors[idx].getValue();
-    },
-  };
-
-  ctx.ColorPicker = {
-    init: function () {
-      $(".js-color-picker").each(function () {
-        var $parent = $(this).parent();
-        var $input = $parent.find("input");
-        var pickr = Pickr.create({
-          el: ".js-color-picker",
-          theme: "nano",
-          components: {
-            preview: true,
-            opacity: true,
-            hue: true,
-          },
-          default: $input.val(),
-        });
-
-        var typing = false;
-        $input.on("keyup", function () {
-          pickr.setColor($(this).val(), false);
-          typing = true;
-        });
-
-        $input.on("blur", function () {
-          typing = false;
-        });
-
-        pickr.on("change", function (color, instance) {
-          if (!typing) {
-            var hex = "#" + color.toHEXA().join("").toUpperCase();
-            $input.val(hex);
-            $parent.find("button").css("color", hex);
-          }
-        });
-      });
+      var entry = ctx.CodeEditor.editors[idx];
+      return entry.editor ? entry.editor.codemirror.getValue() : entry.textarea.value;
     },
   };
 
@@ -914,47 +859,9 @@ function initWpfsAdminLibrary($, ctx) {
     },
   };
 
-  ctx.isInViewport = function ($anElement) {
-    var $window = $(window);
+  ctx.isInViewport = wpfsIsInViewport;
 
-    //noinspection JSValidateTypes
-    var viewPortTop = $window.scrollTop();
-    var viewPortBottom = viewPortTop + $window.height();
-
-    var elementTop = $anElement.offset().top;
-    var elementBottom = elementTop + $anElement.outerHeight();
-
-    if (ctx.debugLog) {
-      console.log(
-        "isInViewport(): elementBottom=" +
-          elementBottom +
-          ", viewPortBottom=" +
-          viewPortBottom +
-          ", elementTop=" +
-          elementTop +
-          ", viewPortTop=" +
-          viewPortTop
-      );
-    }
-
-    return elementBottom <= viewPortBottom && elementTop >= viewPortTop;
-  };
-
-  ctx.scrollToElement = function ($anElement, fade) {
-    if ($anElement && $anElement.offset() && $anElement.offset().top) {
-      if (!ctx.isInViewport($anElement)) {
-        $("html, body").animate(
-          {
-            scrollTop: $anElement.offset().top - 100,
-          },
-          1000
-        );
-      }
-    }
-    if ($anElement && fade) {
-      $anElement.fadeIn(500).fadeOut(500).fadeIn(500);
-    }
-  };
+  ctx.scrollToElement = wpfsScrollToElement;
 
   ctx.initSuccessMessageBanner = function () {
     if ($("#wpfs-success-message") && $("#wpfs-success-message").length > 0) {
@@ -1016,17 +923,7 @@ function initWpfsAdminLibrary($, ctx) {
     $messageContainer.remove();
   };
 
-  ctx.clearFieldErrors = function ($form) {
-    $(".wpfs-form-error-message", $form).remove();
-    $(".wpfs-form-control", $form).removeClass("wpfs-form-control--error");
-    $(".wpfs-input-group", $form).removeClass("wpfs-input-group--error");
-    $(".wpfs-form-control--error", $form).removeClass(
-      "wpfs-form-control--error"
-    );
-    $(".wpfs-form-check-input--error", $form).removeClass(
-      "wpfs-form-check-input--error"
-    );
-  };
+  ctx.clearFieldErrors = wpfsClearFieldErrors;
 
   ctx.clearFormErrors = function ($form) {
     ctx.clearGlobalMessage($form);
@@ -1074,17 +971,7 @@ function initWpfsAdminLibrary($, ctx) {
   };
 
   ctx.getFieldDescriptor = function (formType, fieldName) {
-    var fieldDescriptor = null;
-
-    if (wpfsFormFields.hasOwnProperty(formType)) {
-      var formFields = wpfsFormFields[formType];
-
-      if (formFields.hasOwnProperty(fieldName)) {
-        fieldDescriptor = formFields[fieldName];
-      }
-    }
-
-    return fieldDescriptor;
+    return wpfsGetFieldDescriptor(wpfsFormFields, formType, fieldName);
   };
 
   ctx.showFieldError = function ($form, field, fieldDescriptor, scrollTo) {
@@ -1097,7 +984,10 @@ function initWpfsAdminLibrary($, ctx) {
       var fieldClass = fieldDescriptor.class;
       var fieldSelector = fieldDescriptor.selector;
       var fieldErrorClass = fieldDescriptor.errorClass;
-      var fieldErrorSelector = fieldDescriptor.errorSelector;
+      var fieldErrorSelector = wpfsFieldErrorSelector(
+        fieldDescriptor,
+        field.id
+      );
 
       // tnagy initialize field
       var theFieldSelector;
@@ -1117,66 +1007,26 @@ function initWpfsAdminLibrary($, ctx) {
       // tnagy add error class, insert error message
       if (FIELD_TYPE_INPUT === fieldType) {
         if (fieldErrorSelector != null) {
-          if (
-            fieldErrorSelector.indexOf(FIELD_DESCRIPTOR_MACRO_FIELD_ID) !== -1
-          ) {
-            fieldErrorSelector = fieldErrorSelector.replace(
-              /\{fieldId}/g,
-              fieldId
-            );
-          }
           $field.closest(fieldErrorSelector).addClass(fieldErrorClass);
         }
         $fieldError.insertAfter($field);
       } else if (FIELD_TYPE_INPUT_DECORATED === fieldType) {
         if (fieldErrorSelector != null) {
-          if (
-            fieldErrorSelector.indexOf(FIELD_DESCRIPTOR_MACRO_FIELD_ID) !== -1
-          ) {
-            fieldErrorSelector = fieldErrorSelector.replace(
-              /\{fieldId}/g,
-              fieldId
-            );
-          }
           $field.closest(fieldErrorSelector).addClass(fieldErrorClass);
         }
         $fieldError.appendTo($field.parent());
       } else if (FIELD_TYPE_INPUT_CHECK_ITEM === fieldType) {
         if (fieldErrorSelector != null) {
-          if (
-            fieldErrorSelector.indexOf(FIELD_DESCRIPTOR_MACRO_FIELD_ID) !== -1
-          ) {
-            fieldErrorSelector = fieldErrorSelector.replace(
-              /\{fieldId}/g,
-              fieldId
-            );
-          }
           $field.closest(fieldErrorSelector).addClass(fieldErrorClass);
         }
         $fieldError.appendTo($field.parent().parent());
       } else if (FIELD_TYPE_INPUT_GROUP === fieldType) {
         if (fieldErrorSelector != null) {
-          if (
-            fieldErrorSelector.indexOf(FIELD_DESCRIPTOR_MACRO_FIELD_ID) !== -1
-          ) {
-            fieldErrorSelector = fieldErrorSelector.replace(
-              /\{fieldId}/g,
-              fieldId
-            );
-          }
           $field.closest(fieldErrorSelector).addClass(fieldErrorClass);
         }
         $fieldError.insertAfter($field.closest(fieldErrorSelector));
       } else if (FIELD_TYPE_INPUT_GROUP_MINMAX === fieldType) {
         if (fieldErrorSelector != null) {
-          if (
-            fieldErrorSelector.indexOf(FIELD_DESCRIPTOR_MACRO_FIELD_ID) !== -1
-          ) {
-            fieldErrorSelector = fieldErrorSelector.replace(
-              /\{fieldId}/g,
-              fieldId
-            );
-          }
           $field.closest(fieldErrorSelector).addClass(fieldErrorClass);
         }
         $fieldError.appendTo($field.parent().parent().parent());
@@ -1187,14 +1037,6 @@ function initWpfsAdminLibrary($, ctx) {
         $fieldError.insertAfter($field);
       } else if (FIELD_TYPE_DROPDOWN === fieldType) {
         if (fieldErrorSelector != null) {
-          if (
-            fieldErrorSelector.indexOf(FIELD_DESCRIPTOR_MACRO_FIELD_ID) !== -1
-          ) {
-            fieldErrorSelector = fieldErrorSelector.replace(
-              /\{fieldId}/g,
-              fieldId
-            );
-          }
           $field.closest("." + fieldClass).addClass(fieldErrorClass);
           $(fieldErrorSelector).addClass(fieldErrorClass);
         }
@@ -1205,27 +1047,9 @@ function initWpfsAdminLibrary($, ctx) {
         }
         $fieldError.appendTo($field.parent());
       } else if (FIELD_TYPE_CHECKLIST === fieldType) {
-        if (fieldErrorSelector != null) {
-          if (
-            fieldErrorSelector.indexOf(FIELD_DESCRIPTOR_MACRO_FIELD_ID) !== -1
-          ) {
-            fieldErrorSelector = fieldErrorSelector.replace(
-              /\{fieldId}/g,
-              fieldId
-            );
-          }
-        }
         $fieldError.insertAfter($field);
       } else if (FIELD_TYPE_PRODUCTS === fieldType) {
         if (fieldErrorSelector != null) {
-          if (
-            fieldErrorSelector.indexOf(FIELD_DESCRIPTOR_MACRO_FIELD_ID) !== -1
-          ) {
-            fieldErrorSelector = fieldErrorSelector.replace(
-              /\{fieldId}/g,
-              fieldId
-            );
-          }
           $(fieldErrorSelector).addClass(fieldErrorClass);
         }
         $fieldError.insertAfter($field);
@@ -1251,7 +1075,7 @@ function initWpfsAdminLibrary($, ctx) {
     var fieldDescriptor = ctx.getFieldDescriptor(formType, field.name);
     if (fieldDescriptor != null) {
       if (true === fieldDescriptor.hidden) {
-        ctx.showErrorGlobalMessage($form, errorTitle, errorMessage);
+        ctx.showErrorGlobalMessage($form, errorTitle, field.message);
       } else {
         ctx.showFieldError($form, field, fieldDescriptor, scrollTo);
       }
@@ -1260,7 +1084,10 @@ function initWpfsAdminLibrary($, ctx) {
 
   ctx.showFormTab = function (tabId) {
     $(".wpfs-edit-form-pane").hide();
-    $('.wpfs-edit-form-pane[data-tab-id="' + tabId + '"]').show();
+    var $pane = $('.wpfs-edit-form-pane[data-tab-id="' + tabId + '"]').show();
+    $pane.find(".CodeMirror").each(function () {
+      this.CodeMirror.refresh();
+    });
   };
 
   ctx.activateTabSelector = function (tabId) {
@@ -1284,37 +1111,17 @@ function initWpfsAdminLibrary($, ctx) {
     }
   };
 
-  ctx.scrollToFirstFieldError = function ($form) {
-    var firstErrorFieldId = $(".wpfs-form-error-message", $form)
-      .first()
-      .data("wpfs-field-error-for");
-    if (firstErrorFieldId) {
-      ctx.scrollToElement($("#" + firstErrorFieldId, $form), false);
-    }
-  };
+  ctx.scrollToFirstFieldError = wpfsScrollToFirstFieldError;
 
-  ctx.createGlobalErrorMessage = function (globalErrors) {
-    var globalErrorMessages = "";
-
-    for (var i = 0; i < globalErrors.errors.length; i++) {
-      globalErrorMessages += globalErrors.errors[i] + "<br/>";
-    }
-
-    return globalErrorMessages;
-  };
+  ctx.createGlobalErrorMessage = wpfsGlobalErrorMessages;
 
   ctx.processValidationErrors = function ($form, bindingResult) {
-    var hasErrors = false;
-
     if (bindingResult) {
       if (bindingResult.fieldErrors && bindingResult.fieldErrors.errors) {
         var fieldErrors = bindingResult.fieldErrors.errors;
         for (var index in fieldErrors) {
           var fieldError = fieldErrors[index];
           ctx.showFormError($form, fieldError, bindingResult.fieldErrors.title);
-          if (!hasErrors) {
-            hasErrors = true;
-          }
         }
         ctx.showFirstErrorTab($form);
         ctx.scrollToFirstFieldError($form);
@@ -1330,21 +1137,12 @@ function initWpfsAdminLibrary($, ctx) {
             bindingResult.globalErrors.title,
             globalErrorMessages
           );
-          if (!hasErrors) {
-            hasErrors = true;
-          }
         }
       }
-    } else {
-      ctx.showErrorGlobalMessage($form, data.messageTitle, data.message);
-      logResponseException("WPFS form=" + formId, data);
-      hasErrors = true;
     }
-
-    // You can use the 'hasErrors' variable to see if something needs be be reset
   };
 
-  ctx.makeAddStripeAccountAjaxCall = function ($accountId, $mode) {
+  ctx.makeAddStripeAccountAjaxCall = function ($accountId, $mode, $connectToken, $connectCode) {
     if (ctx.debugLog) {
       console.log(
         "[makeAddStripeAccountAjaxCall] calling ajax with nonce: " +
@@ -1358,19 +1156,81 @@ function initWpfsAdminLibrary($, ctx) {
         action: "wpfs-add-stripe-account",
         account_id: $accountId,
         mode: $mode,
+        connect_token: $connectToken,
+        connect_code: $connectCode || "",
         nonce: wpfsAdminSettings.nonce,
       },
       cache: false,
       dataType: "json",
       success: function (responseData) {
+        // A refused account goes to the notice that says why.
+        if (responseData && !responseData.success && responseData.redirectURL) {
+          ctx.setTimeoutToRedirect(responseData.redirectURL, 0);
+          return;
+        }
+
         var currentUrl = new URL( window.location.href );
         var stripeUrl = new URL( window.wpfsAdminSettings.connectionPage );
 
-        if ( currentUrl.searchParams.has( "onboarding" ) ) {
+        if ( currentUrl.searchParams.has( "onboarding" ) || ( responseData && responseData.onboarding ) ) {
           stripeUrl.searchParams.set( "onboarding", "true" );
         }
 
         ctx.setTimeoutToRedirect( stripeUrl.toString(), 0 );
+      },
+    });
+  };
+
+  ctx.makeConfirmStripeConnectionAjaxCall = function ($mode) {
+    $(".wpfs-button-loader")
+      .addClass("wpfs-btn-primary--loader")
+      .prop("disabled", true);
+    $.ajax({
+      type: "POST",
+      url: wpfsAdminSettings.ajaxUrl,
+      data: {
+        action: "wpfs-confirm-stripe-connection",
+        current_page_url: window.location.href,
+        mode: $mode,
+        nonce: wpfsAdminSettings.nonce,
+      },
+      cache: false,
+      dataType: "json",
+      success: function (responseData) {
+        if (responseData.redirectURL) {
+          ctx.setTimeoutToRedirect(responseData.redirectURL, 0);
+          return;
+        }
+        $(".wpfs-button-loader")
+          .removeClass("wpfs-btn-primary--loader")
+          .prop("disabled", false);
+        if (responseData.msg) {
+          window.alert(responseData.msg);
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        logError(
+          "wpfs-admin.makeConfirmStripeConnectionAjaxCall()",
+          jqXHR,
+          textStatus,
+          errorThrown
+        );
+        // A refused or failed request, for example after the admin's session expired, can be tried again.
+        $(".wpfs-button-loader")
+          .removeClass("wpfs-btn-primary--loader")
+          .prop("disabled", false);
+        var message =
+          jqXHR.responseJSON &&
+          jqXHR.responseJSON.data &&
+          jqXHR.responseJSON.data.message;
+        // Without the plugin's reason, the request may still have confirmed the connection, so a reload shows where it stands.
+        window.alert(
+          message ||
+            __(
+              "Your Stripe connection could not be confirmed. Please reload the page and try again.",
+              "wp-full-stripe-free"
+            )
+        );
       },
     });
   };
@@ -1397,7 +1257,8 @@ function initWpfsAdminLibrary($, ctx) {
       cache: false,
       dataType: "json",
       success: function (responseData) {
-        if (responseData.success) {
+        // A refused start also answers with a URL: the notice that says why.
+        if (responseData.redirectURL) {
           ctx.setTimeoutToRedirect(responseData.redirectURL, 0);
         }
       },
@@ -1439,15 +1300,11 @@ function initWpfsAdminLibrary($, ctx) {
           ctx.displaySuccessMessageBanner(responseData.msg);
           ctx.setTimeoutToRedirect(responseData.redirectURL, 1000);
         } else {
-          if (responseData.hasOwnProperty(PROPERTY_NAME_BINDING_RESULT)) {
-            ctx.processValidationErrors($form, responseData.bindingResult);
-          } else {
-            ctx.showErrorGlobalMessage(
-              $form,
-              wpfsAdminL10n.internalError,
-              responseData.msg
-            );
-          }
+          // Disconnect was refused, for example while another request changed the connection.
+          $(".wpfs-button-loader")
+            .removeClass("wpfs-btn-primary--loader")
+            .prop("disabled", false);
+          window.alert(responseData.msg);
         }
       },
       error: function (jqXHR, textStatus, errorThrown) {
@@ -1493,7 +1350,8 @@ function initWpfsAdminLibrary($, ctx) {
           } else {
             ctx.showErrorGlobalMessage(
               $form,
-              wpfsAdminL10n.internalError,
+              /* translators: Error banner title for internal, unexpected errors/problems */
+              __("Internal error", "wp-full-stripe-free"),
               responseData.msg
             );
           }
@@ -1531,22 +1389,6 @@ function initWpfsAdminLibrary($, ctx) {
       errorSelector: errorSelector,
       hidden: hidden,
     };
-  };
-
-  ctx.createInputDescriptor = function (name) {
-    var clazz = "wpfs-form-control";
-    var selector = "." + clazz + "[name='" + name + "']";
-    var errorClass = "wpfs-form-control--error";
-    var errorSelector = "." + clazz;
-
-    return ctx.createFieldDescriptor(
-      FIELD_TYPE_INPUT,
-      name,
-      clazz,
-      selector,
-      errorClass,
-      errorSelector
-    );
   };
 
   ctx.createInputDecoratedDescriptor = function (name) {

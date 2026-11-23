@@ -62,7 +62,6 @@
   "author": "dennis",
   "recurring": false,
   "stripe_checkout": true,
-  "bnpl": false,
   "wallet": true,
   "external_docs": "https://docs.stripe.com/payments/alipay",
   "internal_docs": "https://docs.stripe.com/payments/alipay",

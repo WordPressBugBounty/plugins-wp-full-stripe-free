@@ -1,6 +1,8 @@
 <?php
+use ThemeIsle\WPFullPay\Admin\Views\CustomerPortalView;
+
 /** @var $backLinkUrl */
-/** @var $view MM_WPFS_Admin_CustomerPortalView */
+/** @var $view CustomerPortalView */
 /** @var $myAccountData */
 ?>
 <div class="wrap">
@@ -107,9 +109,9 @@
                         <div class="wpfs-inline-message wpfs-inline-message--info wpfs-inline-message--w448">
                             <div class="wpfs-inline-message__inner">
                                 <div class="wpfs-inline-message__title"><?php esc_html_e( 'What is the Customer portal?', 'wp-full-stripe-free' ); ?></div>
-                                <p><?php esc_html_e( 'Customer portal is a page on your website where customers can update their card, upgrade/downgrade subscriptions, cancel subscriptions, and download invoices. ', 'wp-full-stripe-free' ); ?></p>
+                                <p><?php esc_html_e( 'Customer portal is a page on your website where customers can update their card, upgrade/downgrade subscriptions, cancel subscriptions, and download invoices.', 'wp-full-stripe-free' ); ?></p>
                                 <p>
-                                    <a class="wpfs-btn wpfs-btn-link" href="https://docs.themeisle.com/article/2124-customer-portal" target="_blank"><?php esc_html_e( 'Learn more about Customer portal', 'wp-full-stripe-free' ); ?></a>
+                                    <a class="wpfs-btn wpfs-btn-link" href="<?php echo esc_url( tsdk_utmify( 'https://docs.themeisle.com/wp-full-pay/customer-portal', 'customer-portal', 'settings' ) ); ?>" target="_blank"><?php esc_html_e( 'Learn more about Customer portal', 'wp-full-stripe-free' ); ?></a>
                                 </p>
                             </div>
                         </div>

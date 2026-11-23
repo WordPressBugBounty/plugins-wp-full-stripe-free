@@ -14,7 +14,6 @@
   "author": "themeisle",
   "recurring": false,
   "stripe_checkout": true,
-  "bnpl": false,
   "wallet": false,
   "external_docs": "https://docs.stripe.com/payments/paynow",
   "internal_docs": "https://docs.stripe.com/payments/paynow",

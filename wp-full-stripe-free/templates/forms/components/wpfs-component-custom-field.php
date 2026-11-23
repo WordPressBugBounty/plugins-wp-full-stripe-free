@@ -1,27 +1,31 @@
 <?php
+use ThemeIsle\WPFullPay\Forms\Fields\CustomFields;
+use ThemeIsle\WPFullPay\Forms\Views\Control;
+use ThemeIsle\WPFullPay\Forms\Views\FormView;
+
 	/**
 	 * Renders a single typed custom field on the public form.
 	 *
-	 * Expects $input (a MM_WPFS_Control) in scope, populated by
-	 * MM_WPFS_FormView::prepareCustomInputs().
+	 * Expects $input (a Control) in scope, populated by
+	 * FormView::prepareCustomInputs().
 	 *
-	 * @var MM_WPFS_Control $input
+	 * @var Control $input
 	 */
 
 	$cfMeta     = $input->metadata();
-	$cfType     = isset( $cfMeta[ MM_WPFS_FormView::CUSTOM_FIELD_META_TYPE ] ) ? $cfMeta[ MM_WPFS_FormView::CUSTOM_FIELD_META_TYPE ] : MM_WPFS_CustomFields::TYPE_TEXT;
-	$cfRequired = ! empty( $cfMeta[ MM_WPFS_FormView::CUSTOM_FIELD_META_REQUIRED ] );
-	$cfDesc     = isset( $cfMeta[ MM_WPFS_FormView::CUSTOM_FIELD_META_DESCRIPTION ] ) ? $cfMeta[ MM_WPFS_FormView::CUSTOM_FIELD_META_DESCRIPTION ] : '';
-	$cfOptions  = isset( $cfMeta[ MM_WPFS_FormView::CUSTOM_FIELD_META_OPTIONS ] ) ? $cfMeta[ MM_WPFS_FormView::CUSTOM_FIELD_META_OPTIONS ] : [];
-	$cfSettings = isset( $cfMeta[ MM_WPFS_FormView::CUSTOM_FIELD_META_SETTINGS ] ) ? $cfMeta[ MM_WPFS_FormView::CUSTOM_FIELD_META_SETTINGS ] : [];
-	$cfFieldId  = isset( $cfMeta[ MM_WPFS_FormView::CUSTOM_FIELD_META_FIELD_ID ] ) ? $cfMeta[ MM_WPFS_FormView::CUSTOM_FIELD_META_FIELD_ID ] : '';
+	$cfType     = isset( $cfMeta[ FormView::CUSTOM_FIELD_META_TYPE ] ) ? $cfMeta[ FormView::CUSTOM_FIELD_META_TYPE ] : CustomFields::TYPE_TEXT;
+	$cfRequired = ! empty( $cfMeta[ FormView::CUSTOM_FIELD_META_REQUIRED ] );
+	$cfDesc     = isset( $cfMeta[ FormView::CUSTOM_FIELD_META_DESCRIPTION ] ) ? $cfMeta[ FormView::CUSTOM_FIELD_META_DESCRIPTION ] : '';
+	$cfOptions  = isset( $cfMeta[ FormView::CUSTOM_FIELD_META_OPTIONS ] ) ? $cfMeta[ FormView::CUSTOM_FIELD_META_OPTIONS ] : [];
+	$cfSettings = isset( $cfMeta[ FormView::CUSTOM_FIELD_META_SETTINGS ] ) ? $cfMeta[ FormView::CUSTOM_FIELD_META_SETTINGS ] : [];
+	$cfFieldId  = isset( $cfMeta[ FormView::CUSTOM_FIELD_META_FIELD_ID ] ) ? $cfMeta[ FormView::CUSTOM_FIELD_META_FIELD_ID ] : '';
 
 	// Display-only content block: never an input, never submitted.
-	if ( MM_WPFS_CustomFields::TYPE_HTML === $cfType ) {
-		$cfContent = isset( $cfMeta[ MM_WPFS_FormView::CUSTOM_FIELD_META_CONTENT ] ) ? $cfMeta[ MM_WPFS_FormView::CUSTOM_FIELD_META_CONTENT ] : '';
+	if ( CustomFields::TYPE_HTML === $cfType ) {
+		$cfContent = isset( $cfMeta[ FormView::CUSTOM_FIELD_META_CONTENT ] ) ? $cfMeta[ FormView::CUSTOM_FIELD_META_CONTENT ] : '';
 		?>
 		<div class="wpfs-form-group wpfs-custom-field wpfs-custom-field--html">
-			<?php echo MM_WPFS_CustomFields::sanitizeHtmlContent( $cfContent ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitized via wp_kses_post() inside sanitizeHtmlContent(). ?>
+			<?php echo CustomFields::sanitizeHtmlContent( $cfContent ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitized via wp_kses_post() inside sanitizeHtmlContent(). ?>
 		</div>
 		<?php
 		return;
@@ -40,28 +44,28 @@
 	};
 ?>
 <div class="wpfs-form-group wpfs-custom-field wpfs-custom-field--<?php echo esc_attr( $cfType ); ?>"<?php echo $cfDataAttr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_attr() above. ?>>
-	<?php if ( MM_WPFS_CustomFields::TYPE_CHECKBOX === $cfType ) : ?>
+	<?php if ( CustomFields::TYPE_CHECKBOX === $cfType ) : ?>
 		<div class="wpfs-form-check">
-			<input type="hidden" name="<?php $input->name(); ?>" value="<?php echo esc_attr( MM_WPFS_CustomFields::CHECKBOX_VALUE_NO ); ?>">
-			<input id="<?php echo esc_attr( $cfId ); ?>" name="<?php $input->name(); ?>" type="checkbox" class="wpfs-form-check-input" value="<?php echo esc_attr( MM_WPFS_CustomFields::CHECKBOX_VALUE_YES ); ?>" <?php $input->attributes(); ?>>
+			<input type="hidden" name="<?php $input->name(); ?>" value="<?php echo esc_attr( CustomFields::CHECKBOX_VALUE_NO ); ?>">
+			<input id="<?php echo esc_attr( $cfId ); ?>" name="<?php $input->name(); ?>" type="checkbox" class="wpfs-form-check-input" value="<?php echo esc_attr( CustomFields::CHECKBOX_VALUE_YES ); ?>" <?php $input->attributes(); ?>>
 			<label class="wpfs-form-check-label" for="<?php echo esc_attr( $cfId ); ?>"><?php $input->label(); ?><?php if ( $cfRequired ) : ?> <span class="wpfs-required-mark" aria-hidden="true">*</span><?php endif; ?></label>
 		</div>
 	<?php else : ?>
 		<label class="wpfs-form-label" for="<?php echo esc_attr( $cfId ); ?>"><?php $input->label(); ?><?php if ( $cfRequired ) : ?> <span class="wpfs-required-mark" aria-hidden="true">*</span><?php endif; ?></label>
 		<?php
 		switch ( $cfType ) {
-			case MM_WPFS_CustomFields::TYPE_TEXTAREA:
+			case CustomFields::TYPE_TEXTAREA:
 				$cfRows      = $cfGetSetting( 'rows' );
 				$cfMaxLength = $cfGetSetting( 'maxLength' );
 				?>
 				<textarea id="<?php echo esc_attr( $cfId ); ?>" name="<?php $input->name(); ?>" class="wpfs-form-control"
-					rows="<?php echo esc_attr( $cfRows ? $cfRows : MM_WPFS_CustomFields::DEFAULT_TEXTAREA_ROWS ); ?>"
+					rows="<?php echo esc_attr( $cfRows ? $cfRows : CustomFields::DEFAULT_TEXTAREA_ROWS ); ?>"
 					<?php if ( $cfMaxLength ) : ?>maxlength="<?php echo esc_attr( $cfMaxLength ); ?>"<?php endif; ?>
 					placeholder="<?php $input->placeholder(); ?>" <?php $input->attributes(); ?>><?php echo esc_textarea( $input->value( false ) ); ?></textarea>
 				<?php
 				break;
 
-			case MM_WPFS_CustomFields::TYPE_SELECT:
+			case CustomFields::TYPE_SELECT:
 				?>
 				<?php
 					$cfSelectPlaceholder = $input->placeholder( false );
@@ -79,7 +83,7 @@
 				<?php
 				break;
 
-			case MM_WPFS_CustomFields::TYPE_MULTISELECT:
+			case CustomFields::TYPE_MULTISELECT:
 				$cfCurrentRaw    = $input->value( false );
 				$cfCurrentValues = is_array( $cfCurrentRaw )
 					? array_map( 'strval', $cfCurrentRaw )
@@ -97,7 +101,7 @@
 				<?php
 				break;
 
-			case MM_WPFS_CustomFields::TYPE_DATE:
+			case CustomFields::TYPE_DATE:
 				$cfMinDate = $cfGetSetting( 'minDate' );
 				$cfMaxDate = $cfGetSetting( 'maxDate' );
 				?>
@@ -109,7 +113,7 @@
 				<?php
 				break;
 
-			case MM_WPFS_CustomFields::TYPE_NUMBER:
+			case CustomFields::TYPE_NUMBER:
 				$cfMin  = $cfGetSetting( 'min' );
 				$cfMax  = $cfGetSetting( 'max' );
 				$cfStep = $cfGetSetting( 'step' );
@@ -123,15 +127,15 @@
 				<?php
 				break;
 
-			case MM_WPFS_CustomFields::TYPE_PHONE:
+			case CustomFields::TYPE_PHONE:
 				?>
 				<input id="<?php echo esc_attr( $cfId ); ?>" name="<?php $input->name(); ?>" type="tel" class="wpfs-form-control"
-					value="<?php $input->value(); ?>" maxlength="<?php echo esc_attr( MM_WPFS_CustomFields::PHONE_MAX_LENGTH ); ?>"
+					value="<?php $input->value(); ?>" maxlength="<?php echo esc_attr( CustomFields::PHONE_MAX_LENGTH ); ?>"
 					placeholder="<?php $input->placeholder(); ?>" <?php $input->attributes(); ?>>
 				<?php
 				break;
 
-			case MM_WPFS_CustomFields::TYPE_TEXT:
+			case CustomFields::TYPE_TEXT:
 			default:
 				?>
 				<input id="<?php echo esc_attr( $cfId ); ?>" name="<?php $input->name(); ?>" type="text" class="wpfs-form-control"

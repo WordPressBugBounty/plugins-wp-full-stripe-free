@@ -1,5 +1,8 @@
 <?php
-    /** @var $view MM_WPFS_Admin_PaymentFormView */
+use ThemeIsle\WPFullPay\Admin\Views\PaymentFormView;
+use ThemeIsle\WPFullPay\Main;
+
+    /** @var $view PaymentFormView */
     /** @var $form */
     /** @var $data */
 ?>
@@ -8,7 +11,7 @@
     <div class="wpfs-form-check-list">
         <div class="wpfs-form-check">
             <?php $options = $view->paymentType()->options(); ?>
-            <input id="<?php $options[0]->id(); ?>" name="<?php $options[0]->name(); ?>" <?php $options[0]->attributes(); ?> value="<?php $options[0]->value(); ?>" <?php echo $form->customAmount == $options[0]->value(false) || $form->customAmount === MM_WPFS::PAYMENT_TYPE_SPECIFIED_AMOUNT ? 'checked' : ''; ?>>
+            <input id="<?php $options[0]->id(); ?>" name="<?php $options[0]->name(); ?>" <?php $options[0]->attributes(); ?> value="<?php $options[0]->value(); ?>" <?php echo $form->customAmount == $options[0]->value(false) || $form->customAmount === Main::PAYMENT_TYPE_SPECIFIED_AMOUNT ? 'checked' : ''; ?>>
             <label class="wpfs-form-check-label" for="<?php $options[0]->id(); ?>"><?php $options[0]->label(); ?></label>
         </div>
         <div class="wpfs-form-check">

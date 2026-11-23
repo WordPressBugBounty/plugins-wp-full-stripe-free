@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit4a18b9e7d28c0a084feeeb7c45889d18
+class ComposerStaticInit9c7918bb0148189665b0538e7a11736c
 {
     public static $files = array (
         'e69f7f6ee287b969198c3c9d6777bd38' => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer/bootstrap.php',
@@ -14,19 +14,22 @@ class ComposerStaticInit4a18b9e7d28c0a084feeeb7c45889d18
     );
 
     public static $prefixLengthsPsr4 = array (
+        'T' =>
+        array (
+            'ThemeIsle\\WPFullPay\\' => 20,
+        ),
         'S' =>
         array (
             'Symfony\\Polyfill\\Intl\\Normalizer\\' => 33,
             'Symfony\\Polyfill\\Intl\\Idn\\' => 26,
         ),
-        'P' =>
-        array (
-            'Psr\\EventDispatcher\\' => 20,
-            'Psr\\Container\\' => 14,
-        ),
     );
 
     public static $prefixDirsPsr4 = array (
+        'ThemeIsle\\WPFullPay\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/inc',
+        ),
         'Symfony\\Polyfill\\Intl\\Normalizer\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer',
@@ -34,14 +37,6 @@ class ComposerStaticInit4a18b9e7d28c0a084feeeb7c45889d18
         'Symfony\\Polyfill\\Intl\\Idn\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-intl-idn',
-        ),
-        'Psr\\EventDispatcher\\' =>
-        array (
-            0 => __DIR__ . '/..' . '/psr/event-dispatcher/src',
-        ),
-        'Psr\\Container\\' =>
-        array (
-            0 => __DIR__ . '/..' . '/psr/container/src',
         ),
     );
 
@@ -53,9 +48,9 @@ class ComposerStaticInit4a18b9e7d28c0a084feeeb7c45889d18
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit4a18b9e7d28c0a084feeeb7c45889d18::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit4a18b9e7d28c0a084feeeb7c45889d18::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit4a18b9e7d28c0a084feeeb7c45889d18::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit9c7918bb0148189665b0538e7a11736c::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit9c7918bb0148189665b0538e7a11736c::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit9c7918bb0148189665b0538e7a11736c::$classMap;
 
         }, null, ClassLoader::class);
     }

@@ -13,6 +13,201 @@ jQuery.noConflict();
     var WPFS = {};
     initWpfsAdminLibrary($, WPFS);
 
+    const { __, _n, sprintf } = wp.i18n;
+
+    const l10n = {
+      disconnectStripeTitle:
+        /* translators: Title of the 'Disconnect Stripe account' dialog */
+        __("Disconnect Stripe account", "wp-full-stripe-free"),
+      selectImageTitle:
+        /* translators: Title of the media library dialog used to pick a product image */
+        __("Select or upload an image", "wp-full-stripe-free"),
+      useImageButtonLabel:
+        /* translators: Button label in the media library dialog used to pick a product image */
+        __("Use this image", "wp-full-stripe-free"),
+      cloneFormDisplayNameInvalidMessage:
+        /* translators: Field validation error in the 'Clone form' dialog when the display name is invalid */
+        __("The display name may contain any characters but it shouldn't start with a space.", "wp-full-stripe-free"),
+      cloneFormNameInvalidMessage:
+        /* translators: Field validation error in the 'Clone form' dialog when the identifier is invalid */
+        __("The identifier may contain only alphanumeric characters, dashes, and underscores.", "wp-full-stripe-free"),
+      fieldValidationErrorTitle:
+        /* translators: Title of the banner listing field validation errors */
+        __("Field validation error", "wp-full-stripe-free"),
+      formErrorTitle:
+        /* translators: Title of the banner listing form-level errors */
+        __("Form error", "wp-full-stripe-free"),
+      previewFormTitle:
+        /* translators: Title of the 'Preview form' dialog */
+        __("Preview Form", "wp-full-stripe-free"),
+      editPlanPropertiesTitle:
+        /* translators: Title of the 'Edit plan properties' dialog */
+        __("Edit plan properties", "wp-full-stripe-free"),
+      invalidEmailAddressMessage:
+        /* translators: Field validation error when the email address entered during onboarding is invalid */
+        __("Please enter a valid email address.", "wp-full-stripe-free"),
+      tryAgainLaterMessage:
+        /* translators: Error message when the onboarding email subscription request fails */
+        __("An error occurred. Please try again later.", "wp-full-stripe-free"),
+      shortcodeCopiedMessage:
+        /* translators: Success banner message when a form shortcode is copied to the clipboard  */
+        __("Shortcode copied to clipboard.", "wp-full-stripe-free"),
+      deleteFormConfirmationMessage:
+        /* translators: Confirmation message displayed before deleting a form. %s: Name of the form. */
+        __("Are you sure you'd like to delete form '%s' ?", "wp-full-stripe-free"),
+      cloneFormTitle:
+        /* translators: Title of the 'Clone form' dialog  */
+        __("Clone form", "wp-full-stripe-free"),
+      deleteFormTitle:
+        /* translators: Title of the 'Delete form' dialog  */
+        __("Delete form", "wp-full-stripe-free"),
+      copyPostfix:
+        /* translators: This is the postfix add to name of a cloned form. TestForm -> TestFormCopy  */
+        __("Copy", "wp-full-stripe-free"),
+      refundPaymentTitle:
+        /* translators: Title of the 'Refund payment' dialog  */
+        __("Refund payment", "wp-full-stripe-free"),
+      refundPaymentConfirmationMessage:
+        /* translators: Confirmation message displayed in the 'Refund payment' dialog. %s: Identifier of the payment to be refunded. */
+        __("Are you sure you'd like to refund payment '%s' ?", "wp-full-stripe-free"),
+      deletePaymentTitle:
+        /* translators: Title of the 'Delete payment' dialog  */
+        __("Delete payment", "wp-full-stripe-free"),
+      deletePaymentConfirmationMessage:
+        /* translators: Confirmation message displayed in the 'Delete payment' dialog. %s: Identifier of the payment to be deleted. */
+        __("Are you sure you'd like to delete payment '%s' from the WordPress database?", "wp-full-stripe-free"),
+      capturePaymentTitle:
+        /* translators: Title of the 'Capture payment' dialog  */
+        __("Capture payment", "wp-full-stripe-free"),
+      capturePaymentConfirmationMessage:
+        /* translators: Confirmation message displayed in the 'Capture payment' dialog. %s: Identifier of the payment to be captured. */
+        __("Are you sure you'd like to capture payment '%s' ?", "wp-full-stripe-free"),
+      cancelSubscriptionTitle:
+        /* translators: Title of the 'Cancel subscription' dialog  */
+        __("Cancel subscription", "wp-full-stripe-free"),
+      cancelSubscriptionConfirmationMessage:
+        /* translators: Confirmation message displayed in the 'Cancel subscription' dialog. %s: Identifier of the subscription to be canceled. */
+        __("Are you sure you'd like to cancel subscription '%s' ?", "wp-full-stripe-free"),
+      deleteSubscriptionTitle:
+        /* translators: Title of the 'Delete subscription' dialog  */
+        __("Delete subscription", "wp-full-stripe-free"),
+      deleteSubscriptionConfirmationMessage:
+        /* translators: Confirmation message displayed in the 'Delete subscription' dialog. %s: Identifier of the subscription to be deleted. */
+        __("Are you sure you'd like to delete subscription '%s' from the WordPress database?", "wp-full-stripe-free"),
+      refundDonationTitle:
+        /* translators: Title of the 'Refund donation' dialog  */
+        __("Refund donation", "wp-full-stripe-free"),
+      refundDonationConfirmationMessage:
+        /* translators: Confirmation message displayed in the 'Refund donation' dialog. %s: Identifier of the donation to be refunded. */
+        __("Are you sure you'd like to refund donation '%s' ?", "wp-full-stripe-free"),
+      cancelDonationTitle:
+        /* translators: Title of the 'Cancel donation' dialog  */
+        __("Cancel donation", "wp-full-stripe-free"),
+      cancelDonationConfirmationMessage:
+        /* translators: Confirmation message displayed in the 'Cancel donation' dialog. %s: Identifier of the donation to be canceled. */
+        __("Are you sure you'd like to cancel donation '%s' ?", "wp-full-stripe-free"),
+      deleteDonationTitle:
+        /* translators: Title of the 'Delete donation' dialog  */
+        __("Delete donation", "wp-full-stripe-free"),
+      deleteDonationConfirmationMessage:
+        /* translators: Confirmation message displayed in the 'Delete donation' dialog. %s: Identifier of the donation to be deleted. */
+        __("Are you sure you'd like to delete donation '%s' from the WordPress database?", "wp-full-stripe-free"),
+      deleteSavedCardTitle:
+        /* translators: Title of the 'Delete saved card' dialog  */
+        __("Delete saved card", "wp-full-stripe-free"),
+      deleteSavedCardConfirmationMessage:
+        /* translators: Confirmation message displayed in the 'Delete saved card' dialog. %s: Identifier of the saved card to be deleted. */
+        __("Are you sure you'd like to delete saved card '%s' from the WordPress database?", "wp-full-stripe-free"),
+      formCssIdCopiedMessage:
+        /* translators: Banner message displayed when a CSS selector is copied to the clipboard */
+        __("Form CSS selector ID copied to clipboard", "wp-full-stripe-free"),
+      standardPricingLabel:
+        /* translators: Label for the pricing type 'Standard pricing' */
+        __("Standard pricing", "wp-full-stripe-free"),
+      volumePricingLabel:
+        /* translators: Label for the pricing type 'Volume pricing' */
+        __("Volume pricing", "wp-full-stripe-free"),
+      graduatedPricingLabel:
+        /* translators: Label for the pricing type 'Graduated pricing' */
+        __("Graduated pricing", "wp-full-stripe-free"),
+      meteredBillingLabel:
+        /* translators: Label for the pricing mode 'Metered billing' */
+        __("Metered billing", "wp-full-stripe-free"),
+      requiredFieldMessage:
+        /* translators: Validation error message for required fields which are not filled in */
+        __("This is a required field", "wp-full-stripe-free"),
+      invalidAmountMessage:
+        /* translators: Validation error message for invalid payment amounts entered */
+        __("Please enter a valid amount", "wp-full-stripe-free"),
+      enterWholeNumberMessage:
+        /* translators: Validation error message displayed when the entered number is not a whole number */
+        __("Please enter a whole number", "wp-full-stripe-free"),
+      enterPositiveNumberMessage:
+        /* translators: Validation error message displayed when the entered number is not a positive number */
+        __("Please enter a positive number", "wp-full-stripe-free"),
+      billingAnchorDayIntervalMessage:
+        /* translators: Validation error message displayed when the entered number is not between 1 and 28 */
+        __("Please enter a number between 1 and 28", "wp-full-stripe-free"),
+      planAndSetupFeeLabel:
+        /* translators: Pricing label of a subscription plan. %1$s: Recurring amount, %2$s: One-time setup fee. */
+        __("%1$s + %2$s setup fee", "wp-full-stripe-free"),
+      runningUntilCanceledLabel:
+        /* translators: Label describing subscriptions which are running till canceled */
+        __("Running until canceled", "wp-full-stripe-free"),
+      taxRateInclusiveDescription:
+        /* translators: Description of an inclusive tax rate. %1$s: Tax percentage, %2$s: Tax label (VAT, GST, Sales tax, etc). */
+        __("%1$s%% %2$s (inclusive)", "wp-full-stripe-free"),
+      taxRateExclusiveDescription:
+        /* translators: Description of an exclusive tax rate. %1$s: Tax percentage, %2$s: Tax label (VAT, GST, Sales tax, etc). */
+        __("%1$s%% %2$s (exclusive)", "wp-full-stripe-free"),
+      addSuggestedDonationAmountTitle:
+        /* translators: Title of the 'Add suggested donation amount' dialog */
+        __("Add suggested donation amount", "wp-full-stripe-free"),
+      suggestedDonationAmountRequiredMessage:
+        /* translators: Validation error message for an empty donation amount */
+        __("Please enter a donation amount", "wp-full-stripe-free"),
+      suggestedDonationAmountInvalidMessage:
+        /* translators: Validation error message for an invalid donation amount entered */
+        __("Please enter a valid amount", "wp-full-stripe-free"),
+      suggestedDonationAmountNotWholeNumberMessage:
+        /* translators: Validation error message for a donation amount which is not a whole number */
+        __("Please enter a number without decimal separator", "wp-full-stripe-free"),
+      deleteSuggestedDonationTitle:
+        /* translators: Title of the 'Delete suggested donation amount' dialog */
+        __("Delete suggested donation amount", "wp-full-stripe-free"),
+      deleteSuggestedDonationAmountConfirmationMessage:
+        /* translators: Confirmation message displayed before deleting a suggested donation amount. %s: The donation amount to be deleted. */
+        __("Are you sure you'd like to delete donation amount '%s' ?", "wp-full-stripe-free"),
+      resetTemplateTitle:
+        /* translators: Title of the 'Reset email template' dialog */
+        __("Reset email template", "wp-full-stripe-free"),
+      resetTemplateConfirmationMessage:
+        /* translators: Confirmation message displayed in the 'Reset email template' dialog */
+        __("Are you sure you'd like to reset the email template?", "wp-full-stripe-free"),
+      sendTestEmailTitle:
+        /* translators: Title of the 'Send test email' dialog */
+        __("Send test email", "wp-full-stripe-free"),
+      enterAtLeastOneEmailAddressMessage:
+        /* translators: Error message displayed when no email is entered in the 'Send test email' dialog */
+        __("Please enter at least one email address", "wp-full-stripe-free"),
+      emailAddressInvalidMessage:
+        /* translators: Error message displayed when an invalid email address is entered in the 'Send test email' dialog. %s: the invalid email address. */
+        __("Email address %s is invalid", "wp-full-stripe-free"),
+      licenseError:
+        /* translators: Error message displayed when the license key is invalid */
+        __("License Error", "wp-full-stripe-free"),
+      emptyLogTitle:
+        /* translators: Dialog title of the 'Empty log' dialog */
+        __("Empty log", "wp-full-stripe-free"),
+      emptyLogConfirmationMessage:
+        /* translators: Confirmation message of the 'Empty log' dialog */
+        __("Are you sure you'd like to delete all log entries?", "wp-full-stripe-free"),
+      webhookUrlCopiedMessage:
+        /* translators: Banner message displayed when a webhook URL is copied to the clipboard */
+        __("Webhook URL copied to clipboard.", "wp-full-stripe-free"),
+
+    };
+
     const PAYMENT_TYPE_SPECIFIED_AMOUNT = "specified_amount";
     const PAYMENT_TYPE_LIST_OF_AMOUNTS = "list_of_amounts";
     const PAYMENT_TYPE_CARD_CAPTURE = "card_capture";
@@ -131,9 +326,9 @@ jQuery.noConflict();
           $(".wpfs-product-image-selector").length > 0
         ) {
           WPFS.ImageSelector.fileFrame = wp.media.frames.file_frame = wp.media({
-            title: "Select or upload an image",
+            title: l10n.selectImageTitle,
             button: {
-              text: "Use this image",
+              text: l10n.useImageButtonLabel,
             },
             multiple: false, // Set to true to allow multiple files to be selected
           });
@@ -176,7 +371,7 @@ jQuery.noConflict();
           id: 'wpfs-preview-form-dialog',
           className: 'wpfs-dialog-content',
           attributes: {
-            title: 'Preview Form',
+            title: l10n.previewFormTitle,
           },
           template: _.template( $( '#wpfs-modal-preview-form' ).html() ),
           render: function () {
@@ -353,34 +548,6 @@ jQuery.noConflict();
       this.bindInput();
     };
 
-    WPFS.FileInput = {
-      readURL: function (input, img) {
-        if (input.files && input.files[0]) {
-          var reader = new FileReader();
-
-          reader.onload = function (e) {
-            img.attr("src", e.target.result);
-          };
-
-          reader.readAsDataURL(input.files[0]);
-        }
-      },
-      init: function () {
-        var self = this;
-        $('.js-file-input input[type="file"]').on("change", function () {
-          var $this = $(this);
-          var $container = $this.parents(".js-file-input");
-          var $previewImg = $container.find(".wpfs-form-file__preview img");
-          $previewImg.attr("src", "");
-          $container.removeClass("wpfs-form-file--filled");
-          if ($this.val() !== "") {
-            $container.addClass("wpfs-form-file--filled");
-            self.readURL(this, $previewImg);
-          }
-        });
-      },
-    };
-
     function createDeleteFormData(model) {
       return {
         action: "wpfs-delete-form",
@@ -416,7 +583,16 @@ jQuery.noConflict();
       });
     }
 
-    function makeAjaxCallFromDialog(requestData, dialogSelector) {
+    /**
+     * Posts a dialog's action. On success it closes the dialog, shows the banner and follows the
+     * response's redirect; on failure it shows the error in the dialog.
+     *
+     * @param {Object}  requestData
+     * @param {string}  dialogSelector
+     * @param {Object}  [options]
+     * @param {boolean} [options.closeSidePane] Also close the details pane the dialog was opened from.
+     */
+    function makeAjaxCallFromDialog(requestData, dialogSelector, options) {
       if (WPFS.debugLog) {
         console.log(
           "[makeAjaxCallFromDialog] calling ajax with nonce: " +
@@ -433,12 +609,18 @@ jQuery.noConflict();
         success: function (responseData) {
           if (responseData.success) {
             $(dialogSelector).dialog("close");
+            if (options && options.closeSidePane) {
+              WPFS.SidePane.close("details");
+            }
 
             WPFS.displaySuccessMessageBanner(responseData.msg);
 
             if ("redirectURL" in responseData) {
               WPFS.setTimeoutToRedirect(responseData.redirectURL, 1000);
             }
+          } else if ("redirectURL" in responseData) {
+            // The page the server sends us to explains the error.
+            window.location.href = responseData.redirectURL;
           } else {
             displayErrorMessageInDialog(dialogSelector, responseData.msg);
 
@@ -461,79 +643,6 @@ jQuery.noConflict();
           // no op
         },
       });
-    }
-
-    function makeAjaxCallFromDetailsDialog(requestData, dialogSelector) {
-      if (WPFS.debugLog) {
-        console.log(
-          "[makeAjaxCallFromDetailsDialog] calling ajax with nonce: " +
-            wpfsAdminSettings.nonce
-        );
-      }
-      requestData.nonce = wpfsAdminSettings.nonce;
-      $.ajax({
-        type: "POST",
-        url: wpfsAdminSettings.ajaxUrl,
-        data: requestData,
-        cache: false,
-        dataType: "json",
-        success: function (responseData) {
-          if (responseData.success) {
-            $(dialogSelector).dialog("close");
-            WPFS.SidePane.close("details");
-
-            WPFS.displaySuccessMessageBanner(responseData.msg);
-            WPFS.setTimeoutToRedirect(responseData.redirectURL, 1000);
-          } else {
-            displayErrorMessageInDialog(dialogSelector, responseData.msg);
-
-            WPFS.logException(
-              "wpfs-admin.makeAjaxCallFromDialog()",
-              responseData
-            );
-          }
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-          displayErrorMessageInDialog(dialogSelector, textStatus);
-          logError(
-            "wpfs-admin.makeAjaxCallFromDialog()",
-            jqXHR,
-            textStatus,
-            errorThrown
-          );
-        },
-        complete: function () {
-          // no op
-        },
-      });
-    }
-
-    function getGlobalMessageContainerTitle($messageContainer, title) {
-      var $messageContainerTitle = $(
-        ".wpfs-form-message-title",
-        $messageContainer
-      );
-      if (0 == $messageContainerTitle.length) {
-        $("<div>", { class: "wpfs-form-message-title" }).prependTo(
-          $messageContainer
-        );
-        $messageContainerTitle = $(
-          ".wpfs-form-message-title",
-          $messageContainer
-        );
-      }
-      $messageContainerTitle.html(title);
-      return $messageContainerTitle;
-    }
-
-    function showSuccessGlobalMessage($form, messageTitle, message) {
-      var $globalMessageContainer = WPFS.__showGlobalMessage(
-        $form,
-        messageTitle,
-        message
-      );
-      $globalMessageContainer.addClass("wpfs-form-message--correct");
-      WPFS.scrollToElement($globalMessageContainer, false);
     }
 
     function initErrorDialog() {
@@ -586,15 +695,13 @@ jQuery.noConflict();
       ) {
         bindResult.push({
           element: $('input[name="wpfs-new-form-display-name"]'),
-          errorMessage:
-            "The display name may contain any characters but it shouldn't start with a space.", // todo: localize error message
+          errorMessage: l10n.cloneFormDisplayNameInvalidMessage,
         });
       }
       if (!WPFS.cloneFormDialogModel.get("newFormName").match(nameRegex)) {
         bindResult.push({
           element: $('input[name="wpfs-new-form-name"]'),
-          errorMessage:
-            "The identifier may contain only alphanumeric characters, dashes, and underscores.", // todo: localize error message
+          errorMessage: l10n.cloneFormNameInvalidMessage,
         });
       }
 
@@ -611,7 +718,7 @@ jQuery.noConflict();
         id: "wpfs-clone-form-dialog",
         className: "wpfs-dialog-content",
         attributes: {
-          title: wpfsAdminL10n.cloneFormTitle,
+          title: l10n.cloneFormTitle,
         },
         template: _.template($("#wpfs-modal-clone-form").html()),
         render: function () {
@@ -643,7 +750,7 @@ jQuery.noConflict();
           formDisplayName: formData.formDisplayName,
           newFormName: formData.formName + "Copy",
           newFormDisplayName:
-            formData.formDisplayName + " " + wpfsAdminL10n.copyPostfix,
+            formData.formDisplayName + " " + l10n.copyPostfix,
           editNewForm: false,
         });
         var cloneFormDialogNormalView = new WPFS.CloneFormDialogNormalView({
@@ -694,7 +801,7 @@ jQuery.noConflict();
         id: "wpfs-delete-form-dialog",
         className: "wpfs-dialog-content",
         attributes: {
-          title: wpfsAdminL10n.deleteFormTitle,
+          title: l10n.deleteFormTitle,
         },
         template: _.template($("#wpfs-modal-delete-form").html()),
         render: function () {
@@ -720,7 +827,7 @@ jQuery.noConflict();
 
         WPFS.deleteFormDialogModel = new WPFS.DeleteFormDialogModel({
           confirmationMessage: sprintf(
-            wpfsAdminL10n.deleteFormConfirmationMessage,
+            l10n.deleteFormConfirmationMessage,
             formData.formDisplayName
           ),
           id: formData.id,
@@ -755,14 +862,6 @@ jQuery.noConflict();
       });
     }
 
-    function onManageFormsPage() {
-      return $("#wpfs-form-list") && $("#wpfs-form-list").length > 0;
-    }
-
-    function onFormsConnectPage() {
-      return $(".wpfs-connect-state").length > 0;
-    }
-
     function initManageFormsDialogs() {
       initDeleteFormDialog();
       initCloneFormDialog();
@@ -774,7 +873,7 @@ jQuery.noConflict();
       shortcodeCopy.forEach( inputField => {
         inputField.addEventListener( 'click', () => {
           WPFS.copyToClipboard( inputField.value );
-          WPFS.displaySuccessMessageBanner( wpfsAdminL10n.shortcodeCopiedMessage );
+          WPFS.displaySuccessMessageBanner( l10n.shortcodeCopiedMessage );
         });
       });
     }
@@ -785,66 +884,23 @@ jQuery.noConflict();
       });
     }
 
+    // Whether the current admin page has the element, e.g. the page wrapper div.wpfs-page-settings-logs.
+    function pageIs(selector) {
+      return $(selector).length > 0;
+    }
+
     WPFS.initManageForms = function () {
-      if (onManageFormsPage()) {
+      if (pageIs("#wpfs-form-list")) {
         initErrorDialog();
         initManageFormsDialogs();
         initFormListFilter();
         initShortcodeCopy();
       }
 
-      if (onFormsConnectPage()) {
+      if (pageIs(".wpfs-connect-state")) {
         initEventHandlersOnTheSettingsStripeAccountPage();
       }
     };
-
-    function onOneTimePaymentsPage() {
-      return (
-        $("div.wpfs-page-one-time-payments") &&
-        $("div.wpfs-page-one-time-payments").length > 0
-      );
-    }
-
-    function onSubscriptionsPage() {
-      return (
-        $("div.wpfs-page-subscriptions") &&
-        $("div.wpfs-page-subscriptions").length > 0
-      );
-    }
-
-    function onDonationsPage() {
-      return (
-        $("div.wpfs-page-donations") && $("div.wpfs-page-donations").length > 0
-      );
-    }
-
-    function onSavedCardsPage() {
-      return (
-        $("div.wpfs-page-saved-cards") &&
-        $("div.wpfs-page-saved-cards").length > 0
-      );
-    }
-
-    function createCapturePaymentData(model) {
-      return {
-        action: "wpfs-capture-payment",
-        id: model.get("dbId"),
-      };
-    }
-
-    function createRefundPaymentData(model) {
-      return {
-        action: "wpfs-refund-payment",
-        id: model.get("dbId"),
-      };
-    }
-
-    function createDeletePaymentData(model) {
-      return {
-        action: "wpfs-delete-payment",
-        id: model.get("dbId"),
-      };
-    }
 
     function extractTransactionDataFromRow($node) {
       var $tr = $node.closest("tr.wpfs-data-table__tr");
@@ -852,48 +908,6 @@ jQuery.noConflict();
       return {
         dbId: $tr.data("db-id"),
         stripeId: $tr.data("stripe-id"),
-      };
-    }
-
-    function createCancelSubscriptionData(model) {
-      return {
-        action: "wpfs-cancel-subscription",
-        id: model.get("dbId"),
-      };
-    }
-
-    function createDeleteSubscriptionData(model) {
-      return {
-        action: "wpfs-delete-subscription",
-        id: model.get("dbId"),
-      };
-    }
-
-    function createRefundDonationData(model) {
-      return {
-        action: "wpfs-refund-donation",
-        id: model.get("dbId"),
-      };
-    }
-
-    function createCancelDonationData(model) {
-      return {
-        action: "wpfs-cancel-donation",
-        id: model.get("dbId"),
-      };
-    }
-
-    function createDeleteDonationData(model) {
-      return {
-        action: "wpfs-delete-donation",
-        id: model.get("dbId"),
-      };
-    }
-
-    function createDeleteSavedCardData(model) {
-      return {
-        action: "wpfs-delete-saved-card",
-        id: model.get("dbId"),
       };
     }
 
@@ -1113,160 +1127,56 @@ jQuery.noConflict();
       $(options.clickSelector).on("click", onClickOpen(ctx));
     }
 
-    function initOneTimePaymentDialogs() {
-      var captureOptions = {
-        dialogId: "wpfs-capture-payment-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.capturePaymentTitle,
-        normalTemplateSelector: "#wpfs-modal-capture-payment",
-        inProgressTemplateSelector: "#wpfs-modal-capture-payment-in-progress",
-        clickSelector: ".js-capture-payment",
-        extractDataCallback: extractTransactionDataFromRow,
-        ajaxCallback: makeAjaxCallFromDialog,
-        confirmationMessage: wpfsAdminL10n.capturePaymentConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-capture-payment-dialog",
-        createCommandCallback: createCapturePaymentData,
-      };
-      initTransactionActionDialog(captureOptions);
+    // The transaction actions with a confirmation dialog, by kind of transaction.
+    const TRANSACTION_ACTIONS = {
+      payment: ["capture-payment", "refund-payment", "delete-payment"],
+      subscription: ["cancel-subscription", "delete-subscription"],
+      donation: ["refund-donation", "cancel-donation", "delete-donation"],
+      savedCard: ["delete-saved-card"],
+    };
 
-      var refundOptions = {
-        dialogId: "wpfs-refund-payment-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.refundPaymentTitle,
-        normalTemplateSelector: "#wpfs-modal-refund-payment",
-        inProgressTemplateSelector: "#wpfs-modal-refund-payment-in-progress",
-        clickSelector: ".js-refund-payment",
-        extractDataCallback: extractTransactionDataFromRow,
-        ajaxCallback: makeAjaxCallFromDialog,
-        confirmationMessage: wpfsAdminL10n.refundPaymentConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-refund-payment-dialog",
-        createCommandCallback: createRefundPaymentData,
-      };
-      initTransactionActionDialog(refundOptions);
+    /**
+     * Sets up each action's confirmation dialog, opened by its buttons in the list's rows or in
+     * the details pane. An action's name, e.g. "refund-payment", names its dialog, templates,
+     * buttons, l10n strings and AJAX action.
+     *
+     * @param {string[]}         actions
+     * @param {'list'|'details'} scope
+     */
+    function initTransactionActionDialogs(actions, scope) {
+      const inDetails = "details" === scope;
 
-      var deleteOptions = {
-        dialogId: "wpfs-delete-payment-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.deletePaymentTitle,
-        normalTemplateSelector: "#wpfs-modal-delete-payment",
-        inProgressTemplateSelector: "#wpfs-modal-delete-payment-in-progress",
-        clickSelector: ".js-delete-payment",
-        extractDataCallback: extractTransactionDataFromRow,
-        ajaxCallback: makeAjaxCallFromDialog,
-        confirmationMessage: wpfsAdminL10n.deletePaymentConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-delete-payment-dialog",
-        createCommandCallback: createDeletePaymentData,
-      };
-      initTransactionActionDialog(deleteOptions);
-    }
+      actions.forEach(function (action) {
+        const l10nKey = action.replace(/-([a-z])/g, function (match, letter) {
+          return letter.toUpperCase();
+        });
 
-    function initSubscriptionDialogs() {
-      var cancelOptions = {
-        dialogId: "wpfs-cancel-subscription-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.cancelSubscriptionTitle,
-        normalTemplateSelector: "#wpfs-modal-cancel-subscription",
-        inProgressTemplateSelector:
-          "#wpfs-modal-cancel-subscription-in-progress",
-        clickSelector: ".js-cancel-subscription",
-        extractDataCallback: extractTransactionDataFromRow,
-        ajaxCallback: makeAjaxCallFromDialog,
-        confirmationMessage:
-          wpfsAdminL10n.cancelSubscriptionConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-cancel-subscription-dialog",
-        createCommandCallback: createCancelSubscriptionData,
-      };
-      initTransactionActionDialog(cancelOptions);
-
-      var deleteOptions = {
-        dialogId: "wpfs-delete-subscription-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.deleteSubscriptionTitle,
-        normalTemplateSelector: "#wpfs-modal-delete-subscription",
-        inProgressTemplateSelector:
-          "#wpfs-modal-delete-subscription-in-progress",
-        clickSelector: ".js-delete-subscription",
-        extractDataCallback: extractTransactionDataFromRow,
-        ajaxCallback: makeAjaxCallFromDialog,
-        confirmationMessage:
-          wpfsAdminL10n.deleteSubscriptionConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-delete-subscription-dialog",
-        createCommandCallback: createDeleteSubscriptionData,
-      };
-      initTransactionActionDialog(deleteOptions);
-    }
-
-    function initDonationDialogs() {
-      var refundOptions = {
-        dialogId: "wpfs-refund-donation-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.refundDonationTitle,
-        normalTemplateSelector: "#wpfs-modal-refund-donation",
-        inProgressTemplateSelector: "#wpfs-modal-refund-donation-in-progress",
-        clickSelector: ".js-refund-donation",
-        extractDataCallback: extractTransactionDataFromRow,
-        ajaxCallback: makeAjaxCallFromDialog,
-        confirmationMessage: wpfsAdminL10n.refundDonationConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-refund-donation-dialog",
-        createCommandCallback: createRefundDonationData,
-      };
-      initTransactionActionDialog(refundOptions);
-
-      var cancelOptions = {
-        dialogId: "wpfs-cancel-donation-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.cancelDonationTitle,
-        normalTemplateSelector: "#wpfs-modal-cancel-donation",
-        inProgressTemplateSelector: "#wpfs-modal-cancel-donation-in-progress",
-        clickSelector: ".js-cancel-donation",
-        extractDataCallback: extractTransactionDataFromRow,
-        ajaxCallback: makeAjaxCallFromDialog,
-        confirmationMessage: wpfsAdminL10n.cancelDonationConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-cancel-donation-dialog",
-        createCommandCallback: createCancelDonationData,
-      };
-      initTransactionActionDialog(cancelOptions);
-
-      var deleteOptions = {
-        dialogId: "wpfs-delete-donation-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.deleteDonationTitle,
-        normalTemplateSelector: "#wpfs-modal-delete-donation",
-        inProgressTemplateSelector: "#wpfs-modal-delete-donation-in-progress",
-        clickSelector: ".js-delete-donation",
-        extractDataCallback: extractTransactionDataFromRow,
-        ajaxCallback: makeAjaxCallFromDialog,
-        confirmationMessage: wpfsAdminL10n.deleteDonationConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-delete-donation-dialog",
-        createCommandCallback: createDeleteDonationData,
-      };
-      initTransactionActionDialog(deleteOptions);
-    }
-
-    function initSavedCardDialogs() {
-      var deleteOptions = {
-        dialogId: "wpfs-delete-saved-card-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.deleteSavedCardTitle,
-        normalTemplateSelector: "#wpfs-modal-delete-saved-card",
-        inProgressTemplateSelector: "#wpfs-modal-delete-saved-card-in-progress",
-        clickSelector: ".js-delete-saved-card",
-        extractDataCallback: extractTransactionDataFromRow,
-        ajaxCallback: makeAjaxCallFromDialog,
-        confirmationMessage: wpfsAdminL10n.deleteSavedCardConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-delete-saved-card-dialog",
-        createCommandCallback: createDeleteSavedCardData,
-      };
-      initTransactionActionDialog(deleteOptions);
+        initTransactionActionDialog({
+          dialogId: "wpfs-" + action + "-dialog",
+          dialogClass: "wpfs-dialog-content",
+          dialogTitle: l10n[l10nKey + "Title"],
+          normalTemplateSelector: "#wpfs-modal-" + action,
+          inProgressTemplateSelector: "#wpfs-modal-" + action + "-in-progress",
+          clickSelector: ".js-" + action + (inDetails ? "-details" : ""),
+          extractDataCallback: inDetails
+            ? extractTransactionDataFromDetails
+            : extractTransactionDataFromRow,
+          ajaxCallback(requestData, dialogSelector) {
+            makeAjaxCallFromDialog(requestData, dialogSelector, {
+              closeSidePane: inDetails,
+            });
+          },
+          confirmationMessage: l10n[l10nKey + "ConfirmationMessage"],
+          dialogContainerSelector: "#wpfs-dialog-container",
+          confirmButtonSelector: ".js-" + action + "-dialog",
+          createCommandCallback(model) {
+            return {
+              action: "wpfs-" + action,
+              id: model.get("dbId"),
+            };
+          },
+        });
+      });
     }
 
     function initOneTimePaymentFilter() {
@@ -1316,162 +1226,6 @@ jQuery.noConflict();
       };
     }
 
-    function initOneTimePaymentDetailsDialogs() {
-      var captureOptions = {
-        dialogId: "wpfs-capture-payment-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.capturePaymentTitle,
-        normalTemplateSelector: "#wpfs-modal-capture-payment",
-        inProgressTemplateSelector: "#wpfs-modal-capture-payment-in-progress",
-        clickSelector: ".js-capture-payment-details",
-        extractDataCallback: extractTransactionDataFromDetails,
-        ajaxCallback: makeAjaxCallFromDetailsDialog,
-        confirmationMessage: wpfsAdminL10n.capturePaymentConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-capture-payment-dialog",
-        createCommandCallback: createCapturePaymentData,
-      };
-      initTransactionActionDialog(captureOptions);
-
-      var refundOptions = {
-        dialogId: "wpfs-refund-payment-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.refundPaymentTitle,
-        normalTemplateSelector: "#wpfs-modal-refund-payment",
-        inProgressTemplateSelector: "#wpfs-modal-refund-payment-in-progress",
-        clickSelector: ".js-refund-payment-details",
-        extractDataCallback: extractTransactionDataFromDetails,
-        ajaxCallback: makeAjaxCallFromDetailsDialog,
-        confirmationMessage: wpfsAdminL10n.refundPaymentConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-refund-payment-dialog",
-        createCommandCallback: createRefundPaymentData,
-      };
-      initTransactionActionDialog(refundOptions);
-
-      var deleteOptions = {
-        dialogId: "wpfs-delete-payment-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.deletePaymentTitle,
-        normalTemplateSelector: "#wpfs-modal-delete-payment",
-        inProgressTemplateSelector: "#wpfs-modal-delete-payment-in-progress",
-        clickSelector: ".js-delete-payment-details",
-        extractDataCallback: extractTransactionDataFromDetails,
-        ajaxCallback: makeAjaxCallFromDetailsDialog,
-        confirmationMessage: wpfsAdminL10n.deletePaymentConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-delete-payment-dialog",
-        createCommandCallback: createDeletePaymentData,
-      };
-      initTransactionActionDialog(deleteOptions);
-    }
-
-    function initSubscriptionDetailsDialogs() {
-      var cancelOptions = {
-        dialogId: "wpfs-cancel-subscription-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.cancelSubscriptionTitle,
-        normalTemplateSelector: "#wpfs-modal-cancel-subscription",
-        inProgressTemplateSelector:
-          "#wpfs-modal-cancel-subscription-in-progress",
-        clickSelector: ".js-cancel-subscription-details",
-        extractDataCallback: extractTransactionDataFromDetails,
-        ajaxCallback: makeAjaxCallFromDetailsDialog,
-        confirmationMessage:
-          wpfsAdminL10n.cancelSubscriptionConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-cancel-subscription-dialog",
-        createCommandCallback: createCancelSubscriptionData,
-      };
-      initTransactionActionDialog(cancelOptions);
-
-      var deleteOptions = {
-        dialogId: "wpfs-delete-subscription-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.deleteSubscriptionTitle,
-        normalTemplateSelector: "#wpfs-modal-delete-subscription",
-        inProgressTemplateSelector:
-          "#wpfs-modal-delete-subscription-in-progress",
-        clickSelector: ".js-delete-subscription-details",
-        extractDataCallback: extractTransactionDataFromDetails,
-        ajaxCallback: makeAjaxCallFromDetailsDialog,
-        confirmationMessage:
-          wpfsAdminL10n.deleteSubscriptionConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-delete-subscription-dialog",
-        createCommandCallback: createDeleteSubscriptionData,
-      };
-      initTransactionActionDialog(deleteOptions);
-    }
-
-    function initDonationDetailsDialogs() {
-      var refundOptions = {
-        dialogId: "wpfs-refund-donation-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.refundDonationTitle,
-        normalTemplateSelector: "#wpfs-modal-refund-donation",
-        inProgressTemplateSelector: "#wpfs-modal-refund-donation-in-progress",
-        clickSelector: ".js-refund-donation-details",
-        extractDataCallback: extractTransactionDataFromDetails,
-        ajaxCallback: makeAjaxCallFromDetailsDialog,
-        confirmationMessage: wpfsAdminL10n.refundDonationConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-refund-donation-dialog",
-        createCommandCallback: createRefundDonationData,
-      };
-      initTransactionActionDialog(refundOptions);
-
-      var cancelOptions = {
-        dialogId: "wpfs-cancel-donation-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.cancelDonationTitle,
-        normalTemplateSelector: "#wpfs-modal-cancel-donation",
-        inProgressTemplateSelector: "#wpfs-modal-cancel-donation-in-progress",
-        clickSelector: ".js-cancel-donation-details",
-        extractDataCallback: extractTransactionDataFromDetails,
-        ajaxCallback: makeAjaxCallFromDetailsDialog,
-        confirmationMessage: wpfsAdminL10n.cancelDonationConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-cancel-donation-dialog",
-        createCommandCallback: createCancelDonationData,
-      };
-      initTransactionActionDialog(cancelOptions);
-
-      var deleteOptions = {
-        dialogId: "wpfs-delete-donation-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.deleteDonationTitle,
-        normalTemplateSelector: "#wpfs-modal-delete-donation",
-        inProgressTemplateSelector: "#wpfs-modal-delete-donation-in-progress",
-        clickSelector: ".js-delete-donation-details",
-        extractDataCallback: extractTransactionDataFromDetails,
-        ajaxCallback: makeAjaxCallFromDetailsDialog,
-        confirmationMessage: wpfsAdminL10n.deleteDonationConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-delete-donation-dialog",
-        createCommandCallback: createDeleteDonationData,
-      };
-      initTransactionActionDialog(deleteOptions);
-    }
-
-    function initSavedCardDetailsDialogs() {
-      var deleteOptions = {
-        dialogId: "wpfs-delete-saved-card-dialog",
-        dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.deleteSavedCardTitle,
-        normalTemplateSelector: "#wpfs-modal-delete-saved-card",
-        inProgressTemplateSelector: "#wpfs-modal-delete-saved-card-in-progress",
-        clickSelector: ".js-delete-saved-card-details",
-        extractDataCallback: extractTransactionDataFromDetails,
-        ajaxCallback: makeAjaxCallFromDetailsDialog,
-        confirmationMessage: wpfsAdminL10n.deleteSavedCardConfirmationMessage,
-        dialogContainerSelector: "#wpfs-dialog-container",
-        confirmButtonSelector: ".js-delete-saved-card-dialog",
-        createCommandCallback: createDeleteSavedCardData,
-      };
-      initTransactionActionDialog(deleteOptions);
-    }
-
     function createGetOneTimePaymentDetailsData(id) {
       return {
         action: "wpfs-get-payment-details",
@@ -1512,11 +1266,7 @@ jQuery.noConflict();
           cache: false,
           dataType: "json",
           success: function (responseData) {
-            if (responseData.success) {
               showTransactionDetails(ctx, responseData);
-            } else {
-              showTransactionDetails(ctx, responseData);
-            }
           },
           error: function (jqXHR, textStatus, errorThrown) {
             logError(
@@ -1571,7 +1321,9 @@ jQuery.noConflict();
         templateSelector: "#wpfs-side-pane-payment-details",
         detailsCommandCallback: createGetOneTimePaymentDetailsData,
         dialogContainerSelector: "#payment-details-container",
-        initDialogsCallback: initOneTimePaymentDetailsDialogs,
+        initDialogsCallback: function () {
+          initTransactionActionDialogs(TRANSACTION_ACTIONS.payment, "details");
+        },
       };
       initTransactionDetails(paymentDetailsOptions);
     }
@@ -1591,7 +1343,9 @@ jQuery.noConflict();
         templateSelector: "#wpfs-side-pane-subscription-details",
         detailsCommandCallback: createSubscriptionDetailsData,
         dialogContainerSelector: "#subscription-details-container",
-        initDialogsCallback: initSubscriptionDetailsDialogs,
+        initDialogsCallback: function () {
+          initTransactionActionDialogs(TRANSACTION_ACTIONS.subscription, "details");
+        },
       };
       initTransactionDetails(subscriptionDetailsOptions);
     }
@@ -1611,7 +1365,9 @@ jQuery.noConflict();
         templateSelector: "#wpfs-side-pane-donation-details",
         detailsCommandCallback: createDonationDetailsData,
         dialogContainerSelector: "#donation-details-container",
-        initDialogsCallback: initDonationDetailsDialogs,
+        initDialogsCallback: function () {
+          initTransactionActionDialogs(TRANSACTION_ACTIONS.donation, "details");
+        },
       };
       initTransactionDetails(donationDetailsOptions);
     }
@@ -1631,7 +1387,9 @@ jQuery.noConflict();
         templateSelector: "#wpfs-side-pane-saved-card-details",
         detailsCommandCallback: createSavedCardDetailsData,
         dialogContainerSelector: "#saved-card-details-container",
-        initDialogsCallback: initSavedCardDetailsDialogs,
+        initDialogsCallback: function () {
+          initTransactionActionDialogs(TRANSACTION_ACTIONS.savedCard, "details");
+        },
       };
       initTransactionDetails(savedCardsDetailsOptions);
     }
@@ -1651,33 +1409,33 @@ jQuery.noConflict();
     }
 
     WPFS.initTransactions = function () {
-      if (onOneTimePaymentsPage()) {
+      if (pageIs("div.wpfs-page-one-time-payments")) {
         initErrorDialog();
-        initOneTimePaymentDialogs();
+        initTransactionActionDialogs(TRANSACTION_ACTIONS.payment, "list");
         initOneTimePaymentFilter();
         initOneTimePaymentDetails();
         setTabCookie(TRANSACTION_TAB_PAYMENTS);
       }
 
-      if (onSubscriptionsPage()) {
+      if (pageIs("div.wpfs-page-subscriptions")) {
         initErrorDialog();
-        initSubscriptionDialogs();
+        initTransactionActionDialogs(TRANSACTION_ACTIONS.subscription, "list");
         initSubscriptionFilter();
         initSubscriptionDetails();
         setTabCookie(TRANSACTION_TAB_SUBSCRIPTIONS);
       }
 
-      if (onDonationsPage()) {
+      if (pageIs("div.wpfs-page-donations")) {
         initErrorDialog();
-        initDonationDialogs();
+        initTransactionActionDialogs(TRANSACTION_ACTIONS.donation, "list");
         initDonationFilter();
         initDonationDetails();
         setTabCookie(TRANSACTION_TAB_DONATIONS);
       }
 
-      if (onSavedCardsPage()) {
+      if (pageIs("div.wpfs-page-saved-cards")) {
         initErrorDialog();
-        initSavedCardDialogs();
+        initTransactionActionDialogs(TRANSACTION_ACTIONS.savedCard, "list");
         initSavedCardFilter();
         initSavedCardDetails();
         setTabCookie(TRANSACTION_TAB_SAVED_CARDS);
@@ -1715,12 +1473,8 @@ jQuery.noConflict();
       });
     }
 
-    function onCreateFormPage() {
-      return $("#wpfs-create-form") && $("#wpfs-create-form").length > 0;
-    }
-
     WPFS.initCreateForm = function () {
-      if (onCreateFormPage()) {
+      if (pageIs("#wpfs-create-form")) {
         initFocusOnTheCreateFormPage();
         initFormLayoutHandler();
         initEventHandlersOnTheCreateFormPage();
@@ -1741,8 +1495,53 @@ jQuery.noConflict();
         typeof accountModeFromPHP !== "undefined" &&
         accountModeFromPHP
       ) {
-        WPFS.makeAddStripeAccountAjaxCall(accountIdFromPHP, accountModeFromPHP);
+        WPFS.makeAddStripeAccountAjaxCall(
+          accountIdFromPHP,
+          accountModeFromPHP,
+          typeof connectTokenFromPHP !== "undefined" ? connectTokenFromPHP : "",
+          typeof connectCodeFromPHP !== "undefined" ? connectCodeFromPHP : ""
+        );
       }
+    }
+
+    function openDisconnectStripeDialog(mode, canRevoke) {
+      if (!WPFS.ModalDialogErrorView) {
+        initErrorDialog();
+      }
+
+      const dialogSelector = "#wpfs-disconnect-stripe-dialog";
+      const $content = $("<div>", {
+        id: "wpfs-disconnect-stripe-dialog",
+        class: "wpfs-dialog-content",
+        title: l10n.disconnectStripeTitle,
+      }).html(_.template($("#wpfs-modal-disconnect-stripe").html())({ canRevoke }));
+      $("#wpfs-dialog-container").empty().append($content);
+
+      WPFS.Dialog.open(dialogSelector);
+
+      $content.find(".js-revoke-stripe-access").on("change", function () {
+        $content
+          .find(".js-revoke-stripe-access-warning")
+          .toggle($(this).is(":checked"));
+      });
+
+      $content.find(".js-disconnect-stripe-dialog").on("click", function (e) {
+        e.preventDefault();
+
+        if (!$content.find(".js-revoke-stripe-access").is(":checked")) {
+          $(dialogSelector).dialog("close");
+          WPFS.makeClearStripeSettingsAjaxCall(mode);
+          return;
+        }
+
+        $content.html(
+          _.template($("#wpfs-modal-disconnect-stripe-in-progress").html())({})
+        );
+        makeAjaxCallFromDialog(
+          { action: "wpfs-revoke-stripe-access", mode },
+          dialogSelector
+        );
+      });
     }
 
     function initEventHandlersOnTheSettingsStripeAccountPage() {
@@ -1758,15 +1557,21 @@ jQuery.noConflict();
         WPFS.makeCreateStripeConnectAccountAjaxCall("live");
       });
 
+      $(".js-wpfs-confirm-stripe-connection").on("click", function (e) {
+        e.preventDefault();
+
+        WPFS.makeConfirmStripeConnectionAjaxCall($(this).data("mode"));
+      });
+
       $("#wpfs-clear-test-stripe-connect-account").on("click", function (e) {
         e.preventDefault();
 
-        WPFS.makeClearStripeSettingsAjaxCall("test");
+        openDisconnectStripeDialog("test", $(this).data("can-revoke") === 1);
       });
       $("#wpfs-clear-live-stripe-connect-account").on("click", function (e) {
         e.preventDefault();
 
-        WPFS.makeClearStripeSettingsAjaxCall("live");
+        openDisconnectStripeDialog("live", $(this).data("can-revoke") === 1);
       });
 
       $("#wpfs-save-stripe-account").submit(function (e) {
@@ -1780,7 +1585,7 @@ jQuery.noConflict();
     function copyWebhookUrlToClipboardFromNode($node) {
       var webhookUrl = $node.data("webhook-url");
       WPFS.copyToClipboard(webhookUrl);
-      WPFS.displaySuccessMessageBanner(wpfsAdminL10n.webhookUrlCopiedMessage);
+      WPFS.displaySuccessMessageBanner(l10n.webhookUrlCopiedMessage);
     }
 
     function initWebhookUrlCopyToClipboard() {
@@ -1855,15 +1660,8 @@ jQuery.noConflict();
       updateSubscriptionRelatedOptions();
     }
 
-    function onSettingsMyAccountPage() {
-      return (
-        $("div.wpfs-page-settings-my-account") &&
-        $("div.wpfs-page-settings-my-account").length > 0
-      );
-    }
-
     WPFS.initSettingsMyAccount = function () {
-      if (onSettingsMyAccountPage()) {
+      if (pageIs("div.wpfs-page-settings-my-account")) {
         initEventHandlersOnTheSettingsMyAccountPage();
         initSavedElements();
         initSettingsUnsavedChangesDetection();
@@ -1894,15 +1692,8 @@ jQuery.noConflict();
       });
     }
 
-    function onSettingsSecurityPage() {
-      return (
-        $("div.wpfs-page-settings-security") &&
-        $("div.wpfs-page-settings-security").length > 0
-      );
-    }
-
     WPFS.initSettingsSecurity = function () {
-      if (onSettingsSecurityPage()) {
+      if (pageIs("div.wpfs-page-settings-security")) {
         initEventHandlersOnTheSettingsSecurityPage();
         initSavedElements();
         initSettingsUnsavedChangesDetection();
@@ -1947,15 +1738,8 @@ jQuery.noConflict();
       });
     }
 
-    function onSettingsEmailOptionsPage() {
-      return (
-        $("div.wpfs-page-settings-email-options") &&
-        $("div.wpfs-page-settings-email-options").length > 0
-      );
-    }
-
     WPFS.initSettingsEmailOptions = function () {
-      if (onSettingsEmailOptionsPage()) {
+      if (pageIs("div.wpfs-page-settings-email-options")) {
         WPFS.TagsInput.init();
         initEventHandlersOnTheSettingsEmailOptionsPage();
         initSavedElements();
@@ -2071,11 +1855,11 @@ jQuery.noConflict();
     function generateValidationResultFromBindingResult(bindingResult) {
       return {
         fieldErrors: {
-          title: "Field validation error",
+          title: l10n.fieldValidationErrorTitle,
           errors: bindingResult.getFieldErrors(),
         },
         globalErrors: {
-          title: "Form error",
+          title: l10n.formErrorTitle,
           errors: bindingResult.getGlobalErrors(),
         },
       };
@@ -2338,7 +2122,7 @@ jQuery.noConflict();
         bindingResult.addFieldError(
           FORM_FIELD_TEST_EMAIL_ADDRESSES,
           fieldId,
-          wpfsAdminL10n.enterAtLeastOneEmailAddressMessage
+          l10n.enterAtLeastOneEmailAddressMessage
         );
       }
 
@@ -2349,7 +2133,7 @@ jQuery.noConflict();
             bindingResult.getFormHash()
           );
           const errorLabel = sprintf(
-            wpfsAdminL10n.emailAddressInvalidMessage,
+            l10n.emailAddressInvalidMessage,
             testEmailAddress
           );
           bindingResult.addFieldError(
@@ -2399,12 +2183,12 @@ jQuery.noConflict();
       var resetTemplateOptions = {
         dialogId: "wpfs-reset-template-dialog",
         dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.resetTemplateTitle,
+        dialogTitle: l10n.resetTemplateTitle,
         normalTemplateSelector: "#wpfs-modal-reset-template",
         clickSelector: ".js-reset-template",
         extractPageDataCallback: extractCurrentTemplateId,
         clientCallback: resetEmailTemplate,
-        confirmationMessage: wpfsAdminL10n.resetTemplateConfirmationMessage,
+        confirmationMessage: l10n.resetTemplateConfirmationMessage,
         dialogContainerSelector: "#wpfs-dialog-container",
         confirmButtonSelector: ".js-reset-template-dialog",
       };
@@ -2413,7 +2197,7 @@ jQuery.noConflict();
       var testEmailOptions = {
         dialogId: "wpfs-test-email-dialog",
         dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.sendTestEmailTitle,
+        dialogTitle: l10n.sendTestEmailTitle,
         normalTemplateSelector: "#wpfs-modal-send-email-test",
         inProgressTemplateSelector: "#wpfs-modal-send-email-test-in-progress",
         clickSelector: ".js-send-email-test",
@@ -2513,15 +2297,8 @@ jQuery.noConflict();
       $(dialogSelector).dialog("close");
     }
 
-    function onSettingsEmailTemplatesPage() {
-      return (
-        $("div.wpfs-page-settings-email-templates") &&
-        $("div.wpfs-page-settings-email-templates").length > 0
-      );
-    }
-
     WPFS.initSettingsEmailTemplates = function () {
-      if (onSettingsEmailTemplatesPage()) {
+      if (pageIs("div.wpfs-page-settings-email-templates")) {
         initErrorDialog();
         initModelViewOnSettingsEmailTemplates();
         initMacroLookupsOnSettingsEmailTemplates();
@@ -2540,15 +2317,8 @@ jQuery.noConflict();
       });
     }
 
-    function onSettingsFormsOptions() {
-      return (
-        $("div.wpfs-page-settings-forms-options") &&
-        $("div.wpfs-page-settings-forms-options").length > 0
-      );
-    }
-
     WPFS.initSettingsFormsOptions = function () {
-      if (onSettingsFormsOptions()) {
+      if (pageIs("div.wpfs-page-settings-forms-options")) {
         initEventHandlersOnSettingsFormsOptions();
         initSavedElements();
         initSettingsUnsavedChangesDetection();
@@ -2568,13 +2338,6 @@ jQuery.noConflict();
       WPFS.CodeEditor.init();
     }
 
-    function onSettingsFormsAppearance() {
-      return (
-        $("div.wpfs-page-settings-forms-appearance") &&
-        $("div.wpfs-page-settings-forms-appearance").length > 0
-      );
-    }
-
     function initEventHandlersOnFormsAppearance() {
       WPFS.CodeEditor.init();
     }
@@ -2584,7 +2347,7 @@ jQuery.noConflict();
     }
 
     WPFS.initSettingsFormsAppearance = function () {
-      if (onSettingsFormsAppearance()) {
+      if (pageIs("div.wpfs-page-settings-forms-appearance")) {
         initEventHandlersOnSettingsFormsAppearance();
         initSavedElements();
         initSettingsUnsavedChangesDetection();
@@ -2608,18 +2371,10 @@ jQuery.noConflict();
       toggleStripePortalFormBlocks();
     };
 
-    function onSettingsCustomerPortal() {
-      return (
-        $("div.wpfs-page-settings-my-account") &&
-        $("div.wpfs-page-settings-my-account").length > 0
-      );
-    }
-
+    // WPFS.initSettingsMyAccount already sets up the saved indicator and unsaved-changes tracking on this page.
     WPFS.initSettingsCustomerPortal = function () {
-      if ( onSettingsCustomerPortal() ) {
+      if (pageIs("div.wpfs-page-settings-my-account")) {
         initStripePortalEffect();
-        initSavedElements();
-        initSettingsUnsavedChangesDetection();
       }
     };
 
@@ -2632,15 +2387,8 @@ jQuery.noConflict();
       });
     }
 
-    function onSettingsWordpressDashboard() {
-      return (
-        $("div.wpfs-page-settings-wp-dashboard") &&
-        $("div.wpfs-page-settings-wp-dashboard").length > 0
-      );
-    }
-
     WPFS.initSettingsWordpressDashboard = function () {
-      if (onSettingsWordpressDashboard()) {
+      if (pageIs("div.wpfs-page-settings-wp-dashboard")) {
         initEventHandlersOnSettingsWordpressDashboard();
         initSavedElements();
         initSettingsUnsavedChangesDetection();
@@ -2664,10 +2412,10 @@ jQuery.noConflict();
       var emptyLogOptions = {
         dialogId: "wpfs-empty-log-dialog",
         dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.emptyLogTitle,
+        dialogTitle: l10n.emptyLogTitle,
         normalTemplateSelector: "#wpfs-modal-empty-log",
         inProgressTemplateSelector: "#wpfs-modal-empty-log-in-progress",
-        confirmationMessage: wpfsAdminL10n.emptyLogConfirmationMessage,
+        confirmationMessage: l10n.emptyLogConfirmationMessage,
         clickSelector: ".js-empty-log",
         createCommandCallback: createEmptyLogCommand,
         ajaxCallback: makeAjaxCallFromDialog,
@@ -2677,28 +2425,14 @@ jQuery.noConflict();
       initServerActionDialog(emptyLogOptions);
     }
 
-    function onSettingsLogs() {
-      return (
-        $("div.wpfs-page-settings-logs") &&
-        $("div.wpfs-page-settings-logs").length > 0
-      );
-    }
-
     WPFS.initSettingsLogs = function () {
-      if (onSettingsLogs()) {
+      if (pageIs("div.wpfs-page-settings-logs")) {
         initEventHandlersOnSettingsLogs();
         initErrorDialog();
         initSavedElements();
         initSettingsUnsavedChangesDetection();
       }
     };
-
-    function onSettingsLicense() {
-      return (
-        $("div.wpfs-page-settings-license") &&
-        $("div.wpfs-page-settings-license").length > 0
-      );
-    }
 
     function toggleLicense( $form, $key, $action ) {
       WPFS.showButtonLoader($form);
@@ -2720,7 +2454,7 @@ jQuery.noConflict();
           } else {
             WPFS.showErrorGlobalMessage(
               $form,
-              wpfsAdminL10n.licenseError,
+              l10n.licenseError,
               responseData?.message
             );
           }
@@ -2740,7 +2474,7 @@ jQuery.noConflict();
     }
 
     WPFS.initSettingsLicense = function () {
-      if ( onSettingsLicense() ) {
+      if ( pageIs("div.wpfs-page-settings-license") ) {
         $("#wpfs-form-license-activate").on("submit", function (e) {
           e.preventDefault();
           var $form = $(this);
@@ -2763,7 +2497,7 @@ jQuery.noConflict();
     // The fields array (hydrated from the #wpfs-custom-fields-bootstrap JSON)
     // is the single source of truth. The DOM list and the hidden form input
     // are projections of it. Saved configuration is canonicalized again
-    // server-side by MM_WPFS_CustomFields::normalizeFromAdminJson().
+    // server-side by CustomFields::normalizeFromAdminJson().
     // ---------------------------------------------------------------------
 
     var customFieldsState = {
@@ -2915,7 +2649,18 @@ jQuery.noConflict();
       var $container = $dialog.find(".js-custom-field-options");
       var maxOptions = customFieldsState.l10n.maxOptions || 20;
       if ($container.find(".js-custom-field-option").length >= maxOptions) {
-        window.alert(customFieldsState.l10n.maxOptionsReached);
+        window.alert(
+          sprintf(
+            /* translators: Error message when a custom field already has the most options allowed. %d: maximum number of options. */
+            _n(
+              "You can add at most %d option",
+              "You can add at most %d options",
+              maxOptions,
+              "wp-full-stripe-free"
+            ),
+            maxOptions
+          )
+        );
         return;
       }
       var template = _.template($("#wpfs-custom-field-option-row").html());
@@ -2995,14 +2740,18 @@ jQuery.noConflict();
         var title = $.trim($dialog.find(".js-cf-title").val());
         var content = $dialog.find(".js-cf-content").val();
         if (!title) {
-          showCfError($dialog, "title", customFieldsState.l10n.titleRequired);
+          showCfError(
+            $dialog,
+            "title",
+            __("Please enter a title", "wp-full-stripe-free")
+          );
           valid = false;
         }
         if (!$.trim(content)) {
           showCfError(
             $dialog,
             "content",
-            customFieldsState.l10n.contentRequired
+            __("Please enter HTML content", "wp-full-stripe-free")
           );
           valid = false;
         }
@@ -3011,10 +2760,27 @@ jQuery.noConflict();
       } else {
         var label = $.trim($dialog.find(".js-cf-label").val());
         if (!label) {
-          showCfError($dialog, "label", customFieldsState.l10n.labelRequired);
+          showCfError(
+            $dialog,
+            "label",
+            __("Please enter field label", "wp-full-stripe-free")
+          );
           valid = false;
         } else if ([...label].length > maxLabelLength) {
-          showCfError($dialog, "label", customFieldsState.l10n.labelTooLong);
+          showCfError(
+            $dialog,
+            "label",
+            sprintf(
+              /* translators: Validation error when a custom field label is too long. %d: maximum number of characters. */
+              _n(
+                "Maximum custom field length is %d character",
+                "Maximum custom field length is %d characters",
+                maxLabelLength,
+                "wp-full-stripe-free"
+              ),
+              maxLabelLength
+            )
+          );
           valid = false;
         }
         field.label = label;
@@ -3038,7 +2804,7 @@ jQuery.noConflict();
             showCfError(
               $dialog,
               "options",
-              customFieldsState.l10n.optionRequired
+              __("Please add at least one option", "wp-full-stripe-free")
             );
             valid = false;
           }
@@ -3112,8 +2878,10 @@ jQuery.noConflict();
       $dialog.attr(
         "title",
         customFieldsState.editingIndex !== null
-          ? customFieldsState.l10n.editTitle
-          : customFieldsState.l10n.addTitle
+          ? /* translators: Title of the 'Edit custom field' dialog */
+            __("Edit custom field", "wp-full-stripe-free")
+          : /* translators: Title of the 'Add custom field' dialog */
+            __("Add custom field", "wp-full-stripe-free")
       );
 
       $dialog.find(".js-cf-type").val(field.type);
@@ -3183,7 +2951,11 @@ jQuery.noConflict();
         .append($("#wpfs-modal-delete-custom-field").html());
 
       var $dialog = $("#wpfs-delete-custom-field-dialog");
-      $dialog.attr("title", customFieldsState.l10n.deleteTitle || "");
+      $dialog.attr(
+        "title",
+        /* translators: Title of the 'Delete custom field' dialog */
+        __("Delete custom field", "wp-full-stripe-free")
+      );
       $dialog.find(".js-delete-custom-field-dialog").on("click", function () {
         customFieldsState.fields.splice(index, 1);
         $("#wpfs-delete-custom-field-dialog").dialog("close");
@@ -3246,7 +3018,18 @@ jQuery.noConflict();
           e.preventDefault();
           var max = customFieldsState.l10n.maxCount || 0;
           if (max && customFieldsState.fields.length >= max) {
-            window.alert(customFieldsState.l10n.maxFieldsReached);
+            window.alert(
+              sprintf(
+                /* translators: Error message when a form already has the most custom fields allowed. %d: maximum number of custom fields. */
+                _n(
+                  "You can add at most %d custom field",
+                  "You can add at most %d custom fields",
+                  max,
+                  "wp-full-stripe-free"
+                ),
+                max
+              )
+            );
             return;
           }
           openCustomFieldDialog(null);
@@ -3688,13 +3471,13 @@ jQuery.noConflict();
       var deleteDonationAmountOptions = {
         dialogId: "wpfs-delete-suggested-donation-dialog",
         dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.deleteSuggestedDonationTitle,
+        dialogTitle: l10n.deleteSuggestedDonationTitle,
         normalTemplateSelector: "#wpfs-modal-delete-suggested-donation-amount",
         clickSelector: ".js-delete-suggested-donation-amount",
         extractPageDataCallback: extractSuggestedDonationAmount,
         clientCallback: deleteSuggestedDonationAmount,
         confirmationMessage:
-          wpfsAdminL10n.deleteSuggestedDonationAmountConfirmationMessage,
+          l10n.deleteSuggestedDonationAmountConfirmationMessage,
         dialogContainerSelector: "#wpfs-dialog-container",
         confirmButtonSelector: ".js-delete-suggested-donation-amount-dialog",
       };
@@ -3779,7 +3562,7 @@ jQuery.noConflict();
         bindingResult.addFieldError(
           FORM_FIELD_SUGGESTED_DONATION_AMOUNT,
           fieldId,
-          wpfsAdminL10n.suggestedDonationAmountRequiredMessage
+          l10n.suggestedDonationAmountRequiredMessage
         );
       } else if (!currencyFormatter.validForParse(amountStr)) {
         var fieldId = generateFormElementId(
@@ -3789,7 +3572,7 @@ jQuery.noConflict();
         bindingResult.addFieldError(
           FORM_FIELD_SUGGESTED_DONATION_AMOUNT,
           fieldId,
-          wpfsAdminL10n.suggestedDonationAmountInvalidMessage
+          l10n.suggestedDonationAmountInvalidMessage
         );
       } else if (!validZeroDecimalAmountString(amountStr)) {
         var fieldId = generateFormElementId(
@@ -3799,7 +3582,7 @@ jQuery.noConflict();
         bindingResult.addFieldError(
           FORM_FIELD_SUGGESTED_DONATION_AMOUNT,
           fieldId,
-          wpfsAdminL10n.suggestedDonationAmountNotWholeNumberMessage
+          l10n.suggestedDonationAmountNotWholeNumberMessage
         );
       }
     }
@@ -3821,7 +3604,7 @@ jQuery.noConflict();
       var addAmountOptions = {
         dialogId: "wpfs-add-suggested-donation-amount-dialog",
         dialogClass: "wpfs-dialog-content",
-        dialogTitle: wpfsAdminL10n.addSuggestedDonationAmountTitle,
+        dialogTitle: l10n.addSuggestedDonationAmountTitle,
         normalTemplateSelector: "#wpfs-modal-add-suggested-donation-amount",
         clickSelector: ".js-add-suggested-donation-amount",
         dialogContainerSelector: "#wpfs-dialog-container",
@@ -3852,29 +3635,9 @@ jQuery.noConflict();
       return amounts;
     }
 
-    function extractMininumDonationAmount($form) {
-      var $currency = $('select[name="wpfs-form-currency"] option:selected');
-      var amountStr = $(
-        'input[name="' + FORM_FIELD_MINIMUM_DONATION_AMOUNT + '"]'
-      ).val();
-
-      return extractAmountWithCurrencyNode(amountStr, $currency);
-    }
-
-    function extractDonationGoalAmount($form) {
-      var $currency = $('select[name="wpfs-form-currency"] option:selected');
-      var amountStr = $(
-        'input[name="' + FORM_FIELD_DONATION_GOAL + '"]'
-      ).val();
-
-      return extractAmountWithCurrencyNode(amountStr, $currency);
-    }
-
-    function extractMininumPaymentAmount($form) {
-      var $currency = $('select[name="wpfs-form-currency"] option:selected');
-      var amountStr = $(
-        'input[name="' + FORM_FIELD_MINIMUM_PAYMENT_AMOUNT + '"]'
-      ).val();
+    function extractAmountFromField(fieldName) {
+      const $currency = $('select[name="wpfs-form-currency"] option:selected');
+      const amountStr = $('input[name="' + fieldName + '"]').val();
 
       return extractAmountWithCurrencyNode(amountStr, $currency);
     }
@@ -3903,15 +3666,67 @@ jQuery.noConflict();
     }
 
     function initEditMinimumDonationAmount() {
-      initEditFormMinimumDonationAmountTemplate();
-      initEditFormRenderMinimumDonationAmount();
-      initEditFormMinimumDonationAmountEvents();
+      initAmountField({
+        name: FORM_FIELD_MINIMUM_DONATION_AMOUNT,
+        global: "MinimumDonationAmount",
+        attribute: "minimumDonationAmount",
+        template: "#wpfs-fragment-minimum-donation-amount-template",
+        container: "#wpfs-minimum-donation-amount-container",
+        amount: wpfsMinimumDonationAmount,
+      });
+
+      function updateMinimumDonationAmount() {
+        if (
+          $('input[name="wpfs-form-allow-custom-donation-amount"]').is(
+            ":checked"
+          )
+        ) {
+          $("#wpfs-minimum-donation-amount").show();
+        } else {
+          $("#wpfs-minimum-donation-amount").hide();
+        }
+      }
+
+      $('input[name="wpfs-form-allow-custom-donation-amount"]').on(
+        "click",
+        function (e) {
+          updateMinimumDonationAmount();
+        }
+      );
+
+      updateMinimumDonationAmount();
     }
 
     function initEditDonationGoalAmount() {
-      initEditFormDonationGoalAmountTemplate();
-      initEditFormRenderDonationGoalAmount();
-      initEditFormDonationGoalAmountEvents();
+      initAmountField({
+        name: FORM_FIELD_DONATION_GOAL,
+        global: "DonationGoalAmount",
+        attribute: "donationGoal",
+        template: "#wpfs-fragment-donation-goal-amount-template",
+        container: "#wpfs-donation-goal-amount-container",
+        amount: window.wpfsDonationGoalAmount,
+      });
+
+      function updateDonationGoalAmount() {
+        if (
+          $('input[name="wpfs-form-show-donation-goal"]').is(
+            ":checked"
+          )
+        ) {
+          $("#wpfs-donation-goal").show();
+        } else {
+          $("#wpfs-donation-goal").hide();
+        }
+      }
+
+      $('input[name="wpfs-form-show-donation-goal"]').on(
+        "click",
+        function (e) {
+          updateDonationGoalAmount();
+        }
+      );
+
+      updateDonationGoalAmount();
     }
 
     function initEditDonationFormAmounts() {
@@ -3935,59 +3750,13 @@ jQuery.noConflict();
       );
     }
 
-    function initEventHandlersOnInlineSaveCardFormEdit() {
-      initEditFormTabs();
-      initEditFormTransactionDescription();
-      initEditFormBillingShippingAddress();
-      initEditFormTermsOfService();
-      initEditFormCustomFields();
-      initEditFormEmailTemplates();
-      initFormCssIdCopyToClipboard();
-      initEventHandlersOnFormsAppearance();
-      initSavedElements();
-      initFormUnsavedChangesDetection();
-      new WebhookFormManager( WPFS );
-
-      $("#wpfs-save-inline-save-card-form").submit(function (e) {
-        e.preventDefault();
-
-        var $form = $(this);
-        transformCustomFields($form);
-        transformEmailTemplates($form);
-        transformCustomCss();
-        WPFS.makeAjaxCallWithForm($form);
-      });
-    }
-
-    function initEventHandlersOnCheckoutSaveCardFormEdit() {
-      initEditFormTabs();
-      initEditFormTransactionDescription();
-      initEditFormBillingShippingAddress();
-      initEditFormTermsOfService();
-      initEditFormCustomFields();
-      initEditFormEmailTemplates();
-      initFormCssIdCopyToClipboard();
-      initSavedElements();
-      initFormUnsavedChangesDetection();
-      new WebhookFormManager( WPFS );
-
-      $("#wpfs-save-checkout-save-card-form").submit(function (e) {
-        e.preventDefault();
-
-        var $form = $(this);
-        transformCustomFields($form);
-        transformEmailTemplates($form);
-        WPFS.makeAjaxCallWithForm($form);
-      });
-    }
-
     function initFormCssIdCopyToClipboard() {
       $(".js-copy-form-css-id").on("click", function (e) {
         e.preventDefault();
 
         var formCssId = $(".js-copy-form-css-id").data("form-css-id");
         WPFS.copyToClipboard(formCssId);
-        WPFS.displaySuccessMessageBanner(wpfsAdminL10n.formCssIdCopiedMessage);
+        WPFS.displaySuccessMessageBanner(l10n.formCssIdCopiedMessage);
       });
     }
 
@@ -4008,57 +3777,63 @@ jQuery.noConflict();
       toggleLocalFields();
     };
 
-    function onInlineSaveCardFormEdit() {
-      return (
-        $("div.wpfs-page-edit-inline-save-card-form") &&
-        $("div.wpfs-page-edit-inline-save-card-form").length > 0
-      );
-    }
-
-    function initInlineSaveCardFormEdit() {
-      if (onInlineSaveCardFormEdit()) {
-        initEventHandlersOnInlineSaveCardFormEdit();
-        initPreviewDialog();
-      }
-    }
-
-    function onCheckoutSaveCardFormEdit() {
-      return (
-        $("div.wpfs-page-edit-checkout-save-card-form") &&
-        $("div.wpfs-page-edit-checkout-save-card-form").length > 0
-      );
-    }
-
-    function initCheckoutSaveCardFormEdit() {
-      if (onCheckoutSaveCardFormEdit()) {
-        initEventHandlersOnCheckoutSaveCardFormEdit();
-        initPreviewDialog();
-      }
-    }
-
-    function initEditFormMinimumDonationAmountTemplate() {
-      WPFS.MinimumDonationAmountView = Backbone.View.extend({
+    /**
+     * Renders an amount input with the form's currency symbol, and renders it again when the
+     * currency changes, keeping the amount entered so far.
+     *
+     * @param {Object} field
+     * @param {string} field.name      The input's name.
+     * @param {string} field.global    Names the field's WPFS globals, e.g. "MinimumDonationAmount".
+     * @param {string} field.attribute The template's amount variable.
+     * @param {string} field.template  The selector of the input's underscore template.
+     * @param {string} field.container The selector of the element the input is rendered into.
+     * @param {number|string} field.amount The saved amount, in the currency's smallest unit.
+     */
+    function initAmountField(field) {
+      const View = Backbone.View.extend({
         className: "wpfs-input-group wpfs-input-group--sm",
-        template: _.template(
-          $("#wpfs-fragment-minimum-donation-amount-template").html()
-        ),
-        render: function () {
+        template: _.template($(field.template).html()),
+        render() {
           this.$el.html(this.template(this.model.attributes));
           return this;
         },
       });
-      WPFS.MinimumDonationAmountModel = Backbone.Model.extend({});
+      const Model = Backbone.Model.extend({});
+      const model = new Model({});
+      const view = new View({ model });
+      const instanceName =
+        field.global.charAt(0).toLowerCase() + field.global.slice(1);
 
-      WPFS.minimumDonationAmountModel = new WPFS.MinimumDonationAmountModel({});
-      WPFS.minimumDonationAmountView = new WPFS.MinimumDonationAmountView({
-        model: WPFS.minimumDonationAmountModel,
-      });
-    }
+      WPFS[field.global + "View"] = View;
+      WPFS[field.global + "Model"] = Model;
+      WPFS[instanceName + "Model"] = model;
+      WPFS[instanceName + "View"] = view;
 
-    function renderMinimumDonationAmount() {
-      $("#wpfs-minimum-donation-amount-container").append(
-        WPFS.minimumDonationAmountView.render().el
+      function render() {
+        $(field.container).append(view.render().el);
+      }
+
+      const currencyKey = getSelectedCurrencyCode();
+      model.set("currencySymbol", getCurrencySymbolByAdminSettings(currencyKey));
+      model.set(
+        field.attribute,
+        formatAmountWithAdminSettings(field.amount, currencyKey)
       );
+      render();
+
+      // Bound on the container: a currency change renders a new input.
+      $(field.container).on("blur", 'input[name="' + field.name + '"]', function () {
+        model.set(field.attribute, $(this).val());
+      });
+
+      $('select[name="wpfs-form-currency"]').on("comboboxchange", function () {
+        model.set(
+          "currencySymbol",
+          getCurrencySymbolByAdminSettings(getSelectedCurrencyCode())
+        );
+
+        render();
+      });
     }
 
     function getSelectedCurrencyCode() {
@@ -4066,147 +3841,6 @@ jQuery.noConflict();
         'select[name="wpfs-form-currency"] option:selected'
       );
       return $currencyNode.data("currency-code").toLowerCase();
-    }
-
-    function initEditFormRenderMinimumDonationAmount() {
-      var currencyKey = getSelectedCurrencyCode();
-
-      WPFS.minimumDonationAmountModel.set(
-        "currencySymbol",
-        getCurrencySymbolByAdminSettings(currencyKey)
-      );
-      WPFS.minimumDonationAmountModel.set(
-        "minimumDonationAmount",
-        formatAmountWithAdminSettings(wpfsMinimumDonationAmount, currencyKey)
-      );
-
-      renderMinimumDonationAmount();
-    }
-
-    function initEditFormMinimumDonationAmountEvents() {
-      function updateMinimumDonationAmount() {
-        if (
-          $('input[name="wpfs-form-allow-custom-donation-amount"]').is(
-            ":checked"
-          )
-        ) {
-          $("#wpfs-minimum-donation-amount").show();
-        } else {
-          $("#wpfs-minimum-donation-amount").hide();
-        }
-      }
-
-      $('input[name="wpfs-form-minimum-donation-amount"]').on(
-        "blur",
-        function () {
-          WPFS.minimumDonationAmountModel.set(
-            "minimumDonationAmount",
-            $('input[name="wpfs-form-minimum-donation-amount"]').val()
-          );
-        }
-      );
-
-      $('select[name="wpfs-form-currency"]').on("comboboxchange", function () {
-        var currencyKey = getSelectedCurrencyCode();
-        WPFS.minimumDonationAmountModel.set(
-          "currencySymbol",
-          getCurrencySymbolByAdminSettings(currencyKey)
-        );
-
-        renderMinimumDonationAmount();
-      });
-
-      $('input[name="wpfs-form-allow-custom-donation-amount"]').on(
-        "click",
-        function (e) {
-          updateMinimumDonationAmount();
-        }
-      );
-
-      updateMinimumDonationAmount();
-    }
-
-    function initEditFormDonationGoalAmountTemplate() {
-      WPFS.DonationGoalAmountView = Backbone.View.extend({
-        className: "wpfs-input-group wpfs-input-group--sm",
-        template: _.template(
-          $("#wpfs-fragment-donation-goal-amount-template").html()
-        ),
-        render: function () {
-          this.$el.html(this.template(this.model.attributes));
-          return this;
-        },
-      });
-      WPFS.DonationGoalAmountModel = Backbone.Model.extend({});
-
-      WPFS.donationGoalAmountModel = new WPFS.DonationGoalAmountModel({});
-      WPFS.donationGoalAmountView = new WPFS.DonationGoalAmountView({
-        model: WPFS.donationGoalAmountModel,
-      });
-    }
-
-    function renderDonationGoalAmount() {
-      $("#wpfs-donation-goal-amount-container").append(
-        WPFS.donationGoalAmountView.render().el
-      );
-    }
-
-    function initEditFormRenderDonationGoalAmount() {
-      var currencyKey = getSelectedCurrencyCode();
-
-      WPFS.donationGoalAmountModel.set(
-        "currencySymbol",
-        getCurrencySymbolByAdminSettings(currencyKey)
-      );
-      WPFS.donationGoalAmountModel.set(
-        "donationGoal",
-        formatAmountWithAdminSettings(window.wpfsDonationGoalAmount, currencyKey)
-      );
-
-      renderDonationGoalAmount();
-    }
-
-    function initEditFormDonationGoalAmountEvents() {
-      function updateDonationGoalAmount() {
-        if (
-          $('input[name="wpfs-form-show-donation-goal"]').is(
-            ":checked"
-          )
-        ) {
-          $("#wpfs-donation-goal").show();
-        } else {
-          $("#wpfs-donation-goal").hide();
-        }
-      }
-
-      $('input[name="wpfs-form-donation-goal"]').on(
-        "blur",
-        function () {
-          WPFS.donationGoalAmountModel.set(
-            "donationGoal",
-            $('input[name="wpfs-form-donation-goal"]').val()
-          );
-        }
-      );
-
-      $('select[name="wpfs-form-currency"]').on("comboboxchange", function () {
-        var currencyKey = getSelectedCurrencyCode();
-        WPFS.donationGoalAmountModel.set(
-          "currencySymbol",
-          getCurrencySymbolByAdminSettings(currencyKey)
-        );
-
-        renderDonationGoalAmount();
-      });
-
-      $('input[name="wpfs-form-show-donation-goal"]').on(
-        "click",
-        function (e) {
-          updateDonationGoalAmount();
-        }
-      );
-
-      updateDonationGoalAmount();
     }
 
     function initEditFormSuggestedDonationAmountTemplates() {
@@ -4303,7 +3937,7 @@ jQuery.noConflict();
     }
 
     function transformMinimumDonationAmount($form) {
-      var minimumDonationAmount = extractMininumDonationAmount($form);
+      var minimumDonationAmount = extractAmountFromField(FORM_FIELD_MINIMUM_DONATION_AMOUNT);
 
       $form
         .find('input[name="wpfs-form-minimum-donation-amount-hidden"]')
@@ -4311,7 +3945,7 @@ jQuery.noConflict();
     }
 
     function transformDonationGoalAmount($form) {
-      var donationGoalAmount = extractDonationGoalAmount($form);
+      var donationGoalAmount = extractAmountFromField(FORM_FIELD_DONATION_GOAL);
 
       $form
         .find('input[name="wpfs-form-donation-goal-hidden"]')
@@ -4319,7 +3953,7 @@ jQuery.noConflict();
     }
 
     function transformMinimumPaymentAmount($form) {
-      var minimumPaymentAmount = extractMininumPaymentAmount($form);
+      var minimumPaymentAmount = extractAmountFromField(FORM_FIELD_MINIMUM_PAYMENT_AMOUNT);
 
       $form
         .find('input[name="wpfs-form-minimum-payment-amount-hidden"]')
@@ -4348,100 +3982,40 @@ jQuery.noConflict();
         radio.addEventListener('change', toggleRecoveryFeeSettings);
       });
 
+      // The fixed fee is charged in the form's currency, or in each plan's on subscription forms.
+      const showFixedFeeCurrency = () => {
+        let currencyKeys = [];
+        if ($('select[name="wpfs-form-currency"]').length > 0) {
+          currencyKeys = [getSelectedCurrencyCode()];
+        } else if (WPFS.recurringProducts) {
+          currencyKeys = [
+            ...new Set(
+              WPFS.recurringProducts
+                .pluck("currency")
+                .map((currency) => currency.toLowerCase())
+            ),
+          ];
+        }
 
-      $('select[name="wpfs-form-currency"]').on("comboboxchange", function () {
-        const currencyKey = getSelectedCurrencyCode();
-        const currencyPlaceholder = document.querySelector( '.wpfs-input-group-wpfs-form-fee-recovery-fee-additional-amount .wpfs-input-group-text' );
-        const currencySymbol = getCurrencySymbolByAdminSettings(currencyKey);
-        currencyPlaceholder.textContent = currencySymbol;
-      });
-    }
+        const $currencyPlaceholder = $(
+          ".wpfs-input-group-wpfs-form-fee-recovery-fee-additional-amount .wpfs-input-group-append"
+        );
+        if (1 === currencyKeys.length) {
+          $currencyPlaceholder
+            .find(".wpfs-input-group-text")
+            .text(getCurrencySymbolByAdminSettings(currencyKeys[0]));
+          $currencyPlaceholder.show();
+        } else {
+          $currencyPlaceholder.hide();
+        }
+        $(".js-fee-recovery-each-plan-currency").toggle(currencyKeys.length > 1);
+      };
 
-    function initEventHandlersOnInlineDonationFormEdit() {
-      initEditFormTabs();
-      initEditDonationFormAmounts();
-      initEditDonationGoalAmount();
-      initEditFormTransactionDescription();
-      initEditFormBillingShippingAddress();
-      initEditFormTermsOfService();
-      initEditFormCustomFields();
-      initEditFormEmailTemplates();
-      initFormCssIdCopyToClipboard();
-      initFeeRecovery();
-      initGlobalLocalEffect();
-      initEventHandlersOnFormsAppearance();
-      initSavedElements();
-      initFormUnsavedChangesDetection();
-      new WebhookFormManager( WPFS );
+      showFixedFeeCurrency();
 
-      $("#wpfs-save-inline-donation-form").submit(function (e) {
-        e.preventDefault();
-
-        var $form = $(this);
-        transformCustomFields($form);
-        transformEmailTemplates($form);
-        transformDonationAmounts($form);
-        transformDonationGoalAmount($form);
-        transformMinimumDonationAmount($form);
-        transformCustomCss();
-        WPFS.makeAjaxCallWithForm($form);
-      });
-    }
-
-    function onInlineDonationFormEdit() {
-      return (
-        $("div.wpfs-page-edit-inline-donation-form") &&
-        $("div.wpfs-page-edit-inline-donation-form").length > 0
-      );
-    }
-
-    function initInlineDonationFormEdit() {
-      if (onInlineDonationFormEdit()) {
-        initEventHandlersOnInlineDonationFormEdit();
-        initPreviewDialog();
-      }
-    }
-
-    function initEventHandlersOnCheckoutDonationFormEdit() {
-      initEditFormTabs();
-      initEditDonationFormAmounts();
-      initEditDonationGoalAmount();
-      initEditFormTransactionDescription();
-      initEditFormBillingShippingAddress();
-      initEditFormTermsOfService();
-      initEditFormCustomFields();
-      initEditFormEmailTemplates();
-      initFormCssIdCopyToClipboard();
-      initFeeRecovery();
-      initGlobalLocalEffect();
-      initSavedElements();
-      initFormUnsavedChangesDetection();
-      new WebhookFormManager( WPFS );
-
-      $("#wpfs-save-checkout-donation-form").submit(function (e) {
-        e.preventDefault();
-
-        var $form = $(this);
-        transformCustomFields($form);
-        transformEmailTemplates($form);
-        transformDonationAmounts($form);
-        transformDonationGoalAmount($form);
-        transformMinimumDonationAmount($form);
-        WPFS.makeAjaxCallWithForm($form);
-      });
-    }
-
-    function onCheckoutDonationFormEdit() {
-      return (
-        $("div.wpfs-page-edit-checkout-donation-form") &&
-        $("div.wpfs-page-edit-checkout-donation-form").length > 0
-      );
-    }
-
-    function initCheckoutDonationFormEdit() {
-      if (onCheckoutDonationFormEdit()) {
-        initEventHandlersOnCheckoutDonationFormEdit();
-        initPreviewDialog();
+      $('select[name="wpfs-form-currency"]').on("comboboxchange", showFixedFeeCurrency);
+      if (WPFS.recurringProducts) {
+        WPFS.recurringProducts.on("add remove reset", showFixedFeeCurrency);
       }
     }
 
@@ -4537,51 +4111,42 @@ jQuery.noConflict();
       );
     }
 
-    function getRecurringPriceAndIntervalFormatterLabel(
-      interval,
-      intervalCount
-    ) {
-      var formatLabel = "";
-
-      switch (interval) {
-        case "day": {
-          formatLabel =
-            intervalCount === 1
-              ? wpfsAdminL10n.recurringPriceWithSingularDayFormatter
-              : wpfsAdminL10n.recurringPriceWithPluralDayFormatter;
-
-          break;
-        }
-
-        case "week": {
-          formatLabel =
-            intervalCount === 1
-              ? wpfsAdminL10n.recurringPriceWithSingularWeekFormatter
-              : wpfsAdminL10n.recurringPriceWithPluralWeekFormatter;
-
-          break;
-        }
-
-        case "month": {
-          formatLabel =
-            intervalCount === 1
-              ? wpfsAdminL10n.recurringPriceWithSingularMonthFormatter
-              : wpfsAdminL10n.recurringPriceWithPluralMonthFormatter;
-
-          break;
-        }
-
-        case "year": {
-          formatLabel =
-            intervalCount === 1
-              ? wpfsAdminL10n.recurringPriceWithSingularYearFormatter
-              : wpfsAdminL10n.recurringPriceWithPluralYearFormatter;
-
-          break;
-        }
+    /**
+     * The unit shown after the trial period input of the plan dialogs.
+     *
+     * @param {number|string} trialDays The input's value; not a number counts as 0.
+     * @return {string}
+     */
+    function getTrialDaysUnit(trialDays) {
+      // Number(), not parseInt(): "1abc" and "1.5" must not count as one.
+      var count = Number(trialDays);
+      if (!Number.isFinite(count)) {
+        count = 0;
       }
+      /* translators: Unit after the trial period input of a subscription plan, as in "7 days". */
+      return _n("day", "days", count, "wp-full-stripe-free");
+    }
 
-      return formatLabel;
+    $(document).on(
+      "input",
+      'input[name="wpfs-plan-trial-period-days"]',
+      function () {
+        $(this)
+          .siblings(".js-plan-trial-period-days-unit")
+          .text(getTrialDaysUnit(this.value));
+      }
+    );
+
+    /**
+     * @param {string} planName
+     * @return {string} HTML; the name is not escaped, as before.
+     */
+    function getAdditionalPlanPropertiesLabel(planName) {
+      return sprintf(
+        /* translators: Title of the 'Add subscription plan properties' dialog box. %s: Name of the subscription plan. */
+        __("Set additional properties for <b>%s</b>", "wp-full-stripe-free"),
+        planName
+      );
     }
 
     function formatRecurringPriceAndIntervalLabel(
@@ -4596,16 +4161,80 @@ jQuery.noConflict();
         currencyKey,
         amount
       );
-      var formatStr = getRecurringPriceAndIntervalFormatterLabel(
-        interval,
-        intervalCount
-      );
       var resultLabel = "";
 
-      if (intervalCount === 1) {
-        resultLabel = sprintf(formatStr, formattedAmount);
-      } else {
-        resultLabel = sprintf(formatStr, formattedAmount, intervalCount);
+      switch (interval) {
+        case "day": {
+          resultLabel =
+            intervalCount === 1
+              ? sprintf(
+                  /* translators: Daily recurring price label. %1$s: Price. */
+                  __("%1$s / day", "wp-full-stripe-free"),
+                  formattedAmount
+                )
+              : sprintf(
+                  /* translators: Recurring price label for prices charged every x days. %1$s: Price, %2$d: Frequency in days. */
+                  _n("%1$s / %2$d day", "%1$s / %2$d days", intervalCount, "wp-full-stripe-free"),
+                  formattedAmount,
+                  intervalCount
+                );
+
+          break;
+        }
+
+        case "week": {
+          resultLabel =
+            intervalCount === 1
+              ? sprintf(
+                  /* translators: Weekly recurring price label. %1$s: Price. */
+                  __("%1$s / week", "wp-full-stripe-free"),
+                  formattedAmount
+                )
+              : sprintf(
+                  /* translators: Recurring price label for prices charged every x weeks. %1$s: Price, %2$d: Frequency in weeks. */
+                  _n("%1$s / %2$d week", "%1$s / %2$d weeks", intervalCount, "wp-full-stripe-free"),
+                  formattedAmount,
+                  intervalCount
+                );
+
+          break;
+        }
+
+        case "month": {
+          resultLabel =
+            intervalCount === 1
+              ? sprintf(
+                  /* translators: Monthly recurring price label. %1$s: Price. */
+                  __("%1$s / month", "wp-full-stripe-free"),
+                  formattedAmount
+                )
+              : sprintf(
+                  /* translators: Recurring price label for prices charged every x months. %1$s: Price, %2$d: Frequency in months. */
+                  _n("%1$s / %2$d month", "%1$s / %2$d months", intervalCount, "wp-full-stripe-free"),
+                  formattedAmount,
+                  intervalCount
+                );
+
+          break;
+        }
+
+        case "year": {
+          resultLabel =
+            intervalCount === 1
+              ? sprintf(
+                  /* translators: Annual recurring price label. %1$s: Price. */
+                  __("%1$s / year", "wp-full-stripe-free"),
+                  formattedAmount
+                )
+              : sprintf(
+                  /* translators: Recurring price label for prices charged every x years. %1$s: Price, %2$d: Frequency in years. */
+                  _n("%1$s / %2$d year", "%1$s / %2$d years", intervalCount, "wp-full-stripe-free"),
+                  formattedAmount,
+                  intervalCount
+                );
+
+          break;
+        }
       }
 
       return resultLabel;
@@ -5062,9 +4691,9 @@ jQuery.noConflict();
       }
 
       if (taxRate.inclusive) {
-        percentageFormatterString = wpfsAdminL10n.taxRateInclusiveDescription;
+        percentageFormatterString = l10n.taxRateInclusiveDescription;
       } else {
-        percentageFormatterString = wpfsAdminL10n.taxRateExclusiveDescription;
+        percentageFormatterString = l10n.taxRateExclusiveDescription;
       }
 
       return sprintf(
@@ -5221,47 +4850,16 @@ jQuery.noConflict();
       );
     }
 
-    function initEditFormMinimumPaymentAmountTemplate() {
-      WPFS.MinimumPaymentAmountView = Backbone.View.extend({
-        className: "wpfs-input-group wpfs-input-group--sm",
-        template: _.template(
-          $("#wpfs-fragment-minimum-payment-amount-template").html()
-        ),
-        render: function () {
-          this.$el.html(this.template(this.model.attributes));
-          return this;
-        },
+    function initEditFormMinimumPaymentAmount() {
+      initAmountField({
+        name: FORM_FIELD_MINIMUM_PAYMENT_AMOUNT,
+        global: "MinimumPaymentAmount",
+        attribute: "minimumPaymentAmount",
+        template: "#wpfs-fragment-minimum-payment-amount-template",
+        container: "#wpfs-minimum-payment-amount-container",
+        amount: wpfsMinimumPaymentAmount,
       });
-      WPFS.MinimumPaymentAmountModel = Backbone.Model.extend({});
 
-      WPFS.minimumPaymentAmountModel = new WPFS.MinimumPaymentAmountModel({});
-      WPFS.minimumPaymentAmountView = new WPFS.MinimumPaymentAmountView({
-        model: WPFS.minimumPaymentAmountModel,
-      });
-    }
-
-    function renderMinimumPaymentAmount() {
-      $("#wpfs-minimum-payment-amount-container").append(
-        WPFS.minimumPaymentAmountView.render().el
-      );
-    }
-
-    function initEditFormRenderMinimumPaymentAmount() {
-      var currencyKey = getSelectedCurrencyCode();
-
-      WPFS.minimumPaymentAmountModel.set(
-        "currencySymbol",
-        getCurrencySymbolByAdminSettings(currencyKey)
-      );
-      WPFS.minimumPaymentAmountModel.set(
-        "minimumPaymentAmount",
-        formatAmountWithAdminSettings(wpfsMinimumPaymentAmount, currencyKey)
-      );
-
-      renderMinimumPaymentAmount();
-    }
-
-    function initEditFormMinimumPaymentAmountEvents() {
       function updateMinimumPaymentAmount() {
         if (
           $('input[name="wpfs-form-payment-type"]:checked').val() ===
@@ -5277,26 +4875,6 @@ jQuery.noConflict();
         }
       }
 
-      $('input[name="wpfs-form-minimum-payment-amount"]').on(
-        "blur",
-        function () {
-          WPFS.minimumPaymentAmountModel.set(
-            "minimumPaymentAmount",
-            $('input[name="wpfs-form-minimum-payment-amount"]').val()
-          );
-        }
-      );
-
-      $('select[name="wpfs-form-currency"]').on("comboboxchange", function () {
-        var currencyKey = getSelectedCurrencyCode();
-        WPFS.minimumPaymentAmountModel.set(
-          "currencySymbol",
-          getCurrencySymbolByAdminSettings(currencyKey)
-        );
-
-        renderMinimumPaymentAmount();
-      });
-
       $('input[name="wpfs-form-payment-type"]').on("click", function (e) {
         updateMinimumPaymentAmount();
       });
@@ -5310,111 +4888,11 @@ jQuery.noConflict();
       updateMinimumPaymentAmount();
     }
 
-    function initEditFormMinimumPaymentAmount() {
-      initEditFormMinimumPaymentAmountTemplate();
-      initEditFormRenderMinimumPaymentAmount();
-      initEditFormMinimumPaymentAmountEvents();
-    }
-
     function initEditFormTaxRates() {
       initTaxRateTemplates();
       initTaxRateData();
       initAddTaxRate();
       initTaxRateEventHandlers();
-    }
-
-    function initEventHandlersOnInlinePaymentFormEdit() {
-      initEditFormTabs();
-      initEditFormTransactionDescription();
-      initEditFormPaymentTypes();
-      initEditFormOneTimeProducts();
-      initEditFormMinimumPaymentAmount();
-      initEditFormTaxRates();
-      initEditFormBillingShippingAddress();
-      initEditFormTermsOfService();
-      initEditFormCustomFields();
-      initEditFormEmailTemplates();
-      initFormCssIdCopyToClipboard();
-      initFeeRecovery();
-      initGlobalLocalEffect();
-      initProductSelectorStyle();
-      initEventHandlersOnFormsAppearance();
-      initSavedElements();
-      initFormUnsavedChangesDetection();
-      new WebhookFormManager( WPFS );
-
-      $("#wpfs-save-inline-payment-form").submit(function (e) {
-        e.preventDefault();
-
-        var $form = $(this);
-        transformOnetimeProducts($form);
-        transformMinimumPaymentAmount($form);
-        transformTaxRates($form);
-        transformCustomFields($form);
-        transformEmailTemplates($form);
-        transformCustomCss();
-        WPFS.makeAjaxCallWithForm($form);
-      });
-    }
-
-    function onInlinePaymentFormEdit() {
-      return (
-        $("div.wpfs-page-edit-inline-payment-form") &&
-        $("div.wpfs-page-edit-inline-payment-form").length > 0
-      );
-    }
-
-    function initInlinePaymentFormEdit() {
-      if (onInlinePaymentFormEdit()) {
-        initEventHandlersOnInlinePaymentFormEdit();
-        initPreviewDialog();
-      }
-    }
-
-    function initEventHandlersOnCheckoutPaymentFormEdit() {
-      initEditFormTabs();
-      initEditFormTransactionDescription();
-      initEditFormPaymentTypes();
-      initEditFormOneTimeProducts();
-      initEditFormMinimumPaymentAmount();
-      initEditFormTaxRates();
-      initEditFormBillingShippingAddress();
-      initEditFormTermsOfService();
-      initEditFormCustomFields();
-      initEditFormEmailTemplates();
-      initFormCssIdCopyToClipboard();
-      initFeeRecovery();
-      initGlobalLocalEffect();
-      initProductSelectorStyle();
-      initSavedElements();
-      initFormUnsavedChangesDetection();
-      new WebhookFormManager( WPFS );
-
-      $("#wpfs-save-checkout-payment-form").submit(function (e) {
-        e.preventDefault();
-
-        var $form = $(this);
-        transformOnetimeProducts($form);
-        transformMinimumPaymentAmount($form);
-        transformTaxRates($form);
-        transformCustomFields($form);
-        transformEmailTemplates($form);
-        WPFS.makeAjaxCallWithForm($form);
-      });
-    }
-
-    function onCheckoutPaymentFormEdit() {
-      return (
-        $("div.wpfs-page-edit-checkout-payment-form") &&
-        $("div.wpfs-page-edit-checkout-payment-form").length > 0
-      );
-    }
-
-    function initCheckoutPaymentFormEdit() {
-      if (onCheckoutPaymentFormEdit()) {
-        initEventHandlersOnCheckoutPaymentFormEdit();
-        initPreviewDialog();
-      }
     }
 
     function initEditFormSubscriptionQuantity() {
@@ -5522,7 +5000,7 @@ jQuery.noConflict();
           product.setupFee
         );
         priceLabel = sprintf(
-          wpfsAdminL10n.planAndSetupFeeLabel,
+          l10n.planAndSetupFeeLabel,
           recurringPriceLabel,
           setupFeeLabel
         );
@@ -5539,7 +5017,16 @@ jQuery.noConflict();
       var firstSegment = true;
 
       if (product.trialDays > 0) {
-        result += sprintf(wpfsAdminL10n.trialDaysLabel, product.trialDays);
+        result += sprintf(
+          /* translators: Trial days label of a subscription plan. %s: Number of trial days. */
+          _n(
+            "%s-day trial",
+            "%s-day trial",
+            product.trialDays,
+            "wp-full-stripe-free"
+          ),
+          product.trialDays
+        );
         firstSegment = false;
       }
 
@@ -5547,10 +5034,16 @@ jQuery.noConflict();
         result += " • ";
       }
       if (product.cancellationCount === 0) {
-        result += wpfsAdminL10n.runningUntilCanceledLabel;
+        result += l10n.runningUntilCanceledLabel;
       } else {
         result += sprintf(
-          wpfsAdminL10n.canceledAfterXOccurrences,
+          /* translators: Label describing subscriptions which are canceled after x charges. %s: Number of recurring charges after which the subscription is canceled. */
+          _n(
+            "Canceled after %s occurrence",
+            "Canceled after %s occurrences",
+            product.cancellationCount,
+            "wp-full-stripe-free"
+          ),
           product.cancellationCount
         );
       }
@@ -5624,16 +5117,16 @@ jQuery.noConflict();
       }
 
       if (pricingMode === PRICE_MODE_STANDARD) {
-        description = wpfsAdminL10n.standardPricingLabel;
+        description = l10n.standardPricingLabel;
       } else if (pricingMode === PRICE_MODE_VOLUME) {
-        description = wpfsAdminL10n.volumePricingLabel;
+        description = l10n.volumePricingLabel;
       } else if (pricingMode === PRICE_MODE_GRADUATED) {
-        description = wpfsAdminL10n.graduatedPricingLabel;
+        description = l10n.graduatedPricingLabel;
       }
 
       var metered = product.usageType === PRICE_USAGE_TYPE_METERED;
       if (metered) {
-        description += " • " + wpfsAdminL10n.meteredBillingLabel;
+        description += " • " + l10n.meteredBillingLabel;
       }
 
       return description;
@@ -5680,14 +5173,12 @@ jQuery.noConflict();
           function getCurrencySymbol(currencyKey) {
             return getCurrencySymbolByAdminSettings(currencyKey);
           }
-          function tsprintf(format, ...arguments) {
-            return sprintf(format, arguments);
-          }
           this.$el.html(
             this.template(
               _.extend(this.model.attributes, {
                 getCurrencySymbol: getCurrencySymbol,
-                tsprintf: tsprintf,
+                additionalPropertiesLabel: getAdditionalPlanPropertiesLabel,
+                trialDaysUnit: getTrialDaysUnit,
               })
             )
           );
@@ -5782,13 +5273,13 @@ jQuery.noConflict();
         bindingResult.addFieldError(
           FORM_FIELD_PLAN_SETUP_FEE,
           fieldId,
-          wpfsAdminL10n.requiredFieldMessage
+          l10n.requiredFieldMessage
         );
       } else if (!currencyFormatter.validForParse(setupFeeStr)) {
         bindingResult.addFieldError(
           FORM_FIELD_PLAN_SETUP_FEE,
           fieldId,
-          wpfsAdminL10n.invalidAmountMessage
+          l10n.invalidAmountMessage
         );
       } else if (
         !validZeroDecimalAmountStringWithCurrency(setupFeeStr, currency)
@@ -5796,7 +5287,7 @@ jQuery.noConflict();
         bindingResult.addFieldError(
           FORM_FIELD_PLAN_SETUP_FEE,
           fieldId,
-          wpfsAdminL10n.enterWholeNumberMessage
+          l10n.enterWholeNumberMessage
         );
       }
 
@@ -5811,13 +5302,13 @@ jQuery.noConflict();
         bindingResult.addFieldError(
           FORM_FIELD_PLAN_TRIAL_PERIOD_DAYS,
           fieldId,
-          wpfsAdminL10n.requiredFieldMessage
+          l10n.requiredFieldMessage
         );
       } else if (!isNormalInteger(trialDaysStr)) {
         bindingResult.addFieldError(
           FORM_FIELD_PLAN_TRIAL_PERIOD_DAYS,
           fieldId,
-          wpfsAdminL10n.enterWholeNumberMessage
+          l10n.enterWholeNumberMessage
         );
       }
 
@@ -5839,13 +5330,13 @@ jQuery.noConflict();
           bindingResult.addFieldError(
             FORM_FIELD_SUBSCRIPTION_CANCELLATION_COUNT,
             fieldId,
-            wpfsAdminL10n.requiredFieldMessage
+            l10n.requiredFieldMessage
           );
         } else if (!isPositiveInteger(cancellationCountStr)) {
           bindingResult.addFieldError(
             FORM_FIELD_SUBSCRIPTION_CANCELLATION_COUNT,
             fieldId,
-            wpfsAdminL10n.enterPositiveNumberMessage
+            l10n.enterPositiveNumberMessage
           );
         }
       }
@@ -5866,19 +5357,19 @@ jQuery.noConflict();
           bindingResult.addFieldError(
             FORM_FIELD_BILLING_CYCLE_DAY,
             fieldId,
-            wpfsAdminL10n.requiredFieldMessage
+            l10n.requiredFieldMessage
           );
         } else if (!isPositiveInteger(billingCycleDayStr)) {
           bindingResult.addFieldError(
             FORM_FIELD_BILLING_CYCLE_DAY,
             fieldId,
-            wpfsAdminL10n.enterPositiveNumberMessage
+            l10n.enterPositiveNumberMessage
           );
         } else if (parseInt(billingCycleDayStr) > 28) {
           bindingResult.addFieldError(
             FORM_FIELD_BILLING_CYCLE_DAY,
             fieldId,
-            wpfsAdminL10n.billingAnchorDayIntervalMessage
+            l10n.billingAnchorDayIntervalMessage
           );
         }
       }
@@ -6150,9 +5641,6 @@ jQuery.noConflict();
           function getCurrencySymbol(currencyKey) {
             return getCurrencySymbolByAdminSettings(currencyKey);
           }
-          function tsprintf(format, ...arguments) {
-            return sprintf(format, arguments);
-          }
           function formatAmount(amount, currencyKey) {
             return formatAmountWithAdminSettings(amount, currencyKey);
           }
@@ -6160,7 +5648,8 @@ jQuery.noConflict();
             this.template(
               _.extend(this.model.attributes, {
                 getCurrencySymbol: getCurrencySymbol,
-                tsprintf: tsprintf,
+                additionalPropertiesLabel: getAdditionalPlanPropertiesLabel,
+                trialDaysUnit: getTrialDaysUnit,
                 formatAmount: formatAmount,
               })
             )
@@ -6236,7 +5725,7 @@ jQuery.noConflict();
       var editProductPropertiesOptions = {
         dialogId: "wpfs-edit-recurring-product-properties-dialog",
         dialogContainerSelector: "#wpfs-dialog-container",
-        dialogTitle: "Edit plan properties",
+        dialogTitle: l10n.editPlanPropertiesTitle,
         templateSelector: "#wpfs-edit-recurring-product-properties-template",
         clickSelector: ".js-edit-recurring-product-properties",
         getProductCallback: getRecurringProductByCid,
@@ -6309,7 +5798,6 @@ jQuery.noConflict();
       initProductSelectorDialog(addProductsOptions);
     }
 
-
     function prepareRecurringProductData( ctx ) {
       return {
         name: $(`#wpfs-create-product-label--${ctx.options.formType}-name`).val(),
@@ -6342,116 +5830,135 @@ jQuery.noConflict();
         .val(encodeURIComponent(JSON.stringify(products)));
     }
 
-    function initEventHandlersOnInlineSubscriptionFormEdit() {
-      initEditFormTabs();
-      initEditFormRecurringProducts(FORM_LAYOUT_INLINE);
-      initEditFormSubscriptionQuantity();
-      initEditFormTaxRates();
-      initEditFormBillingShippingAddress();
-      initEditFormTermsOfService();
-      initEditFormCustomFields();
-      initEditFormEmailTemplates();
-      initFormCssIdCopyToClipboard();
-      initFeeRecovery();
-      initGlobalLocalEffect();
-      initPlanSelectorStyle();
-      initEventHandlersOnFormsAppearance();
-      initSavedElements();
-      initFormUnsavedChangesDetection();
-      new WebhookFormManager( WPFS );
-
-      $("#wpfs-save-inline-subscription-form").submit(function (e) {
-        e.preventDefault();
-
-        var $form = $(this);
-        transformRecurringProducts($form);
-        transformTaxRates($form);
-        transformCustomFields($form);
-        transformEmailTemplates($form);
-        transformCustomCss();
-        WPFS.makeAjaxCallWithForm($form);
-      });
-    }
-
-    function onInlineSubscriptionFormEdit() {
-      return (
-        $("div.wpfs-page-edit-inline-subscription-form") &&
-        $("div.wpfs-page-edit-inline-subscription-form").length > 0
-      );
-    }
-
-    function initInlineSubscriptionFormEdit() {
-      if (onInlineSubscriptionFormEdit()) {
-        initEventHandlersOnInlineSubscriptionFormEdit();
+    function initEditFormList() {
+      if ( pageIs("div.wpfs-page-payment-forms") ) {
         initPreviewDialog();
       }
     }
 
-    function initEventHandlersOnCheckoutSubscriptionFormEdit() {
-      initEditFormTabs();
-      initEditFormRecurringProducts(FORM_LAYOUT_CHECKOUT);
-      initEditFormSubscriptionQuantity();
-      initEditFormTaxRates();
-      initEditFormBillingShippingAddress();
-      initEditFormTermsOfService();
-      initEditFormCustomFields();
-      initEditFormEmailTemplates();
-      initFormCssIdCopyToClipboard();
-      initFeeRecovery();
-      initGlobalLocalEffect();
-      initPlanSelectorStyle();
-      initSavedElements();
-      initFormUnsavedChangesDetection();
-      new WebhookFormManager( WPFS );
-
-      $("#wpfs-save-checkout-subscription-form").submit(function (e) {
-        e.preventDefault();
-
-        var $form = $(this);
-        transformRecurringProducts($form);
-        transformTaxRates($form);
-        transformCustomFields($form);
-        transformEmailTemplates($form);
-        WPFS.makeAjaxCallWithForm($form);
-      });
-    }
-
-    function onCheckoutSubscriptionFormEdit() {
-      return (
-        $("div.wpfs-page-edit-checkout-subscription-form") &&
-        $("div.wpfs-page-edit-checkout-subscription-form").length > 0
-      );
-    }
-
-    function initCheckoutSubscriptionFormEdit() {
-      if (onCheckoutSubscriptionFormEdit()) {
-        initEventHandlersOnCheckoutSubscriptionFormEdit();
-        initPreviewDialog();
-      }
-    }
-
-    function onEditFormList() {
-      return (
-        $("div.wpfs-page-payment-forms") &&
-        $("div.wpfs-page-payment-forms").length > 0
-      );
+    // What each form type's editor sets up, and transforms before saving, in this order.
+    const FORM_EDITORS = {
+      "save-card": {
+        init() {
+          initEditFormTransactionDescription();
+          initEditFormBillingShippingAddress();
+          initEditFormTermsOfService();
+          initEditFormCustomFields();
+          initEditFormEmailTemplates();
+          initFormCssIdCopyToClipboard();
+        },
+        transform($form) {
+          transformCustomFields($form);
+          transformEmailTemplates($form);
+        },
+      },
+      donation: {
+        init() {
+          initEditDonationFormAmounts();
+          initEditDonationGoalAmount();
+          initEditFormTransactionDescription();
+          initEditFormBillingShippingAddress();
+          initEditFormTermsOfService();
+          initEditFormCustomFields();
+          initEditFormEmailTemplates();
+          initFormCssIdCopyToClipboard();
+          initFeeRecovery();
+          initGlobalLocalEffect();
+        },
+        transform($form) {
+          transformCustomFields($form);
+          transformEmailTemplates($form);
+          transformDonationAmounts($form);
+          transformDonationGoalAmount($form);
+          transformMinimumDonationAmount($form);
+        },
+      },
+      payment: {
+        init() {
+          initEditFormTransactionDescription();
+          initEditFormPaymentTypes();
+          initEditFormOneTimeProducts();
+          initEditFormMinimumPaymentAmount();
+          initEditFormTaxRates();
+          initEditFormBillingShippingAddress();
+          initEditFormTermsOfService();
+          initEditFormCustomFields();
+          initEditFormEmailTemplates();
+          initFormCssIdCopyToClipboard();
+          initFeeRecovery();
+          initGlobalLocalEffect();
+          initProductSelectorStyle();
+        },
+        transform($form) {
+          transformOnetimeProducts($form);
+          transformMinimumPaymentAmount($form);
+          transformTaxRates($form);
+          transformCustomFields($form);
+          transformEmailTemplates($form);
+        },
+      },
+      subscription: {
+        init(layout) {
+          initEditFormRecurringProducts(layout);
+          initEditFormSubscriptionQuantity();
+          initEditFormTaxRates();
+          initEditFormBillingShippingAddress();
+          initEditFormTermsOfService();
+          initEditFormCustomFields();
+          initEditFormEmailTemplates();
+          initFormCssIdCopyToClipboard();
+          initFeeRecovery();
+          initGlobalLocalEffect();
+          initPlanSelectorStyle();
+        },
+        transform($form) {
+          transformRecurringProducts($form);
+          transformTaxRates($form);
+          transformCustomFields($form);
+          transformEmailTemplates($form);
+        },
+      },
     };
 
-    function initEditFormList() {
-      if ( onEditFormList() ) {
-        initPreviewDialog();
+    /**
+     * Sets up a form editor. Inline forms also have the appearance pane and custom CSS.
+     *
+     * @param {'inline'|'checkout'}                             layout FORM_LAYOUT_INLINE or FORM_LAYOUT_CHECKOUT.
+     * @param {'save-card'|'donation'|'payment'|'subscription'} type   A FORM_EDITORS key.
+     */
+    function initEventHandlersOnFormEdit(layout, type) {
+      const isInline = layout === FORM_LAYOUT_INLINE;
+
+      initEditFormTabs();
+      FORM_EDITORS[type].init(layout);
+      if (isInline) {
+        initEventHandlersOnFormsAppearance();
       }
+      initSavedElements();
+      initFormUnsavedChangesDetection();
+      new WebhookFormManager( WPFS );
+
+      $("#wpfs-save-" + layout + "-" + type + "-form").submit(function (e) {
+        e.preventDefault();
+
+        const $form = $(this);
+        FORM_EDITORS[type].transform($form);
+        if (isInline) {
+          transformCustomCss();
+        }
+        WPFS.makeAjaxCallWithForm($form);
+      });
     }
 
     WPFS.initFormEdit = function () {
-      initInlineSaveCardFormEdit();
-      initCheckoutSaveCardFormEdit();
-      initInlineDonationFormEdit();
-      initCheckoutDonationFormEdit();
-      initInlinePaymentFormEdit();
-      initCheckoutPaymentFormEdit();
-      initInlineSubscriptionFormEdit();
-      initCheckoutSubscriptionFormEdit();
+      Object.keys(FORM_EDITORS).forEach(function (type) {
+        [FORM_LAYOUT_INLINE, FORM_LAYOUT_CHECKOUT].forEach(function (layout) {
+          if (pageIs("div.wpfs-page-edit-" + layout + "-" + type + "-form")) {
+            initEventHandlersOnFormEdit(layout, type);
+            initPreviewDialog();
+          }
+        });
+      });
       initEditFormList();
     };
 
@@ -6499,7 +6006,7 @@ jQuery.noConflict();
 
             const emailInputErrorMessage = document.createElement( 'p' );
             emailInputErrorMessage.classList.add( 'wpfs-form-error-message' );
-            emailInputErrorMessage.textContent = 'Please enter a valid email address.';
+            emailInputErrorMessage.textContent = l10n.invalidEmailAddressMessage;
             emailInputParent.appendChild( emailInputErrorMessage );
         }
 
@@ -6522,7 +6029,7 @@ jQuery.noConflict();
 
           const emailInputErrorMessage = document.createElement( 'p' );
           emailInputErrorMessage.classList.add( 'wpfs-form-error-message' );
-          emailInputErrorMessage.textContent = 'An error occurred. Please try again later.';
+          emailInputErrorMessage.textContent = l10n.tryAgainLaterMessage;
           emailInputParent.appendChild( emailInputErrorMessage );
         });
       });
@@ -6605,10 +6112,6 @@ jQuery.noConflict();
       .catch(function(error) {  
         console.error('Error enabling tracking:', error);  
       });
-    }
-
-    function onReportsPage() {
-      return $("#wpfs-reports") && $("#wpfs-reports").length > 0;
     }
 
     function initReportsFilter() {
@@ -6694,7 +6197,7 @@ jQuery.noConflict();
     }
 
     WPFS.initReports = function () {
-      if( onReportsPage() ) {
+      if( pageIs("#wpfs-reports") ) {
         initReportsFilter();
         initCustomDate();
       }
@@ -6881,12 +6384,12 @@ class WebhookFormManager {
           <input type="text"
                  class="wpfs-form-control"
                  name="wpfs-form-webhook-header-key[]"
-                 placeholder="${ wpfsAdminL10n?.key }"
+                 placeholder="${ wp.i18n.__("Key", "wp-full-stripe-free") }"
                  value="${ key }">
           <input type="text"
                  class="wpfs-form-control"
                  name="wpfs-form-webhook-header-value[]"
-                 placeholder="${ wpfsAdminL10n?.value }"
+                 placeholder="${ wp.i18n.__("Value", "wp-full-stripe-free") }"
                  value="${ value }">
           <button type="button"
                   class="wpfs-btn wpfs-btn-icon wpfs-btn-icon--20"
@@ -6940,7 +6443,7 @@ class WebhookFormManager {
 
   async testWebhook() {
       if ( ! this.state.url ) {
-          alert( wpfsAdminL10n?.webhookUrlMissingMessage );
+          alert( wp.i18n.__("Webhook URL is missing", "wp-full-stripe-free") );
           return;
       }
 
@@ -6955,13 +6458,13 @@ class WebhookFormManager {
           });
 
           if (response.ok) {
-            this.WPFS.displaySuccessMessageBanner( wpfsAdminL10n?.webhookTestSuccessMessage );
+            this.WPFS.displaySuccessMessageBanner( wp.i18n.__("Webhook test successful", "wp-full-stripe-free") );
           } else {
-              alert( wpfsAdminL10n?.webhookTestFailureMessage );
+              alert( wp.i18n.__("Webhook test failed", "wp-full-stripe-free") );
           }
       } catch (e) {
-          console.error( wpfsAdminL10n?.webhookTestFailureMessage, e );
-          alert( wpfsAdminL10n?.webhookTestFailureMessage );
+          console.error( wp.i18n.__("Webhook test failed", "wp-full-stripe-free"), e );
+          alert( wp.i18n.__("Webhook test failed", "wp-full-stripe-free") );
       }
       this.WPFS.hideButtonLoader();
   }
@@ -6988,6 +6491,16 @@ const defaultChartStyles = {
 };
 
 /**
+ * Converts an amount in the currency's smallest unit, as the reports store it, to currency units
+ *
+ * @param {number|string} amount
+ * @return {number} The amount in currency units.
+ */
+function toCurrencyUnits( amount ) {
+  return amount / window.wpfsCurrencyDivisor;
+}
+
+/**
  * Creates a chart based on the provided configuration
  * 
  * @param {Object} config - The chart configuration object
@@ -6998,7 +6511,7 @@ const defaultChartStyles = {
  * @param {string} config.datasets[].dataKey - Key for dataset values in sourceData
  * @param {string} config.datasets[].axisID - The axis ID this dataset should use
  * @param {Object} config.datasets[].styles - Visual styles for the dataset
- * @param {string} config.datasets[].valueModifier - Optional function name to modify values (e.g., 'divideBy100')
+ * @param {string} config.datasets[].valueModifier - Optional function name to modify values (e.g., 'toCurrencyUnits')
  * @param {Object} config.scales - Configuration for chart scales
  * @param {boolean} config.useCurrency - Whether to use currency formatting
  */
@@ -7027,8 +6540,8 @@ function createChart( config ) {
         let value = data[datasetConfig.dataKey];
         
         // Apply any value modifiers
-        if ( datasetConfig.valueModifier === 'divideBy100' && value !== undefined ) {
-          value = value / 100;
+        if ( datasetConfig.valueModifier === 'toCurrencyUnits' && value !== undefined ) {
+          value = toCurrencyUnits( value );
         }
         
         datasetValues.push( value );
@@ -7087,7 +6600,7 @@ function createChart( config ) {
         x: {
           title: {
             display: true,
-            text: wpfsAdminL10n.date
+            text: wp.i18n.__("Date", "wp-full-stripe-free")
           }
         },
         y: {
@@ -7096,7 +6609,7 @@ function createChart( config ) {
           position: 'left',
           title: {
             display: true,
-            text: wpfsAdminL10n.primaryAxis
+            text: wp.i18n.__("Primary axis", "wp-full-stripe-free")
           },
           ticks: {
             callback: function( value ) {
@@ -7114,7 +6627,7 @@ function createChart( config ) {
           position: 'right',
           title: {
             display: true,
-            text: wpfsAdminL10n.secondaryAxis
+            text: wp.i18n.__("Secondary axis", "wp-full-stripe-free")
           },
           grid: {
             drawOnChartArea: false
@@ -7138,14 +6651,14 @@ function initRevenueChart() {
     sourceData: window.wpfsRevenueData,
     datasets: [
       {
-        label: wpfsAdminL10n.revenue,
+        label: wp.i18n.__("Revenue", "wp-full-stripe-free"),
         dataKey: 'revenue',
         axisID: 'y',
-        valueModifier: 'divideBy100',
+        valueModifier: 'toCurrencyUnits',
         useCurrency: true
       },
       {
-        label: wpfsAdminL10n.sales,
+        label: wp.i18n.__("Sales", "wp-full-stripe-free"),
         dataKey: 'sales',
         axisID: 'y1'
       }
@@ -7154,7 +6667,7 @@ function initRevenueChart() {
       x: {
         title: {
           display: true,
-          text: wpfsAdminL10n.date
+          text: wp.i18n.__("Date", "wp-full-stripe-free")
         }
       },
       y: {
@@ -7163,7 +6676,7 @@ function initRevenueChart() {
         position: 'left',
         title: {
           display: true,
-          text: wpfsAdminL10n.revenue
+          text: wp.i18n.__("Revenue", "wp-full-stripe-free")
         },
         ticks: {
           callback: function( value ) {
@@ -7177,7 +6690,7 @@ function initRevenueChart() {
         position: 'right',
         title: {
           display: true,
-          text: wpfsAdminL10n.sales
+          text: wp.i18n.__("Sales", "wp-full-stripe-free")
         },
         grid: {
           drawOnChartArea: false
@@ -7198,14 +6711,14 @@ function initRefundsChart() {
     sourceData: window.wpfsRefundsData,
     datasets: [
       {
-        label: wpfsAdminL10n.refundedAmount,
+        label: wp.i18n.__("Refunded Amount", "wp-full-stripe-free"),
         dataKey: 'refunds',
         axisID: 'y',
-        valueModifier: 'divideBy100',
+        valueModifier: 'toCurrencyUnits',
         useCurrency: true
       },
       {
-        label: wpfsAdminL10n.refunds,
+        label: wp.i18n.__("Refunds", "wp-full-stripe-free"),
         dataKey: 'refund_count',
         axisID: 'y1'
       }
@@ -7214,7 +6727,7 @@ function initRefundsChart() {
       x: {
         title: {
           display: true,
-          text: wpfsAdminL10n.date
+          text: wp.i18n.__("Date", "wp-full-stripe-free")
         }
       },
       y: {
@@ -7223,7 +6736,7 @@ function initRefundsChart() {
         position: 'left',
         title: {
           display: true,
-          text: wpfsAdminL10n.refundedAmount
+          text: wp.i18n.__("Refunded Amount", "wp-full-stripe-free")
         },
         ticks: {
           callback: function( value ) {
@@ -7237,7 +6750,7 @@ function initRefundsChart() {
         position: 'right',
         title: {
           display: true,
-          text: wpfsAdminL10n.refunds
+          text: wp.i18n.__("Refunds", "wp-full-stripe-free")
         },
         grid: {
           drawOnChartArea: false
@@ -7290,7 +6803,7 @@ function initCharts() {
         const chart = chartInstances['wpfs-revenue-chart'];
 
         chart.data.labels = data.map( ( item ) => item.date );
-        chart.data.datasets[0].data = data.map( ( item ) => item.revenue );
+        chart.data.datasets[0].data = data.map( ( item ) => toCurrencyUnits( item.revenue ) );
         chart.data.datasets[1].data = data.map( ( item ) => item.sales );
 
         chart.update();

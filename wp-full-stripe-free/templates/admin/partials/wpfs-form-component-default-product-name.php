@@ -1,5 +1,7 @@
 <?php
-/** @var $view MM_WPFS_Admin_InlineDonationFormView */
+use ThemeIsle\WPFullPay\Admin\Views\InlineDonationFormView;
+
+/** @var $view InlineDonationFormView */
 /** @var $form */
 ?>
 <div class="wpfs-form-group">

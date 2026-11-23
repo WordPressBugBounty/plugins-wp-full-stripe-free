@@ -1,4 +1,5 @@
 <?php
+use ThemeIsle\WPFullPay\Utils;
 
 // todo tnagy should we add google ads parameters to the url?
 
@@ -7,7 +8,7 @@ $purchasePluginUrl = tsdk_utmify(
 );
 
 ?>
-<?php if ( MM_WPFS_Utils::isDemoMode() ): ?>
+<?php if ( Utils::isDemoMode() ): ?>
     <div class="wpfs-demo-message js-demo-message">
         <div class="wpfs-illu-flash"></div>
         <div class="wpfs-demo-message__message"><?php esc_html_e( 'WP Full Pay is running in Demo Mode.', 'wp-full-stripe-free' ); ?></div>
@@ -26,7 +27,7 @@ $purchasePluginUrl = tsdk_utmify(
         <div class="wpfs-inline-message wpfs-inline-message--info wpfs-inline-message--dialog">
             <div class="wpfs-inline-message__inner">
                 <div class="wpfs-dialog-demo__title"><?php esc_html_e( 'Give the plugin a try', 'wp-full-stripe-free' ); ?></div>
-                <p><?php _e( 'Try the full-featured plugin with our <strong>14 day money back guarantee</strong>.', 'wp-full-stripe-free' ); ?></p>
+                <p><?php echo wp_kses_post( __( 'Try the full-featured plugin with our <strong>14 day money back guarantee</strong>.', 'wp-full-stripe-free' ) ); ?></p>
                 <a class="wpfs-btn wpfs-btn-primary" target="_blank"
                    href="<?php echo $purchasePluginUrl; ?>"><?php esc_html_e( 'Purchase plugin', 'wp-full-stripe-free' ); ?></a>
             </div>

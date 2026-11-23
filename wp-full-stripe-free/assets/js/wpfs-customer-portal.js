@@ -1,3 +1,4 @@
+/* global logError, wpfsInitStepper, wpfsInitSelectmenu */
 jQuery.noConflict();
 (function ($) {
   "use strict";
@@ -6,6 +7,8 @@ jQuery.noConflict();
     const INVOICE_DISPLAY_MODE_FEW = 0;
     const INVOICE_DISPLAY_MODE_HEAD = 1;
     const INVOICE_DISPLAY_MODE_ALL = 2;
+
+    const { __, _n, sprintf } = wp.i18n;
 
     var reCAPTCHAWidgetId = null;
     var googleReCAPTCHA = null;
@@ -42,19 +45,6 @@ jQuery.noConflict();
           },
           1000
         );
-      }
-    }
-
-    function logError(handlerName, jqXHR, textStatus, errorThrown) {
-      if (window.console) {
-        console.log(handlerName + ".error(): textStatus=" + textStatus);
-        console.log(handlerName + ".error(): errorThrown=" + errorThrown);
-        if (jqXHR) {
-          console.log(handlerName + ".error(): jqXHR.status=" + jqXHR.status);
-          console.log(
-            handlerName + ".error(): jqXHR.responseText=" + jqXHR.responseText
-          );
-        }
       }
     }
 
@@ -108,34 +98,47 @@ jQuery.noConflict();
       }
     }
 
-    function getCacheFriendlyUrlPath(path) {
-      return path + "?t=" + Date.now();
+    // Reloads the page, past any cached copy.
+    function reloadPage() {
+      window.location = window.location.pathname + "?t=" + Date.now();
+    }
+
+    /**
+     * POSTs to admin-ajax.php and expects JSON back.
+     *
+     * @param {Object} settings jQuery.ajax() settings: the data and callbacks.
+     * @return {Object} The jqXHR of the request.
+     */
+    function portalPost(settings) {
+      return $.ajax(
+        $.extend(
+          {
+            type: "POST",
+            url: wpfsCustomerPortalSettings.ajaxUrl,
+            cache: false,
+            dataType: "json",
+          },
+          settings
+        )
+      );
     }
 
     function submitCardData($form, card, paymentMethodId, setupIntentId) {
       // console.log('submitCardData(): CALLED, params: paymentMethodId=' + paymentMethodId + ', setupIntentId=' + setupIntentId);
       clearFormFeedBack($form);
       clearFieldErrors($form);
-      $.ajax({
-        type: "POST",
-        url: wpfsCustomerPortalSettings.ajaxUrl,
+      portalPost({
         data: {
           action: "wp_full_stripe_update_card",
           sessionId: wpfsCustomerPortalSettings.sessionData.sessionId,
           paymentMethodId: paymentMethodId,
           setupIntentId: setupIntentId,
         },
-        cache: false,
-        dataType: "json",
         success: function (data) {
           // console.log('submitCardData(): data=' + JSON.stringify(data));
           if (data.success) {
             showFormFeedBackSuccess($form, data.message);
-            setTimeout(function () {
-              window.location = getCacheFriendlyUrlPath(
-                window.location.pathname
-              );
-            }, 1000);
+            setTimeout(reloadPage, 1000);
           } else if (data.requiresAction) {
             handleSetupIntentAction($form, card, data);
           } else if (data.ex_message) {
@@ -201,43 +204,27 @@ jQuery.noConflict();
       var cancelSubscriptionSubmitButtonCaption = null;
       if (selectedSubscriptionCount > 0) {
         $("#wpfs-button-cancel-subscription").prop("disabled", false);
-        if (selectedSubscriptionCount == 1) {
-          //noinspection JSUnresolvedVariable
-          if (wpfsCustomerPortalSettings.sessionData !== "undefined") {
-            //noinspection JSUnresolvedVariable
-            cancelSubscriptionSubmitButtonCaption =
-              wpfsCustomerPortalSettings.sessionData.i18n
-                .cancelSubscriptionSubmitButtonCaptionSingular;
-            $("#wpfs-button-cancel-subscription").html(
-              cancelSubscriptionSubmitButtonCaption
-            );
-          }
-        } else {
-          //noinspection JSUnresolvedVariable
-          if (wpfsCustomerPortalSettings.sessionData !== "undefined") {
-            //noinspection JSUnresolvedVariable
-            cancelSubscriptionSubmitButtonCaption = vsprintf(
-              wpfsCustomerPortalSettings.sessionData.i18n
-                .cancelSubscriptionSubmitButtonCaptionPlural,
-              [selectedSubscriptionCount]
-            );
-            $("#wpfs-button-cancel-subscription").html(
-              cancelSubscriptionSubmitButtonCaption
-            );
-          }
-        }
+        cancelSubscriptionSubmitButtonCaption = sprintf(
+          /* translators: Button text for cancelling the selected subscriptions. %d: number of selected subscriptions. */
+          _n(
+            "Cancel %d subscription",
+            "Cancel %d subscriptions",
+            selectedSubscriptionCount,
+            "wp-full-stripe-free"
+          ),
+          selectedSubscriptionCount
+        );
+        $("#wpfs-button-cancel-subscription").html(
+          cancelSubscriptionSubmitButtonCaption
+        );
       } else {
         $("#wpfs-button-cancel-subscription").prop("disabled", true);
-        //noinspection JSUnresolvedVariable
-        if (wpfsCustomerPortalSettings.sessionData !== "undefined") {
-          //noinspection JSUnresolvedVariable
-          cancelSubscriptionSubmitButtonCaption =
-            wpfsCustomerPortalSettings.sessionData.i18n
-              .cancelSubscriptionSubmitButtonCaptionDefault;
-          $("#wpfs-button-cancel-subscription").html(
-            cancelSubscriptionSubmitButtonCaption
-          );
-        }
+        cancelSubscriptionSubmitButtonCaption =
+          /* translators: Default button text for cancelling subscriptions - disabled state */
+          __("Cancel subscription", "wp-full-stripe-free");
+        $("#wpfs-button-cancel-subscription").html(
+          cancelSubscriptionSubmitButtonCaption
+        );
       }
     }
 
@@ -256,10 +243,10 @@ jQuery.noConflict();
       }
     } catch (err) {
       var $form = $("#wpfs-default-card-form");
-      var message = vsprintf(
-        wpfsCustomerPortalSettings.sessionData.i18n
-          .stripeInstantiationErrorMessage,
-        [err.message]
+      var message = sprintf(
+        /* translators: Error message when instantiating the Stripe object. %s: the message of the exception thrown. */
+        __("Cannot initialize Stripe: %s", "wp-full-stripe-free"),
+        err.message
       );
       showFormFeedBackError($form, message);
       scrollToElement($form);
@@ -268,155 +255,8 @@ jQuery.noConflict();
 
     var WPFS = {};
 
-    WPFS.initSelectmenu = function () {
-      $.widget("custom.wpfsSelectmenu", $.ui.selectmenu, {
-        _renderItem: function (ul, item) {
-          var $li = $("<li>");
-          var wrapper = $("<div>", {
-            class: "menu-item-wrapper ui-menu-item-wrapper",
-            text: item.label,
-          });
-
-          if (item.disabled) {
-            $li.addClass("ui-state-disabled");
-          }
-
-          return $li.append(wrapper).appendTo(ul);
-        },
-      });
-
-      var $selectmenus = $('[data-toggle="selectmenu"]');
-      $selectmenus.each(function () {
-        if (typeof $(this).select2 === "function") {
-          try {
-            $(this).select2("destroy");
-          } catch (err) {}
-        }
-
-        var $selectmenu = $(this).wpfsSelectmenu({
-          classes: {
-            "ui-selectmenu-button": "wpfs-form-control wpfs-selectmenu-button",
-            "ui-selectmenu-menu": "wpfs-ui wpfs-selectmenu-menu",
-          },
-          icons: {
-            button: "wpfs-icon-arrow",
-          },
-          create: function () {
-            var $this = $(this);
-            var $selectMenuButton = $this.next();
-            $selectMenuButton.addClass($this.attr("class"));
-            if (
-              $this.find("option:selected:disabled") &&
-              $this.find("option:selected:disabled").length > 0
-            ) {
-              $selectMenuButton.addClass("ui-state-placeholder");
-            }
-          },
-          open: function () {
-            var $this = $(this);
-            var $button = $this.data("custom-wpfsSelectmenu").button;
-            $button.removeClass("ui-selectmenu-button-closed");
-            $button.addClass("ui-selectmenu-button-open");
-            var selectedClass = "ui-state-selected";
-            var selectedIndex = $this
-              .find("option")
-              .index($this.find("option:selected"));
-            $(".ui-selectmenu-open .ui-menu-item-wrapper").removeClass(
-              selectedClass
-            );
-            var $menuItem = $(".ui-selectmenu-open .ui-menu-item").eq(
-              selectedIndex
-            );
-            if (!$menuItem.hasClass("ui-state-disabled")) {
-              $menuItem.find(".ui-menu-item-wrapper").addClass(selectedClass);
-            }
-          },
-          close: function () {
-            var $this = $(this);
-            var $button = $this.data("custom-wpfsSelectmenu").button;
-            $button.removeClass("ui-selectmenu-button-open");
-            $button.addClass("ui-selectmenu-button-closed");
-          },
-          change: function () {
-            var $this = $(this);
-            var $button = $(this).data("custom-wpfsSelectmenu").button;
-            $button.removeClass("ui-state-placeholder");
-            $this.trigger("selectmenuchange");
-          },
-        });
-
-        var $selectmenuParent = $selectmenu.parent();
-        $selectmenuParent
-          .find(".ui-selectmenu-button")
-          .addClass("wpfs-form-control")
-          .addClass("wpfs-selectmenu-button")
-          .addClass("ui-button");
-
-        $selectmenu
-          .data("custom-wpfsSelectmenu")
-          .menuWrap.addClass("wpfs-ui")
-          .addClass("wpfs-selectmenu-menu");
-      });
-    };
-    WPFS.initStepper = function () {
-      var $stepper = $('[data-toggle="stepper"]');
-      $stepper.each(function () {
-        var $this = $(this);
-        var defaultValue = $this.data("defaultValue") || 1;
-
-        if ($this.val() === "") {
-          $this.val(defaultValue);
-        }
-
-        $this
-          .spinner({
-            min: $this.data("min") || 1,
-            max: $this.data("max") || 9999,
-            icons: {
-              down: "wpfs-icon-decrease",
-              up: "wpfs-icon-increase",
-            },
-            checkButtons: function ($this, currentValue) {
-              var uiSpinner = $this.data("uiSpinner");
-              var min = uiSpinner.options.min;
-              var max = uiSpinner.options.max;
-              var $container = $this.parent();
-              var disabledClassName = "ui-state-disabled";
-              var up = $container.find(".ui-spinner-up");
-              var down = $container.find(".ui-spinner-down");
-
-              up.removeClass(disabledClassName);
-              down.removeClass(disabledClassName);
-
-              if (currentValue === max) {
-                up.addClass(disabledClassName);
-              }
-
-              if (currentValue === min) {
-                down.addClass(disabledClassName);
-              }
-            },
-            change: function (e, ui) {
-              var $this = $(this);
-              if ($this.spinner("isValid")) {
-                defaultValue = $this.val();
-              } else {
-                $this.val(defaultValue);
-              }
-              $this
-                .spinner("instance")
-                .options.checkButtons($this, $this.val());
-            },
-            spin: function (e, ui) {
-              var $this = $(this);
-              $this.spinner("instance").options.checkButtons($this, ui.value);
-            },
-          })
-          .parent()
-          .find(".ui-icon")
-          .text("");
-      });
-    };
+    WPFS.initSelectmenu = wpfsInitSelectmenu;
+    WPFS.initStepper = wpfsInitStepper;
     WPFS.initEnterEmailAddressForm = function () {
       $("#wpfs-enter-email-address-form").submit(function (e) {
         e.preventDefault();
@@ -432,21 +272,15 @@ jQuery.noConflict();
           .find('textarea[name="g-recaptcha-response"]')
           .val();
 
-        $.ajax({
-          type: "POST",
-          url: wpfsCustomerPortalSettings.ajaxUrl,
+        portalPost({
           data: {
             action: "wp_full_stripe_create_card_update_session",
             emailAddress: emailAddress,
             googleReCAPTCHAResponse: googleReCAPTCHAResponse,
           },
-          cache: false,
-          dataType: "json",
           success: function (data) {
             if (data.success) {
-              window.location = getCacheFriendlyUrlPath(
-                window.location.pathname
-              );
+              reloadPage();
             } else {
               var $field;
               if (data.fieldError && "emailAddress" === data.fieldError) {
@@ -494,17 +328,13 @@ jQuery.noConflict();
         disableSubmitButton($form);
         showLoadingIcon($form);
 
-        $.ajax({
-          type: "POST",
-          url: wpfsCustomerPortalSettings.ajaxUrl,
+        portalPost({
           data: {
             action: "wp_full_stripe_reset_card_update_session",
             sessionId: wpfsCustomerPortalSettings.sessionData.sessionId,
           },
-          cache: false,
-          dataType: "json",
           success: function (data) {
-            window.location = getCacheFriendlyUrlPath(window.location.pathname);
+            reloadPage();
           },
           error: function (jqXHR, textStatus, errorThrown) {
             logError(
@@ -534,21 +364,15 @@ jQuery.noConflict();
         var securityCode = $('input[name="wpfs-security-code"]', $form).val();
 
         //noinspection JSUnresolvedVariable
-        $.ajax({
-          type: "POST",
-          url: wpfsCustomerPortalSettings.ajaxUrl,
+        portalPost({
           data: {
             action: "wp_full_stripe_validate_security_code",
             sessionId: wpfsCustomerPortalSettings.sessionData.sessionId,
             securityCode: securityCode,
           },
-          cache: false,
-          dataType: "json",
           success: function (data) {
             if (data.success) {
-              window.location = getCacheFriendlyUrlPath(
-                window.location.pathname
-              );
+              reloadPage();
             } else {
               showFieldError(
                 $('input[name="wpfs-security-code"]', $form),
@@ -590,10 +414,18 @@ jQuery.noConflict();
         if (stripe != null) {
           // tnagy get references for form, formId
           var $form = getParentForm(this);
-          var elementsLocale = $form.data("wpfs-preferred-language");
 
-          const { clientSecret, intentType } =
-            await getSetupIntentClientSecret();
+          var setupIntent = await getSetupIntentClientSecret($form).catch(
+            function () {
+              return null;
+            }
+          );
+          // The failed request is already logged and shown above the form.
+          if (!setupIntent) {
+            return;
+          }
+          const { clientSecret } = setupIntent;
+          var elementsLocale = $form.data("wpfs-preferred-language");
 
           var appearance = {
             theme: $form.data("wpfs-elements-theme"),
@@ -620,19 +452,13 @@ jQuery.noConflict();
           $("#wpfs-anchor-logout").click(function (e) {
             e.preventDefault();
             //noinspection JSUnresolvedVariable
-            $.ajax({
-              type: "POST",
-              url: wpfsCustomerPortalSettings.ajaxUrl,
+            portalPost({
               data: {
                 action: "wp_full_stripe_reset_card_update_session",
                 sessionId: wpfsCustomerPortalSettings.sessionData.sessionId,
               },
-              cache: false,
-              dataType: "json",
               success: function (data) {
-                window.location = getCacheFriendlyUrlPath(
-                  window.location.pathname
-                );
+                reloadPage();
               },
               error: function (jqXHR, textStatus, errorThrown) {
                 logError(
@@ -760,34 +586,27 @@ jQuery.noConflict();
           //noinspection JSUnresolvedVariable
           showFormFeedBackError(
             $form,
-            wpfsCustomerPortalSettings.sessionData.i18n
-              .selectAtLeastOneSubscription
+            __("Select at least one subscription!", "wp-full-stripe-free")
           );
         }
 
         if (valid) {
           //noinspection JSUnresolvedVariable
           var confirmationResult = confirm(
-            wpfsCustomerPortalSettings.sessionData.i18n
-              .confirmSubscriptionCancellationMessage
+            __(
+              "Are you sure you'd like to cancel the selected subscriptions?",
+              "wp-full-stripe-free"
+            )
           );
 
           if (confirmationResult == true) {
             //noinspection JSUnresolvedVariable
-            $.ajax({
-              type: "POST",
-              url: wpfsCustomerPortalSettings.ajaxUrl,
+            portalPost({
               data: $.param(data),
-              cache: false,
-              dataType: "json",
               success: function (data) {
                 if (data.success) {
                   showFormFeedBackSuccess($form, data.message);
-                  setTimeout(function () {
-                    window.location = getCacheFriendlyUrlPath(
-                      window.location.pathname
-                    );
-                  }, 1000);
+                  setTimeout(reloadPage, 1000);
                 } else {
                   showFormFeedBackError($form, data.message);
                 }
@@ -829,18 +648,14 @@ jQuery.noConflict();
     };
 
     function submitInvoiceViewToggle() {
-      $.ajax({
-        type: "POST",
-        url: wpfsCustomerPortalSettings.ajaxUrl,
+      portalPost({
         data: {
           action: "wp_full_stripe_toggle_invoice_view",
           sessionId: wpfsCustomerPortalSettings.sessionData.sessionId,
         },
-        cache: false,
-        dataType: "json",
         success: function (data) {
           if (data.success) {
-            window.location = getCacheFriendlyUrlPath(window.location.pathname);
+            reloadPage();
           } else {
             // How we should display invoice view toggle errors?
           }
@@ -1286,7 +1101,7 @@ jQuery.noConflict();
             }
 
             e.preventDefault();
-            $(".wpfs-form-message").remove();
+            $(".wpfs-form-message:not([data-wpfs-configuration-error])").remove();
 
             var newPlanId = getPlanId(this);
             var newPlanName = getPlanName(this);
@@ -1320,11 +1135,7 @@ jQuery.noConflict();
                 $("#wpfs-subscriptions-subtitle").after(
                   successMessage.render().el
                 );
-                setTimeout(function () {
-                  window.location = getCacheFriendlyUrlPath(
-                    window.location.pathname
-                  );
-                }, 1000);
+                setTimeout(reloadPage, 1000);
               },
               error: function (model, error) {
                 console.log(
@@ -1348,12 +1159,14 @@ jQuery.noConflict();
           },
           cancelSubscription: function (e) {
             e.preventDefault();
-            $(".wpfs-form-message").remove();
+            $(".wpfs-form-message:not([data-wpfs-configuration-error])").remove();
 
             //noinspection JSUnresolvedVariable
             var confirmationResult = confirm(
-              wpfsCustomerPortalSettings.sessionData.i18n
-                .confirmSingleSubscriptionCancellationMessage
+              __(
+                "Are you sure you'd like to cancel this subscription?",
+                "wp-full-stripe-free"
+              )
             );
 
             if (confirmationResult == true) {
@@ -1368,11 +1181,7 @@ jQuery.noConflict();
                   $("#wpfs-subscriptions-subtitle").after(
                     successMessage.render().el
                   );
-                  setTimeout(function () {
-                    window.location = getCacheFriendlyUrlPath(
-                      window.location.pathname
-                    );
-                  }, 1000);
+                  setTimeout(reloadPage, 1000);
                 },
                 error: function (model, error) {
                   console.log(
@@ -1396,12 +1205,14 @@ jQuery.noConflict();
           },
           activateSubscription: function (e) {
             e.preventDefault();
-            $(".wpfs-form-message").remove();
+            $(".wpfs-form-message:not([data-wpfs-configuration-error])").remove();
 
             //noinspection JSUnresolvedVariable
             var confirmationResult = confirm(
-              wpfsCustomerPortalSettings.sessionData.i18n
-                .confirmSingleSubscriptionActivationMessage
+              __(
+                "Are you sure you'd like to activate this subscription again?",
+                "wp-full-stripe-free"
+              )
             );
 
             if (confirmationResult == true) {
@@ -1416,11 +1227,7 @@ jQuery.noConflict();
                   $("#wpfs-subscriptions-subtitle").after(
                     successMessage.render().el
                   );
-                  setTimeout(function () {
-                    window.location = getCacheFriendlyUrlPath(
-                      window.location.pathname
-                    );
-                  }, 1000);
+                  setTimeout(reloadPage, 1000);
                 },
                 error: function (model, error) {
                   console.log(
@@ -1690,17 +1497,13 @@ jQuery.noConflict();
 
         var stripeCustomerId = $(this).data("customer-id");
 
-        $.ajax({
-          type: "POST",
-          url: wpfsCustomerPortalSettings.ajaxUrl,
+        portalPost({
           data: {
             action: "wp_full_stripe_select_customer_portal_account",
             customerId: stripeCustomerId,
           },
-          cache: false,
-          dataType: "json",
           success: function (data) {
-            window.location = getCacheFriendlyUrlPath(window.location.pathname);
+            reloadPage();
           },
           error: function (jqXHR, textStatus, errorThrown) {
             logError(
@@ -1719,16 +1522,12 @@ jQuery.noConflict();
       $("#wpfs-anchor-select-account").click(function (e) {
         e.preventDefault();
 
-        $.ajax({
-          type: "POST",
-          url: wpfsCustomerPortalSettings.ajaxUrl,
+        portalPost({
           data: {
             action: "wp_full_stripe_show_customer_portal_account_selector",
           },
-          cache: false,
-          dataType: "json",
           success: function (data) {
-            window.location = getCacheFriendlyUrlPath(window.location.pathname);
+            reloadPage();
           },
           error: function (jqXHR, textStatus, errorThrown) {
             logError(
@@ -1813,20 +1612,16 @@ jQuery.noConflict();
       }
     }
 
-    function getSetupIntentClientSecret() {
+    function getSetupIntentClientSecret($form) {
       return new Promise((resolve, reject) => {
         if (debugLog) {
           console.log("getSetupIntentClientSecret", "CALLED");
         }
 
-        $.ajax({
-          type: "POST",
-          url: wpfsCustomerPortalSettings.ajaxUrl,
+        portalPost({
           data: {
             action: "wp_get_Setup_Intent_Client_Secret",
           },
-          cache: false,
-          dataType: "json",
           success: function (data) {
             if (debugLog) {
               console.log(
@@ -1843,7 +1638,10 @@ jQuery.noConflict();
               textStatus,
               errorThrown
             );
-            showFormFeedBackError($form, errorThrown.message);
+            showFormFeedBackError(
+              $form,
+              errorThrown.message || errorThrown || textStatus
+            );
             reject(errorThrown);
           },
         });

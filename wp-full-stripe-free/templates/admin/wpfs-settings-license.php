@@ -1,4 +1,6 @@
 <?php
+use ThemeIsle\WPFullPay\License;
+
 /** @var $backLinkUrl */
 ?>
 <div class="wrap">
@@ -12,30 +14,30 @@
             <div class="wpfs-form__cols">
                 <div class="wpfs-form__col">
                     <div class="wpfs-form-block">
-                        <?php if ( WPFS_License::is_active() || WPFS_License::is_expired() ): ?>
+                        <?php if ( License::is_active() || License::is_expired() ): ?>
                             <form id="wpfs-form-license-deactivate" class="wpfs-form" method="post">
-                                <input id="wpfs-form-license" name="wpfs-form-license" type="hidden" class="wpfs-form-control" value="<?php echo WPFS_License::get_key(); ?>">
+                                <input id="wpfs-form-license" name="wpfs-form-license" type="hidden" class="wpfs-form-control" value="<?php echo License::get_key(); ?>">
                                 <div class="wpfs-inline-message wpfs-inline-message--success wpfs-inline-message--w448">
                                     <div class="wpfs-inline-message__inner">
                                         <p class="wpfs-center my-16">
                                             <strong><?php esc_html_e( 'WP Full Pay License', 'wp-full-stripe-free' ); ?></strong>
                                             <button class="wpfs-btn-secondary wpfs-button-loader"  id="wpfs-clear-license">
-                                                <?php _e( 'Disconnect', 'wp-full-stripe-free' ); ?>
+                                                <?php esc_html_e( 'Disconnect', 'wp-full-stripe-free' ); ?>
                                             </button>
                                         </p>
 
                                         <p class="my-16">
                                             <span class="wpfs-center">
-                                                <strong><?php _e( 'Status:', 'wp-full-stripe-free' ); ?></strong> <?php WPFS_License::is_active() ? _e( 'Active', 'wp-full-stripe-free' ) : _e( 'Expired', 'wp-full-stripe-free' ); ?>
+                                                <strong><?php esc_html_e( 'Status:', 'wp-full-stripe-free' ); ?></strong> <?php License::is_active() ? esc_html_e( 'Active', 'wp-full-stripe-free' ) : esc_html_e( 'Expired', 'wp-full-stripe-free' ); ?>
                                             </span>
                                             <span class="wpfs-center">
-                                                <strong><?php _e( 'Expiration:', 'wp-full-stripe-free' ); ?></strong> <?php echo WPFS_License::get_expiration_date( 'j F, Y' ); ?>
+                                                <strong><?php esc_html_e( 'Expiration:', 'wp-full-stripe-free' ); ?></strong> <?php echo License::get_expiration_date( 'j F, Y' ); ?>
                                             </span>
                                         </p>
 
-                                        <?php if ( WPFS_License::is_expired() ): ?>
+                                        <?php if ( License::is_expired() ): ?>
                                             <p>
-                                                <?php _e( 'Your license has expired. In order to continue receiving support and software updates you must renew your license key.', 'wp-full-stripe-free' ); ?>
+                                                <?php esc_html_e( 'Your license has expired. In order to continue receiving support and software updates you must renew your license key.', 'wp-full-stripe-free' ); ?>
                                             </p>
                                         <?php endif; ?>
                                     </div>
@@ -45,7 +47,7 @@
                         <form id="wpfs-form-license-activate" class="wpfs-form" method="post">
                             <div class="wpfs-form-group">
                                 <label for="wpfs-form-license" class="wpfs-form-label"><?php esc_html_e( 'WP Full Pay License', 'wp-full-stripe-free' ); ?></label>
-                                <input id="wpfs-form-license" name="wpfs-form-license" type="text" class="wpfs-form-control" value="<?php echo WPFS_License::get_key(); ?>">
+                                <input id="wpfs-form-license" name="wpfs-form-license" type="text" class="wpfs-form-control" value="<?php echo License::get_key(); ?>">
                             </div>
 
                             <div class="wpfs-form-group">
@@ -55,7 +57,7 @@
                         <?php endif; ?>
                     </div>
                 </div>
-                <?php if ( ! WPFS_License::is_active() ): ?>
+                <?php if ( ! License::is_active() ): ?>
                     <div class="wpfs-form__col">
                         <div class="wpfs-inline-message wpfs-inline-message--info wpfs-inline-message--w448">
                             <div class="wpfs-inline-message__inner">
@@ -75,7 +77,7 @@
                                     <?php
                                     echo sprintf(
                                         /* translators: 1: opening anchor tag, 2: closing anchor tag */
-                                        __( '%1$sUpgrade to Pro%2$s for no added fee and priority support.', 'wp-full-stripe-free' ),
+                                        esc_html__( '%1$sUpgrade to Pro%2$s for no added fee and priority support.', 'wp-full-stripe-free' ),
                                         '<a href="' . esc_url( tsdk_utmify( 'https://paymentsplugin.com/pricing/', 'admin-connection' ) ) . '" target="_blank">',
                                         '</a>'
                                     );

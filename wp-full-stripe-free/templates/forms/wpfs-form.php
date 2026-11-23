@@ -1,23 +1,38 @@
 <?php
+use ThemeIsle\WPFullPay\Checkout\CheckoutSubmissionService;
+use ThemeIsle\WPFullPay\Forms\Views\CheckoutDonationFormView;
+use ThemeIsle\WPFullPay\Forms\Views\CheckoutPaymentFormView;
+use ThemeIsle\WPFullPay\Forms\Views\CheckoutSaveCardFormView;
+use ThemeIsle\WPFullPay\Forms\Views\CheckoutSubscriptionFormView;
+use ThemeIsle\WPFullPay\Forms\Views\Control;
+use ThemeIsle\WPFullPay\Forms\Views\DonationFormView;
+use ThemeIsle\WPFullPay\Forms\Views\InlineDonationFormView;
+use ThemeIsle\WPFullPay\Forms\Views\InlinePaymentFormView;
+use ThemeIsle\WPFullPay\Forms\Views\InlineSaveCardFormView;
+use ThemeIsle\WPFullPay\Forms\Views\InlineSubscriptionFormView;
+use ThemeIsle\WPFullPay\Forms\Views\PaymentFormView;
+use ThemeIsle\WPFullPay\Forms\Views\SubscriptionFormView;
+use ThemeIsle\WPFullPay\Main;
+use ThemeIsle\WPFullPay\Options;
+use ThemeIsle\WPFullPay\Pricing\CustomerTaxId;
+use ThemeIsle\WPFullPay\ReCaptcha;
+use ThemeIsle\WPFullPay\Utils;
+
 /** @var $selectedPlanId */
 /** @var stdClass $popupFormSubmit */
 /** @var $view */
 /** @var $form */
 
-$recovery_data = MM_WPFS_Utils::getFeeRecoveryData( $form );
-$is_opt_in = true;
+// The server charges the fee on these forms whatever is posted, see FormModel::getFeeRecoveryAccepted().
+$is_opt_in = ! Utils::isFeeRecoveryAlwaysApplied( $form );
 
-if ( isset( $recovery_data[ MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN ] ) ) {
-    $is_opt_in = $recovery_data[ MM_WPFS_Options::OPTION_FEE_RECOVERY_OPT_IN ];
-}
-
-$defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form->defaultBillingCountry ) ? $form->defaultBillingCountry : $this->options->get( MM_WPFS_Options::OPTION_DEFAULT_BILLING_COUNTRY );
+$defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form->defaultBillingCountry ) ? $form->defaultBillingCountry : $this->options->get( Options::OPTION_DEFAULT_BILLING_COUNTRY );
 ?>
 <form <?php $view->formAttributes(); ?>>
     <?php if (isset($popupFormSubmit) && $popupFormSubmit->formHash === $view->getFormHash()): ?>
         <?php
         $messageClass = 'wpfs-form-message--incorrect';
-        if (MM_WPFS_CheckoutSubmissionService::POPUP_FORM_SUBMIT_STATUS_SUCCESS === $popupFormSubmit->status) {
+        if (in_array($popupFormSubmit->status, [CheckoutSubmissionService::POPUP_FORM_SUBMIT_STATUS_SUCCESS, CheckoutSubmissionService::POPUP_FORM_SUBMIT_STATUS_PENDING], true)) {
             $messageClass = 'wpfs-form-message--correct';
         }
         ?>
@@ -38,7 +53,7 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
     <input id="<?php $view->formGetParameters()->id(); ?>" name="<?php $view->formGetParameters()->name(); ?>"
         value="<?php $view->formGetParameters()->value(); ?>" <?php $view->formGetParameters()->attributes(); ?>>
     <?php
-    if ($view instanceof MM_WPFS_DonationFormView ) {
+    if ($view instanceof DonationFormView ) {
         include("components/wpfs-component-donation-goal.php");
     }
 
@@ -47,28 +62,28 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
     // - list of buttons with different prices
     // - list of radio buttons with different prices
     // - input field for custom price
-    if ($view instanceof MM_WPFS_DonationFormView || $view instanceof MM_WPFS_PaymentFormView) {
+    if ($view instanceof DonationFormView || $view instanceof PaymentFormView) {
         include("components/wpfs-component-custom-price.php");
     }
     // Show donation frequency options
-    if ($view instanceof MM_WPFS_DonationFormView) {
+    if ($view instanceof DonationFormView) {
         include("components/wpfs-component-donation-freq.php");
     }
 
     // Show subscription plans
-    if ($view instanceof MM_WPFS_CheckoutSubscriptionFormView || $view instanceof MM_WPFS_SubscriptionFormView) {
+    if ($view instanceof CheckoutSubscriptionFormView || $view instanceof SubscriptionFormView) {
         include("components/wpfs-component-subscription-plans.php");
     }
 
     // (common)(field): custom inputs
     $showCustomInputGroup = isset($form->showCustomInput) && 1 == $form->showCustomInput;
-    if ($view instanceof MM_WPFS_CheckoutSubscriptionFormView && 1 == $form->simpleButtonLayout) {
+    if ($view instanceof CheckoutSubscriptionFormView && 1 == $form->simpleButtonLayout) {
         $showCustomInputGroup = false;
     }
     ?>
     <?php if ($showCustomInputGroup): ?>
         <?php foreach ($view->customInputs() as $input): ?>
-            <?php /** @var MM_WPFS_Control $input */ ?>
+            <?php /** @var Control $input */ ?>
             <?php include('components/wpfs-component-custom-field.php'); ?>
         <?php endforeach; ?>
     <?php endif; ?>
@@ -76,11 +91,11 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
     <?php include('wpfs-form-billing-shipping-address.php'); ?>
 
     <?php // (inline_payment|inline_subscription)(fields): buying as a business, business name, tax id ?>
-    <?php if ($view instanceof MM_WPFS_InlinePaymentFormView || $view instanceof MM_WPFS_InlineSubscriptionFormView) {
-        if ($form->vatRateType !== MM_WPFS::FIELD_VALUE_TAX_RATE_NO_TAX) { ?>
+    <?php if ($view instanceof InlinePaymentFormView || $view instanceof InlineSubscriptionFormView) {
+        if ($form->vatRateType !== Main::FIELD_VALUE_TAX_RATE_NO_TAX) { ?>
             <?php if (
-                ($form->vatRateType === MM_WPFS::FIELD_VALUE_TAX_RATE_DYNAMIC ||
-                    $form->vatRateType === MM_WPFS::FIELD_VALUE_TAX_RATE_STRIPE_TAX ||
+                ($form->vatRateType === Main::FIELD_VALUE_TAX_RATE_DYNAMIC ||
+                    $form->vatRateType === Main::FIELD_VALUE_TAX_RATE_STRIPE_TAX ||
                     $form->collectCustomerTaxId == '1') &&
                 $form->showAddress == '0'
             ) { ?>
@@ -93,7 +108,7 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
                             data-toggle="selectmenu" data-wpfs-select="wpfs-tax-country-select" class="wpfs-tax-country-select"
                             <?php $view->taxCountry()->attributes(); ?>>
                             <?php foreach ($view->taxCountry()->options() as $country): ?>
-                                <?php /** @var MM_WPFS_Control $country */?>
+                                <?php /** @var Control $country */?>
                                 <option value="<?php $country->value(); ?>" <?php $country->attributes(); ?>>
                                     <?php $country->caption(); ?>
                                 </option>
@@ -101,7 +116,7 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
                         </select>
                     </div>
                 </div>
-                <?php if ($form->vatRateType === MM_WPFS::FIELD_VALUE_TAX_RATE_DYNAMIC) { ?>
+                <?php if ($form->vatRateType === Main::FIELD_VALUE_TAX_RATE_DYNAMIC) { ?>
                     <div class="wpfs-form-group" id="wpfs-tax-state-row"
                         style="<?php echo $defaultBillingCountry == 'US' ? '' : 'display: none;' ?>">
                         <label class="wpfs-form-label" for="<?php $view->taxState()->id(); ?>">
@@ -111,7 +126,7 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
                             <select id="<?php $view->taxState()->id(); ?>" name="<?php $view->taxState()->name(); ?>"
                                 data-toggle="selectmenu" data-wpfs-select="wpfs-tax-state-select" class="wpfs-tax-state-select" <?php $view->taxState()->attributes(); ?>>
                                 <?php foreach ($view->taxState()->options() as $state): ?>
-                                    <?php /** @var MM_WPFS_Control $country */?>
+                                    <?php /** @var Control $country */?>
                                     <option value="<?php $state->value(); ?>" <?php $state->attributes(); ?>>
                                         <?php $state->caption(); ?>
                                     </option>
@@ -119,7 +134,7 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
                             </select>
                         </div>
                     </div>
-                <?php } else if ($form->vatRateType === MM_WPFS::FIELD_VALUE_TAX_RATE_STRIPE_TAX) { ?>
+                <?php } else if ($form->vatRateType === Main::FIELD_VALUE_TAX_RATE_STRIPE_TAX) { ?>
                         <div class="wpfs-form-group" id="wpfs-tax-postal-code-row">
                             <label class="wpfs-form-label" for="<?php $view->taxZip()->id(); ?>">
                             <?php $view->taxZip()->label(); ?>
@@ -157,7 +172,7 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
                                     data-toggle="selectmenu" data-wpfs-select="wpfs-tax-id-type-select"
                                     class="wpfs-tax-id-type-select" <?php $view->taxIdType()->attributes(); ?>>
                                     <?php foreach ($view->taxIdType()->options() as $taxIdType): ?>
-                                        <?php /** @var MM_WPFS_Control $taxIdType */?>
+                                        <?php /** @var Control $taxIdType */?>
                                         <option value="<?php $taxIdType->value(); ?>" <?php $taxIdType->attributes(); ?>>
                                             <?php $taxIdType->caption(); ?>
                                         </option>
@@ -181,8 +196,8 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
     <?php } ?>
     <?php // (inline_payment|inline_subscription|inline_card_capture|inline_donation)(field): cardholder email ?>
     <?php if (
-        $view instanceof MM_WPFS_InlinePaymentFormView || $view instanceof MM_WPFS_InlineSaveCardFormView ||
-        $view instanceof MM_WPFS_InlineSubscriptionFormView || $view instanceof MM_WPFS_InlineDonationFormView
+        $view instanceof InlinePaymentFormView || $view instanceof InlineSaveCardFormView ||
+        $view instanceof InlineSubscriptionFormView || $view instanceof InlineDonationFormView
     ): ?>
         <div class="wpfs-form-group">
             <label class="wpfs-form-label" for="<?php $view->cardHolderEmail()->id(); ?>">
@@ -194,8 +209,8 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
     <?php endif; ?>
     <?php // (inline_payment|inline_subscription|inline_card_capture)(field): cardholder name ?>
     <?php if (
-        $view instanceof MM_WPFS_InlinePaymentFormView || $view instanceof MM_WPFS_InlineSaveCardFormView ||
-        $view instanceof MM_WPFS_InlineSubscriptionFormView || $view instanceof MM_WPFS_InlineDonationFormView
+        $view instanceof InlinePaymentFormView || $view instanceof InlineSaveCardFormView ||
+        $view instanceof InlineSubscriptionFormView || $view instanceof InlineDonationFormView
     ): ?>
         <div class="wpfs-form-group">
             <label class="wpfs-form-label" for="<?php $view->cardHolderName()->id(); ?>">
@@ -207,8 +222,8 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
     <?php endif; ?>
     <?php // (inline_payment|inline_subscription|inline_card_capture)(field): card ?>
     <?php if (
-        $view instanceof MM_WPFS_InlinePaymentFormView || $view instanceof MM_WPFS_InlineSaveCardFormView ||
-        $view instanceof MM_WPFS_InlineSubscriptionFormView || $view instanceof MM_WPFS_InlineDonationFormView
+        $view instanceof InlinePaymentFormView || $view instanceof InlineSaveCardFormView ||
+        $view instanceof InlineSubscriptionFormView || $view instanceof InlineDonationFormView
     ): ?>
         <div class="wpfs-form-group">
 
@@ -224,7 +239,7 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
     }
     ?>
 
-    <?php if ( MM_WPFS_Utils::hasFeeRecovery( $form ) && ! $view instanceof MM_WPFS_InlineSaveCardFormView ): ?>
+    <?php if ( Utils::hasFeeRecovery( $form ) && ! $view instanceof InlineSaveCardFormView ): ?>
         <div class="wpfs-form-check wpfs-form-fee-recovery">
             <input type="<?php echo $is_opt_in ? 'checkbox' : 'hidden'; ?>" class="wpfs-form-check-input" id="<?php $view->feeRecoveryAccepted()->id(); ?>"
                 name="<?php $view->feeRecoveryAccepted()->name(); ?>" value="1">
@@ -246,14 +261,14 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
     <?php endif; ?>
     <?php // (inline_payment|inline_subscription|inline_card_capture|inline_donation)(div): captcha ?>
     <?php if (
-        $view instanceof MM_WPFS_InlinePaymentFormView || $view instanceof MM_WPFS_InlineSaveCardFormView ||
-        $view instanceof MM_WPFS_InlineSubscriptionFormView || $view instanceof MM_WPFS_InlineDonationFormView
+        $view instanceof InlinePaymentFormView || $view instanceof InlineSaveCardFormView ||
+        $view instanceof InlineSubscriptionFormView || $view instanceof InlineDonationFormView
     ): ?>
-        <?php if (MM_WPFS_ReCaptcha::getSecureInlineForms($this->staticContext)): ?>
+        <?php if (ReCaptcha::getSecureInlineForms($this->staticContext)): ?>
             <div class="wpfs-form-group">
                 <label class="wpfs-form-label">
                     <?php /* translators: Form field label for captcha */
-                    _e('Prove you are a human', 'wp-full-stripe-free'); ?>
+                    esc_html_e('Prove you are a human', 'wp-full-stripe-free'); ?>
                 </label>
                 <div class="wpfs-form-captcha" data-wpfs-field-name="g-recaptcha-response"
                     data-wpfs-form-hash="<?php echo esc_attr($view->getFormHash()); ?>"></div>
@@ -261,14 +276,14 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
         <?php endif; ?>
     <?php endif; ?>
     <?php if (
-        $view instanceof MM_WPFS_CheckoutPaymentFormView || $view instanceof MM_WPFS_CheckoutSaveCardFormView ||
-        $view instanceof MM_WPFS_CheckoutSubscriptionFormView || $view instanceof MM_WPFS_CheckoutDonationFormView
+        $view instanceof CheckoutPaymentFormView || $view instanceof CheckoutSaveCardFormView ||
+        $view instanceof CheckoutSubscriptionFormView || $view instanceof CheckoutDonationFormView
     ): ?>
-        <?php if (MM_WPFS_ReCaptcha::getSecureCheckoutForms($this->staticContext)): ?>
+        <?php if (ReCaptcha::getSecureCheckoutForms($this->staticContext)): ?>
             <div class="wpfs-form-group">
                 <label class="wpfs-form-label">
                     <?php /* translators: Form field label for captcha */
-                    _e('Prove you are a human', 'wp-full-stripe-free'); ?>
+                    esc_html_e('Prove you are a human', 'wp-full-stripe-free'); ?>
                 </label>
                 <div class="wpfs-form-captcha" data-wpfs-field-name="g-recaptcha-response"
                     data-wpfs-form-hash="<?php echo esc_attr($view->getFormHash()); ?>"></div>
@@ -278,23 +293,23 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
     <?php
     // (common): payment details eligibility + display mode
     $showPaymentDetails = false;
-    if ($view instanceof MM_WPFS_SubscriptionFormView) {
+    if ($view instanceof SubscriptionFormView) {
         $showPaymentDetails = true;
 
-        if (($view instanceof MM_WPFS_CheckoutPaymentFormView || $view instanceof MM_WPFS_CheckoutSubscriptionFormView) && 1 == $form->simpleButtonLayout) {
+        if (($view instanceof CheckoutPaymentFormView || $view instanceof CheckoutSubscriptionFormView) && 1 == $form->simpleButtonLayout) {
             $showPaymentDetails = false;
         }
-        if ($view instanceof MM_WPFS_SubscriptionFormView && count($view->plans()->options()) == 0) {
+        if ($view instanceof SubscriptionFormView && count($view->plans()->options()) == 0) {
             $showPaymentDetails = false;
         }
     } else if (
-        $view instanceof MM_WPFS_InlinePaymentFormView &&
-        !($view instanceof MM_WPFS_InlineSaveCardFormView)
+        $view instanceof InlinePaymentFormView &&
+        !($view instanceof InlineSaveCardFormView)
     ) {
         $showPaymentDetails = true;
     } else if (
-        $view instanceof MM_WPFS_CheckoutPaymentFormView &&
-        !($view instanceof MM_WPFS_CheckoutSaveCardFormView)
+        $view instanceof CheckoutPaymentFormView &&
+        !($view instanceof CheckoutSaveCardFormView)
     ) {
         $showPaymentDetails = true;
     }
@@ -375,7 +390,7 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
                 class="wpfs-btn wpfs-btn-link wpfs-btn-link--sm" data-toggle="tooltip"
                 data-tooltip-content="<?php echo esc_attr('wpfs-form-summary-' . $view->getFormHash()); ?>">
                 <?php /* translators: Link that trigger the opening of the payment details table */
-                _e('Payment details', 'wp-full-stripe-free'); ?>
+                esc_html_e('Payment details', 'wp-full-stripe-free'); ?>
             </a>
             <div class="wpfs-tooltip-content"
                 data-tooltip-id="<?php echo esc_attr('wpfs-form-summary-' . $view->getFormHash()); ?>">
@@ -385,19 +400,19 @@ $defaultBillingCountry = isset( $form->defaultBillingCountry ) && ! empty( $form
             </div>
         <?php endif; ?>
 
-        <?php if ( MM_WPFS_Utils::isTestMode() ): ?>
+        <?php if ( Utils::isTestMode() ): ?>
             <div class="wpfs-form-test-label">
-                <?php _e( 'Test Mode', 'wp-full-stripe-free' ); ?>
+                <?php esc_html_e( 'Test Mode', 'wp-full-stripe-free' ); ?>
             </div>
         <?php endif; ?>
     </div>
 </form>
 <?php
 if (
-    $view instanceof MM_WPFS_InlinePaymentFormView ||
-    $view instanceof MM_WPFS_CheckoutPaymentFormView ||
-    $view instanceof MM_WPFS_InlineSubscriptionFormView ||
-    $view instanceof MM_WPFS_CheckoutSubscriptionFormView
+    $view instanceof InlinePaymentFormView ||
+    $view instanceof CheckoutPaymentFormView ||
+    $view instanceof InlineSubscriptionFormView ||
+    $view instanceof CheckoutSubscriptionFormView
 ) {
     if (count($view->getProductPricing()) > 0) {
         ?>
@@ -414,6 +429,6 @@ if (
     define('WPFP_FORM_TAX_DATA', 'WPFP_FORM_TAX_DATA');
     ?>
     <script type="text/javascript">
-        var wpfsTaxIdData = <?php echo json_encode(MM_WPFS_CustomerTaxId::getTaxIdTypesByCountry()); ?>;
+        var wpfsTaxIdData = <?php echo json_encode(CustomerTaxId::getTaxIdTypesByCountry()); ?>;
     </script>
 <?php } ?>

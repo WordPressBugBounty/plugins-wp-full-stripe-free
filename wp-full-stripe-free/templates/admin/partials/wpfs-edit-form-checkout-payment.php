@@ -1,27 +1,18 @@
 <?php
-/** @var $view MM_WPFS_Admin_CheckoutPaymentFormView */
+use ThemeIsle\WPFullPay\Admin\Menu;
+use ThemeIsle\WPFullPay\Admin\Views\CheckoutPaymentFormView;
+use ThemeIsle\WPFullPay\Admin\Views\FormViewConstants;
+use ThemeIsle\WPFullPay\Main;
+
+/** @var $view CheckoutPaymentFormView */
 /** @var $form */
 ?>
 <form <?php $view->formAttributes(); ?>>
     <input id="<?php $view->action()->id(); ?>" name="<?php $view->action()->name(); ?>" value="<?php $view->action()->value(); ?>" <?php $view->action()->attributes(); ?>>
-    <input name="<?php echo MM_WPFS_Admin_FormViewConstants::FIELD_FORM_ID; ?>" value="<?php echo $form->checkoutFormID; ?>" type="hidden">
+    <input name="<?php echo FormViewConstants::FIELD_FORM_ID; ?>" value="<?php echo $form->checkoutFormID; ?>" type="hidden">
     <input id="<?php $view->minimumPaymentAmountHidden()->id(); ?>" name="<?php $view->minimumPaymentAmountHidden()->name(); ?>" <?php $view->minimumPaymentAmountHidden()->attributes(); ?>>
-    <div class="wpfs-edit-form-pane" data-tab-id="<?php echo MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_GENERAL; ?>">
-        <div class="wpfs-form__cols">
-            <div class="wpfs-form__col">
-                <div class="wpfs-form-block">
-                    <div class="wpfs-form-block__title"><?php esc_html_e( 'Properties', 'wp-full-stripe-free'); ?></div>
-                    <?php include( 'wpfs-form-component-display-name.php' ); ?>
-                </div>
-                <div class="wpfs-form-block">
-                    <div class="wpfs-form-block__title"><?php esc_html_e( 'Behavior', 'wp-full-stripe-free'); ?></div>
-                    <?php include( 'wpfs-form-component-redirect-after-payment.php' ); ?>
-                </div>
-                <?php include( 'wpfs-form-component-action-buttons.php' ); ?>
-            </div>
-        </div>
-    </div>
-    <div class="wpfs-edit-form-pane" data-tab-id="<?php echo MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENT_AND_TAX; ?>" style="display: none;">
+    <?php include( 'wpfs-edit-form-pane-general.php' ); ?>
+    <div class="wpfs-edit-form-pane" data-tab-id="<?php echo Menu::PARAM_VALUE_TAB_PAYMENT_AND_TAX; ?>" style="display: none;">
         <div class="wpfs-form__cols">
             <div class="wpfs-form__col">
                 <div class="wpfs-form-block">
@@ -31,7 +22,7 @@
                 </div>
             </div>
         </div>
-        <div class="wpfs-form__cols" id="onetime-payment-stripe-product-list" style="<?php echo $form->customAmount == MM_WPFS::PAYMENT_TYPE_CUSTOM_AMOUNT ? 'display: none;' : '';  ?>">
+        <div class="wpfs-form__cols" id="onetime-payment-stripe-product-list" style="<?php echo $form->customAmount == Main::PAYMENT_TYPE_CUSTOM_AMOUNT ? 'display: none;' : '';  ?>">
             <div class="wpfs-form__col">
                 <div class="wpfs-form-block">
                     <?php include( 'wpfs-form-component-payment-products.php' ); ?>
@@ -67,7 +58,7 @@
             </div>
         </div>
     </div>
-    <div class="wpfs-edit-form-pane" data-tab-id="<?php echo MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_APPEARANCE; ?>" style="display: none;">
+    <div class="wpfs-edit-form-pane" data-tab-id="<?php echo Menu::PARAM_VALUE_TAB_APPEARANCE; ?>" style="display: none;">
         <div class="wpfs-form__cols">
             <div class="wpfs-form__col">
                 <div class="wpfs-form-block">
@@ -87,13 +78,7 @@
             </div>
             <div class="wpfs-form__col">
                 <div class="wpfs-form-block wpfs-form-block--appearance">
-                    <div class="wpfs-form-block__title-with-badge">
-                        <span class="wpfs-form-block__title"><?php esc_html_e( 'Form ID', 'wp-full-stripe-free' ); ?></span>
-                        <span class="wpfs-form-id-badge">
-                            <strong><?php echo esc_html( $form->name ); ?></strong>
-                            <a class="wpfs-btn wpfs-btn-link wpfs-btn-link--small js-copy-form-id" data-form-id="<?php echo esc_attr( $form->name ); ?>"><?php esc_html_e( 'Copy', 'wp-full-stripe-free' ); ?></a>
-                        </span>
-                    </div>
+                    <?php include( 'wpfs-form-component-form-id-badge.php' ); ?>
                     <p class="wpfs-form-help">
                         <?php esc_html_e( 'Checkout forms use Stripe-hosted pages. Custom CSS cannot be applied to checkout forms.', 'wp-full-stripe-free' ); ?>
                     </p>
@@ -101,7 +86,7 @@
             </div>
         </div>
     </div>
-    <div class="wpfs-edit-form-pane" data-tab-id="<?php echo MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_FORM_LAYOUT; ?>" style="display: none;">
+    <div class="wpfs-edit-form-pane" data-tab-id="<?php echo Menu::PARAM_VALUE_TAB_FORM_LAYOUT; ?>" style="display: none;">
         <div class="wpfs-form__cols">
             <div class="wpfs-form__col">
                 <div class="wpfs-form-block">
@@ -118,30 +103,10 @@
                     <div class="wpfs-form-block__title"><?php esc_html_e( 'Custom fields', 'wp-full-stripe-free'); ?></div>
                     <?php include( 'wpfs-form-component-custom-fields.php' ); ?>
                 </div>
-                <div class="wpfs-form-block">
-                    <div class="wpfs-form-block__title"><?php esc_html_e( 'Security', 'wp-full-stripe-free'); ?></div>
-                    <div class="wpfs-form-help">
-                        <?php
-                            echo sprintf(
-                                /* translators: %1$s: opening anchor tag, %2$s: closing anchor tag */
-                                __( 'You can enable reCaptcha in the %1$sWP Full Pay settings%2$s.', 'wp-full-stripe-free' ),
-                                '<a target="_blank" href="' . MM_WPFS_Admin_Menu::getAdminUrlBySlug( MM_WPFS_Admin_Menu::SLUG_SETTINGS_SECURITY ) . '">',
-                                '</a>'
-                            );
-                        ?>
-                    </div>
-                </div>
+                <?php include( 'wpfs-form-component-security-notice.php' ); ?>
                 <?php include( 'wpfs-form-component-action-buttons.php' ); ?>
             </div>
         </div>
     </div>
-    <div class="wpfs-edit-form-pane" data-tab-id="<?php echo MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_NOTIFICATIONS_AND_INTEGRATION; ?>" style="display: none;">
-        <?php include( 'wpfs-form-component-email-templates.php' ); ?>
-        <div class="wpfs-form__cols">
-            <div class="wpfs-form__col wpfs-form__col__third">
-                <?php include( 'wpfs-form-component-webhook.php' ); ?>
-                <?php include( 'wpfs-form-component-action-buttons.php' ); ?>
-            </div>
-        </div>
-    </div>
+    <?php include( 'wpfs-edit-form-pane-notifications.php' ); ?>
 </form>

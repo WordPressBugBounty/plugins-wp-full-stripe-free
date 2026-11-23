@@ -1,6 +1,8 @@
 <?php
+use ThemeIsle\WPFullPay\Help\ContextHelp;
+
 /**
- * @var $help MM_WPFS_ContextHelp
+ * @var $help ContextHelp
  */
 
 $globalArticles  = $help->getGlobalArticles();

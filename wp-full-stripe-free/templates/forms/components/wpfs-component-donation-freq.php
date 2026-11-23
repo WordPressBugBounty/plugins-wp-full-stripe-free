@@ -1,5 +1,7 @@
 <?php
-/** @var MM_WPFS_FormView $view */
+use ThemeIsle\WPFullPay\Forms\Views\FormView;
+
+/** @var FormView $view */
 /** @var \StdClass $form */
 if (!is_null($view->donationFrequencyOptions())) {
     if (count($view->donationFrequencyOptions()->options()) > 1) {

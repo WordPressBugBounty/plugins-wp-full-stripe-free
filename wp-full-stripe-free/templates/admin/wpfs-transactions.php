@@ -1,15 +1,21 @@
 <div class="wrap">
 	<?php
+use ThemeIsle\WPFullPay\Admin\Menu;
+use ThemeIsle\WPFullPay\Admin\Tables\DonationsTable;
+use ThemeIsle\WPFullPay\Admin\Tables\OneTimePaymentsTable;
+use ThemeIsle\WPFullPay\Admin\Tables\SavedCardsTable;
+use ThemeIsle\WPFullPay\Admin\Tables\SubscriptionsTable;
+
 	/** @var $tabId */
 	/** @var $transactionCount */
 	/** @var $formCount */
 
 	$pageStyle = 'wpfs-page-one-time-payments';
-	if ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS ) {
+	if ( $tabId === Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS ) {
 		$pageStyle = 'wpfs-page-subscriptions';
-	} elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS ) {
+	} elseif ( $tabId === Menu::PARAM_VALUE_TAB_DONATIONS ) {
 		$pageStyle = 'wpfs-page-donations';
-	} elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS ) {
+	} elseif ( $tabId === Menu::PARAM_VALUE_TAB_SAVED_CARDS ) {
 		$pageStyle = 'wpfs-page-saved-cards';
 	}
 	?>
@@ -24,43 +30,43 @@
 		} else {
 			$pageUrl = add_query_arg(
 				[
-					'page' => MM_WPFS_Admin_Menu::SLUG_TRANSACTIONS,
+					'page' => Menu::SLUG_TRANSACTIONS,
 					'tab'  => $tabId
 				],
 				admin_url( 'admin.php' )
 			);
 
-			if ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS ) {
-				$textFilter   = array_key_exists( MM_WPFS_Admin_Menu::PARAM_NAME_PAYMENTS_TEXT_FILTER, $_REQUEST ) ? $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_PAYMENTS_TEXT_FILTER ] : null;
-				$statusFilter = array_key_exists( MM_WPFS_Admin_Menu::PARAM_NAME_PAYMENTS_STATUS_FILTER, $_REQUEST ) ? $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_PAYMENTS_STATUS_FILTER ] : MM_WPFS_Admin_Menu::PARAM_VALUE_PAYMENT_STATUS_ALL;
-				$modeFilter   = array_key_exists( MM_WPFS_Admin_Menu::PARAM_NAME_PAYMENTS_MODE_FILTER, $_REQUEST ) ? $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_PAYMENTS_MODE_FILTER ] : MM_WPFS_Admin_Menu::PARAM_VALUE_API_MODE_ALL;
+			if ( $tabId === Menu::PARAM_VALUE_TAB_PAYMENTS ) {
+				$textFilter   = array_key_exists( Menu::PARAM_NAME_PAYMENTS_TEXT_FILTER, $_REQUEST ) ? $_REQUEST[ Menu::PARAM_NAME_PAYMENTS_TEXT_FILTER ] : null;
+				$statusFilter = array_key_exists( Menu::PARAM_NAME_PAYMENTS_STATUS_FILTER, $_REQUEST ) ? $_REQUEST[ Menu::PARAM_NAME_PAYMENTS_STATUS_FILTER ] : Menu::PARAM_VALUE_PAYMENT_STATUS_ALL;
+				$modeFilter   = array_key_exists( Menu::PARAM_NAME_PAYMENTS_MODE_FILTER, $_REQUEST ) ? $_REQUEST[ Menu::PARAM_NAME_PAYMENTS_MODE_FILTER ] : Menu::PARAM_VALUE_API_MODE_ALL;
 
-				$paymentsTable = new WPFS_OneTimePayments_Table( $this->loggerService );
+				$paymentsTable = new OneTimePaymentsTable( $this->loggerService );
 				$paymentsTable->prepare_items();
 
 				include( 'partials/wpfs-transactions-payments.php' );
-			} elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS ) {
-				$textFilter   = array_key_exists( MM_WPFS_Admin_Menu::PARAM_NAME_SUBSCRIPTIONS_TEXT_FILTER, $_REQUEST ) ? $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_SUBSCRIPTIONS_TEXT_FILTER ] : null;
-				$statusFilter = array_key_exists( MM_WPFS_Admin_Menu::PARAM_NAME_SUBSCRIPTIONS_STATUS_FILTER, $_REQUEST ) ? $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_SUBSCRIPTIONS_STATUS_FILTER ] : MM_WPFS_Admin_Menu::PARAM_VALUE_SUBSCRIPTION_STATUS_ALL;
-				$modeFilter   = array_key_exists( MM_WPFS_Admin_Menu::PARAM_NAME_SUBSCRIPTIONS_MODE_FILTER, $_REQUEST ) ? $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_SUBSCRIPTIONS_MODE_FILTER ] : MM_WPFS_Admin_Menu::PARAM_VALUE_API_MODE_ALL;
+			} elseif ( $tabId === Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS ) {
+				$textFilter   = array_key_exists( Menu::PARAM_NAME_SUBSCRIPTIONS_TEXT_FILTER, $_REQUEST ) ? $_REQUEST[ Menu::PARAM_NAME_SUBSCRIPTIONS_TEXT_FILTER ] : null;
+				$statusFilter = array_key_exists( Menu::PARAM_NAME_SUBSCRIPTIONS_STATUS_FILTER, $_REQUEST ) ? $_REQUEST[ Menu::PARAM_NAME_SUBSCRIPTIONS_STATUS_FILTER ] : Menu::PARAM_VALUE_SUBSCRIPTION_STATUS_ALL;
+				$modeFilter   = array_key_exists( Menu::PARAM_NAME_SUBSCRIPTIONS_MODE_FILTER, $_REQUEST ) ? $_REQUEST[ Menu::PARAM_NAME_SUBSCRIPTIONS_MODE_FILTER ] : Menu::PARAM_VALUE_API_MODE_ALL;
 
-				$subscriptionsTable = new WPFS_Subscriptions_Table( $this->loggerService );
+				$subscriptionsTable = new SubscriptionsTable( $this->loggerService );
 				$subscriptionsTable->prepare_items();
 
 				include( 'partials/wpfs-transactions-subscriptions.php' );
-			} elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS ) {
-				$textFilter = array_key_exists( MM_WPFS_Admin_Menu::PARAM_NAME_DONATIONS_TEXT_FILTER, $_REQUEST ) ? $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_DONATIONS_TEXT_FILTER ] : null;
-				$modeFilter = array_key_exists( MM_WPFS_Admin_Menu::PARAM_NAME_DONATIONS_MODE_FILTER, $_REQUEST ) ? $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_DONATIONS_MODE_FILTER ] : MM_WPFS_Admin_Menu::PARAM_VALUE_API_MODE_ALL;
+			} elseif ( $tabId === Menu::PARAM_VALUE_TAB_DONATIONS ) {
+				$textFilter = array_key_exists( Menu::PARAM_NAME_DONATIONS_TEXT_FILTER, $_REQUEST ) ? $_REQUEST[ Menu::PARAM_NAME_DONATIONS_TEXT_FILTER ] : null;
+				$modeFilter = array_key_exists( Menu::PARAM_NAME_DONATIONS_MODE_FILTER, $_REQUEST ) ? $_REQUEST[ Menu::PARAM_NAME_DONATIONS_MODE_FILTER ] : Menu::PARAM_VALUE_API_MODE_ALL;
 
-				$donationsTable = new WPFS_Donations_Table( $this->loggerService );
+				$donationsTable = new DonationsTable( $this->loggerService );
 				$donationsTable->prepare_items();
 
 				include( 'partials/wpfs-transactions-donations.php' );
-			} elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS ) {
-				$textFilter = array_key_exists( MM_WPFS_Admin_Menu::PARAM_NAME_SAVED_CARDS_TEXT_FILTER, $_REQUEST ) ? $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_SAVED_CARDS_TEXT_FILTER ] : null;
-				$modeFilter = array_key_exists( MM_WPFS_Admin_Menu::PARAM_NAME_SAVED_CARDS_MODE_FILTER, $_REQUEST ) ? $_REQUEST[ MM_WPFS_Admin_Menu::PARAM_NAME_SAVED_CARDS_MODE_FILTER ] : MM_WPFS_Admin_Menu::PARAM_VALUE_API_MODE_ALL;
+			} elseif ( $tabId === Menu::PARAM_VALUE_TAB_SAVED_CARDS ) {
+				$textFilter = array_key_exists( Menu::PARAM_NAME_SAVED_CARDS_TEXT_FILTER, $_REQUEST ) ? $_REQUEST[ Menu::PARAM_NAME_SAVED_CARDS_TEXT_FILTER ] : null;
+				$modeFilter = array_key_exists( Menu::PARAM_NAME_SAVED_CARDS_MODE_FILTER, $_REQUEST ) ? $_REQUEST[ Menu::PARAM_NAME_SAVED_CARDS_MODE_FILTER ] : Menu::PARAM_VALUE_API_MODE_ALL;
 
-				$savedCardsTable = new WPFS_SavedCards_Table( $this->loggerService );
+				$savedCardsTable = new SavedCardsTable( $this->loggerService );
 				$savedCardsTable->prepare_items();
 
 				include( 'partials/wpfs-transactions-saved-cards.php' );
@@ -79,7 +85,7 @@
             </div>
         </div>
         <div class="wpfs-dialog-content-actions">
-            <a class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php _e( 'Close', 'wp-full-stripe-free' ); ?></a>
+            <a class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php esc_html_e( 'Close', 'wp-full-stripe-free' ); ?></a>
         </div>
     </script>
     <script type="text/template" id="wpfs-success-message">
@@ -91,13 +97,13 @@
         </div>
     </script>
     <?php
-    if ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_PAYMENTS ) {
+    if ( $tabId === Menu::PARAM_VALUE_TAB_PAYMENTS ) {
         include 'partials/wpfs-transactions-payment-templates.php';
-    } elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS ) {
+    } elseif ( $tabId === Menu::PARAM_VALUE_TAB_SUBSCRIPTIONS ) {
         include 'partials/wpfs-transactions-subscription-templates.php';
-    } elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_DONATIONS ) {
+    } elseif ( $tabId === Menu::PARAM_VALUE_TAB_DONATIONS ) {
         include 'partials/wpfs-transactions-donation-templates.php';
-    } elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_SAVED_CARDS ) {
+    } elseif ( $tabId === Menu::PARAM_VALUE_TAB_SAVED_CARDS ) {
         include 'partials/wpfs-transactions-saved-card-templates.php';
     }
     ?>

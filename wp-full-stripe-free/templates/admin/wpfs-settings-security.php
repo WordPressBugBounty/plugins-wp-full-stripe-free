@@ -1,6 +1,8 @@
 <?php
+use ThemeIsle\WPFullPay\Admin\Views\SecurityView;
+
 /** @var $backLinkUrl */
-/** @var $view MM_WPFS_Admin_SecurityView */
+/** @var $view SecurityView */
 /** @var $securityData */
 ?>
 <div class="wrap">
@@ -19,7 +21,7 @@
                             <div class="wpfs-form-block__title"><?php esc_html_e( 'Google reCAPTCHA', 'wp-full-stripe-free' ); ?></div>
                             <p id="wpfs-recaptcha-version-help" class="wpfs-form-help">
                                 <?php esc_html_e( 'Requires Google reCAPTCHA v2 (Checkbox or Invisible badge).', 'wp-full-stripe-free' ); ?>
-                                <a href="https://docs.themeisle.com/article/2099-registering-your-website-for-google-recaptcha" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'View registration guide', 'wp-full-stripe-free' ); ?></a>
+                                <a href="<?php echo esc_url( tsdk_utmify( 'https://docs.themeisle.com/wp-full-pay/registering-your-website-for-google-recaptcha', 'recaptcha', 'settings' ) ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'View registration guide', 'wp-full-stripe-free' ); ?></a>
                             </p>
                             <div class="wpfs-form-group">
                                 <label class="wpfs-form-label"><?php esc_html_e( 'Secure with reCAPTCHA', 'wp-full-stripe-free' ); ?></label>
@@ -66,7 +68,7 @@
                                 <div class="wpfs-inline-message__title"><?php esc_html_e( 'How to protect forms with Google reCaptcha?', 'wp-full-stripe-free' ); ?></div>
                                 <p><?php esc_html_e( 'You can find more info about which version you should choose and how to obtain the API keys in our Knowledge base.', 'wp-full-stripe-free' ); ?></p>
                                 <p>
-                                    <a class="wpfs-btn wpfs-btn-link" href="https://docs.themeisle.com/article/2099-registering-your-website-for-google-recaptcha" target="_blank"><?php esc_html_e( 'Learn more about Google reCAPTCHA', 'wp-full-stripe-free' ); ?></a>
+                                    <a class="wpfs-btn wpfs-btn-link" href="<?php echo esc_url( tsdk_utmify( 'https://docs.themeisle.com/wp-full-pay/registering-your-website-for-google-recaptcha', 'recaptcha', 'settings' ) ); ?>" target="_blank"><?php esc_html_e( 'Learn more about Google reCAPTCHA', 'wp-full-stripe-free' ); ?></a>
                                 </p>
                             </div>
                         </div>

@@ -1,8 +1,12 @@
 <?php
-    /** @var $view MM_WPFS_Admin_FormsOptionsView */
+use ThemeIsle\WPFullPay\Admin\Views\FormsOptionsView;
+use ThemeIsle\WPFullPay\Locale\Countries;
+use ThemeIsle\WPFullPay\Main;
+
+    /** @var $view FormsOptionsView */
     /** @var $formsOptions */
 
-    $articleUrl = "https://docs.themeisle.com/article/2116-pre-fill-form-fields-via-url-parameters";
+    $articleUrl = esc_url( tsdk_utmify( 'https://docs.themeisle.com/wp-full-pay/pre-fill-form-fields-via-url-parameters', 'prefill-fields', 'settings' ) );
 ?>
 <form <?php $view->formAttributes(); ?>>
     <input id="<?php $view->action()->id(); ?>" name="<?php $view->action()->name(); ?>" value="<?php $view->action()->value(); ?>" <?php $view->action()->attributes(); ?>>
@@ -12,11 +16,11 @@
                 <label for="<?php $view->defaultBillingCountry()->id(); ?>" class="wpfs-form-label"><?php $view->defaultBillingCountry()->label(); ?></label>
                 <div class="wpfs-ui wpfs-form-select">
                     <?php
-                    $defaultBillingCountry = ( ! isset( $formsOptions->defaultBillingCountry ) || is_null( $formsOptions->defaultBillingCountry ) ) ? MM_WPFS::DEFAULT_BILLING_COUNTRY_INITIAL_VALUE : $formsOptions->defaultBillingCountry;
+                    $defaultBillingCountry = ( ! isset( $formsOptions->defaultBillingCountry ) || is_null( $formsOptions->defaultBillingCountry ) ) ? Main::DEFAULT_BILLING_COUNTRY_INITIAL_VALUE : $formsOptions->defaultBillingCountry;
                     ?>
                     <select id="<?php $view->defaultBillingCountry()->id(); ?>" name="<?php $view->defaultBillingCountry()->name(); ?>" <?php $view->defaultBillingCountry()->attributes(); ?>>
-                        <?php foreach ( MM_WPFS_Countries::getAvailableCountries() as $countryKey => $countryObject ) { ?>
-                            <option value="<?php echo $countryKey; ?>" <?php echo $countryKey === $defaultBillingCountry ? 'selected': ''; ?>><?php echo MM_WPFS_Admin::translateLabelAdmin($countryObject['name']); ?></option>
+                        <?php foreach ( Countries::getCountryLabels() as $countryKey => $countryLabel ) { ?>
+                            <option value="<?php echo $countryKey; ?>" <?php echo $countryKey === $defaultBillingCountry ? 'selected': ''; ?>><?php echo esc_html( $countryLabel ); ?></option>
                         <?php } ?>
                     </select>
                 </div>
@@ -58,7 +62,7 @@
                 <div class="wpfs-inline-message__inner">
                     <p><?php
                     /* translators: %s: URL to knowledge base article */
-                    echo sprintf( __('For prefilling form fields in a more granular manner, please <a href="%s" target="_blank">refer to our knowledge base article</a>.', 'wp-full-stripe-free' ), $articleUrl ); ?></p>
+                    echo wp_kses_post( sprintf( __('For prefilling form fields in a more granular manner, please <a href="%s" target="_blank">refer to our knowledge base article</a>.', 'wp-full-stripe-free' ), $articleUrl ) ); ?></p>
                 </div>
             </div>
         </div>

@@ -1,4 +1,7 @@
 <?php
+use ThemeIsle\WPFullPay\ReCaptcha;
+use ThemeIsle\WPFullPay\Utils;
+
 /**
  * Created by PhpStorm.
  * User: tnagy
@@ -10,8 +13,8 @@
 	<div class="wpfs-form-title"><?php /* translators: Page title of the Customer Portal page */ esc_html_e( 'Manage your account', 'wp-full-stripe-free' ); ?></div>
 	<div class="wpfs-form-lead">
 		<div class="wpfs-form-description">
-			<?php esc_html_e( 'Enter the e-mail address used for your purchase(s).', 'wp-full-stripe-free' ); ?>
-			<?php if ( ! MM_WPFS_Utils::isDemoMode() ): ?>
+			<?php esc_html_e( 'Enter the e-mail address used for your purchases.', 'wp-full-stripe-free' ); ?>
+			<?php if ( ! Utils::isDemoMode() ): ?>
 				<?php esc_html_e( 'You are going to receive a security code to your e-mail address.', 'wp-full-stripe-free' ); ?>
 			<?php endif; ?>
 		</div>
@@ -19,7 +22,7 @@
 	<div class="wpfs-form-group">
 		<input type="text" class="wpfs-form-control" id="wpfs-email-address" name="wpfs-email-address" placeholder="<?php /* translators: Login form field placeholder for the email address */ esc_attr_e( 'Enter e-mail address', 'wp-full-stripe-free' ); ?>">
 	</div>
-	<?php if (MM_WPFS_ReCaptcha::getSecureCustomerPortal( $this->staticContext )): ?>
+	<?php if (ReCaptcha::getSecureCustomerPortal( $this->staticContext )): ?>
 		<div class="wpfs-recaptcha">
 			<div id="wpfs-enter-email-address-form-recaptcha"></div>
 		</div>

@@ -1,5 +1,7 @@
 <?php
-/** @var $view MM_WPFS_Admin_FormView */
+use ThemeIsle\WPFullPay\Admin\Views\FormView;
+
+/** @var $view FormView */
 /** @var $form */
 /** @var $data */
 ?>

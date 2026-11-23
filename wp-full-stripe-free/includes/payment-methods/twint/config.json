@@ -48,7 +48,6 @@
   "author": "dennis",
   "recurring": false,
   "stripe_checkout": true,
-  "bnpl": false,
   "external_docs": "https://docs.stripe.com/payments/twint",
   "internal_docs": "https://docs.stripe.com/payments/twint",
   "enabled": true

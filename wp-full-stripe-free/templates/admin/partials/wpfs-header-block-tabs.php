@@ -1,4 +1,6 @@
 <?php
+use ThemeIsle\WPFullPay\Admin\Menu;
+
     /** @var $tabs array */
     /** @var $tabId string */
     /** @var $pageSlug string */
@@ -8,10 +10,10 @@
 <?php foreach ( $tabs as $currentTab ) {
     /** @var $currentTab array */
     $params = [
-        MM_WPFS_Admin_Menu::PARAM_NAME_TAB => $currentTab[ MM_WPFS_Admin_Menu::PARAM_NAME_TAB ]
+        Menu::PARAM_NAME_TAB => $currentTab[ Menu::PARAM_NAME_TAB ]
     ];
     $tabUrl = $this->getAdminUrlBySlugAndParams( $pageSlug, $params );
 ?>
-    <a class="wpfs-form-tab wpfs-page-tabs__item <?php echo $tabId === $currentTab[ MM_WPFS_Admin_Menu::PARAM_NAME_TAB ] ? 'wpfs-page-tabs__item--active' : '' ?>" href="<?php echo $tabUrl ?>" data-tab-id="<?php echo $currentTab['tab']; ?>"><?php echo $currentTab[ 'title' ]; ?></a>
+    <a class="wpfs-form-tab wpfs-page-tabs__item <?php echo $tabId === $currentTab[ Menu::PARAM_NAME_TAB ] ? 'wpfs-page-tabs__item--active' : '' ?>" href="<?php echo $tabUrl ?>" data-tab-id="<?php echo $currentTab['tab']; ?>"><?php echo wp_kses_post( $currentTab[ 'title' ] ); ?></a>
 <?php } ?>
 </div>

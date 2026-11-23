@@ -1,6 +1,8 @@
 <?php
+use ThemeIsle\WPFullPay\CustomerPortal\CustomerPortalModel;
+
 /**
- * @var MM_WPFS_CustomerPortalModel $model
+ * @var CustomerPortalModel $model
  */
 ?>
 <div id="wpfs-select-account-container" class="container">
@@ -8,8 +10,8 @@
         <div class="wpfs-form-title"><?php /* translators: Page title on the 'Select account' page of the Customer portal */ esc_html_e( 'Select a customer to proceed', 'wp-full-stripe-free' ); ?></div>
         <div class="wpfs-form-lead">
             <div class="wpfs-form-description wpfs-form-description--sm">
-                <?php echo sprintf( /* translators: p1: Customer's email address */ __( 'Several Stripe customers are associated with the email address <strong>%s</strong>.', 'wp-full-stripe-free' ), $model->getAccountEmail() ); ?>
-                <?php if ( $model->getAuthenticationType() == MM_WPFS_CustomerPortalModel::AUTHENTICATION_TYPE_PLUGIN ): ?>
+                <?php echo wp_kses_post( sprintf( /* translators: p1: Customer's email address */ __( 'Several Stripe customers are associated with the email address <strong>%s</strong>.', 'wp-full-stripe-free' ), esc_html( $model->getAccountEmail() ) ) ); ?>
+                <?php if ( $model->getAuthenticationType() == CustomerPortalModel::AUTHENTICATION_TYPE_PLUGIN ): ?>
                     <a href="" id="wpfs-anchor-logout" ><?php /* translators: Link text for log out link */ esc_html_e( 'Log out', 'wp-full-stripe-free' ); ?></a>
                 <?php endif; ?>
         </div>
@@ -17,7 +19,7 @@
         <form>
             <div class="wpfs-account-selector-list">
                 <?php
-                /* @var $account MM_WPFS_CustomerPortalAccount */
+                /* @var $account CustomerPortalAccount */
                 foreach ( $model->getAccounts() as $account ) { ?>
                     <div class="wpfs-account-selector-item">
                         <div class="wpfs-account-selector-data">
@@ -30,11 +32,11 @@
                                                 /* translators: Label displayed in the account selector when the account has no subscriptions */
                                                 __( 'No subscription','wp-full-stripe-free' );
                                 ?>
-                                <strong><?php echo $account->getName(); ?></strong> (<?php echo $subscriptionsLabel ?>)
+                                <strong><?php echo esc_html( $account->getName() ); ?></strong> (<?php echo esc_html( $subscriptionsLabel ); ?>)
                             </div>
                             <div class="wpfs-account-selector-meta"><?php
                             /* translators: %s: formatted date/time string */
-                            echo sprintf( __('Created at %s', 'wp-full-stripe-free'), $account->getCreatedAtLabel() ); ?></div>
+                            echo sprintf( esc_html__('Created at %s', 'wp-full-stripe-free'), $account->getCreatedAtLabel() ); ?></div>
                         </div>
                         <div class="wpfs-account-selector-actions">
                             <a class="wpfs-btn wpfs-btn-link wpfs-btn-link--bold wpfs-account-selector" href="" data-customer-id="<?php echo $account->getStripeCustomerId() ?>"><?php esc_html_e( 'Select account', 'wp-full-stripe-free' ); ?></a>

@@ -1,4 +1,6 @@
 <?php
+use ThemeIsle\WPFullPay\Utils;
+
 /**
  * Created by PhpStorm.
  * User: tnagy
@@ -10,7 +12,7 @@
 	<div class="wpfs-form-title"><?php esc_html_e( 'Manage your account', 'wp-full-stripe-free' ); ?></div>
 	<div class="wpfs-form-lead">
 		<div class="wpfs-form-description">
-			<?php if ( MM_WPFS_Utils::isDemoMode() ) { ?>
+			<?php if ( Utils::isDemoMode() ) { ?>
 				<?php /* translators: Login form field placeholder for security code */ esc_html_e( 'Enter any non-empty security code (DEMO MODE).', 'wp-full-stripe-free' ); ?>
 			<?php } else { ?>
 				<?php /* translators: Login form field placeholder for security code */ esc_html_e( 'Enter the security code sent to your email address.', 'wp-full-stripe-free' ); ?>

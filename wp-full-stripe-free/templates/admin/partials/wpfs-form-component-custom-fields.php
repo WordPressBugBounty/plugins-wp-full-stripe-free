@@ -1,57 +1,42 @@
 <?php
-	/** @var $view MM_WPFS_Admin_FormView */
+use ThemeIsle\WPFullPay\Admin\Views\FormView;
+use ThemeIsle\WPFullPay\Forms\Fields\CustomFields;
+use ThemeIsle\WPFullPay\Main;
+use ThemeIsle\WPFullPay\Utils;
+
+	/** @var $view FormView */
 	/** @var $form */
 	/** @var $data */
 
 	// Type label map shared by the field list and the add/edit dialog.
 	$cfTypeLabels = [
-		MM_WPFS_CustomFields::TYPE_TEXT        => __( 'Text field', 'wp-full-stripe-free' ),
-		MM_WPFS_CustomFields::TYPE_TEXTAREA    => __( 'Text area', 'wp-full-stripe-free' ),
-		MM_WPFS_CustomFields::TYPE_SELECT      => __( 'Dropdown', 'wp-full-stripe-free' ),
-		MM_WPFS_CustomFields::TYPE_MULTISELECT => __( 'Multi-select', 'wp-full-stripe-free' ),
-		MM_WPFS_CustomFields::TYPE_CHECKBOX    => __( 'Checkbox', 'wp-full-stripe-free' ),
-		MM_WPFS_CustomFields::TYPE_DATE        => __( 'Date', 'wp-full-stripe-free' ),
-		MM_WPFS_CustomFields::TYPE_NUMBER      => __( 'Number', 'wp-full-stripe-free' ),
-		MM_WPFS_CustomFields::TYPE_PHONE       => __( 'Phone number', 'wp-full-stripe-free' ),
-		MM_WPFS_CustomFields::TYPE_HTML        => __( 'HTML block', 'wp-full-stripe-free' ),
+		CustomFields::TYPE_TEXT        => __( 'Text field', 'wp-full-stripe-free' ),
+		CustomFields::TYPE_TEXTAREA    => __( 'Text area', 'wp-full-stripe-free' ),
+		CustomFields::TYPE_SELECT      => __( 'Dropdown', 'wp-full-stripe-free' ),
+		CustomFields::TYPE_MULTISELECT => __( 'Multi-select', 'wp-full-stripe-free' ),
+		CustomFields::TYPE_CHECKBOX    => __( 'Checkbox', 'wp-full-stripe-free' ),
+		CustomFields::TYPE_DATE        => __( 'Date', 'wp-full-stripe-free' ),
+		CustomFields::TYPE_NUMBER      => __( 'Number', 'wp-full-stripe-free' ),
+		CustomFields::TYPE_PHONE       => __( 'Phone number', 'wp-full-stripe-free' ),
+		CustomFields::TYPE_HTML        => __( 'HTML block', 'wp-full-stripe-free' ),
 	];
 
 	$cfBootstrapData = isset( $data->customFields ) ? json_decode( $data->customFields, true ) : null;
 	if ( ! is_array( $cfBootstrapData ) ) {
 		$cfBootstrapData = [ 'version' => 1, 'fields' => [] ];
 	}
-	$cfMaxCount = isset( $data->customFieldMaxCount ) ? (int) $data->customFieldMaxCount : MM_WPFS::DEFAULT_CUSTOM_INPUT_FIELD_MAX_COUNT;
+	$cfMaxCount = isset( $data->customFieldMaxCount ) ? (int) $data->customFieldMaxCount : Main::DEFAULT_CUSTOM_INPUT_FIELD_MAX_COUNT;
 
 	// Flags that make JSON safe to embed inside a <script> tag (escapes </script>, &, quotes).
 	$cfJsonScriptFlags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
 
+	// The dialog's messages are translated in wpfs-admin.js; the type labels stay
+	// here because the dialog's type dropdown below prints them too.
 	$cfL10n = [
 		'typeLabels'      => $cfTypeLabels,
 		'maxCount'        => $cfMaxCount,
-		'maxOptions'      => MM_WPFS_CustomFields::MAX_OPTIONS,
-		'maxLabelLength'  => MM_WPFS_CustomFields::getMaxLabelLength(),
-		'addTitle'        => __( 'Add custom field', 'wp-full-stripe-free' ),
-		'editTitle'       => __( 'Edit custom field', 'wp-full-stripe-free' ),
-		'deleteTitle'     => __( 'Delete custom field', 'wp-full-stripe-free' ),
-		'labelRequired'   => __( 'Please enter field label', 'wp-full-stripe-free' ),
-		'titleRequired'   => __( 'Please enter a title', 'wp-full-stripe-free' ),
-		'contentRequired' => __( 'Please enter HTML content', 'wp-full-stripe-free' ),
-		'labelTooLong'    => sprintf(
-			/* translators: %d: maximum number of characters */
-			__( 'Maximum custom field length is %d characters', 'wp-full-stripe-free' ),
-			MM_WPFS_CustomFields::getMaxLabelLength()
-		),
-		'optionRequired'  => __( 'Please add at least one option', 'wp-full-stripe-free' ),
-		'maxOptionsReached' => sprintf(
-			/* translators: %d: maximum number of options */
-			__( 'You can add at most %d options', 'wp-full-stripe-free' ),
-			MM_WPFS_CustomFields::MAX_OPTIONS
-		),
-		'maxFieldsReached' => sprintf(
-			/* translators: %d: maximum number of custom fields */
-			__( 'You can add at most %d custom fields', 'wp-full-stripe-free' ),
-			$cfMaxCount
-		),
+		'maxOptions'      => CustomFields::MAX_OPTIONS,
+		'maxLabelLength'  => CustomFields::getMaxLabelLength(),
 	];
 ?>
 <div class="wpfs-form-group">
@@ -125,13 +110,13 @@
 
 				<div class="wpfs-form-group js-cf-section" data-cf-section="label">
 					<label class="wpfs-form-label" for="wpfs-cf-label"><?php esc_html_e( 'Field label', 'wp-full-stripe-free' ); ?></label>
-					<input id="wpfs-cf-label" class="wpfs-form-control js-cf-label" type="text" maxlength="<?php echo esc_attr( MM_WPFS_CustomFields::getMaxLabelLength() ); ?>">
+					<input id="wpfs-cf-label" class="wpfs-form-control js-cf-label" type="text" maxlength="<?php echo esc_attr( CustomFields::getMaxLabelLength() ); ?>">
 					<div class="wpfs-form-field-error js-cf-label-error"></div>
 				</div>
 
 				<div class="wpfs-form-group js-cf-section" data-cf-section="title">
 					<label class="wpfs-form-label" for="wpfs-cf-title"><?php esc_html_e( 'Title (admin only)', 'wp-full-stripe-free' ); ?></label>
-					<input id="wpfs-cf-title" class="wpfs-form-control js-cf-title" type="text" maxlength="<?php echo esc_attr( MM_WPFS_CustomFields::getMaxLabelLength() ); ?>">
+					<input id="wpfs-cf-title" class="wpfs-form-control js-cf-title" type="text" maxlength="<?php echo esc_attr( CustomFields::getMaxLabelLength() ); ?>">
 					<div class="wpfs-form-field-error js-cf-title-error"></div>
 				</div>
 
@@ -170,7 +155,7 @@
 
 				<div class="wpfs-form-group js-cf-section" data-cf-section="maxLength">
 					<label class="wpfs-form-label" for="wpfs-cf-maxlength"><?php esc_html_e( 'Maximum length', 'wp-full-stripe-free' ); ?></label>
-					<input id="wpfs-cf-maxlength" class="wpfs-form-control js-cf-maxlength" type="number" min="1" step="1" max="<?php echo esc_attr( MM_WPFS_Utils::STRIPE_METADATA_VALUE_MAX_LENGTH ); ?>">
+					<input id="wpfs-cf-maxlength" class="wpfs-form-control js-cf-maxlength" type="number" min="1" step="1" max="<?php echo esc_attr( Utils::STRIPE_METADATA_VALUE_MAX_LENGTH ); ?>">
 				</div>
 
 				<div class="wpfs-form-group js-cf-section" data-cf-section="number">

@@ -1,5 +1,7 @@
 <?php
-/** @var $view MM_WPFS_Admin_PaymentFormView */
+use ThemeIsle\WPFullPay\Admin\Views\PaymentFormView;
+
+/** @var $view PaymentFormView */
 /** @var $form */
 ?>
 <div class="wpfs-form-group" id="wpfs-minimum-payment-amount">

@@ -1,5 +1,7 @@
 <?php
-/** @var MM_WPFS_FormView $view */
+use ThemeIsle\WPFullPay\Forms\Views\FormView;
+
+/** @var FormView $view */
 /** @var \StdClass $form */
 if ( ! is_null( $view->donationGoal() ) ) {
     $donationGoal = $view->donationGoal();
@@ -11,13 +13,13 @@ if ( ! is_null( $view->donationGoal() ) ) {
                 <div class="wpfs-subtitle">
                     <?php
                         // translators: %s is the goal amount
-                        echo sprintf( __( 'of %s Donated', 'wp-full-stripe-free' ), $donationGoal['goal'] );
+                        echo sprintf( esc_html__( 'of %s Donated', 'wp-full-stripe-free' ), $donationGoal['goal'] );
                     ?>
                 </div>
             </div>
             <div class="wpfs-percentage-container">
                 <div class="wpfs-percentage"><?php echo $donationGoal['percent']; ?>%</div>
-                <div class="wpfs-subtitle"><?php _e( 'of the Goal', 'wp-full-stripe-free' ); ?></div>
+                <div class="wpfs-subtitle"><?php esc_html_e( 'of the Goal', 'wp-full-stripe-free' ); ?></div>
             </div>
         </div>
         <div class="wpfs-progress-bar">

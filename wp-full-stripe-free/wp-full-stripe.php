@@ -5,13 +5,20 @@ Plugin Name: WP Full Pay
 Plugin URI: https://paymentsplugin.com
 Description: Use WP Full Pay to accept Stripe payments on your WordPress. Prebuilt forms to accept payments, donations and subscriptions. 
 Author: Themeisle
-Version: 8.5.8
+Version: 8.6.0
 Author URI: https://themeisle.com
 Text Domain: wp-full-stripe-free
 Domain Path: /languages
 Requires License: yes
 WordPress Available: yes
 */
+
+use ThemeIsle\WPFullPay\Assets;
+use ThemeIsle\WPFullPay\Checkout\CheckoutSubmissionService;
+use ThemeIsle\WPFullPay\CustomerPortal\CustomerPortalService;
+use ThemeIsle\WPFullPay\License;
+use ThemeIsle\WPFullPay\Main;
+use ThemeIsle\WPFullPay\Subscriptions\FeeSync;
 
 //defines
 
@@ -48,6 +55,14 @@ function wp_full_stripe_prepare_cron_schedules( $schedules ) {
             'display'  =>
             /* translators: Textual description of how often a periodic task of the plugin runs */
                 __( 'Every 15 minutes', 'wp-full-stripe-free' )
+        ];
+    }
+
+    // WordPress adds this one itself from 5.4.
+    if ( ! isset( $schedules['weekly'] ) ) {
+        $schedules['weekly'] = [
+            'interval' => WEEK_IN_SECONDS,
+            'display'  => __( 'Once Weekly', 'wp-full-stripe-free' ),
         ];
     }
 
@@ -102,6 +117,7 @@ $wpfsDiagCheck = $wpfsDiagCheck && wpfsIsMbStringAvailable();
 if ( $wpfsDiagCheck ) {
     require_once( dirname( __FILE__ ) . '/vendor/autoload.php' );
     require_once( dirname( __FILE__ ) . '/includes/stripe/autoload.php' );
+    require_once( dirname( __FILE__ ) . '/inc/bootstrap.php' );
 
     add_filter(
         'themeisle_sdk_products',
@@ -120,22 +136,18 @@ if ( $wpfsDiagCheck ) {
     );
 
 
-    if ( ! class_exists( 'WPFS_License' ) ) {
-        include( dirname( __FILE__ ) . '/includes/wpfs-license.php' );
-    }
-
-    $namespace = WPFS_License::get_namespace();
+    $namespace = License::get_namespace();
 
     // We hide the license notice as it is not required for this plugin.
     add_filter( $namespace . '_hide_license_notices', '__return_true', 10, 1 );
-    add_action( 'admin_notices', [ 'WPFS_License', 'maybe_render_fee_fallback_notice' ] );
+    add_action( 'admin_notices', [ License::class, 'maybe_render_fee_fallback_notice' ] );
     add_filter( $namespace . '_hide_license_field', '__return_true' );
 
     add_filter( $namespace . '_about_us_metadata', function ( $config ) {
         return [
             'location'         => 'wpfs-transactions',
-            'logo'             => MM_WPFS_Assets::images( 'wpfs-logo.svg' ),
-            'has_upgrade_menu' => ! WPFS_License::is_active(),
+            'logo'             => Assets::images( 'wpfs-logo.svg' ),
+            'has_upgrade_menu' => ! License::is_active(),
             'upgrade_link'     => tsdk_utmify( 'https://paymentsplugin.com/pricing/' ,'admin-menu'),
             'upgrade_text'     => __( 'Get Pro Version', 'wp-full-stripe-free' ),
         ];
@@ -158,17 +170,43 @@ if ( $wpfsDiagCheck ) {
         ];
     } );
 
-    require_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . 'wpfs-main.php';
+    /*
+     * Opt into the SDK Support Hub: a Help button on WP Full Pay's own screens and
+     * the deactivation window, so free users can message support instead of only
+     * the forum. WP Full Pay already fires `themeisle_internal_page` on its screens
+     * (Admin\Menu), so no `pages` list is needed. The Pro flag reads the stored
+     * license so Pro messages are tagged correctly.
+     */
+    add_filter( $namespace . '_support_hub_metadata', function () {
+        return [
+            'is_pro' => License::is_active(),
+            'links'  => [
+                [
+                    'icon' => 'book-alt',
+                    'text' => __( 'Documentation', 'wp-full-stripe-free' ),
+                    'url'  => tsdk_utmify( 'https://docs.themeisle.com/collection/2079-wp-full-pay', 'support-hub' ),
+                ],
+                [
+                    'icon' => 'groups',
+                    'text' => __( 'Community Forum', 'wp-full-stripe-free' ),
+                    'url'  => 'https://wordpress.org/support/plugin/wp-full-stripe-free/',
+                ],
+            ],
+        ];
+    } );
+
+    Main::getInstance();
     require_once dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'includes'. DIRECTORY_SEPARATOR
         . 'payment-methods' . DIRECTORY_SEPARATOR . 'functions.php';
 
-    register_activation_hook( __FILE__, [ 'MM_WPFS', 'setup_db' ] );
-    register_activation_hook( __FILE__, ['MM_WPFS_CustomerPortalService', 'onActivation' ] );
-    register_deactivation_hook( __FILE__, ['MM_WPFS_CustomerPortalService', 'onDeactivation' ] );
-    register_activation_hook( __FILE__, [ 'MM_WPFS_CheckoutSubmissionService', 'onActivation' ] );
-    register_deactivation_hook( __FILE__, [ 'MM_WPFS_CheckoutSubmissionService', 'onDeactivation' ] );
+    register_activation_hook( __FILE__, [ Main::class, 'setup_db' ] );
+    register_activation_hook( __FILE__, [CustomerPortalService::class, 'onActivation' ] );
+    register_deactivation_hook( __FILE__, [CustomerPortalService::class, 'onDeactivation' ] );
+    register_activation_hook( __FILE__, [ CheckoutSubmissionService::class, 'onActivation' ] );
+    register_deactivation_hook( __FILE__, [ CheckoutSubmissionService::class, 'onDeactivation' ] );
+    register_deactivation_hook( __FILE__, [ FeeSync::class, 'onDeactivation' ] );
 
-    \StripeWPFS\Stripe\Stripe::setAppInfo( 'WP Full Pay', MM_WPFS::VERSION, 'https://paymentsplugin.com', 'pp_partner_FnULHViL0IqHp6' );
+    \StripeWPFS\Stripe\Stripe::setAppInfo( 'WP Full Pay', Main::VERSION, 'https://paymentsplugin.com', 'pp_partner_FnULHViL0IqHp6' );
 
     add_filter( 'cron_schedules', 'wp_full_stripe_prepare_cron_schedules' );
     add_filter( 'themeisle_sdk_enable_telemetry', '__return_true' );

@@ -53,7 +53,6 @@
   "author": "dennis",
   "recurring": false,
   "stripe_checkout": true,
-  "bnpl": false,
   "external_docs": "https://docs.stripe.com/payments/eps",
   "internal_docs": "https://docs.stripe.com/payments/eps",
   "enabled": true

@@ -1,3 +1,4 @@
+/* global wpfsScrollToElement, wpfsScrollToFirstFieldError, wpfsGetFieldDescriptor, wpfsFieldErrorSelector, wpfsClearFieldErrors, wpfsGlobalErrorMessages, wpfsInitStepper, wpfsInitSelectmenu */
 jQuery.noConflict();
 ( function ( $ ) {
 	'use strict';
@@ -12,6 +13,17 @@ jQuery.noConflict();
 		const FORM_TYPE_INLINE_DONATION = 'inline_donation';
 		const FORM_TYPE_CHECKOUT_DONATION = 'checkout_donation';
 		const FROM_TYPE_DOM = 'wpfs-form-type';
+		// The wpfsFormSettings.formFields key of each form type.
+		const FORM_FIELDS_KEYS = {
+			[ FORM_TYPE_INLINE_PAYMENT ]: 'inlinePayment',
+			[ FORM_TYPE_CHECKOUT_PAYMENT ]: 'checkoutPayment',
+			[ FORM_TYPE_INLINE_SUBSCRIPTION ]: 'inlineSubscription',
+			[ FORM_TYPE_CHECKOUT_SUBSCRIPTION ]: 'checkoutSubscription',
+			[ FORM_TYPE_INLINE_SAVE_CARD ]: 'inlineSaveCard',
+			[ FORM_TYPE_CHECKOUT_SAVE_CARD ]: 'checkoutSaveCard',
+			[ FORM_TYPE_INLINE_DONATION ]: 'inlineDonation',
+			[ FORM_TYPE_CHECKOUT_DONATION ]: 'checkoutDonation',
+		};
 
 		const PAYMENT_TYPE_LIST_OF_AMOUNTS = 'list_of_amounts';
 		const PAYMENT_TYPE_CUSTOM_AMOUNT = 'custom_amount';
@@ -19,7 +31,6 @@ jQuery.noConflict();
 		const PAYMENT_TYPE_CARD_CAPTURE = 'card_capture';
 		const AMOUNT_OTHER = 'other';
 
-		const FIELD_DESCRIPTOR_MACRO_FIELD_ID = '{fieldId}';
 		const MACRO_SUBMIT_BUTTON_CAPTION_AMOUNT = '{{amount}}';
 		const ERROR_MESSAGE_FIELD_CLASS = 'wpfs-form-error-message';
 
@@ -28,6 +39,69 @@ jQuery.noConflict();
 		const SELECTOR_STYLE_BUTTON_GROUP = 'button-group';
 
 		const COUNTRY_CODE_UNITED_STATES = 'US';
+
+		// Query parameters Stripe appends to the return_url after a redirect.
+		const STRIPE_RETURN_URL_PARAMS = [
+			'payment_intent',
+			'payment_intent_client_secret',
+			'setup_intent',
+			'setup_intent_client_secret',
+			'redirect_status',
+		];
+		// Payment methods that take the customer off the page (bank or wallet
+		// redirects, app approvals, vouchers, QR codes). Forms without an explicit
+		// method list can only complete on the page, so these are hidden from their
+		// Payment Element (#674). Card, Link and the bank debits stay available.
+		const REDIRECT_PAYMENT_METHOD_TYPES = [
+			'affirm',
+			'afterpay_clearpay',
+			'alipay',
+			'alma',
+			'amazon_pay',
+			'bancontact',
+			'billie',
+			'blik',
+			'boleto',
+			'cashapp',
+			'crypto',
+			'eps',
+			'fpx',
+			'gopay',
+			'grabpay',
+			'ideal',
+			'kakao_pay',
+			'klarna',
+			'konbini',
+			'kr_card',
+			'mb_way',
+			'mobilepay',
+			'multibanco',
+			'naver_pay',
+			'oxxo',
+			'p24',
+			'pay_by_bank',
+			'payco',
+			'paynow',
+			'paypal',
+			'paypay',
+			'pix',
+			'promptpay',
+			'qris',
+			'revolut_pay',
+			'samsung_pay',
+			'satispay',
+			'scalapay',
+			'sequra',
+			'shopeepay',
+			'sunbit',
+			'swish',
+			'twint',
+			'upi',
+			'vipps',
+			'wechat_pay',
+			'wero',
+			'zip',
+		];
 
 		const PAYMENT_DETAIL_ROW_SETUP_FEE = 'setupFee';
 		const PAYMENT_DETAIL_ROW_PRODUCT = 'product';
@@ -45,9 +119,13 @@ jQuery.noConflict();
 
 		const PRICE_LINE_ITEM_TYPE_PRODUCT = 'product';
 		const PRICE_LINE_ITEM_TYPE_SETUP_FEE = 'setupFee';
+		const PRICE_LINE_ITEM_TYPE_TRIAL_FIRST_CHARGE = 'trial-first-charge';
 
 		const PRICE_LINE_ITEM_SUBTYPE_DISCOUNT = 'discount';
 		const PRICE_LINE_ITEM_SUBTYPE_TAX = 'tax';
+		// What a plan's first invoice charges at once (SubscriptionFormViewConstants::FIRST_CHARGE_*).
+		const FIRST_CHARGE_PLAN = 'plan';
+		const FIRST_CHARGE_SETUP_FEE = 'setup-fee';
 
 		const PRICE_ID_CUSTOM_AMOUNT = 'customAmount';
 
@@ -62,6 +140,112 @@ jQuery.noConflict();
 		};
 
 		const debugLog = false;
+
+		const { __, _n, sprintf } = wp.i18n;
+
+		const l10n = {
+			validation_errors: {
+				internal_error:
+					/* translators: Banner message of internal error when no error message is returned by the application */
+					__( 'An internal error occurred.', 'wp-full-stripe-free' ),
+				internal_error_title:
+					/* translators: Banner title of internal error */
+					__( 'Internal Error', 'wp-full-stripe-free' ),
+				mandatory_field_is_empty:
+					/* translators: Error message for required fields when empty. %s: custom input field label. */
+					__( "Please enter a value for '%s'", 'wp-full-stripe-free' ),
+				custom_payment_amount_value_is_invalid:
+					/* translators: Field validation error message when payment amount is empty or invalid */
+					__( 'Payment amount is invalid', 'wp-full-stripe-free' ),
+				custom_amount_format_is_invalid:
+					/* translators: Form field validation error message when the custom amount is malformed. %s: example amount, e.g. 12,34 */
+					__(
+						'Please enter a valid amount, for example %s',
+						'wp-full-stripe-free'
+					),
+				invalid_payment_amount:
+					/* translators: Banner message when the payment amount cannot be determined (the form has been tampered with) */
+					__( 'Cannot determine payment amount', 'wp-full-stripe-free' ),
+				invalid_payment_amount_title:
+					/* translators: Banner title when the payment amount cannot be determined (the form has been tampered with) */
+					__( 'Invalid payment amount', 'wp-full-stripe-free' ),
+				payment_failed_title:
+					/* translators: Banner title when the customer returns from a redirect-based payment method and the payment failed */
+					__( 'Payment failed', 'wp-full-stripe-free' ),
+				payment_failed:
+					/* translators: Banner message when the customer returns from a redirect-based payment method and the payment failed */
+					__( 'Payment failed, please try again.', 'wp-full-stripe-free' ),
+			},
+			processing: {
+				title:
+					/* translators: Title shown on the processing overlay while a payment is being completed */
+					__( 'Processing your payment…', 'wp-full-stripe-free' ),
+				save_card_title:
+					/* translators: Title shown on the processing overlay while a card is being saved (no charge is made) */
+					__( 'Saving your card…', 'wp-full-stripe-free' ),
+				message:
+					/* translators: Message shown on the processing overlay while a payment is being completed or a card is being saved */
+					__( 'Please don’t close or refresh this window.', 'wp-full-stripe-free' ),
+			},
+			stripe_errors: {
+				internal_error:
+					/* translators: Banner message of internal error when no error message is returned by the application */
+					__( 'An internal error occurred.', 'wp-full-stripe-free' ),
+				internal_error_title:
+					/* translators: Banner title of internal error */
+					__( 'Internal Error', 'wp-full-stripe-free' ),
+				stripe_error_title:
+					/* translators: Banner title of error returned by Stripe */
+					__( 'Stripe Error', 'wp-full-stripe-free' ),
+				stripe_js_not_loaded:
+					/* translators: Banner message when the Stripe.js library could not be loaded in the browser, for example because an ad blocker blocked it */
+					__( 'Stripe.js not loaded', 'wp-full-stripe-free' ),
+			},
+			products: {
+				other_amount_label:
+					/* translators: Product name of the custom amount entered by the customer */
+					__( 'Other amount', 'wp-full-stripe-free' ),
+				the_selected_product_label:
+					/* translators: Product name used when no product name is available */
+					__( 'The selected product', 'wp-full-stripe-free' ),
+			},
+			application_errors: {
+				stripe_instantiation_error_title:
+					/* translators: Banner title of application error when instantiating the Stripe object */
+					__( 'Stripe error', 'wp-full-stripe-free' ),
+				stripe_instantiation_error_message:
+					/* translators: Error message when instantiating the Stripe object. %s: the message of the exception thrown. */
+					__( 'Cannot initialize Stripe: %s', 'wp-full-stripe-free' ),
+				not_connected_to_stripe: __(
+					'You are not connected to Stripe. Please connect to Stripe in the plugin settings.',
+					'wp-full-stripe-free'
+				),
+			},
+			product_pricing: {
+				default_tax_label:
+					/* translators: Default tax label */
+					__( 'Tax', 'wp-full-stripe-free' ),
+				default_coupon_label:
+					/* translators: Default label of coupon line items */
+					__( 'Coupon', 'wp-full-stripe-free' ),
+				fee_recovery_label:
+					/* translators: Label of the fee recovery line item in the payment summary */
+					__( 'Fee Recovery', 'wp-full-stripe-free' ),
+				tax_label_inclusive_percentage:
+					/* translators: Tax line item label with percentage, inclusive. %1$s: Tax label (VAT, GST, Sales tax, etc), %2$s: Tax percentage. */
+					__( '%1$s (%2$s%%, inclusive)', 'wp-full-stripe-free' ),
+				tax_label_percentage:
+					/* translators: Tax line item label with percentage. %1$s: Tax label (VAT, GST, Sales tax, etc), %2$s: Tax percentage. */
+					__( '%1$s (%2$s%%)', 'wp-full-stripe-free' ),
+				tax_label_inclusive:
+					/* translators: Tax line item label, inclusive. %s: Tax label (VAT, GST, Sales tax, etc). */
+					__( '%s (inclusive)', 'wp-full-stripe-free' ),
+			},
+			generic_error: __(
+				'An error occurred. Please contact the website administrator.',
+				'wp-full-stripe-free'
+			),
+		};
 
 		let stripe = null;
 		try {
@@ -78,19 +262,19 @@ jQuery.noConflict();
 			}
 		} catch ( err ) {
 			var $form = $( 'form.wpfs-form:first' );
-			const message = vsprintf(
+			const message = sprintf(
 				Boolean( wpfsFormSettings.isAdmin )
 					? Boolean( wpfsFormSettings.isConnected )
-						? wpfsFormSettings.l10n.application_errors
+						? l10n.application_errors
 								.stripe_instantiation_error_message
-						: wpfsFormSettings.l10n.application_errors
+						: l10n.application_errors
 								.not_connected_to_stripe
-					: wpfsFormSettings.l10n.generic_error,
-				[ err.message ]
+					: l10n.generic_error,
+				err.message
 			);
 			showErrorGlobalMessage(
 				$form,
-				wpfsFormSettings.l10n.application_errors
+				l10n.application_errors
 					.stripe_instantiation_error_title,
 				message
 			);
@@ -163,6 +347,48 @@ jQuery.noConflict();
 			Object.keys( customInputs ).forEach( function ( key ) {
 				data[ key ] = customInputs[ key ];
 			} );
+		}
+
+		// jQuery before 3.3 (WordPress 5.3–5.5) silently skips async functions
+		// passed as callbacks, so they are wrapped in a plain function.
+		function wpfsPlainCallback( callback ) {
+			return function () {
+				return callback.apply( this, arguments );
+			};
+		}
+
+		// Parses a serialized form into an object that jQuery posts back with the
+		// same names, so PHP still builds wpfs-custom-input[...] arrays. Names
+		// ending in [] collect every value; '+' is a space (jQuery 1.x).
+		function wpfsParseSerializedForm( serialized ) {
+			const decode = ( part ) =>
+				decodeURIComponent( part.replace( /\+/g, ' ' ) );
+			const result = {};
+
+			serialized.split( '&' ).forEach( function ( pair ) {
+				if ( pair === '' ) {
+					return;
+				}
+				const separator = pair.indexOf( '=' );
+				const name = decode(
+					separator === -1 ? pair : pair.slice( 0, separator )
+				);
+				const value =
+					separator === -1
+						? ''
+						: decode( pair.slice( separator + 1 ) );
+
+				if ( name.slice( -2 ) === '[]' ) {
+					if ( ! Array.isArray( result[ name ] ) ) {
+						result[ name ] = [];
+					}
+					result[ name ].push( value );
+				} else {
+					result[ name ] = value;
+				}
+			} );
+
+			return result;
 		}
 
 		function isDonationForm( $form ) {
@@ -484,32 +710,6 @@ jQuery.noConflict();
 			return $( element ).parents( 'form:first' );
 		}
 
-		function isInViewport( $anElement ) {
-			const $window = $( window );
-
-			//noinspection JSValidateTypes
-			const viewPortTop = $window.scrollTop();
-			const viewPortBottom = viewPortTop + $window.height();
-
-			const elementTop = $anElement.offset().top;
-			const elementBottom = elementTop + $anElement.outerHeight();
-
-			if ( debugLog ) {
-				console.log(
-					'isInViewport(): elementBottom=' +
-						elementBottom +
-						', viewPortBottom=' +
-						viewPortBottom +
-						', elementTop=' +
-						elementTop +
-						', viewPortTop=' +
-						viewPortTop
-				);
-			}
-
-			return elementBottom <= viewPortBottom && elementTop >= viewPortTop;
-		}
-
 		function getGlobalMessageContainerTitle( $messageContainer, title ) {
 			let $messageContainerTitle = $(
 				'.wpfs-form-message-title',
@@ -529,33 +729,19 @@ jQuery.noConflict();
 		}
 
 		function getGlobalMessageContainer( $form, message ) {
-			let $messageContainer = $( '.wpfs-form-message', $form );
+			// Leaves the form's configuration error banner in place.
+			const selector = '.wpfs-form-message:not([data-wpfs-configuration-error])';
+			let $messageContainer = $( selector, $form );
 			if ( 0 == $messageContainer.length ) {
 				$( '<div>', { class: 'wpfs-form-message' } ).prependTo( $form );
-				$messageContainer = $( '.wpfs-form-message', $form );
+				$messageContainer = $( selector, $form );
 			}
 			$messageContainer.html( message );
 			return $messageContainer;
 		}
 
 		function scrollToElement( $anElement, fade ) {
-			if (
-				$anElement &&
-				$anElement.offset() &&
-				$anElement.offset().top
-			) {
-				if ( ! isInViewport( $anElement ) ) {
-					$( 'html, body' ).animate(
-						{
-							scrollTop: $anElement.offset().top - 100,
-						},
-						1000
-					);
-				}
-			}
-			if ( $anElement && fade ) {
-				$anElement.fadeIn( 500 ).fadeOut( 500 ).fadeIn( 500 );
-			}
+			wpfsScrollToElement( $anElement, fade );
 		}
 
 		function clearGlobalMessage( $form ) {
@@ -596,19 +782,7 @@ jQuery.noConflict();
 		}
 
 		function clearFieldErrors( $form ) {
-			$( '.wpfs-form-error-message', $form ).remove();
-			$( '.wpfs-form-control', $form ).removeClass(
-				'wpfs-form-control--error'
-			);
-			$( '.wpfs-input-group', $form ).removeClass(
-				'wpfs-input-group--error'
-			);
-			$( '.wpfs-form-control--error', $form ).removeClass(
-				'wpfs-form-control--error'
-			);
-			$( '.wpfs-form-check-input--error', $form ).removeClass(
-				'wpfs-form-check-input--error'
-			);
+			wpfsClearFieldErrors( $form );
 		}
 
 		function clearFieldError( $form, fieldName, fieldId ) {
@@ -627,7 +801,10 @@ jQuery.noConflict();
 				const fieldClass = fieldDescriptor.class;
 				const fieldSelector = fieldDescriptor.selector;
 				const fieldErrorClass = fieldDescriptor.errorClass;
-				let fieldErrorSelector = fieldDescriptor.errorSelector;
+				const fieldErrorSelector = wpfsFieldErrorSelector(
+					fieldDescriptor,
+					fieldId
+				);
 
 				// tnagy initialize field
 				let theFieldSelector;
@@ -643,16 +820,6 @@ jQuery.noConflict();
 					'.' + ERROR_MESSAGE_FIELD_CLASS;
 				if ( 'input' === fieldType ) {
 					if ( fieldErrorSelector != null ) {
-						if (
-							fieldErrorSelector.indexOf(
-								FIELD_DESCRIPTOR_MACRO_FIELD_ID
-							) !== -1
-						) {
-							fieldErrorSelector = fieldErrorSelector.replace(
-								/\{fieldId}/g,
-								fieldId
-							);
-						}
 						$field
 							.closest( fieldErrorSelector )
 							.removeClass( fieldErrorClass );
@@ -660,16 +827,6 @@ jQuery.noConflict();
 					$field.closest( errorMessageFieldSelector ).remove();
 				} else if ( 'input-group' === fieldType ) {
 					if ( fieldErrorSelector != null ) {
-						if (
-							fieldErrorSelector.indexOf(
-								FIELD_DESCRIPTOR_MACRO_FIELD_ID
-							) !== -1
-						) {
-							fieldErrorSelector = fieldErrorSelector.replace(
-								/\{fieldId}/g,
-								fieldId
-							);
-						}
 						$field
 							.closest( fieldErrorSelector )
 							.removeClass( fieldErrorClass );
@@ -687,16 +844,6 @@ jQuery.noConflict();
 					$field.closest( errorMessageFieldSelector ).remove();
 				} else if ( 'select-menu' === fieldType ) {
 					if ( fieldErrorSelector != null ) {
-						if (
-							fieldErrorSelector.indexOf(
-								FIELD_DESCRIPTOR_MACRO_FIELD_ID
-							) !== -1
-						) {
-							fieldErrorSelector = fieldErrorSelector.replace(
-								/\{fieldId}/g,
-								fieldId
-							);
-						}
 						$field
 							.closest( '.' + fieldClass )
 							.removeClass( fieldErrorClass );
@@ -725,87 +872,11 @@ jQuery.noConflict();
 		}
 
 		function getFieldDescriptor( formType, fieldName ) {
-			let fieldDescriptor = null;
-			if (
-				FORM_TYPE_INLINE_PAYMENT === formType &&
-				wpfsFormSettings.formFields.hasOwnProperty( 'inlinePayment' )
-			) {
-				const inlinePaymentFormFields =
-					wpfsFormSettings.formFields.inlinePayment;
-				if ( inlinePaymentFormFields.hasOwnProperty( fieldName ) ) {
-					fieldDescriptor = inlinePaymentFormFields[ fieldName ];
-				}
-			} else if (
-				FORM_TYPE_INLINE_SUBSCRIPTION === formType &&
-				wpfsFormSettings.formFields.hasOwnProperty(
-					'inlineSubscription'
-				)
-			) {
-				const inlineSubscriptionFormFields =
-					wpfsFormSettings.formFields.inlineSubscription;
-				if (
-					inlineSubscriptionFormFields.hasOwnProperty( fieldName )
-				) {
-					fieldDescriptor = inlineSubscriptionFormFields[ fieldName ];
-				}
-			} else if (
-				FORM_TYPE_CHECKOUT_PAYMENT === formType &&
-				wpfsFormSettings.formFields.hasOwnProperty( 'checkoutPayment' )
-			) {
-				const popupPaymentFormFields =
-					wpfsFormSettings.formFields.checkoutPayment;
-				if ( popupPaymentFormFields.hasOwnProperty( fieldName ) ) {
-					fieldDescriptor = popupPaymentFormFields[ fieldName ];
-				}
-			} else if (
-				FORM_TYPE_CHECKOUT_SUBSCRIPTION === formType &&
-				wpfsFormSettings.formFields.hasOwnProperty(
-					'checkoutSubscription'
-				)
-			) {
-				const popupSubscriptionFormFields =
-					wpfsFormSettings.formFields.checkoutSubscription;
-				if ( popupSubscriptionFormFields.hasOwnProperty( fieldName ) ) {
-					fieldDescriptor = popupSubscriptionFormFields[ fieldName ];
-				}
-			} else if (
-				FORM_TYPE_INLINE_SAVE_CARD === formType &&
-				wpfsFormSettings.formFields.hasOwnProperty( 'inlineSaveCard' )
-			) {
-				const inlineCardCaptureFormFields =
-					wpfsFormSettings.formFields.inlineSaveCard;
-				if ( inlineCardCaptureFormFields.hasOwnProperty( fieldName ) ) {
-					fieldDescriptor = inlineCardCaptureFormFields[ fieldName ];
-				}
-			} else if (
-				FORM_TYPE_CHECKOUT_SAVE_CARD === formType &&
-				wpfsFormSettings.formFields.hasOwnProperty( 'checkoutSaveCard' )
-			) {
-				const popupCardCaptureFormFields =
-					wpfsFormSettings.formFields.checkoutSaveCard;
-				if ( popupCardCaptureFormFields.hasOwnProperty( fieldName ) ) {
-					fieldDescriptor = popupCardCaptureFormFields[ fieldName ];
-				}
-			} else if (
-				FORM_TYPE_INLINE_DONATION === formType &&
-				wpfsFormSettings.formFields.hasOwnProperty( 'inlineDonation' )
-			) {
-				const inlineDonationFormFields =
-					wpfsFormSettings.formFields.inlineDonation;
-				if ( inlineDonationFormFields.hasOwnProperty( fieldName ) ) {
-					fieldDescriptor = inlineDonationFormFields[ fieldName ];
-				}
-			} else if (
-				FORM_TYPE_CHECKOUT_DONATION === formType &&
-				wpfsFormSettings.formFields.hasOwnProperty( 'checkoutDonation' )
-			) {
-				const popupDonationFormFields =
-					wpfsFormSettings.formFields.checkoutDonation;
-				if ( popupDonationFormFields.hasOwnProperty( fieldName ) ) {
-					fieldDescriptor = popupDonationFormFields[ fieldName ];
-				}
-			}
-			return fieldDescriptor;
+			return wpfsGetFieldDescriptor(
+				wpfsFormSettings.formFields,
+				FORM_FIELDS_KEYS[ formType ],
+				fieldName
+			);
 		}
 
 		function showFormError(
@@ -868,7 +939,10 @@ jQuery.noConflict();
 				const fieldClass = fieldDescriptor.class;
 				const fieldSelector = fieldDescriptor.selector;
 				const fieldErrorClass = fieldDescriptor.errorClass;
-				let fieldErrorSelector = fieldDescriptor.errorSelector;
+				const fieldErrorSelector = wpfsFieldErrorSelector(
+					fieldDescriptor,
+					fieldId
+				);
 
 				// tnagy initialize field
 				let theFieldSelector;
@@ -906,16 +980,6 @@ jQuery.noConflict();
 						);
 					} else {
 						if ( fieldErrorSelector != null ) {
-							if (
-								fieldErrorSelector.indexOf(
-									FIELD_DESCRIPTOR_MACRO_FIELD_ID
-								) !== -1
-							) {
-								fieldErrorSelector = fieldErrorSelector.replace(
-									/\{fieldId}/g,
-									fieldId
-								);
-							}
 							$field
 								.closest( fieldErrorSelector )
 								.addClass( fieldErrorClass );
@@ -924,16 +988,6 @@ jQuery.noConflict();
 					}
 				} else if ( 'input-group' === fieldType ) {
 					if ( fieldErrorSelector != null ) {
-						if (
-							fieldErrorSelector.indexOf(
-								FIELD_DESCRIPTOR_MACRO_FIELD_ID
-							) !== -1
-						) {
-							fieldErrorSelector = fieldErrorSelector.replace(
-								/\{fieldId}/g,
-								fieldId
-							);
-						}
 						$field
 							.closest( fieldErrorSelector )
 							.addClass( fieldErrorClass );
@@ -950,16 +1004,6 @@ jQuery.noConflict();
 					$fieldError.insertAfter( $field );
 				} else if ( 'dropdown' === fieldType ) {
 					if ( fieldErrorSelector != null ) {
-						if (
-							fieldErrorSelector.indexOf(
-								FIELD_DESCRIPTOR_MACRO_FIELD_ID
-							) !== -1
-						) {
-							fieldErrorSelector = fieldErrorSelector.replace(
-								/\{fieldId}/g,
-								fieldId
-							);
-						}
 						$field
 							.closest( '.' + fieldClass )
 							.addClass( fieldErrorClass );
@@ -1027,30 +1071,12 @@ jQuery.noConflict();
 							hasErrors = true;
 						}
 					}
-					const firstErrorFieldId = $(
-						'.wpfs-form-error-message',
-						$form
-					)
-						.first()
-						.data( 'wpfs-field-error-for' );
-					if ( firstErrorFieldId ) {
-						scrollToElement(
-							$( '#' + firstErrorFieldId, $form ),
-							false
-						);
-					}
+					wpfsScrollToFirstFieldError( $form );
 				}
 				if ( data.bindingResult.globalErrors ) {
-					let globalErrorMessages = '';
-					for (
-						let i = 0;
-						i < data.bindingResult.globalErrors.errors.length;
-						i++
-					) {
-						globalErrorMessages +=
-							data.bindingResult.globalErrors.errors[ i ] +
-							'<br/>';
-					}
+					const globalErrorMessages = wpfsGlobalErrorMessages(
+						data.bindingResult.globalErrors
+					);
 					if ( '' !== globalErrorMessages ) {
 						showErrorGlobalMessage(
 							$form,
@@ -1074,6 +1100,72 @@ jQuery.noConflict();
 			if ( hasErrors ) {
 				resetCaptcha( $form );
 			}
+		}
+
+		/**
+		 * @typedef {{fieldErrors: {title: string, errors: Array<{id: ?string, name: string, message: string}>}, globalErrors: {title: string, errors: string[]}}} BindingResult
+		 *          A refused form's validation errors, as Utils::generateReturnValueFromBindings() sends them.
+		 */
+
+		/**
+		 * Shows a refused form request: its title and message, if it has either, then its field
+		 * and global errors.
+		 *
+		 * @param {JQuery<HTMLFormElement>}                                                   $form
+		 * @param {?{messageTitle?: string, message?: string, bindingResult?: BindingResult}} data  The response.
+		 */
+		function showResponseErrors( $form, data ) {
+			if ( data && ( data.messageTitle || data.message ) ) {
+				showErrorGlobalMessage(
+					$form,
+					data.messageTitle,
+					data.message
+				);
+			}
+			processValidationErrors( $form, data );
+		}
+
+		/**
+		 * Logs a form request that failed and shows the error on the form.
+		 *
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @param {string}                  handlerName The request's name in the log.
+		 * @param {JQuery.jqXHR}            jqXHR
+		 * @param {string}                  textStatus
+		 * @param {string}                  errorThrown The HTTP status text, shown as the message.
+		 */
+		function showAjaxError(
+			$form,
+			handlerName,
+			jqXHR,
+			textStatus,
+			errorThrown
+		) {
+			logError( handlerName, jqXHR, textStatus, errorThrown );
+			showErrorGlobalMessage(
+				$form,
+				l10n.validation_errors.internal_error_title,
+				errorThrown
+			);
+		}
+
+		/**
+		 * Whether the form shows its terms of use and the customer hasn't accepted them. A page
+		 * without the checkbox passes, since its undefined state isn't loosely false, and the
+		 * server refuses the form.
+		 *
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @return {boolean} True when the terms stop the submit.
+		 */
+		function isTermsOfUseUnaccepted( $form ) {
+			if ( 1 != $form.data( 'wpfs-show-terms-of-use' ) ) {
+				return false;
+			}
+			return (
+				$form
+					.find( 'input[name=wpfs-terms-of-use-accepted]' )
+					.prop( 'checked' ) == false
+			);
 		}
 
 		function clearAndShowAndEnableAndFocusCustomAmount( $form ) {
@@ -1152,7 +1244,7 @@ jQuery.noConflict();
 					const captionPatternParams = [];
 
 					captionPatternParams.push( amountPart );
-					caption = vsprintf( captionPattern, captionPatternParams );
+					caption = sprintf( captionPattern, ...captionPatternParams );
 				} else {
 					caption = buttonTitle;
 				}
@@ -1165,7 +1257,29 @@ jQuery.noConflict();
 		}
 
 		function enableFormButtons( $form ) {
-			$form.find( 'button' ).prop( 'disabled', false );
+			$form
+				.find(
+					'button:not([data-wpfs-keep-disabled]):not([data-wpfs-pricing-stale])'
+				)
+				.prop( 'disabled', false );
+		}
+
+		/**
+		 * Keeps Pay disabled while the form shows prices the server no longer charges, because
+		 * re-pricing it failed, until a re-pricing succeeds.
+		 *
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @param {boolean}                 stale
+		 */
+		function setPricingStale( $form, stale ) {
+			const $submit = $form.find( 'button[type=submit]' );
+			if ( stale ) {
+				$submit
+					.attr( 'data-wpfs-pricing-stale', '1' )
+					.prop( 'disabled', true );
+			} else {
+				$submit.removeAttr( 'data-wpfs-pricing-stale' );
+			}
 		}
 
 		function disableFormInputsSelectsButtons( $form ) {
@@ -1184,7 +1298,9 @@ jQuery.noConflict();
 				console.log( 'enableFormInputsSelectsButtons(): CALLED' );
 			}
 			$form
-				.find( 'input, select:not([data-wpfs-select]), button' )
+				.find(
+					'input, select:not([data-wpfs-select]), button:not([data-wpfs-keep-disabled]):not([data-wpfs-pricing-stale])'
+				)
 				.prop( 'disabled', false );
 		}
 
@@ -1299,6 +1415,9 @@ jQuery.noConflict();
 			const formId = $form.data( 'wpfs-form-id' );
 			const formHash = $form.data( 'wpfs-form-hash' );
 
+			// The submit is over; refreshes the reset triggers must run.
+			unlockFormFields( $form );
+
 			resetTextFields( $form );
 			resetStepperFields( $form );
 			resetSelectFields( $form );
@@ -1341,13 +1460,76 @@ jQuery.noConflict();
 			removeFreeTransactionInput( $form );
 		}
 
+		// While a submit runs, the server may charge first and then receive the
+		// form again, so a field changed in between would no longer match the
+		// charge. Lock the fields without disabling them: disabled fields are
+		// left out of the serialized form.
+		function lockFormFields( $form ) {
+			$form
+				.attr( 'data-wpfs-locked', 'true' )
+				.attr( 'aria-busy', 'true' );
+			$form
+				.find(
+					'input:not([type=hidden]):not([type=radio]):not([type=checkbox]), textarea'
+				)
+				.not( '[readonly]' )
+				.attr( { readonly: true, 'data-wpfs-lock-readonly': 'true' } );
+		}
+
+		function unlockFormFields( $form ) {
+			$form.removeAttr( 'data-wpfs-locked' ).removeAttr( 'aria-busy' );
+			$form
+				.find( '[data-wpfs-lock-readonly]' )
+				.removeAttr( 'readonly' )
+				.removeAttr( 'data-wpfs-lock-readonly' );
+		}
+
+		// Radios, checkboxes, selects and their labels have no read-only state,
+		// so a locked form swallows the clicks and keys that would change them.
+		// Programmatic clicks (form reset, error handling) are not the donor's.
+		// Links that run script (coupon Remove, href="") are blocked too; links
+		// that go somewhere, like the terms of use, still open.
+		function blockLockedFormInteraction( event ) {
+			const link =
+				event.target instanceof window.Element
+					? event.target.closest( 'a' )
+					: null;
+			if (
+				! event.isTrusted ||
+				! ( event.target instanceof window.Element ) ||
+				! event.target.closest( 'form[data-wpfs-locked]' ) ||
+				( link &&
+					link.getAttribute( 'href' ) &&
+					'#' !== link.getAttribute( 'href' ) ) ||
+				( 'keydown' === event.type && 'Tab' === event.key )
+			) {
+				return;
+			}
+			// The quantity stepper changes its value on wheel; let the page scroll.
+			if ( 'wheel' !== event.type ) {
+				event.preventDefault();
+			}
+			event.stopPropagation();
+		}
+		[ 'click', 'mousedown', 'keydown', 'wheel' ].forEach(
+			function ( type ) {
+				document.addEventListener(
+					type,
+					blockLockedFormInteraction,
+					true
+				);
+			}
+		);
+
 		function showLoadingAnimation( $form ) {
 			$form
 				.find( 'button[type=submit]' )
 				.addClass( 'wpfs-btn-primary--loader' );
+			lockFormFields( $form );
 		}
 
 		function hideLoadingAnimation( $form ) {
+			unlockFormFields( $form );
 			$form
 				.find( 'button[type=submit]' )
 				.removeClass( 'wpfs-btn-primary--loader' );
@@ -1364,11 +1546,6 @@ jQuery.noConflict();
 			if ( $overlay.length ) {
 				return $overlay;
 			}
-			const l10n =
-				( wpfsFormSettings &&
-					wpfsFormSettings.l10n &&
-					wpfsFormSettings.l10n.processing ) ||
-				{};
 			$overlay = $(
 				'<div id="wpfs-processing-overlay" class="wpfs-processing-overlay" role="dialog" aria-modal="true" aria-labelledby="wpfs-processing-overlay-title" aria-describedby="wpfs-processing-overlay-text" tabindex="-1">' +
 					'<div class="wpfs-processing-overlay__card">' +
@@ -1380,10 +1557,10 @@ jQuery.noConflict();
 			);
 			$overlay
 				.find( '.wpfs-processing-overlay__title' )
-				.text( l10n.title || 'Processing your payment…' );
+				.text( l10n.processing.title );
 			$overlay
 				.find( '.wpfs-processing-overlay__text' )
-				.text( l10n.message || '' );
+				.text( l10n.processing.message );
 			$( 'body' ).append( $overlay );
 			return $overlay;
 		}
@@ -1391,20 +1568,15 @@ jQuery.noConflict();
 		// Save-card forms don't charge anything, so "Processing your payment…"
 		// is misleading there — show a save-card specific title instead.
 		function processingOverlayTitleForForm( $form ) {
-			const l10n =
-				( wpfsFormSettings &&
-					wpfsFormSettings.l10n &&
-					wpfsFormSettings.l10n.processing ) ||
-				{};
 			const formType =
 				$form && $form.length ? $form.data( FROM_TYPE_DOM ) : null;
 			if (
 				FORM_TYPE_INLINE_SAVE_CARD === formType ||
 				FORM_TYPE_CHECKOUT_SAVE_CARD === formType
 			) {
-				return l10n.save_card_title || 'Saving your card…';
+				return l10n.processing.save_card_title;
 			}
-			return l10n.title || 'Processing your payment…';
+			return l10n.processing.title;
 		}
 
 		// Keep keyboard focus on the modal overlay so users can't tab into the
@@ -1645,6 +1817,37 @@ jQuery.noConflict();
 			);
 		}
 
+		/**
+		 * @typedef {{success?: function(Object): void, error?: function(JQuery.jqXHR, string, string): void, complete?: function(): void}} AjaxCallbacks
+		 */
+
+		/**
+		 * Posts to admin-ajax and reads the answer as JSON, as every form request does.
+		 *
+		 * @param {Object<string, *>|string} data      The request body: fields, or a serialized form.
+		 * @param {AjaxCallbacks}            callbacks
+		 * @return {JQuery.jqXHR} The request.
+		 */
+		function postAjax( data, callbacks ) {
+			return $.ajax( {
+				type: 'POST',
+				url: wpfsFormSettings.ajaxUrl,
+				data,
+				cache: false,
+				dataType: 'json',
+				...callbacks,
+			} );
+		}
+
+		// A coupon typed into the field is only sent once it was redeemed.
+		function serializeForm( $form ) {
+			if ( WPFS.getCoupon( extractFormNameFromNode( $form ) ) !== null ) {
+				return $form.serialize();
+			}
+
+			return $( ":input[name!='wpfs-coupon']", $form ).serialize();
+		}
+
 		class WpfsAbstractFormSerializer {
 			constructor( $form ) {
 				this.$form = $form;
@@ -1657,7 +1860,7 @@ jQuery.noConflict();
 			}
 
 			serialize() {
-				return this.$form.serialize();
+				return serializeForm( this.$form );
 			}
 		}
 
@@ -1668,7 +1871,7 @@ jQuery.noConflict();
 
 			serialize() {
 				if ( isSelectedProductDiscounted( this.$form ) ) {
-					return this.$form.serialize();
+					return serializeForm( this.$form );
 				}
 
 				return $(
@@ -1708,24 +1911,11 @@ jQuery.noConflict();
 					logInfo( 'getSetupIntentClientSecret', 'CALLED' );
 				}
 
-				let data = $form.serialize();
-				data = JSON.parse(
-					'{"' +
-						data.replace( /&/g, '","' ).replace( /=/g, '":"' ) +
-						'"}',
-					function ( key, value ) {
-						return key === '' ? value : decodeURIComponent( value );
-					}
-				);
+				const data = wpfsParseSerializedForm( serializeForm( $form ) );
 				data.action = 'wp_get_Setup_Intent_Client_Secret';
 				data.type = $form.data( 'wpfs-form-type' );
 
-				$.ajax( {
-					type: 'POST',
-					url: wpfsFormSettings.ajaxUrl,
-					data,
-					cache: false,
-					dataType: 'json',
+				postAjax( data, {
 					success( data ) {
 						if ( debugLog ) {
 							logInfo(
@@ -1751,16 +1941,16 @@ jQuery.noConflict();
 						if ( jqXHR?.responseJSON?.message ) {
 							showErrorGlobalMessage(
 								$form,
-								wpfsFormSettings.l10n.validation_errors
+								l10n.validation_errors
 									.internal_error_title,
 								jqXHR.responseJSON.message
 							);
 						} else {
 							showErrorGlobalMessage(
 								$form,
-								wpfsFormSettings.l10n.validation_errors
+								l10n.validation_errors
 									.internal_error_title,
-								wpfsFormSettings.l10n.validation_errors
+								l10n.validation_errors
 									.internal_error
 							);
 						}
@@ -1789,12 +1979,11 @@ jQuery.noConflict();
 			clearGlobalMessage( $form );
 			clearFieldErrors( $form );
 
-			$.ajax( {
-				type: 'POST',
-				url: wpfsFormSettings.ajaxUrl,
-				data: createFormSerializer( $form ).serialize(),
-				cache: false,
-				dataType: 'json',
+			// An authentication step resubmits the form once it ends, so the
+			// form stays locked until that step unlocks it.
+			let authenticationStarted = false;
+
+			postAjax( createFormSerializer( $form ).serialize(), {
 				success( data ) {
 					if ( debugLog ) {
 						logInfo(
@@ -1826,26 +2015,30 @@ jQuery.noConflict();
 							enableFormButtons( $form );
 						}
 					} else if ( data.requiresAction ) {
-						handleStripeIntentAction( $form, card, data );
+						authenticationStarted = handleStripeIntentAction(
+							$form,
+							card,
+							data
+						);
 					} else {
 						processValidationErrors( $form, data );
 					}
 				},
 				error( jqXHR, textStatus, errorThrown ) {
-					logError(
+					showAjaxError(
+						$form,
 						'submitPaymentData',
 						jqXHR,
 						textStatus,
 						errorThrown
 					);
-					showErrorGlobalMessage(
-						$form,
-						wpfsFormSettings.l10n.validation_errors
-							.internal_error_title,
-						errorThrown
-					);
 				},
 				complete() {
+					if ( authenticationStarted ) {
+						// Stripe shows its own authentication dialog.
+						hideProcessingOverlay();
+						return;
+					}
 					enableFormButtons( $form );
 					hideLoadingAnimation( $form );
 				},
@@ -1862,12 +2055,7 @@ jQuery.noConflict();
 				failureMessage: error.message || '',
 			};
 
-			$.ajax( {
-				type: 'POST',
-				url: wpfsFormSettings.ajaxUrl,
-				data: data,
-				cache: false,
-				dataType: 'json',
+			postAjax( data, {
 				success( response ) {
 					if ( debugLog ) {
 						logInfo(
@@ -1876,6 +2064,7 @@ jQuery.noConflict();
 						);
 					}
 				},
+				// Only the record failed: the banner keeps the error the customer needs to see.
 				error( jqXHR, textStatus, errorThrown ) {
 					if ( debugLog ) {
 						logError(
@@ -1885,18 +2074,31 @@ jQuery.noConflict();
 							errorThrown
 						);
 					}
-					showErrorGlobalMessage(
-						$form,
-						wpfsFormSettings.l10n
-							.stripe_errors
-							.card_declined,
-						errorThrown
-					);
 				}
 			} );
 		}
 
+		/**
+		 * @param {Object} $form The submitted form.
+		 * @param {Object} card  The card element.
+		 * @param {Object} data  The charge response asking for authentication.
+		 * @return {boolean} Whether an authentication step started; it unlocks the form when it fails.
+		 */
 		function handleStripeIntentAction( $form, card, data ) {
+			let started = false;
+
+			function follow( promise, handler ) {
+				started = true;
+				promise.then( handler, function ( error ) {
+					handler( { error } );
+				} );
+			}
+
+			function unlockAfterFailedAction() {
+				enableFormButtons( $form );
+				hideLoadingAnimation( $form );
+			}
+
 			function handlePaymentIntentAction( result ) {
 				if ( debugLog ) {
 					logInfo(
@@ -1912,10 +2114,10 @@ jQuery.noConflict();
 					}
 					showErrorGlobalMessage(
 						$form,
-						wpfsFormSettings.l10n.validation_errors
-							.internal_error_title,
+						l10n.stripe_errors.stripe_error_title,
 						result.error.message
 					);
+					unlockAfterFailedAction();
 				} else {
 					removePaymentIntentIdInput( $form );
 					removePaymentIntentClientSecretInput( $form );
@@ -1941,10 +2143,10 @@ jQuery.noConflict();
 					logWarn( 'handleSetupIntentAction', result.error.message );
 					showErrorGlobalMessage(
 						$form,
-						wpfsFormSettings.l10n.validation_errors
-							.internal_error_title,
+						l10n.stripe_errors.stripe_error_title,
 						result.error.message
 					);
+					unlockAfterFailedAction();
 				} else {
 					removeSetupIntentIdInput( $form );
 					addSetupIntentIdInput( $form, result );
@@ -1968,10 +2170,10 @@ jQuery.noConflict();
 					);
 					showErrorGlobalMessage(
 						$form,
-						wpfsFormSettings.l10n.validation_errors
-							.internal_error_title,
+						l10n.stripe_errors.stripe_error_title,
 						result.error.message
 					);
+					unlockAfterFailedAction();
 				} else {
 					removePaymentIntentIdInput( $form );
 					removePaymentIntentClientSecretInput( $form );
@@ -1997,15 +2199,19 @@ jQuery.noConflict();
 			if ( stripe != null ) {
 				if ( FORM_TYPE_INLINE_PAYMENT === data.formType ) {
 					if ( data.isManualConfirmation ) {
-						stripe
-							.handleCardAction( data.paymentIntentClientSecret )
-							.then( handlePaymentIntentAction );
-					} else {
-						stripe
-							.confirmCardPayment(
+						follow(
+							stripe.handleCardAction(
 								data.paymentIntentClientSecret
-							)
-							.then( handlePaymentIntentAction );
+							),
+							handlePaymentIntentAction
+						);
+					} else {
+						follow(
+							stripe.confirmCardPayment(
+								data.paymentIntentClientSecret
+							),
+							handlePaymentIntentAction
+						);
 					}
 				}
 				if ( FORM_TYPE_INLINE_SUBSCRIPTION === data.formType ) {
@@ -2013,39 +2219,52 @@ jQuery.noConflict();
 						data.hasOwnProperty( 'paymentIntentClientSecret' ) &&
 						data.paymentIntentClientSecret != null
 					) {
-						stripe
-							.handleCardPayment( data.paymentIntentClientSecret )
-							.then( handlePaymentSetupIntentAction );
+						follow(
+							stripe.handleCardPayment(
+								data.paymentIntentClientSecret
+							),
+							handlePaymentSetupIntentAction
+						);
 					} else if (
 						data.hasOwnProperty( 'setupIntentClientSecret' ) &&
 						data.setupIntentClientSecret != null
 					) {
-						stripe
-							.handleCardSetup( data.setupIntentClientSecret )
-							.then( handlePaymentSetupIntentAction );
+						follow(
+							stripe.handleCardSetup(
+								data.setupIntentClientSecret
+							),
+							handlePaymentSetupIntentAction
+						);
 					}
 				}
 				if ( FORM_TYPE_INLINE_DONATION === data.formType ) {
 					if ( data.isManualConfirmation ) {
-						stripe
-							.handleCardAction( data.paymentIntentClientSecret )
-							.then( handlePaymentIntentAction );
-					} else {
-						stripe
-							.confirmCardPayment(
+						follow(
+							stripe.handleCardAction(
 								data.paymentIntentClientSecret
-							)
-							.then( handlePaymentIntentAction );
+							),
+							handlePaymentIntentAction
+						);
+					} else {
+						follow(
+							stripe.confirmCardPayment(
+								data.paymentIntentClientSecret
+							),
+							handlePaymentIntentAction
+						);
 					}
 				}
 				if ( FORM_TYPE_INLINE_SAVE_CARD === data.formType ) {
-					stripe
-						.handleCardSetup( data.setupIntentClientSecret )
-						.then( handleSetupIntentAction );
+					follow(
+						stripe.handleCardSetup( data.setupIntentClientSecret ),
+						handleSetupIntentAction
+					);
 				}
 			} else {
 				// todo tnagy show error message
 			}
+
+			return started;
 		}
 
 		function handleCustomAmountChange( $customAmountSelectElement, $form ) {
@@ -2070,10 +2289,13 @@ jQuery.noConflict();
 			const $element = $( '.wpfs-custom-amount--unique', $form );
 			const customAmountValue = $element.val();
 
-			if ( customAmountValue !== '' ) {
-				const zeroDecimalSupport =
-					$element.data( 'wpfs-zero-decimal-support' ) === true;
+			const zeroDecimalSupport =
+				$element.data( 'wpfs-zero-decimal-support' ) === true;
 
+			if (
+				customAmountValue !== '' &&
+				formatter.validCustomAmount( customAmountValue, zeroDecimalSupport )
+			) {
 				result = parseCurrencyAmount(
 					formatter.parse( customAmountValue ),
 					zeroDecimalSupport,
@@ -2084,83 +2306,116 @@ jQuery.noConflict();
 			return result;
 		}
 
+		/**
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @param {boolean}                 zeroDecimalSupport
+		 * @return {string} The format error message with an example amount, e.g. "12,34".
+		 */
+		function getCustomAmountFormatErrorMessage( $form, zeroDecimalSupport ) {
+			return sprintf(
+				l10n.validation_errors.custom_amount_format_is_invalid,
+				createCurrencyFormatter( $form ).formatExampleAmount(
+					zeroDecimalSupport
+				)
+			);
+		}
+
+		/**
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @return {?{$element: JQuery<HTMLInputElement>, zeroDecimalSupport: boolean}}
+		 * The enabled custom amount field when it holds a malformed amount, otherwise null.
+		 */
+		function findMalformedCustomAmount( $form ) {
+			const $element = $(
+				'input[name="wpfs-custom-amount-unique"]:enabled',
+				$form
+			);
+			if ( $element.length === 0 ) {
+				return null;
+			}
+			const zeroDecimalSupport =
+				$element.data( 'wpfs-zero-decimal-support' ) === true;
+			if (
+				createCurrencyFormatter( $form ).validCustomAmount(
+					$element.val(),
+					zeroDecimalSupport
+				)
+			) {
+				return null;
+			}
+			return { $element, zeroDecimalSupport };
+		}
+
+		/**
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @return {boolean} True when the enabled custom amount field holds a malformed amount.
+		 */
+		function isCustomAmountMalformed( $form ) {
+			return findMalformedCustomAmount( $form ) !== null;
+		}
+
+		/**
+		 * Shows the expected format when the enabled custom amount field holds
+		 * a malformed amount.
+		 *
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @return {boolean} True when the custom amount is malformed.
+		 */
+		function showCustomAmountFormatError( $form ) {
+			const malformed = findMalformedCustomAmount( $form );
+			if ( malformed === null ) {
+				return false;
+			}
+			const { $element, zeroDecimalSupport } = malformed;
+			clearFieldError(
+				$form,
+				'wpfs-custom-amount-unique',
+				$element.attr( 'id' )
+			);
+			showFieldError(
+				$form,
+				'wpfs-custom-amount-unique',
+				$element.attr( 'id' ),
+				getCustomAmountFormatErrorMessage( $form, zeroDecimalSupport ),
+				true
+			);
+			return true;
+		}
+
 		function getTaxIdType( $form ) {
 			return $( '.wpfs-tax-id-type-select option:selected', $form ).val();
 		}
 
 		/**
-		 * Will return an object with the address fields from the form
-		 * Shipping address will be used if it is present, otherwise billing address
-		 * If the form does not have any address fields, null will be returned
+		 * The billing city and street the price is taxed on. The country, state and ZIP come
+		 * from the tax fields or the billing address too, so the page prices one address, never
+		 * a mix with the shipping one.
 		 *
-		 * @param {Object} $form the form of the address fields
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @return {{city: ?string, line1?: ?string, line2?: ?string}} The city and the lines
+		 *                                                             filled in; all null
+		 *                                                             without a billing city.
 		 */
 		function getTaxAddressFromForm( $form ) {
 			const data = {};
-			// capture shipping address if supplied
-			const shipCityField = $(
-				'input[name="wpfs-shipping-address-city"]',
-				$form
-			);
 			const billCityField = $(
 				'input[name="wpfs-billing-address-city"]',
 				$form
 			);
-			if (
-				shipCityField &&
-				shipCityField.val() &&
-				shipCityField.val().length > 0
-			) {
-				data.city = shipCityField.val();
-				const shipLin1Field = $(
-					'input[name="wpfs-shipping-address-line-1"]',
-					$form
-				);
-				if (
-					shipLin1Field &&
-					shipLin1Field.val() &&
-					shipLin1Field.val().length > 0
-				) {
-					data.line1 = shipLin1Field.val();
-				}
-				const shipLin2Field = $(
-					'input[name="wpfs-shipping-address-line-2"]',
-					$form
-				);
-				if (
-					shipLin2Field &&
-					shipLin2Field.val() &&
-					shipLin2Field.val().length > 0
-				) {
-					data.line2 = shipLin2Field.val();
-				}
-			} else if (
-				billCityField &&
-				billCityField.val() &&
-				billCityField.val().length > 0
-			) {
-				// otherwise use billing address if supplied
+			if ( billCityField.val() ) {
 				data.city = billCityField.val();
 				const billLin1Field = $(
 					'input[name="wpfs-billing-address-line-1"]',
 					$form
 				);
-				if (
-					billLin1Field &&
-					billLin1Field.val() &&
-					billLin1Field.val().length > 0
-				) {
+				if ( billLin1Field.val() ) {
 					data.line1 = billLin1Field.val();
 				}
 				const billLin2Field = $(
 					'input[name="wpfs-billing-address-line-2"]',
 					$form
 				);
-				if (
-					billLin2Field &&
-					billLin2Field.val() &&
-					billLin2Field.val().length > 0
-				) {
+				if ( billLin2Field.val() ) {
 					data.line2 = billLin2Field.val();
 				}
 			} else {
@@ -2175,6 +2430,8 @@ jQuery.noConflict();
 			const data = {};
 
 			data.currentPriceId = findPriceIdForSelectedProduct( $form );
+			// The server previews the fee where the charge adds it as a line of its own.
+			data.feeRecoveryAccepted = isFeeRecoveryChecked( $form ) ? 1 : 0;
 
 			if (
 				$( 'select[name="wpfs-tax-country"] option:selected', $form ) &&
@@ -2238,10 +2495,7 @@ jQuery.noConflict();
 			) {
 				data.zip = $( 'input[name="wpfs-tax-zip"]', $form ).val();
 			} else if (
-				$( 'input[name="wpfs-billing-address-zip"]', $form ) &&
-				$( 'input[name="wpfs-billing-address-zip"]', $form ).val() &&
 				$( 'input[name="wpfs-billing-address-zip"]', $form ).val()
-					.length > 0
 			) {
 				data.zip = $(
 					'input[name="wpfs-billing-address-zip"]',
@@ -2386,43 +2640,6 @@ jQuery.noConflict();
 			}
 		}
 
-		function findPlanElementByPlanId( $form, planId ) {
-			let $planElement;
-			if (
-				$( '.wpfs-subscription-plan-select', $form ) &&
-				$( '.wpfs-subscription-plan-select', $form ).length > 0
-			) {
-				$planElement = $(
-					'select[name="wpfs-plan"] option[data-wpfs-value="' +
-						planId +
-						'"]',
-					$form
-				);
-			} else if (
-				$( '.wpfs-subscription-plan-radio', $form ) &&
-				$( '.wpfs-subscription-plan-radio', $form ).length > 0
-			) {
-				$planElement = $(
-					'input[name="wpfs-plan"][data-wpfs-value="' + planId + '"]',
-					$form
-				);
-			} else if (
-				$( 'input[name="wpfs-plan"]', $form ) &&
-				$( 'input[name="wpfs-plan"]', $form ).length > 0
-			) {
-				$planElement = $(
-					'input[name="wpfs-plan"][data-wpfs-value="' + planId + '"]',
-					$form
-				);
-			} else {
-				logError(
-					'handlePlanChange',
-					'WARNING: Subscription Plan Selector UI element not found!'
-				);
-			}
-			return $planElement;
-		}
-
 		function handleAmountChange( $form ) {
 			if ( debugLog ) {
 				console.log( 'handleAmountChange(): CALLED' );
@@ -2516,11 +2733,13 @@ jQuery.noConflict();
 
 				if ( paymentDetails !== null ) {
 					paymentDetails.forEach( ( item ) => {
+						// The caller adds the recovery fee for the current amount.
 						if (
 							! (
 								item.subType === PRICE_LINE_ITEM_SUBTYPE_TAX &&
 								item.inclusive
-							)
+							) &&
+							item.type !== PAYMENT_DETAIL_FEE_RECOVERY
 						) {
 							total += item.amount;
 						}
@@ -2552,8 +2771,11 @@ jQuery.noConflict();
 
 			let total = getTotalAmountForPrice( paymentDetailsConfig );
 
-			if ( total && $( 'input[name="wpfs-fee-recovery-accepted"]').prop('checked') ) {
-				const feeRecoveryAmount = calculateRecoveryFee( total, paymentDetailsConfig );
+			if ( total && isFeeRecoveryChecked( $form ) ) {
+				const priceAmounts = getPaymentPriceAmounts( $form );
+				const feeRecoveryAmount = priceAmounts
+					? getPricedRecoveryFee( $form, priceAmounts )
+					: calculateRecoveryFee( total, paymentDetailsConfig );
 				if ( ! paymentDetailsConfig.zeroDecimalSupport ) {
 					total += feeRecoveryAmount / 100;
 				} else {
@@ -2584,6 +2806,43 @@ jQuery.noConflict();
 			}
 		}
 
+		/**
+		 * "every 3 months": how often a subscription is charged, for intervalCount > 1.
+		 *
+		 * @param {'day'|'week'|'month'|'year'} interval
+		 * @param {number}                      intervalCount
+		 * @return {string|null} Null for an unknown interval.
+		 */
+		function getChargeIntervalPhrase( interval, intervalCount ) {
+			if ( 'day' === interval ) {
+				return sprintf(
+					/* translators: How often a subscription is charged, used in "Subscription will be charged every 3 months, for 12 occasions." %d: number of days between charges. */
+					_n( 'every %d day', 'every %d days', intervalCount, 'wp-full-stripe-free' ),
+					intervalCount
+				);
+			} else if ( 'week' === interval ) {
+				return sprintf(
+					/* translators: How often a subscription is charged, used in "Subscription will be charged every 3 months, for 12 occasions." %d: number of weeks between charges. */
+					_n( 'every %d week', 'every %d weeks', intervalCount, 'wp-full-stripe-free' ),
+					intervalCount
+				);
+			} else if ( 'month' === interval ) {
+				return sprintf(
+					/* translators: How often a subscription is charged, used in "Subscription will be charged every 3 months, for 12 occasions." %d: number of months between charges. */
+					_n( 'every %d month', 'every %d months', intervalCount, 'wp-full-stripe-free' ),
+					intervalCount
+				);
+			} else if ( 'year' === interval ) {
+				return sprintf(
+					/* translators: How often a subscription is charged, used in "Subscription will be charged every 3 months, for 12 occasions." %d: number of years between charges. */
+					_n( 'every %d year', 'every %d years', intervalCount, 'wp-full-stripe-free' ),
+					intervalCount
+				);
+			}
+
+			return null;
+		}
+
 		function renderSubscriptionSummary(
 			interval,
 			intervalCount,
@@ -2593,106 +2852,81 @@ jQuery.noConflict();
 
 			if ( cancellationCount > 0 ) {
 				if ( intervalCount > 1 ) {
-					if ( 'day' === interval ) {
-						subscriptionDetailsLabel = vsprintf(
-							wpfsFormSettings.l10n
-								.subscription_charge_interval_templates
-								.x_times_y_days,
-							[ intervalCount, cancellationCount ]
-						);
-					} else if ( 'week' === interval ) {
-						subscriptionDetailsLabel = vsprintf(
-							wpfsFormSettings.l10n
-								.subscription_charge_interval_templates
-								.x_times_y_weeks,
-							[ intervalCount, cancellationCount ]
-						);
-					} else if ( 'month' === interval ) {
-						subscriptionDetailsLabel = vsprintf(
-							wpfsFormSettings.l10n
-								.subscription_charge_interval_templates
-								.x_times_y_months,
-							[ intervalCount, cancellationCount ]
-						);
-					} else if ( 'year' === interval ) {
-						subscriptionDetailsLabel = vsprintf(
-							wpfsFormSettings.l10n
-								.subscription_charge_interval_templates
-								.x_times_y_years,
-							[ intervalCount, cancellationCount ]
+					const chargeIntervalPhrase = getChargeIntervalPhrase(
+						interval,
+						intervalCount
+					);
+					if ( chargeIntervalPhrase !== null ) {
+						subscriptionDetailsLabel = sprintf(
+							/* translators: Summary of a subscription that ends after a number of charges. %1$s: how often the subscription is charged, for example "every 3 months", %2$s: number of charges, for example "12 occasions". */
+							__( 'Subscription will be charged %1$s, for %2$s.', 'wp-full-stripe-free' ),
+							chargeIntervalPhrase,
+							sprintf(
+								/* translators: Number of charges after which a subscription ends, used in "Subscription will be charged every 3 months, for 12 occasions." %d: number of charges. */
+								_n( '%d occasion', '%d occasions', cancellationCount, 'wp-full-stripe-free' ),
+								cancellationCount
+							)
 						);
 					}
 				} else if ( 'day' === interval ) {
-					subscriptionDetailsLabel = vsprintf(
-						wpfsFormSettings.l10n
-							.subscription_charge_interval_templates
-							.x_times_daily,
-						[ cancellationCount ]
+					subscriptionDetailsLabel = sprintf(
+						/* translators: Summary of a daily subscription that ends after a number of charges. %d: number of charges. */
+						_n( 'Subscription will be charged every day, for %d occasion.', 'Subscription will be charged every day, for %d occasions.', cancellationCount, 'wp-full-stripe-free' ),
+						cancellationCount
 					);
 				} else if ( 'week' === interval ) {
-					subscriptionDetailsLabel = vsprintf(
-						wpfsFormSettings.l10n
-							.subscription_charge_interval_templates
-							.x_times_weekly,
-						[ cancellationCount ]
+					subscriptionDetailsLabel = sprintf(
+						/* translators: Summary of a weekly subscription that ends after a number of charges. %d: number of charges. */
+						_n( 'Subscription will be charged every week, for %d occasion.', 'Subscription will be charged every week, for %d occasions.', cancellationCount, 'wp-full-stripe-free' ),
+						cancellationCount
 					);
 				} else if ( 'month' === interval ) {
-					subscriptionDetailsLabel = vsprintf(
-						wpfsFormSettings.l10n
-							.subscription_charge_interval_templates
-							.x_times_monthly,
-						[ cancellationCount ]
+					subscriptionDetailsLabel = sprintf(
+						/* translators: Summary of a monthly subscription that ends after a number of charges. %d: number of charges. */
+						_n( 'Subscription will be charged every month, for %d occasion.', 'Subscription will be charged every month, for %d occasions.', cancellationCount, 'wp-full-stripe-free' ),
+						cancellationCount
 					);
 				} else if ( 'year' === interval ) {
-					subscriptionDetailsLabel = vsprintf(
-						wpfsFormSettings.l10n
-							.subscription_charge_interval_templates
-							.x_times_yearly,
-						[ cancellationCount ]
+					subscriptionDetailsLabel = sprintf(
+						/* translators: Summary of a yearly subscription that ends after a number of charges. %d: number of charges. */
+						_n( 'Subscription will be charged every year, for %d occasion.', 'Subscription will be charged every year, for %d occasions.', cancellationCount, 'wp-full-stripe-free' ),
+						cancellationCount
 					);
 				}
 			} else if ( intervalCount > 1 ) {
 				if ( 'day' === interval ) {
-					subscriptionDetailsLabel = vsprintf(
-						wpfsFormSettings.l10n
-							.subscription_charge_interval_templates.y_days,
-						[ intervalCount ]
+					subscriptionDetailsLabel = sprintf(
+						/* translators: Summary of a subscription charged every few days. %d: number of days between charges. */
+						_n( 'Subscription will be charged every %d day.', 'Subscription will be charged every %d days.', intervalCount, 'wp-full-stripe-free' ),
+						intervalCount
 					);
 				} else if ( 'week' === interval ) {
-					subscriptionDetailsLabel = vsprintf(
-						wpfsFormSettings.l10n
-							.subscription_charge_interval_templates.y_weeks,
-						[ intervalCount ]
+					subscriptionDetailsLabel = sprintf(
+						/* translators: Summary of a subscription charged every few weeks. %d: number of weeks between charges. */
+						_n( 'Subscription will be charged every %d week.', 'Subscription will be charged every %d weeks.', intervalCount, 'wp-full-stripe-free' ),
+						intervalCount
 					);
 				} else if ( 'month' === interval ) {
-					subscriptionDetailsLabel = vsprintf(
-						wpfsFormSettings.l10n
-							.subscription_charge_interval_templates.y_months,
-						[ intervalCount ]
+					subscriptionDetailsLabel = sprintf(
+						/* translators: Summary of a subscription charged every few months. %d: number of months between charges. */
+						_n( 'Subscription will be charged every %d month.', 'Subscription will be charged every %d months.', intervalCount, 'wp-full-stripe-free' ),
+						intervalCount
 					);
 				} else if ( 'year' === interval ) {
-					subscriptionDetailsLabel = vsprintf(
-						wpfsFormSettings.l10n
-							.subscription_charge_interval_templates.y_years,
-						[ intervalCount ]
+					subscriptionDetailsLabel = sprintf(
+						/* translators: Summary of a subscription charged every few years. %d: number of years between charges. */
+						_n( 'Subscription will be charged every %d year.', 'Subscription will be charged every %d years.', intervalCount, 'wp-full-stripe-free' ),
+						intervalCount
 					);
 				}
 			} else if ( 'day' === interval ) {
-				subscriptionDetailsLabel =
-					wpfsFormSettings.l10n.subscription_charge_interval_templates
-						.daily;
+				subscriptionDetailsLabel = __( 'Subscription will be charged every day.', 'wp-full-stripe-free' );
 			} else if ( 'week' === interval ) {
-				subscriptionDetailsLabel =
-					wpfsFormSettings.l10n.subscription_charge_interval_templates
-						.weekly;
+				subscriptionDetailsLabel = __( 'Subscription will be charged every week.', 'wp-full-stripe-free' );
 			} else if ( 'month' === interval ) {
-				subscriptionDetailsLabel =
-					wpfsFormSettings.l10n.subscription_charge_interval_templates
-						.monthly;
+				subscriptionDetailsLabel = __( 'Subscription will be charged every month.', 'wp-full-stripe-free' );
 			} else if ( 'year' === interval ) {
-				subscriptionDetailsLabel =
-					wpfsFormSettings.l10n.subscription_charge_interval_templates
-						.yearly;
+				subscriptionDetailsLabel = __( 'Subscription will be charged every year.', 'wp-full-stripe-free' );
 			}
 
 			return subscriptionDetailsLabel;
@@ -2787,7 +3021,7 @@ jQuery.noConflict();
 						inclusive: taxItem.inclusive,
 						displayName: taxItem.displayName
 							? taxItem.displayName
-							: wpfsFormSettings.l10n.product_pricing
+							: l10n.product_pricing
 									.default_tax_label,
 					} );
 				}
@@ -2812,7 +3046,7 @@ jQuery.noConflict();
 					amount: discountAmount,
 					displayName: labelItem
 						? labelItem.displayName
-						: wpfsFormSettings.l10n.product_pricing
+						: l10n.product_pricing
 								.default_coupon_label,
 				} );
 			}
@@ -2839,9 +3073,9 @@ jQuery.noConflict();
 
 			if ( lineItem.percentage ) {
 				const pattern = lineItem.inclusive
-					? wpfsFormSettings.l10n.product_pricing
+					? l10n.product_pricing
 							.tax_label_inclusive_percentage
-					: wpfsFormSettings.l10n.product_pricing
+					: l10n.product_pricing
 							.tax_label_percentage;
 				result = sprintf(
 					pattern,
@@ -2850,8 +3084,8 @@ jQuery.noConflict();
 				);
 			} else {
 				const pattern = lineItem.inclusive
-					? wpfsFormSettings.l10n.product_pricing.tax_label_inclusive
-					: wpfsFormSettings.l10n.product_pricing.tax_label;
+					? l10n.product_pricing.tax_label_inclusive
+					: '%s';
 				result = sprintf( pattern, lineItem.displayName );
 			}
 
@@ -2976,32 +3210,55 @@ jQuery.noConflict();
 			}
 		}
 
+		/**
+		 * @typedef {{formId: string|number|boolean|null, currency: string, currencySymbol: string, zeroDecimalSupport: boolean}} AmountConfig
+		 */
+
+		/**
+		 * Reads the currency settings that pricing needs from the selected amount, price or plan.
+		 *
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @param {JQuery<HTMLElement>}     $element The selected amount, price or plan.
+		 * @return {AmountConfig} The settings.
+		 */
+		function readAmountConfig( $form, $element ) {
+			return {
+				formId: extractFormNameFromNode( $form ),
+				currency: $element.data( 'wpfs-currency' ),
+				currencySymbol: $element.data( 'wpfs-currency-symbol' ),
+				zeroDecimalSupport:
+					$element.data( 'wpfs-zero-decimal-support' ) === true,
+			};
+		}
+
+		/**
+		 * Adds the fee percentage and fixed amount of an element that recovers the fee.
+		 *
+		 * @param {AmountConfig & {feePercentage?: number|string, feeAmount?: number|string}} config
+		 * @param {JQuery<HTMLElement>}                                                       $element
+		 */
+		function addFeeRecoveryConfig( config, $element ) {
+			if ( $element.data( 'wpfs-fee-recovery-enabled' ) ) {
+				config.feePercentage = $element.data( 'wpfs-fee-percentage' );
+				config.feeAmount = $element.data( 'wpfs-fee-amount' );
+			}
+		}
+
 		function handleDonationPaymentAmountChange(
 			$form,
 			$selectedProductElement
 		) {
 			const buttonCaptionConfig = {
-				formId: extractFormNameFromNode( $form ),
-				currency: $selectedProductElement.data( 'wpfs-currency' ),
-				currencySymbol: $selectedProductElement.data(
-					'wpfs-currency-symbol'
-				),
-				zeroDecimalSupport:
-					$selectedProductElement.data(
-						'wpfs-zero-decimal-support'
-					) === true,
+				...readAmountConfig( $form, $selectedProductElement ),
 				buttonTitle:
 					$selectedProductElement.data( 'wpfs-button-title' ),
 			};
 			if (
 				$selectedProductElement.hasClass( 'wpfs-custom-amount--unique' )
 			) {
-				buttonCaptionConfig.total = parseCurrencyAmount(
-					$selectedProductElement.val()
-						? $selectedProductElement.val()
-						: 0,
-					buttonCaptionConfig.zeroDecimalSupport
-				);
+				buttonCaptionConfig.total = $selectedProductElement.val()
+					? parseCustomAmountUnique( $form )
+					: 0;
 			} else {
 				buttonCaptionConfig.total = $selectedProductElement.data(
 					'wpfs-amount-in-smallest-common-currency'
@@ -3010,13 +3267,13 @@ jQuery.noConflict();
 					buttonCaptionConfig.total = parseInt( buttonCaptionConfig.total ) / 100;
 				}
 			}
-
-			if ( $selectedProductElement.data('wpfs-fee-recovery-enabled') ) {
-				buttonCaptionConfig.feePercentage = $selectedProductElement.data( 'wpfs-fee-percentage' );
-				buttonCaptionConfig.feeAmount = $selectedProductElement.data( 'wpfs-fee-amount' );
-			}
+			addFeeRecoveryConfig(
+				buttonCaptionConfig,
+				$selectedProductElement
+			);
 
 			showPaymentButtonCaption( $form, buttonCaptionConfig );
+			syncStripeElementsAmount( $form );
 		}
 
 		function handlePriceAwarePaymentAmountChange(
@@ -3025,6 +3282,21 @@ jQuery.noConflict();
 		) {
 			if ( isCouponFieldVisible( $form ) ) {
 				refreshCouponField( $form );
+			}
+
+			// A malformed custom amount has no price. The stored lines are kept, because
+			// the payment serializer reads them to decide whether to send the coupon.
+			if ( isCustomAmountMalformed( $form ) ) {
+				updateButtonCaption(
+					$form,
+					$selectedProductElement.data( 'wpfs-button-title' ),
+					null,
+					null,
+					null,
+					null
+				);
+				clearPaymentDetails( $form );
+				return;
 			}
 
 			// update pricing to update payment intent
@@ -3042,12 +3314,7 @@ jQuery.noConflict();
 				data.stripePriceId = $selectedProductElement.data(
 					'wpfs-amount-price-id'
 				);
-				$.ajax( {
-					type: 'POST',
-					url: wpfsFormSettings.ajaxUrl,
-					data,
-					cache: false,
-					dataType: 'json',
+				postAjax( data, {
 					success( data ) {
 						if ( debugLog ) {
 							logInfo(
@@ -3057,16 +3324,11 @@ jQuery.noConflict();
 						}
 					},
 					error( jqXHR, textStatus, errorThrown ) {
-						logError(
+						showAjaxError(
+							$form,
 							'handlePriceAwarePaymentAmountChange',
 							jqXHR,
 							textStatus,
-							errorThrown
-						);
-						showErrorGlobalMessage(
-							$form,
-							wpfsFormSettings.l10n.validation_errors
-								.internal_error_title,
 							errorThrown
 						);
 					},
@@ -3075,51 +3337,42 @@ jQuery.noConflict();
 
 			const buttonCaptionConfig = {
 				priceId: $selectedProductElement.data( 'wpfs-amount-price-id' ),
-				formId: extractFormNameFromNode( $form ),
-				currency: $selectedProductElement.data( 'wpfs-currency' ),
-				currencySymbol: $selectedProductElement.data(
-					'wpfs-currency-symbol'
-				),
-				zeroDecimalSupport:
-					$selectedProductElement.data(
-						'wpfs-zero-decimal-support'
-					) === true,
+				...readAmountConfig( $form, $selectedProductElement ),
 				buttonTitle:
 					$selectedProductElement.data( 'wpfs-button-title' ),
 			};
-			if ( $selectedProductElement.data('wpfs-fee-recovery-enabled') ) {
-				buttonCaptionConfig.feePercentage = $selectedProductElement.data( 'wpfs-fee-percentage' );
-				buttonCaptionConfig.feeAmount = $selectedProductElement.data( 'wpfs-fee-amount' );
-			}
+			addFeeRecoveryConfig(
+				buttonCaptionConfig,
+				$selectedProductElement
+			);
 			showPaymentButtonCaption( $form, buttonCaptionConfig );
 
 			const paymentDetailsConfig = {
 				priceId: $selectedProductElement.data( 'wpfs-amount-price-id' ),
-				formId: extractFormNameFromNode( $form ),
-				currency: $selectedProductElement.data( 'wpfs-currency' ),
-				currencySymbol: $selectedProductElement.data(
-					'wpfs-currency-symbol'
-				),
-				zeroDecimalSupport:
-					$selectedProductElement.data(
-						'wpfs-zero-decimal-support'
-					) === true,
+				...readAmountConfig( $form, $selectedProductElement ),
 			};
-			if ( $selectedProductElement.data('wpfs-fee-recovery-enabled') ) {
-				paymentDetailsConfig.feePercentage = $selectedProductElement.data( 'wpfs-fee-percentage' );
-				paymentDetailsConfig.feeAmount = $selectedProductElement.data( 'wpfs-fee-amount' );
-			}
+			addFeeRecoveryConfig(
+				paymentDetailsConfig,
+				$selectedProductElement
+			);
 			if ( isFeeRecoveryChecked( $form ) ) {
 				setFeeRecoveryItem( $form, $selectedProductElement, paymentDetailsConfig );
 			} else {
 				clearRecoveryItem( paymentDetailsConfig );
 			}
 			showPaymentDetails( $form, paymentDetailsConfig );
+			syncStripeElementsAmount( $form );
+		}
 
-			// Elements was created in deferred mode with a placeholder amount
-			// (the custom amount is unknown at init). Sync the selected/typed
-			// amount so wallet payment sheets (Revolut Pay, Apple Pay, Google
-			// Pay) show the real amount instead of the placeholder (issue #410).
+		/**
+		 * Elements was created in deferred mode with a placeholder amount
+		 * (the custom amount is unknown at init). Sync the selected/typed
+		 * amount so wallet payment sheets (Revolut Pay, Apple Pay, Google
+		 * Pay) show the real amount instead of the placeholder (issue #410).
+		 *
+		 * @param {object} $form
+		 */
+		function syncStripeElementsAmount( $form ) {
 			const stripeElements = WPFS.getStripeElements(
 				extractFormNameFromNode( $form )
 			);
@@ -3128,13 +3381,148 @@ jQuery.noConflict();
 				'payment' === $form.data( 'wpfs-intent-type' )
 			) {
 				const amountData = findPaymentAmountData( $form );
-				if ( amountData.valid && amountData.amount > 0 ) {
+				const chargeAmount =
+					amountData.valid && amountData.amount > 0
+						? getChargeAmount( $form, amountData.amount )
+						: 0;
+				// Stripe.js rejects an amount of 0. A fully discounted payment is submitted
+				// without Stripe, so Elements keeps its last amount.
+				if ( chargeAmount > 0 ) {
 					stripeElements.update( {
-						amount: amountData.amount,
+						amount: chargeAmount,
 						currency: amountData.currency.toLowerCase(),
 					} );
 				}
+			} else if ( stripeElements && isFirstChargeForm( $form ) ) {
+				const isPriced = isFirstChargePriced( $form );
+				const firstCharge = isPriced
+					? getFirstChargeData( $form )
+					: null;
+				if ( isPriced && null === firstCharge ) {
+					// The page hasn't read the plan's prices yet.
+					return;
+				}
+				// A plan whose first charge the page can't price switches to setup mode, without an amount.
+				const update = firstCharge
+					? { mode: 'subscription', ...firstCharge }
+					: { mode: 'setup' };
+				try {
+					stripeElements.update( update );
+					$form.data( 'wpfs-elements-mode', update.mode );
+				} catch ( error ) {
+					// A wallet sheet without the amount is better than a form that can't be paid.
+					logError( 'syncStripeElementsAmount', null, null, error );
+				}
 			}
+		}
+
+		/**
+		 * Whether the form confirms a SetupIntent and the server then charges the first invoice of a
+		 * subscription: inline subscriptions and recurring donations.
+		 *
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @return {boolean} True for those forms.
+		 */
+		function isFirstChargeForm( $form ) {
+			const formTypes = [
+				FORM_TYPE_INLINE_SUBSCRIPTION,
+				FORM_TYPE_INLINE_DONATION,
+			];
+
+			return (
+				'setup' === $form.data( 'wpfs-intent-type' ) &&
+				formTypes.includes( $form.data( FROM_TYPE_DOM ) )
+			);
+		}
+
+		/**
+		 * Whether the page can price the first charge of the selected plan or donation. It can't for a
+		 * plan with a billing anchor day, or on a page cached without data-wpfs-first-charge.
+		 *
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @return {boolean} True when it can.
+		 */
+		function isFirstChargePriced( $form ) {
+			if ( FORM_TYPE_INLINE_DONATION === $form.data( FROM_TYPE_DOM ) ) {
+				return true;
+			}
+
+			const $plan = findSelectedPlanNode( $form );
+			const firstCharge = $plan
+				? $plan.attr( 'data-wpfs-first-charge' )
+				: null;
+
+			return (
+				FIRST_CHARGE_PLAN === firstCharge ||
+				FIRST_CHARGE_SETUP_FEE === firstCharge
+			);
+		}
+
+		/**
+		 * What a subscription or a recurring donation charges at once, which wallet payment sheets
+		 * (Apple Pay, Google Pay) show for Elements in subscription mode.
+		 *
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @return {?{amount: number, currency: string}} In the smallest currency unit, or null when
+		 * the form can't price it.
+		 */
+		function getFirstChargeData( $form ) {
+			if ( FORM_TYPE_INLINE_DONATION === $form.data( FROM_TYPE_DOM ) ) {
+				// The donation, with the recovery fee Pay shows.
+				const amountData = findPaymentAmountData( $form );
+				if ( ! amountData.valid ) {
+					return null;
+				}
+
+				return {
+					amount:
+						amountData.amount > 0
+							? getChargeAmount( $form, amountData.amount )
+							: 0,
+					currency: amountData.currency.toLowerCase(),
+				};
+			}
+
+			if ( ! isFirstChargePriced( $form ) ) {
+				return null;
+			}
+			const $plan = findSelectedPlanNode( $form );
+			const lines = WPFS.getPaymentDetailsForPrice(
+				extractFormNameFromNode( $form ),
+				$plan.data( 'wpfs-value' )
+			);
+			if ( ! lines ) {
+				return null;
+			}
+			const firstCharge = $plan.attr( 'data-wpfs-first-charge' );
+			const currency = String(
+				$plan.data( 'wpfs-currency' )
+			).toLowerCase();
+
+			// The server previews a trial's first invoice on its own when the preview of the plan
+			// spreads the coupon differently.
+			const trialFirstCharge = lines.find(
+				( line ) =>
+					PRICE_LINE_ITEM_TYPE_TRIAL_FIRST_CHARGE === line.type
+			);
+			if ( FIRST_CHARGE_SETUP_FEE === firstCharge && trialFirstCharge ) {
+				return { amount: trialFirstCharge.amount, currency };
+			}
+
+			// The plan with its setup fee and recovery fee, or only the setup fee during a trial.
+			const amount = lines.reduce( ( sum, line ) => {
+				const charged =
+					( FIRST_CHARGE_PLAN === firstCharge &&
+						line !== trialFirstCharge ) ||
+					PRICE_LINE_ITEM_TYPE_SETUP_FEE === line.type;
+				const inclusiveTax =
+					PRICE_LINE_ITEM_SUBTYPE_TAX === line.subType &&
+					line.inclusive;
+
+				return charged && ! inclusiveTax ? sum + line.amount : sum;
+			}, 0 );
+
+			return { amount, currency };
 		}
 
 		function handlePaymentAmountChange( $form, $selectedProductElement ) {
@@ -3168,7 +3556,7 @@ jQuery.noConflict();
 				}
 			}
 
-			return wpfsFormSettings.l10n.products.the_selected_product_label;
+			return l10n.products.the_selected_product_label;
 		}
 
 		function handlePlanChange( $form ) {
@@ -3269,6 +3657,31 @@ jQuery.noConflict();
 			}
 		}
 
+		/**
+		 * The fee is charged in the selected plan's currency, and plans of one form may have different
+		 * currencies, so the opt-in shows the fee the plan carries.
+		 *
+		 * @param {Object} $planForm
+		 * @param {Object} $selectedPlanElement
+		 */
+		function showFeeRecoveryLabel( $planForm, $selectedPlanElement ) {
+			const feeRecoveryLabel = $selectedPlanElement.attr(
+				'data-wpfs-fee-recovery-label'
+			);
+			if ( undefined === feeRecoveryLabel ) {
+				return;
+			}
+
+			const feeRecoveryId = $(
+				'input[name="wpfs-fee-recovery-accepted"]',
+				$planForm
+			).attr( 'id' );
+			// The attribute decodes to the HTML the server renders the opt-in message with.
+			$( 'label[for="' + feeRecoveryId + '"]', $planForm ).html(
+				feeRecoveryLabel
+			);
+		}
+
 		function handleSubscriptionPlanChange( $form, $selectedPlanElement ) {
 			if ( debugLog ) {
 				console.log( 'handleSubscriptionPlanChange(): CALLED' );
@@ -3280,14 +3693,7 @@ jQuery.noConflict();
 
 			const paymentDetailsConfig = {
 				priceId: $selectedPlanElement.data( 'wpfs-value' ),
-				formId: extractFormNameFromNode( $form ),
-				currency: $selectedPlanElement.data( 'wpfs-currency' ),
-				currencySymbol: $selectedPlanElement.data(
-					'wpfs-currency-symbol'
-				),
-				zeroDecimalSupport:
-					$selectedPlanElement.data( 'wpfs-zero-decimal-support' ) ===
-					true,
+				...readAmountConfig( $form, $selectedPlanElement ),
 				interval: $selectedPlanElement.attr( 'data-wpfs-interval' ),
 				intervalCount: parseInt(
 					$selectedPlanElement.attr( 'data-wpfs-interval-count' )
@@ -3296,11 +3702,9 @@ jQuery.noConflict();
 					$selectedPlanElement.attr( 'data-wpfs-cancellation-count' )
 				),
 			};
+			addFeeRecoveryConfig( paymentDetailsConfig, $selectedPlanElement );
 
-			if ( $selectedPlanElement.data('wpfs-fee-recovery-enabled') ) {
-				paymentDetailsConfig.feePercentage = $selectedPlanElement.data( 'wpfs-fee-percentage' );
-				paymentDetailsConfig.feeAmount = $selectedPlanElement.data( 'wpfs-fee-amount' );
-			}
+			showFeeRecoveryLabel( $form, $selectedPlanElement );
 
 			if ( isFeeRecoveryChecked( $form ) ) {
 				setFeeRecoveryItem( $form, $selectedPlanElement, paymentDetailsConfig );
@@ -3309,6 +3713,7 @@ jQuery.noConflict();
 			}
 
 			showSubscriptionDetails( $form, paymentDetailsConfig );
+			syncStripeElementsAmount( $form );
 		}
 
 		function showCouponToRedeemRow( $form ) {
@@ -3328,9 +3733,10 @@ jQuery.noConflict();
 				'.wpfs-coupon-wrong-redeemed-label',
 				$form
 			).data( 'wpfs-coupon-wrong-redeemed-label' );
-			const wrongRedeemedCouponLabel = vsprintf(
+			const wrongRedeemedCouponLabel = sprintf(
 				wrongRedeemedCouponLabelPattern,
-				[ couponName, productOrServiceName ]
+				couponName,
+				productOrServiceName
 			);
 			if ( debugLog ) {
 				console.log(
@@ -3360,9 +3766,10 @@ jQuery.noConflict();
 				'.wpfs-coupon-redeemed-label',
 				$form
 			).data( 'wpfs-coupon-redeemed-label' );
-			const redeemedCouponLabel = vsprintf( redeemedCouponLabelPattern, [
-				couponName,
-			] );
+			const redeemedCouponLabel = sprintf(
+				redeemedCouponLabelPattern,
+				couponName
+			);
 			if ( debugLog ) {
 				console.log(
 					'showRedeemedCouponRow(): redeemCouponLabelPattern=' +
@@ -3399,6 +3806,46 @@ jQuery.noConflict();
 			$redeemLink.removeClass( 'wpfs-input-group-link--loader' );
 		}
 
+		/**
+		 * Parses the customer's custom amount, and shows its format error when it is malformed.
+		 *
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @param {string|undefined}        value              The custom amount field's value.
+		 * @param {boolean}                 zeroDecimalSupport
+		 * @return {?number} The amount in the smallest currency unit, NaN when it is empty, or
+		 * null when it is malformed.
+		 */
+		function readCustomAmount( $form, value, zeroDecimalSupport ) {
+			const formatter = createCurrencyFormatter( $form );
+			const isWellFormed = formatter.validCustomAmount(
+				value,
+				zeroDecimalSupport
+			);
+			const fieldId = $(
+				'input[name="wpfs-custom-amount-unique"]',
+				$form
+			).attr( 'id' );
+			clearFieldError( $form, 'wpfs-custom-amount-unique', fieldId );
+			if ( ! isWellFormed ) {
+				showFieldError(
+					$form,
+					'wpfs-custom-amount-unique',
+					fieldId,
+					getCustomAmountFormatErrorMessage(
+						$form,
+						zeroDecimalSupport
+					),
+					true
+				);
+				return null;
+			}
+			return parseCurrencyAmount(
+				formatter.parse( value ),
+				zeroDecimalSupport,
+				true
+			);
+		}
+
 		function findPaymentAmountData( $form ) {
 			const result = {};
 			let currency;
@@ -3407,8 +3854,6 @@ jQuery.noConflict();
 			const amountSelectorStyle = $form.data( 'wpfs-selector-style' );
 			let zeroDecimalSupport;
 			const returnSmallestCommonCurrencyUnit = true;
-			let customAmountValue;
-			let formatter;
 			if ( debugLog ) {
 				console.log(
 					'findPaymentAmountData(): ' +
@@ -3452,46 +3897,16 @@ jQuery.noConflict();
 				}
 				if ( allowCustomAmountValue && AMOUNT_OTHER == amount ) {
 					result.customAmount = true;
-					customAmountValue = $(
-						'input[name="wpfs-custom-amount-unique"]',
-						$form
-					).val();
-					formatter = createCurrencyFormatter( $form );
-					if ( formatter.validForParse( customAmountValue ) ) {
-						clearFieldError(
-							$form,
-							'wpfs-custom-amount-unique',
-							$(
-								'input[name="wpfs-custom-amount-unique"]',
-								$form
-							).attr( 'id' )
-						);
-						amount = parseCurrencyAmount(
-							formatter.parse( customAmountValue ),
-							zeroDecimalSupport,
-							returnSmallestCommonCurrencyUnit
-						);
-					} else {
-						amount = null;
-						clearFieldError(
-							$form,
-							'wpfs-custom-amount-unique',
-							$(
-								'input[name="wpfs-custom-amount-unique"]',
-								$form
-							).attr( 'id' )
-						);
-						showFieldError(
-							$form,
-							'wpfs-custom-amount-unique',
-							$(
-								'input[name="wpfs-custom-amount-unique"]',
-								$form
-							).attr( 'id' ),
-							wpfsFormSettings.l10n.validation_errors
-								.custom_payment_amount_value_is_invalid,
-							true
-						);
+					amount = readCustomAmount(
+						$form,
+						$(
+							'input[name="wpfs-custom-amount-unique"]',
+							$form
+						).val(),
+						zeroDecimalSupport
+					);
+					if ( amount === null ) {
+						result.invalidFormat = true;
 					}
 					if ( debugLog ) {
 						console.log(
@@ -3515,43 +3930,13 @@ jQuery.noConflict();
 				zeroDecimalSupport =
 					true ===
 					customAmountElement.data( 'wpfs-zero-decimal-support' );
-				customAmountValue = customAmountElement.val();
-				formatter = createCurrencyFormatter( $form );
-				if ( formatter.validForParse( customAmountValue ) ) {
-					clearFieldError(
-						$form,
-						'wpfs-custom-amount-unique',
-						$(
-							'input[name="wpfs-custom-amount-unique"]',
-							$form
-						).attr( 'id' )
-					);
-					amount = parseCurrencyAmount(
-						formatter.parse( customAmountValue ),
-						zeroDecimalSupport,
-						returnSmallestCommonCurrencyUnit
-					);
-				} else {
-					amount = null;
-					clearFieldError(
-						$form,
-						'wpfs-custom-amount-unique',
-						$(
-							'input[name="wpfs-custom-amount-unique"]',
-							$form
-						).attr( 'id' )
-					);
-					showFieldError(
-						$form,
-						'wpfs-custom-amount-unique',
-						$(
-							'input[name="wpfs-custom-amount-unique"]',
-							$form
-						).attr( 'id' ),
-						wpfsFormSettings.l10n.validation_errors
-							.custom_payment_amount_value_is_invalid,
-						true
-					);
+				amount = readCustomAmount(
+					$form,
+					customAmountElement.val(),
+					zeroDecimalSupport
+				);
+				if ( amount === null ) {
+					result.invalidFormat = true;
 				}
 			}
 			// The currency comes from the form/amount element markup, so expose
@@ -3797,8 +4182,175 @@ jQuery.noConflict();
 			return Math.round(parseFloat(amount) * 100);
 		}
 
+		/**
+		 * The amount Stripe charges: the selected price, discounted and taxed, plus the recovery fee
+		 * when it applies. Wallet payment sheets show the amount Elements holds, while Stripe charges
+		 * the PaymentIntent amount, which the server sets.
+		 *
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @param {number}                  amount The selected amount, in the smallest currency unit.
+		 * @return {number} In the smallest currency unit.
+		 */
+		function getChargeAmount( $form, amount ) {
+			const amounts = getPaymentPriceAmounts( $form ) || {
+				gross: amount,
+				net: amount,
+			};
+
+			return amounts.gross + getRecoveryFee( $form, amounts.net );
+		}
+
+		/**
+		 * The amounts the server charges for the selected price of a payment form, from the lines
+		 * its preview priced, as Customer::computeInlinePaymentChargeAmount() works them out: the
+		 * gross amount, discounted and taxed, the net amount, discounted and without tax, and the
+		 * price, before its discount and any tax added to it.
+		 *
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @return {?{gross: number, net: number, price: number}} In the smallest currency unit, or
+		 * null when the server hasn't priced the selected amount.
+		 */
+		function getPaymentPriceAmounts( $form ) {
+			const formType = $form.data( FROM_TYPE_DOM );
+			if (
+				FORM_TYPE_INLINE_PAYMENT !== formType &&
+				FORM_TYPE_CHECKOUT_PAYMENT !== formType
+			) {
+				return null;
+			}
+
+			const priceId = findPriceIdForSelectedProduct( $form );
+			const lines = WPFS.getPaymentDetailsForPrice(
+				extractFormNameFromNode( $form ),
+				priceId
+			);
+			const productLine = ( lines || [] ).find(
+				( line ) => PRICE_LINE_ITEM_TYPE_PRODUCT === line.subType
+			);
+			if ( ! productLine ) {
+				return null;
+			}
+			// A custom amount is priced when the field is left, and only by the server on forms
+			// with tax or a coupon. Other lines hold another amount, or the amount in major units.
+			if (
+				PRICE_ID_CUSTOM_AMOUNT === priceId &&
+				productLine.amount !== parseCustomAmountUnique( $form, true )
+			) {
+				return null;
+			}
+
+			const amounts = {
+				gross: productLine.amount,
+				net: productLine.amount,
+				price: productLine.amount,
+			};
+			lines.forEach( ( line ) => {
+				if ( PRICE_LINE_ITEM_SUBTYPE_DISCOUNT === line.subType ) {
+					amounts.gross += line.amount;
+					amounts.net += line.amount;
+				} else if ( PRICE_LINE_ITEM_SUBTYPE_TAX === line.subType ) {
+					if ( line.inclusive ) {
+						amounts.net -= line.amount;
+					} else {
+						amounts.gross += line.amount;
+					}
+				}
+			} );
+
+			return amounts;
+		}
+
+		/**
+		 * The recovery fee on an amount, when it applies. A fully discounted payment is free, with no fee.
+		 *
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @param {number}                  amount In the smallest currency unit.
+		 * @return {number} In the smallest currency unit.
+		 */
+		function getRecoveryFee( $form, amount ) {
+			const $feeRecoveryElement = $( '[data-wpfs-fee-recovery-enabled="1"]', $form ).first();
+			if (
+				amount <= 0 ||
+				0 === $feeRecoveryElement.length ||
+				! isFeeRecoveryChecked( $form )
+			) {
+				return 0;
+			}
+
+			const feeRecoveryConfig = {
+				feePercentage: $feeRecoveryElement.data( 'wpfs-fee-percentage' ),
+				feeAmount: $feeRecoveryElement.data( 'wpfs-fee-amount' ),
+				zeroDecimalSupport: true === $feeRecoveryElement.data( 'wpfs-zero-decimal-support' ),
+			};
+			const majorAmount = feeRecoveryConfig.zeroDecimalSupport ? amount : amount / 100;
+
+			return calculateRecoveryFee( majorAmount, feeRecoveryConfig );
+		}
+
+		/**
+		 * The recovery fee the server adds to the priced amounts of a payment form. An inline
+		 * payment takes it on the net amount, and Stripe Checkout on the price.
+		 *
+		 * @param {JQuery<HTMLFormElement>}                     $form
+		 * @param {{gross: number, net: number, price: number}} amounts From getPaymentPriceAmounts().
+		 * @return {number} In the smallest currency unit.
+		 */
+		function getPricedRecoveryFee( $form, amounts ) {
+			if ( FORM_TYPE_CHECKOUT_PAYMENT !== $form.data( FROM_TYPE_DOM ) ) {
+				return getRecoveryFee( $form, amounts.net );
+			}
+
+			const previewedFee = findPreviewedRecoveryFee(
+				$form,
+				findPriceIdForSelectedProduct( $form )
+			);
+			if ( previewedFee ) {
+				return isFeeRecoveryChecked( $form ) ? previewedFee.amount : 0;
+			}
+
+			return getRecoveryFee( $form, amounts.price );
+		}
+
+		/**
+		 * Whether the server previews the recovery fee as a line of its own, as the charge adds it on
+		 * subscriptions and Stripe Checkout payments, so a coupon discounts it and Stripe Tax taxes it.
+		 *
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @return {boolean} True on forms whose price preview lists the fee.
+		 */
+		function isRecoveryFeePreviewed( $form ) {
+			return [
+				FORM_TYPE_CHECKOUT_PAYMENT,
+				FORM_TYPE_INLINE_SUBSCRIPTION,
+				FORM_TYPE_CHECKOUT_SUBSCRIPTION,
+			].includes( $form.data( FROM_TYPE_DOM ) );
+		}
+
+		/**
+		 * @param {JQuery<HTMLFormElement>} $form
+		 * @param {string}                  priceId
+		 * @return {?{amount: number, displayName: string}} The fee line the server previewed for the
+		 * price, after its discount and with its tax, or null when the preview has none.
+		 */
+		function findPreviewedRecoveryFee( $form, priceId ) {
+			const lines = WPFS.getPaymentDetailsForPrice(
+				extractFormNameFromNode( $form ),
+				priceId
+			);
+
+			return (
+				( lines || [] ).find(
+					( line ) =>
+						PAYMENT_DETAIL_FEE_RECOVERY === line.type &&
+						line.previewed
+				) || null
+			);
+		}
+
 		function isFeeRecoveryChecked( $form ) {
-			return $('input[name="wpfs-fee-recovery-accepted"]', $form).prop('checked');
+			const $feeRecoveryAccepted = $( 'input[name="wpfs-fee-recovery-accepted"]', $form );
+			// Forms that always apply the fee render a hidden input instead of the opt-in checkbox.
+			return $feeRecoveryAccepted.attr( 'type' ) === 'hidden' || $feeRecoveryAccepted.prop( 'checked' );
 		}
 
 		function setFeeRecoveryItem( $form, $selectedElement, paymentDetailsConfig ) {
@@ -3814,22 +4366,31 @@ jQuery.noConflict();
 			}
 
 			if ( PAYMENT_TYPE_CUSTOM_AMOUNT == amountType ) {
-				amount = $(
-					'input[name="wpfs-custom-amount-unique"]',
-					$form
-				).val();
+				amount = parseCustomAmountUnique( $form );
 				is_custom_amount = true;
 			} else if ( allowCustomAmountValue && AMOUNT_OTHER == selected_amount ) {
-				amount = $(
-					'input[name="wpfs-custom-amount-unique"]',
-					$form
-				).val();
+				amount = parseCustomAmountUnique( $form );
 				is_custom_amount = true;
 			} else if (
 				FORM_TYPE_INLINE_SUBSCRIPTION === formType ||
 				FORM_TYPE_CHECKOUT_SUBSCRIPTION === formType
 			) {
-				amount = $selectedElement.data('wpfs-plan-amount-in-smallest-common-currency');
+				// The subscription bills the fee on the plan's price for the quantity, before tax and discount.
+				const productLine = (
+					WPFS.getPaymentDetailsForPrice(
+						paymentDetailsConfig.formId,
+						paymentDetailsConfig.priceId
+					) || []
+				).find(
+					( line ) =>
+						PRICE_LINE_ITEM_TYPE_PRODUCT === line.type &&
+						PRICE_LINE_ITEM_TYPE_PRODUCT === line.subType
+				);
+				amount = productLine
+					? productLine.amount
+					: $selectedElement.data(
+							'wpfs-plan-amount-in-smallest-common-currency'
+					  );
 			} else if (
 				FORM_TYPE_INLINE_PAYMENT === formType ||
 				FORM_TYPE_CHECKOUT_PAYMENT === formType ||
@@ -3837,17 +4398,41 @@ jQuery.noConflict();
 				FORM_TYPE_CHECKOUT_DONATION === formType
 			) {
 				amount = $selectedElement.data('wpfs-amount-in-smallest-common-currency');
-			} 
+			}
+
+			const priceAmounts = getPaymentPriceAmounts( $form );
+			// An empty or malformed custom amount, or a fully discounted payment, has no fee to recover.
+			if (
+				( is_custom_amount && amount === null ) ||
+				( priceAmounts && priceAmounts.net <= 0 )
+			) {
+				clearRecoveryItem( paymentDetailsConfig );
+				return;
+			}
+
+			const previewedFee = findPreviewedRecoveryFee(
+				$form,
+				paymentDetailsConfig.priceId
+			);
+			if ( previewedFee ) {
+				previewedFee.displayName =
+					l10n.product_pricing.fee_recovery_label;
+				return;
+			}
+			// Each refresh adds the fee again, so drop the one it added before.
+			clearRecoveryItem( paymentDetailsConfig );
 
 			if ( ! is_custom_amount && ! paymentDetailsConfig.zeroDecimalSupport ) {
 				amount = amount / 100;
 			}
-			const feeRecoveryAmount = calculateRecoveryFee( amount, paymentDetailsConfig );
+			const feeRecoveryAmount = priceAmounts
+				? getPricedRecoveryFee( $form, priceAmounts )
+				: calculateRecoveryFee( amount, paymentDetailsConfig );
 			const paymentDetail = {
 				'type': PAYMENT_DETAIL_FEE_RECOVERY,
 				'subType': PAYMENT_DETAIL_FEE_RECOVERY,
 				'id': paymentDetailsConfig.priceId,
-				'displayName': 'Fee Recovery',
+				'displayName': l10n.product_pricing.fee_recovery_label,
 				'amount': feeRecoveryAmount,
 			}
 			const paymentDetails = WPFS.getPaymentDetails( paymentDetailsConfig.formId );
@@ -3869,7 +4454,10 @@ jQuery.noConflict();
 			}
 
 			let priceIdPaymentDetails = paymentDetails?.[ paymentDetailsConfig.priceId ];
-			priceIdPaymentDetails = priceIdPaymentDetails?.filter(
+			if ( ! priceIdPaymentDetails ) {
+				return;
+			}
+			priceIdPaymentDetails = priceIdPaymentDetails.filter(
 				(item) =>
 					item.type !== PAYMENT_DETAIL_FEE_RECOVERY &&
 					item.subType !== PAYMENT_DETAIL_FEE_RECOVERY
@@ -3895,12 +4483,6 @@ jQuery.noConflict();
 			}
 			return null;
 		};
-		WPFS.removeStripeElements = function ( formId ) {
-			if ( WPFS.stripeElementsMap.hasOwnProperty( formId ) ) {
-				delete WPFS.stripeElementsMap[ formId ];
-			}
-		};
-
 		/**
 		 * @param formId
 		 * @param coupon
@@ -4030,15 +4612,17 @@ jQuery.noConflict();
 					const formId = $form.data( 'wpfs-form-id' );
 					var { elements, cardElement } = await WPFS.initStripeCardElement( $form );
 					WPFS.setStripeElements( extractFormNameFromNode( $form ), elements );
+					// Elements was created before WPFS.ready() read the prices, with their tax and discount.
+					syncStripeElementsAmount( $form );
 					cardElement.mount(
 						'div[data-wpfs-form-id="' + formId + '"]'
 					);
 				} else {
 					showErrorGlobalMessage(
 						$form,
-						wpfsFormSettings.l10n.stripe_errors
+						l10n.stripe_errors
 							.internal_error_title,
-						'Stripe.js not loaded'
+						l10n.stripe_errors.stripe_js_not_loaded
 					);
 				}
 
@@ -4078,37 +4662,34 @@ jQuery.noConflict();
 					// add amount index
 					addCustomAmountIndexInput( $form );
 	
-					// validate terms of use if necessary
-					const showTermsOfUse = $form.data(
-						'wpfs-show-terms-of-use'
-					);
-					if ( 1 == showTermsOfUse ) {
-						const termsOfUseAccepted = $form
-							.find( 'input[name=wpfs-terms-of-use-accepted]' )
-							.prop( 'checked' );
-						if ( termsOfUseAccepted == false ) {
-							const errorMessage = $form.data(
-								'wpfs-terms-of-use-not-checked-error-message'
-							);
-							showFieldError(
-								$form,
-								'wpfs-terms-of-use-accepted',
-								null,
-								errorMessage
-							);
-							scrollToElement(
-								$(
-									'input[name=wpfs-terms-of-use-accepted]',
-									$form
-								),
-								false
-							);
-							enableFormButtons( $form );
-							hideLoadingAnimation( $form );
-							return false;
-						}
+					if ( isTermsOfUseUnaccepted( $form ) ) {
+						const errorMessage = $form.data(
+							'wpfs-terms-of-use-not-checked-error-message'
+						);
+						showFieldError(
+							$form,
+							'wpfs-terms-of-use-accepted',
+							null,
+							errorMessage
+						);
+						scrollToElement(
+							$(
+								'input[name=wpfs-terms-of-use-accepted]',
+								$form
+							),
+							false
+						);
+						enableFormButtons( $form );
+						hideLoadingAnimation( $form );
+						return false;
 					}
-	
+
+					if ( showCustomAmountFormatError( $form ) ) {
+						enableFormButtons( $form );
+						hideLoadingAnimation( $form );
+						return false;
+					}
+
 					// handle free inline submission.
 					if ( isFreeInlineSubmission( $form ) ) {
 						showProcessingOverlay( $form );
@@ -4124,11 +4705,7 @@ jQuery.noConflict();
 						'input[name="wpfs-card-holder-email"]',
 						$form
 					);
-					if (
-						cardHolderEmail &&
-						cardHolderEmail.val() &&
-						cardHolderEmail.val().length > 0
-					) {
+					if ( cardHolderEmail.val() ) {
 						paymentMethodData.billing_details = {
 							email: cardHolderEmail.val(),
 						};
@@ -4139,11 +4716,7 @@ jQuery.noConflict();
 						'input[name="wpfs-card-holder-name"]',
 						$form
 					);
-					if (
-						cardHolderNameField &&
-						cardHolderNameField.val() &&
-						cardHolderNameField.val().length > 0
-					) {
+					if ( cardHolderNameField.val() ) {
 						if ( ! paymentMethodData.billing_details ) {
 							paymentMethodData.billing_details = {};
 						}
@@ -4156,11 +4729,7 @@ jQuery.noConflict();
 						'select[name="wpfs-billing-address-country"] option:selected',
 						$form
 					);
-					if (
-						billingAddressCountryField &&
-						billingAddressCountryField.val() &&
-						billingAddressCountryField.val().length > 0
-					) {
+					if ( billingAddressCountryField.val() ) {
 						if ( ! paymentMethodData.billing_details ) {
 							paymentMethodData.billing_details = {};
 						}
@@ -4172,11 +4741,7 @@ jQuery.noConflict();
 							'input[name="wpfs-billing-address-city"]',
 							$form
 						);
-						if (
-							billingAddressCityField &&
-							billingAddressCityField.val() &&
-							billingAddressCityField.val().length > 0
-						) {
+						if ( billingAddressCityField.val() ) {
 							paymentMethodData.billing_details.address.city =
 								billingAddressCityField.val();
 						}
@@ -4185,11 +4750,7 @@ jQuery.noConflict();
 							'input[name="wpfs-billing-address-line-1"]',
 							$form
 						);
-						if (
-							billingAddressLine1Field &&
-							billingAddressLine1Field.val() &&
-							billingAddressLine1Field.val().length > 0
-						) {
+						if ( billingAddressLine1Field.val() ) {
 							paymentMethodData.billing_details.address.line1 =
 								billingAddressLine1Field.val();
 						}
@@ -4198,11 +4759,7 @@ jQuery.noConflict();
 							'input[name="wpfs-billing-address-line-2"]',
 							$form
 						);
-						if (
-							billingAddressLine2Field &&
-							billingAddressLine2Field.val() &&
-							billingAddressLine2Field.val().length > 0
-						) {
+						if ( billingAddressLine2Field.val() ) {
 							paymentMethodData.billing_details.address.line2 =
 								billingAddressLine2Field.val();
 						}
@@ -4211,11 +4768,7 @@ jQuery.noConflict();
 							'input[name="wpfs-billing-address-zip"]',
 							$form
 						);
-						if (
-							billingAddressPostalCodeField &&
-							billingAddressPostalCodeField.val() &&
-							billingAddressPostalCodeField.val().length > 0
-						) {
+						if ( billingAddressPostalCodeField.val() ) {
 							paymentMethodData.billing_details.address.postal_code =
 								billingAddressPostalCodeField.val();
 						}
@@ -4224,11 +4777,7 @@ jQuery.noConflict();
 							'select[name="wpfs-billing-address-state-select"] option:selected',
 							$form
 						);
-						if (
-							billingAddressStateField &&
-							billingAddressStateField.val() &&
-							billingAddressStateField.val().length > 0
-						) {
+						if ( billingAddressStateField.val() ) {
 							paymentMethodData.billing_details.address.state =
 								billingAddressStateField.val();
 						}
@@ -4236,178 +4785,187 @@ jQuery.noConflict();
 	
 					if ( stripe != null ) {
 						const intentType = $form.data( 'wpfs-intent-type' );
-						let return_url = window.location.href;
+						const returnUrl = new URL( window.location.href );
+						// A retry after an earlier redirect must not carry its
+						// Stripe return parameters into the new return URL (#674).
+						STRIPE_RETURN_URL_PARAMS.forEach( ( param ) =>
+							returnUrl.searchParams.delete( param )
+						);
 						if ( $form.data( 'wpfs-form-id' ) ) {
-							return_url += return_url.includes( '?' )
-								? '&'
-								: '?';
-							return_url +=
-								'wpfs-form-id=' + $form.data( 'wpfs-form-id' );
+							returnUrl.searchParams.set(
+								'wpfs-form-id',
+								$form.data( 'wpfs-form-id' )
+							);
 						}
+						const return_url = returnUrl.toString();
 
 						if ( intentType === 'payment' ) {
 							// need to save a draft transaction locally before confirming the payment
-							let data =
-								createFormSerializer( $form ).serialize();
-							data = JSON.parse(
-								'{"' +
-									data
-										.replace( /&/g, '","' )
-										.replace( /=/g, '":"' ) +
-									'"}',
-								function ( key, value ) {
-									return key === ''
-										? value
-										: decodeURIComponent( value );
-								}
+							const data = wpfsParseSerializedForm(
+								createFormSerializer( $form ).serialize()
 							);
+							const isOneTimeDonation =
+								data.hasOwnProperty(
+									'wpfs-donation-frequency'
+								) &&
+								data[ 'wpfs-donation-frequency' ] ===
+									'one-time';
+							data.action = isOneTimeDonation
+								? 'wpfs-save-one-time-donation'
+								: 'wpfs-save-draft-transaction';
+							// custom fields are not serialized correctly by default
+							wpfsApplyCustomInputs( data, $form );
+							data[ 'wpfs-intent-type' ] = intentType;
 
-							if ( data.hasOwnProperty('wpfs-donation-frequency') && data['wpfs-donation-frequency'] === 'one-time' ) {
-								data.action = 'wpfs-save-one-time-donation';
-								// custom fields are not serialized correctly by default
-								wpfsApplyCustomInputs( data, $form );
-								data[ 'wpfs-intent-type' ] = intentType;
-
-								const freshClientSecret = await WPFS.submitStripeElement( elements, $form );
-								if ( ! freshClientSecret ) return;
-
-								data[ 'wpfs-stripe-client-secret' ] = freshClientSecret;
-								data[ 'wpfs-stripe-payment-intent-id' ] = freshClientSecret.substr(
-									0,
-									freshClientSecret.indexOf( '_secret_' )
+							const freshClientSecret =
+								await WPFS.submitStripeElement(
+									elements,
+									$form
 								);
-								$.ajax( {
-									type: 'POST',
-									url: wpfsFormSettings.ajaxUrl,
-									data,
-									cache: false,
-									dataType: 'json',
-									async success( data ) {
-										if (
-											data.success &&
-											data.success === true
-										) {
-											showProcessingOverlay( $form );
-											const confirmResult = await WPFS.confirmStripeIntent(
-												$form,
-												'payment',
-												{
-													elements,
-													clientSecret: freshClientSecret,
-													confirmParams: {
-														// return_url is only used by Stripe if a redirect is actually required; with allow_redirects:'never' and redirect:'if_required' we should stay on-page and continue here.
-														return_url: return_url,
-														payment_method_data: paymentMethodData
-													},
-													redirect: 'if_required'
-												}
-											);
-											if ( ! confirmResult ) return;
+							if ( ! freshClientSecret ) return;
 
-											clearFieldErrors( $form );
-											if ( debugLog ) {
-												console.log( 'form.submit(): PaymentMethod creation result=' + JSON.stringify( confirmResult ) );
-											}
-											const inputAction = $( 'input[name="action"]', $form );
-											if ( 'wp_full_stripe_inline_donation_charge' === inputAction.val() ) {
-												inputAction.val( 'wp_full_stripe_onetime_donation_charge' );
-											}
-											$( '<input>' ).attr( {
-												type: 'hidden',
-												name: 'wpfs-stripe-payment-intent-id',
-												value: confirmResult.paymentIntent.id,
-											} ).appendTo( $form );
-											$( '<input>' ).attr( {
-												type: 'hidden',
-												name: 'wpfs-stripe-payment-method-id',
-												value: confirmResult.paymentIntent.payment_method,
-											} ).appendTo( $form );
-											removePaymentIntentClientSecretInput( $form );
-											addPaymentIntentClientSecretInput( $form, freshClientSecret );
-											submitPaymentData( $form, cardElement );
-										} else {
-											if ( data && ( data.messageTitle || data.message ) ) {
-												showErrorGlobalMessage( $form, data.messageTitle, data.message );
-											}
-											processValidationErrors( $form, data );
-											enableFormButtons( $form );
-											hideLoadingAnimation( $form );
-										}
-									},
-									error( jqXHR, textStatus, errorThrown ) {
-										logError( 'submitSaveOneTimeDonation', jqXHR, textStatus, errorThrown );
-										showErrorGlobalMessage( $form, wpfsFormSettings.l10n.stripe_errors.internal_error );
-										enableFormButtons( $form );
-										hideLoadingAnimation( $form );
-									},
-								} );
-
-							} else {
-								// need to save a draft transaction locally before confirming the payment
-								data.action = 'wpfs-save-draft-transaction';
-								// custom fields are not serialized correct by default
-								wpfsApplyCustomInputs( data, $form );
-								data[ 'wpfs-intent-type' ] = intentType;
-
-								const freshClientSecret = await WPFS.submitStripeElement( elements, $form );
-								if ( ! freshClientSecret ) return;
-
-								// Preserve the solved nonce to avoid re-verifying token.
+							// Preserve the solved nonce to avoid re-verifying token. The server
+							// doesn't check the captcha on a one-time donation's save.
+							if ( ! isOneTimeDonation ) {
 								const wpfsNonce = $form
 									.find( 'input[name="wpfs-nonce"]' )
 									.val();
 								if ( wpfsNonce ) {
 									data[ 'wpfs-nonce' ] = wpfsNonce;
 								}
+							}
 
-								data[ 'wpfs-stripe-client-secret' ] = freshClientSecret;
-								data[ 'wpfs-stripe-payment-intent-id' ] = freshClientSecret.substr(
+							data[ 'wpfs-stripe-client-secret' ] =
+								freshClientSecret;
+							data[ 'wpfs-stripe-payment-intent-id' ] =
+								freshClientSecret.substr(
 									0,
 									freshClientSecret.indexOf( '_secret_' )
 								);
-								$.ajax( {
-									type: 'POST',
-									url: wpfsFormSettings.ajaxUrl,
-									data,
-									cache: false,
-									dataType: 'json',
-									async success( responseData ) {
-										if ( responseData.success === true ) {
+							postAjax( data, {
+								success: wpfsPlainCallback(
+									async function ( responseData ) {
+										if ( responseData.success !== true ) {
+											showResponseErrors(
+												$form,
+												responseData
+											);
+											enableFormButtons( $form );
+											hideLoadingAnimation( $form );
+											return;
+										}
+										showProcessingOverlay( $form );
+										if ( ! isOneTimeDonation ) {
 											// confirmPayment will redirect to return_url on success
-											showProcessingOverlay( $form );
 											await WPFS.confirmStripeIntent(
 												$form,
 												'payment',
 												{
 													elements,
-													clientSecret: freshClientSecret,
+													clientSecret:
+														freshClientSecret,
 													confirmParams: {
 														return_url: return_url,
-														payment_method_data: paymentMethodData
-													}
+														payment_method_data:
+															paymentMethodData,
+													},
 												}
 											);
-										} else {
-											if ( responseData && ( responseData.messageTitle || responseData.message ) ) {
-												showErrorGlobalMessage( $form, responseData.messageTitle, responseData.message );
-											}
-											processValidationErrors( $form, responseData );
-											enableFormButtons( $form );
-											hideLoadingAnimation( $form );
+											return;
 										}
-									},
-									error( jqXHR, textStatus, errorThrown ) {
-										logError( 'submitDraftTransaction', jqXHR, textStatus, errorThrown );
-										showErrorGlobalMessage(
+
+										const confirmResult =
+											await WPFS.confirmStripeIntent(
+												$form,
+												'payment',
+												{
+													elements,
+													clientSecret:
+														freshClientSecret,
+													confirmParams: {
+														// return_url is only used by Stripe if a redirect is actually required; with allow_redirects:'never' and redirect:'if_required' we should stay on-page and continue here.
+														return_url: return_url,
+														payment_method_data:
+															paymentMethodData,
+													},
+													redirect: 'if_required',
+												}
+											);
+										if ( ! confirmResult ) return;
+
+										clearFieldErrors( $form );
+										if ( debugLog ) {
+											console.log(
+												'form.submit(): PaymentMethod creation result=' +
+													JSON.stringify(
+														confirmResult
+													)
+											);
+										}
+										const inputAction = $(
+											'input[name="action"]',
+											$form
+										);
+										if (
+											'wp_full_stripe_inline_donation_charge' ===
+											inputAction.val()
+										) {
+											inputAction.val(
+												'wp_full_stripe_onetime_donation_charge'
+											);
+										}
+										$( '<input>' )
+											.attr( {
+												type: 'hidden',
+												name: 'wpfs-stripe-payment-intent-id',
+												value: confirmResult
+													.paymentIntent.id,
+											} )
+											.appendTo( $form );
+										$( '<input>' )
+											.attr( {
+												type: 'hidden',
+												name: 'wpfs-stripe-payment-method-id',
+												value: confirmResult
+													.paymentIntent
+													.payment_method,
+											} )
+											.appendTo( $form );
+										removePaymentIntentClientSecretInput(
+											$form
+										);
+										addPaymentIntentClientSecretInput(
 											$form,
-											wpfsFormSettings.l10n.stripe_errors.internal_error_title,
+											freshClientSecret
+										);
+										submitPaymentData( $form, cardElement );
+									}
+								),
+								error( jqXHR, textStatus, errorThrown ) {
+									if ( isOneTimeDonation ) {
+										logError(
+											'submitSaveOneTimeDonation',
+											jqXHR,
+											textStatus,
 											errorThrown
 										);
-										enableFormButtons( $form );
-										hideLoadingAnimation( $form );
-									},
-								} );
-							}
+										showErrorGlobalMessage(
+											$form,
+											l10n.stripe_errors.internal_error
+										);
+									} else {
+										showAjaxError(
+											$form,
+											'submitDraftTransaction',
+											jqXHR,
+											textStatus,
+											errorThrown
+										);
+									}
+									enableFormButtons( $form );
+									hideLoadingAnimation( $form );
+								},
+							} );
 						} else if ( intentType === 'setup' ) {
 							const freshClientSecret = await WPFS.submitStripeElement( elements, $form );
 							if ( ! freshClientSecret ) return;
@@ -4438,9 +4996,9 @@ jQuery.noConflict();
 					} else {
 						showErrorGlobalMessage(
 							$form,
-							wpfsFormSettings.l10n.stripe_errors
+							l10n.stripe_errors
 								.internal_error_title,
-							'[Submit] Stripe.js not loaded'
+							l10n.stripe_errors.stripe_js_not_loaded
 						);
 					}
 	
@@ -4513,19 +5071,28 @@ jQuery.noConflict();
 				intentType = 'payment';
 				const zeroDecimalSupport = resolveZeroDecimalSupport( $form );
 				const minimumAmount = zeroDecimalSupport ? 1 : 50;
+				const chargeAmount =
+					amountData.valid && amountData.amount > 0
+						? getChargeAmount( $form, amountData.amount )
+						: 0;
 				options = {
 					...options,
 					mode: intentType,
 					currency: currency.toLowerCase(),
-					amount: amountData.valid && amountData.amount > 0 ? amountData.amount : minimumAmount,
+					// Stripe.js rejects an amount of 0, e.g. of a fully discounted payment.
+					amount: chargeAmount > 0 ? chargeAmount : minimumAmount,
 				};
 			} else if ( FORM_TYPE_INLINE_DONATION === formType ) {
 				const amountData = findPaymentAmountData( $form );
 				const currency = amountData.valid ? amountData.currency : ( $form.data( 'wpfs-currency' ) || 'usd' );
+				const firstCharge = getFirstChargeData( $form );
+				// Subscription mode gives wallet sheets the recurring donation's first charge, which
+				// setup mode leaves at 0. The SetupIntent is still confirmed with confirmSetup().
 				options = {
 					...options,
-					mode: intentType,
+					mode: 'subscription',
 					currency: currency.toLowerCase(),
+					amount: firstCharge ? firstCharge.amount : 0,
 				};
 			} else if ( FORM_TYPE_INLINE_SUBSCRIPTION === formType ) {
 				const amountData = findPlanAmountData( $form );
@@ -4535,6 +5102,13 @@ jQuery.noConflict();
 					mode: intentType,
 					currency: currency.toLowerCase(),
 				};
+				// Subscription mode gives wallet sheets the first charge. A plan whose first charge the page
+				// can't price keeps setup mode; syncStripeElementsAmount() switches the mode with the plan.
+				if ( isFirstChargePriced( $form ) ) {
+					const firstCharge = getFirstChargeData( $form );
+					options.mode = 'subscription';
+					options.amount = firstCharge ? firstCharge.amount : 0;
+				}
 			} else if ( FORM_TYPE_INLINE_SAVE_CARD === formType ) {
 				options = {
 					...options,
@@ -4550,6 +5124,11 @@ jQuery.noConflict();
 					'card',
 					'link',
 				];
+			} else {
+				// The other forms follow the Stripe Dashboard methods but can't finish a
+				// redirect, so hide the methods that need one (#674).
+				options.excludedPaymentMethodTypes =
+					REDIRECT_PAYMENT_METHOD_TYPES;
 			}
 
 			// Use the jQuery .data() setter (not .attr) so it matches the .data()
@@ -4558,15 +5137,38 @@ jQuery.noConflict();
 			// read a stale intent type.
 			$form.data( 'wpfs-intent-type', intentType );
 			// create Stripe Payments Element.
-			const elements = stripe.elements( options );
-			const cardElement = elements.create( 'payment', {
+			let elements;
+			try {
+				elements = stripe.elements( options );
+			} catch ( error ) {
+				if ( 'subscription' !== options.mode ) {
+					throw error;
+				}
+				// Stripe.js rejected the first charge, e.g. one below its minimum: set the card up
+				// without it, as before.
+				logError( 'initStripeJSCardElement', null, null, error );
+				delete options.amount;
+				options.mode = intentType;
+				elements = stripe.elements( options );
+			}
+			$form.data( 'wpfs-elements-mode', options.mode );
+			const paymentElementOptions = {
 				fields: {
 					billingDetails: {
 						name: 'never', // never show the name field as it's handled by the FP form
 						email: 'never', // never show the email field as it's handled by the FP form
 					},
 				},
-			} );
+			};
+			// Stripe offers Link inside card payments too, so leaving it out of the
+			// payment method list isn't enough to hide it.
+			if ( 'never' === $form.data( 'wpfs-stripe-link' ) ) {
+				paymentElementOptions.wallets = { link: 'never' };
+			}
+			const cardElement = elements.create(
+				'payment',
+				paymentElementOptions
+			);
 			return { elements, cardElement };
 		}
 
@@ -4582,12 +5184,16 @@ jQuery.noConflict();
 			// The captcha token was spent getting the client secret, so the retry
 			// needs a new one or it is rejected until the page reloads (#660).
 			resetCaptcha( $form );
+			// Stripe's errors carry a type, and a message for the customer such as a decline.
+			const fromStripe = !! ( error && error.type && error.message );
 			showErrorGlobalMessage(
 				$form,
-				wpfsFormSettings.l10n.stripe_errors.internal_error_title,
+				fromStripe
+					? l10n.stripe_errors.stripe_error_title
+					: l10n.stripe_errors.internal_error_title,
 				( error && error.message )
 					? error.message
-					: wpfsFormSettings.l10n.stripe_errors.internal_error
+					: l10n.stripe_errors.internal_error
 			);
 			scrollToElement( $( '.wpfs-form-card', $form ), false );
 		}
@@ -4709,6 +5315,10 @@ jQuery.noConflict();
 				const $form = getParentForm( this );
 				const $coupon = getCouponNode( $form );
 
+				if ( showCustomAmountFormatError( $form ) ) {
+					return;
+				}
+
 				const taxData = gatherFormDataForTaxCalculation( $form );
 				taxData.coupon = $coupon.val();
 				// include payment intent id and its client secret if available
@@ -4729,19 +5339,17 @@ jQuery.noConflict();
 					$coupon.prop( 'disabled', true );
 					showRedeemLoadingAnimation( $form );
 
-					$.ajax( {
-						type: 'POST',
-						url: wpfsFormSettings.ajaxUrl,
-						data: {
-							action: 'wpfs-check-coupon',
-							nonce: wpfsFormSettings.nonce,
-							code: $coupon.val(),
-							taxData,
-						},
-						cache: false,
-						dataType: 'json',
+					const data = {
+						action: 'wpfs-check-coupon',
+						nonce: wpfsFormSettings.nonce,
+						code: $coupon.val(),
+						taxData,
+					};
+					postAjax( data, {
 						success( couponRedeemData ) {
 							if ( couponRedeemData.success ) {
+								// The coupon check priced the form's current fields.
+								setPricingStale( $form, false );
 								WPFS.setCoupon(
 									extractFormNameFromNode( $form ),
 									couponRedeemData.coupon
@@ -4752,40 +5360,8 @@ jQuery.noConflict();
 									couponRedeemData.productPricing
 								);
 								refreshProductPricing( $form );
+								// Also gives Stripe Elements the discounted amount, for wallet payment sheets.
 								refreshPaymentDetails( $form );
-
-								// Elements was created in deferred mode (no clientSecret),
-								// so fetchUpdates() is unavailable. Use elements.update()
-								// with the discounted minor-unit total so Apple Pay /
-								// Express Checkout immediately reflects the new amount.
-								const formName = extractFormNameFromNode( $form );
-								const stripeElements = WPFS.getStripeElements( formName );
-								if ( stripeElements && $form.data( 'wpfs-intent-type' ) === 'payment' ) {
-									try {
-										const priceId = findPriceIdForSelectedProduct( $form );
-										const paymentDetails = WPFS.getPaymentDetailsForPrice( formName, priceId );
-										if ( paymentDetails !== null ) {
-											let newAmount = 0;
-											paymentDetails.forEach( function ( item ) {
-												if ( !( item.subType === PRICE_LINE_ITEM_SUBTYPE_TAX && item.inclusive ) ) {
-													newAmount += item.amount;
-												}
-											} );
-											const currency = ( $form.data( 'wpfs-currency' ) || 'usd' ).toLowerCase();
-											if ( newAmount > 0 ) {
-												stripeElements.update( { amount: newAmount, currency } );
-											}
-										}
-									} catch ( e ) {
-										showFieldError(
-											$form,
-											COUPON_FIELD_NAME,
-											$coupon.attr( 'id' ),
-											e.message
-										);
-										console.error( e );
-									}
-								}
 							} else if ( couponRedeemData.bindingResult ) {
 								processValidationErrors(
 									$form,
@@ -4806,23 +5382,21 @@ jQuery.noConflict();
 							}
 						},
 						error( jqXHR, textStatus, errorThrown ) {
-							logError(
+							showAjaxError(
+								$form,
 								'coupon',
 								jqXHR,
 								textStatus,
-								errorThrown
-							);
-							showErrorGlobalMessage(
-								$form,
-								wpfsFormSettings.l10n.stripe_errors
-									.internal_error_title,
 								errorThrown
 							);
 						},
 						complete() {
 							$coupon.prop( 'disabled', false );
 							hideRedeemLoadingAnimation( $form );
-							enableFormButtons( $form );
+							// A submit that started meanwhile keeps its buttons disabled.
+							if ( ! $form.is( '[data-wpfs-locked]' ) ) {
+								enableFormButtons( $form );
+							}
 						},
 					} );
 				}
@@ -4891,186 +5465,83 @@ jQuery.noConflict();
 		};
 
 		WPFS.initSelectmenu = function () {
-			$.widget( 'custom.wpfsSelectmenu', $.ui.selectmenu, {
-				_renderItem( ul, item ) {
-					const $li = $( '<li>' );
-					const wrapper = $( '<div>', {
-						class: 'menu-item-wrapper ui-menu-item-wrapper',
-						text: item.label,
-					} );
-
-					if ( item.disabled ) {
-						$li.addClass( 'ui-state-disabled' );
-					}
-
-					return $li.append( wrapper ).appendTo( ul );
-				},
-			} );
-
-			const $selectmenus = $( '[data-toggle="selectmenu"]' );
-			$selectmenus.each( function () {
-				if ( typeof $( this ).select2 === 'function' ) {
-					try {
-						$( this ).select2( 'destroy' );
-					} catch ( err ) {}
-				}
-
-				const $selectmenu = $( this ).wpfsSelectmenu( {
-					classes: {
-						'ui-selectmenu-button':
-							'wpfs-form-control wpfs-selectmenu-button',
-						'ui-selectmenu-menu': 'wpfs-ui wpfs-selectmenu-menu',
-					},
-					icons: {
-						button: 'wpfs-icon-arrow',
-					},
-					create() {
-						if ( debugLog ) {
-							console.log( 'selectmenu.create(): CALLED' );
-						}
-						const $this = $( this );
-						const $selectMenuButton = $this.next();
-						$selectMenuButton.addClass( $this.attr( 'class' ) );
+			wpfsInitSelectmenu( {
+				onChange( event ) {
+					// todo: Remove harcoded event handling, put it in event handlers
+					const $selectElement = $( event.target );
+					const $form = getParentForm( event.target );
+					if ( $selectElement && $selectElement.length > 0 ) {
+						const selectElementType =
+							$selectElement.data( 'wpfs-select' );
 						if (
-							$this.find( 'option:selected:disabled' ) &&
-							$this.find( 'option:selected:disabled' ).length > 0
+							'wpfs-billing-address-country-select' ===
+							selectElementType
 						) {
-							$selectMenuButton.addClass(
-								'ui-state-placeholder'
+							const $billingAddressCountrySelectElement = $(
+								'.wpfs-billing-address-country-select',
+								$form
 							);
-						}
-					},
-					open() {
-						if ( debugLog ) {
-							console.log( 'selectmenu.open(): CALLED' );
-						}
-						const $this = $( this );
-						const $button = $this.data(
-							'custom-wpfsSelectmenu'
-						).button;
-						$button.removeClass( 'ui-selectmenu-button-closed' );
-						$button.addClass( 'ui-selectmenu-button-open' );
-						const selectedClass = 'ui-state-selected';
-						const selectedIndex = $this
-							.find( 'option' )
-							.index( $this.find( 'option:selected' ) );
-						$(
-							'.ui-selectmenu-open .ui-menu-item-wrapper'
-						).removeClass( selectedClass );
-						const $menuItem = $(
-							'.ui-selectmenu-open .ui-menu-item'
-						).eq( selectedIndex );
-						if ( ! $menuItem.hasClass( 'ui-state-disabled' ) ) {
-							$menuItem
-								.find( '.ui-menu-item-wrapper' )
-								.addClass( selectedClass );
-						}
-					},
-					close() {
-						if ( debugLog ) {
-							console.log( 'selectmenu.close(): CALLED' );
-						}
-						const $this = $( this );
-						const $button = $this.data(
-							'custom-wpfsSelectmenu'
-						).button;
-						$button.removeClass( 'ui-selectmenu-button-open' );
-						$button.addClass( 'ui-selectmenu-button-closed' );
-					},
-					change( event, ui ) {
-						if ( debugLog ) {
-							console.log( 'selectmenu.change(): CALLED' );
-						}
-						// todo: Remove harcoded event handling, put it in event handlers
-						const $selectElement = $( event.target );
-						const $form = getParentForm( event.target );
-						if ( $selectElement && $selectElement.length > 0 ) {
-							const selectElementType =
-								$selectElement.data( 'wpfs-select' );
-							if (
-								'wpfs-billing-address-country-select' ===
-								selectElementType
-							) {
-								const $billingAddressCountrySelectElement = $(
-									'.wpfs-billing-address-country-select',
+							handleBillingAddressCountryChange(
+								$billingAddressCountrySelectElement,
+								$form
+							);
+						} else if (
+							'wpfs-billing-address-state-select' ===
+							selectElementType
+						) {
+							const $billingAddressStateSelectElement = $(
+								'.wpfs-billing-address-state-select',
+								$form
+							);
+							handleBillingAddressStateChange(
+								$billingAddressStateSelectElement,
+								$form
+							);
+						} else if (
+							'wpfs-shipping-address-country-select' ===
+							selectElementType
+						) {
+							const $shippingAddressCountrySelectElement = $(
+								'.wpfs-shipping-address-country-select',
+								$form
+							);
+							handleShippingAddressCountryChange(
+								$shippingAddressCountrySelectElement,
+								$form
+							);
+						} else if (
+							'wpfs-custom-amount-select' === selectElementType
+						) {
+							// Update the custom field first, as the radio handler
+							// does, so the amount change sees whether it's enabled.
+							const amountType = $form.data( 'wpfs-amount-type' );
+							if ( 'list_of_amounts' === amountType ) {
+								const $customAmountSelectElement = $(
+									'.wpfs-custom-amount-select',
 									$form
 								);
-								handleBillingAddressCountryChange(
-									$billingAddressCountrySelectElement,
+								handleCustomAmountChange(
+									$customAmountSelectElement,
 									$form
 								);
-							} else if (
-								'wpfs-billing-address-state-select' ===
-								selectElementType
-							) {
-								const $billingAddressStateSelectElement = $(
-									'.wpfs-billing-address-state-select',
-									$form
-								);
-								handleBillingAddressStateChange(
-									$billingAddressStateSelectElement,
-									$form
-								);
-							} else if (
-								'wpfs-shipping-address-country-select' ===
-								selectElementType
-							) {
-								const $shippingAddressCountrySelectElement = $(
-									'.wpfs-shipping-address-country-select',
-									$form
-								);
-								handleShippingAddressCountryChange(
-									$shippingAddressCountrySelectElement,
-									$form
-								);
-							} else if (
-								'wpfs-custom-amount-select' ===
-								selectElementType
-							) {
-								handleAmountChange( $form );
-								const amountType =
-									$form.data( 'wpfs-amount-type' );
-								if ( 'list_of_amounts' === amountType ) {
-									const $customAmountSelectElement = $(
-										'.wpfs-custom-amount-select',
-										$form
-									);
-									handleCustomAmountChange(
-										$customAmountSelectElement,
-										$form
-									);
-								}
-							} else if (
-								'wpfs-subscription-plan-select' ===
-								selectElementType
-							) {
-								handlePlanChange( $form );
-							} else if (
-								'wpfs-tax-country-select' === selectElementType
-							) {
-								//handleTaxCountryChange($form);
-							} else if (
-								'wpfs-tax-state-select' === selectElementType
-							) {
-								handleTaxStateChange( $form );
 							}
+							handleAmountChange( $form );
+						} else if (
+							'wpfs-subscription-plan-select' ===
+							selectElementType
+						) {
+							handlePlanChange( $form );
+						} else if (
+							'wpfs-tax-country-select' === selectElementType
+						) {
+							//handleTaxCountryChange($form);
+						} else if (
+							'wpfs-tax-state-select' === selectElementType
+						) {
+							handleTaxStateChange( $form );
 						}
-						$( this ).next().removeClass( 'ui-state-placeholder' );
-						$( this ).trigger( 'selectmenuchange' );
-					},
-				} );
-
-				const $selectmenuParent = $selectmenu.parent();
-				$selectmenuParent
-					.find( '.ui-selectmenu-button' )
-					.addClass( 'wpfs-form-control' )
-					.addClass( 'wpfs-selectmenu-button' )
-					.addClass( 'ui-button' );
-
-				$selectmenu
-					.data( 'custom-wpfsSelectmenu' )
-					.menuWrap.addClass( 'wpfs-ui' )
-					.addClass( 'wpfs-selectmenu-menu' );
+					}
+				},
 			} );
 		};
 
@@ -5163,59 +5634,7 @@ jQuery.noConflict();
 				} );
 		};
 
-		WPFS.initStepper = function () {
-			const $stepper = $( '[data-toggle="stepper"]' );
-			$stepper.each( function () {
-				const $this = $( this );
-				let defaultValue = $this.data( 'defaultValue' ) || 1;
-
-				if ( $this.val() === '' ) {
-					$this.val( defaultValue );
-				}
-
-				$this
-					.spinner( {
-						min: $this.data( 'min' ) || 1,
-						max: $this.data( 'max' ) || 9999,
-						icons: {
-							down: 'wpfs-icon-decrease',
-							up: 'wpfs-icon-increase',
-						},
-						change( e, ui ) {
-							const $this = $( this );
-							if ( $this.spinner( 'isValid' ) ) {
-								defaultValue = $this.val();
-							} else {
-								$this.val( defaultValue );
-							}
-						},
-						spin( e, ui ) {
-							const $this = $( this );
-							const uiSpinner = $this.data( 'uiSpinner' );
-							const min = uiSpinner.options.min;
-							const max = uiSpinner.options.max;
-							const $container = $this.parent();
-							const disabledClassName = 'ui-state-disabled';
-							const up = $container.find( '.ui-spinner-up' );
-							const down = $container.find( '.ui-spinner-down' );
-
-							up.removeClass( disabledClassName );
-							down.removeClass( disabledClassName );
-
-							if ( ui.value === max ) {
-								up.addClass( disabledClassName );
-							}
-
-							if ( ui.value === min ) {
-								down.addClass( disabledClassName );
-							}
-						},
-					} )
-					.parent()
-					.find( '.ui-icon' )
-					.text( '' );
-			} );
-		};
+		WPFS.initStepper = wpfsInitStepper;
 
 		WPFS.initDatepicker = function () {
 			$( '[data-toggle="datepicker"]' ).each( function () {
@@ -5657,10 +6076,10 @@ jQuery.noConflict();
 									const label = $customInputField.data(
 										'wpfs-custom-input-label'
 									);
-									fieldErrorMessage = vsprintf(
-										wpfsFormSettings.l10n.validation_errors
+									fieldErrorMessage = sprintf(
+										l10n.validation_errors
 											.mandatory_field_is_empty,
-										[ label ]
+										label
 									);
 									showFieldError(
 										$form,
@@ -5711,10 +6130,10 @@ jQuery.noConflict();
 							.first()
 							.text()
 							.trim();
-						fieldErrorMessage = vsprintf(
-							wpfsFormSettings.l10n.validation_errors
+						fieldErrorMessage = sprintf(
+							l10n.validation_errors
 								.mandatory_field_is_empty,
-							[ label ]
+							label
 						);
 						showFieldError(
 							$form,
@@ -5726,33 +6145,24 @@ jQuery.noConflict();
 						hasErrors = true;
 					} );
 
-					// tnagy validate terms of use if necessary
-					const showTermsOfUse = $form.data(
-						'wpfs-show-terms-of-use'
-					);
-					if ( 1 == showTermsOfUse ) {
-						const termsOfUseAccepted = $form
-							.find( 'input[name=wpfs-terms-of-use-accepted]' )
-							.prop( 'checked' );
-						if ( termsOfUseAccepted == false ) {
-							if ( $firstInvalidField == null ) {
-								$firstInvalidField = $(
-									'input[name=wpfs-terms-of-use-accepted]',
-									$form
-								);
-							}
-							fieldErrorMessage = $form.data(
-								'wpfs-terms-of-use-not-checked-error-message'
+					if ( isTermsOfUseUnaccepted( $form ) ) {
+						if ( $firstInvalidField == null ) {
+							$firstInvalidField = $(
+								'input[name=wpfs-terms-of-use-accepted]',
+								$form
 							);
-							showFieldError(
-								$form,
-								'wpfs-terms-of-use-accepted',
-								null,
-								fieldErrorMessage,
-								false
-							);
-							hasErrors = true;
 						}
+						fieldErrorMessage = $form.data(
+							'wpfs-terms-of-use-not-checked-error-message'
+						);
+						showFieldError(
+							$form,
+							'wpfs-terms-of-use-accepted',
+							null,
+							fieldErrorMessage,
+							false
+						);
+						hasErrors = true;
 					}
 
 					// tnagy prevent submit on validation errors
@@ -5796,7 +6206,8 @@ jQuery.noConflict();
 					}
 
 					if ( false == amountData.valid ) {
-						if ( amountData.customAmount ) {
+						// A malformed custom amount already shows the expected format.
+						if ( amountData.customAmount && ! amountData.invalidFormat ) {
 							showFieldError(
 								$form,
 								'wpfs-custom-amount-unique',
@@ -5804,16 +6215,16 @@ jQuery.noConflict();
 									'input[name="wpfs-custom-amount-unique"]',
 									$form
 								).attr( 'id' ),
-								wpfsFormSettings.l10n.validation_errors
+								l10n.validation_errors
 									.custom_payment_amount_value_is_invalid,
 								true
 							);
-						} else {
+						} else if ( ! amountData.customAmount ) {
 							showErrorGlobalMessage(
 								$form,
-								wpfsFormSettings.l10n.validation_errors
+								l10n.validation_errors
 									.invalid_payment_amount_title,
-								wpfsFormSettings.l10n.validation_errors
+								l10n.validation_errors
 									.invalid_payment_amount
 							);
 						}
@@ -5825,12 +6236,7 @@ jQuery.noConflict();
 					addCurrentURL( $form );
 
 					if ( stripe != null ) {
-						$.ajax( {
-							type: 'POST',
-							url: wpfsFormSettings.ajaxUrl,
-							data: $form.serialize(),
-							cache: false,
-							dataType: 'json',
+						postAjax( serializeForm( $form ), {
 							success( data ) {
 								if ( debugLog ) {
 									logInfo(
@@ -5845,30 +6251,15 @@ jQuery.noConflict();
 										location.href = data.redirectUrl;
 									}
 								} else {
-									if (
-										data &&
-										( data.messageTitle || data.message )
-									) {
-										showErrorGlobalMessage(
-											$form,
-											data.messageTitle,
-											data.message
-										);
-									}
-									processValidationErrors( $form, data );
+									showResponseErrors( $form, data );
 								}
 							},
 							error( jqXHR, textStatus, errorThrown ) {
-								logError(
+								showAjaxError(
+									$form,
 									'initCheckoutForms',
 									jqXHR,
 									textStatus,
-									errorThrown
-								);
-								showErrorGlobalMessage(
-									$form,
-									wpfsFormSettings.l10n.validation_errors
-										.internal_error_title,
 									errorThrown
 								);
 							},
@@ -6183,7 +6574,7 @@ jQuery.noConflict();
 								lineItem.subType ===
 									PRICE_LINE_ITEM_SUBTYPE_TAX &&
 								lineItem.inclusive
-							)
+							) && lineItem.type !== PAYMENT_DETAIL_FEE_RECOVERY
 					)
 					.reduce( ( sum, lineItem ) => {
 						return sum + lineItem.amount;
@@ -6414,21 +6805,6 @@ jQuery.noConflict();
 					'wpfs-plan-amount-in-smallest-common-currency',
 					productPriceInCents
 				);
-
-				$product.data(
-					'wpfs-plan-amount-in-smallest-common-currency',
-					this.formatPriceForInputValue(
-						$product,
-						setupFeePriceInCents
-					)
-				);
-				$product.data(
-					'wpfs-plan-amount-in-smallest-common-currency',
-					this.formatPriceForInputValue(
-						$product,
-						productPriceInCents
-					)
-				);
 			}
 
 			getPriceAndIntervalLabel(
@@ -6436,55 +6812,72 @@ jQuery.noConflict();
 				intervalCount,
 				formattedAmount
 			) {
-				let formatString, priceLabel;
+				let priceLabel;
 
 				switch ( interval ) {
 					case INTERVAL_DAY:
-						formatString =
+						priceLabel =
 							intervalCount === 1
-								? wpfsFormSettings.l10n
-										.subscription_pricing_templates.daily
-								: wpfsFormSettings.l10n
-										.subscription_pricing_templates.x_days;
+								? sprintf(
+										/* translators: Daily recurring price label. %1$s: formatted price amount. */
+										__( '%1$s / day', 'wp-full-stripe-free' ),
+										formattedAmount
+								  )
+								: sprintf(
+										/* translators: Recurring price label for prices charged every x days. %1$s: formatted price amount, %2$d: number of days between charges. */
+										_n( '%1$s / %2$d day', '%1$s / %2$d days', intervalCount, 'wp-full-stripe-free' ),
+										formattedAmount,
+										intervalCount
+								  );
 						break;
 
 					case INTERVAL_WEEK:
-						formatString =
+						priceLabel =
 							intervalCount === 1
-								? wpfsFormSettings.l10n
-										.subscription_pricing_templates.weekly
-								: wpfsFormSettings.l10n
-										.subscription_pricing_templates.x_weeks;
+								? sprintf(
+										/* translators: Weekly recurring price label. %1$s: formatted price amount. */
+										__( '%1$s / week', 'wp-full-stripe-free' ),
+										formattedAmount
+								  )
+								: sprintf(
+										/* translators: Recurring price label for prices charged every x weeks. %1$s: formatted price amount, %2$d: number of weeks between charges. */
+										_n( '%1$s / %2$d week', '%1$s / %2$d weeks', intervalCount, 'wp-full-stripe-free' ),
+										formattedAmount,
+										intervalCount
+								  );
 						break;
 
 					case INTERVAL_MONTH:
-						formatString =
+						priceLabel =
 							intervalCount === 1
-								? wpfsFormSettings.l10n
-										.subscription_pricing_templates.monthly
-								: wpfsFormSettings.l10n
-										.subscription_pricing_templates
-										.x_months;
+								? sprintf(
+										/* translators: Monthly recurring price label. %1$s: formatted price amount. */
+										__( '%1$s / month', 'wp-full-stripe-free' ),
+										formattedAmount
+								  )
+								: sprintf(
+										/* translators: Recurring price label for prices charged every x months. %1$s: formatted price amount, %2$d: number of months between charges. */
+										_n( '%1$s / %2$d month', '%1$s / %2$d months', intervalCount, 'wp-full-stripe-free' ),
+										formattedAmount,
+										intervalCount
+								  );
 						break;
 
 					case INTERVAL_YEAR:
-						formatString =
+						priceLabel =
 							intervalCount === 1
-								? wpfsFormSettings.l10n
-										.subscription_pricing_templates.yearly
-								: wpfsFormSettings.l10n
-										.subscription_pricing_templates.x_years;
+								? sprintf(
+										/* translators: Annual recurring price label. %1$s: formatted price amount. */
+										__( '%1$s / year', 'wp-full-stripe-free' ),
+										formattedAmount
+								  )
+								: sprintf(
+										/* translators: Recurring price label for prices charged every x years. %1$s: formatted price amount, %2$d: number of years between charges. */
+										_n( '%1$s / %2$d year', '%1$s / %2$d years', intervalCount, 'wp-full-stripe-free' ),
+										formattedAmount,
+										intervalCount
+								  );
 						break;
-				}
-
-				if ( intervalCount === 1 ) {
-					priceLabel = sprintf( formatString, formattedAmount );
-				} else {
-					priceLabel = sprintf(
-						formatString,
-						formattedAmount,
-						intervalCount
-					);
 				}
 
 				return priceLabel;
@@ -6678,7 +7071,7 @@ jQuery.noConflict();
 					subType: 'product',
 					id: PRICE_ID_CUSTOM_AMOUNT,
 					displayName:
-						wpfsFormSettings.l10n.products.other_amount_label,
+						l10n.products.other_amount_label,
 					currency: $( '.wpfs-custom-amount--unique', $form ).data(
 						'wpfs-currency'
 					),
@@ -6688,6 +7081,10 @@ jQuery.noConflict();
 		}
 
 		function refreshOtherPricingLocally( $form ) {
+			if ( showCustomAmountFormatError( $form ) ) {
+				refreshPaymentDetails( $form );
+				return;
+			}
 			const customAmount = parseCustomAmountUnique( $form );
 
 			if ( ! isNaN( customAmount ) ) {
@@ -6702,6 +7099,15 @@ jQuery.noConflict();
 		}
 
 		function refreshPricingFromServer( $form ) {
+			// A submit holds the lock and its fields can't change, so there is
+			// nothing to reprice; the refresh would also release the lock.
+			if ( $form.is( '[data-wpfs-locked]' ) ) {
+				return;
+			}
+			if ( showCustomAmountFormatError( $form ) ) {
+				refreshPaymentDetails( $form );
+				return;
+			}
 			const data = gatherFormDataForTaxCalculation( $form );
 			data.action = 'wpfs-calculate-pricing';
 			data.nonce = wpfsFormSettings.nonce;
@@ -6710,13 +7116,9 @@ jQuery.noConflict();
 			showLoadingAnimation( $form );
 			disableFormInputsSelectsButtons( $form );
 
-			$.ajax( {
-				type: 'POST',
-				url: wpfsFormSettings.ajaxUrl,
-				data,
-				cache: false,
-				dataType: 'json',
+			postAjax( data, {
 				success( data ) {
+					setPricingStale( $form, ! data.success );
 					if ( data.success ) {
 						setPaymentDetailsData( $form, data.productPricing );
 						refreshProductPricing( $form );
@@ -6726,23 +7128,19 @@ jQuery.noConflict();
 					} else {
 						showErrorGlobalMessage(
 							$form,
-							wpfsFormSettings.l10n.validation_errors
+							l10n.validation_errors
 								.internal_error_title,
 							data.msg
 						);
 					}
 				},
 				error( jqXHR, textStatus, errorThrown ) {
-					logError(
+					setPricingStale( $form, true );
+					showAjaxError(
+						$form,
 						'refreshPricingFromServer',
 						jqXHR,
 						textStatus,
-						errorThrown
-					);
-					showErrorGlobalMessage(
-						$form,
-						wpfsFormSettings.l10n.validation_errors
-							.internal_error_title,
 						errorThrown
 					);
 				},
@@ -6853,8 +7251,8 @@ jQuery.noConflict();
 			$customSelectElements.on( 'change', function () {
 				if ( ! $( this ).data( 'custom-wpfsSelectmenu' ) ) {
 					const $form = getParentForm( this );
-					handleAmountChange( $form );
 					handleCustomAmountChange( $( this ), $form );
+					handleAmountChange( $form );
 				}
 			} );
 			const $customRadioElements = $( 'input.wpfs-custom-amount-radio' );
@@ -6888,28 +7286,6 @@ jQuery.noConflict();
 				handleAmountChange( $form );
 			} );
 
-			// $('input.wpfs-custom-amount').each(function (index) {
-			//     var $form = getParentForm(this);
-			//     $form.find('input.wpfs-custom-amount').first().click();
-			// });
-			//
-			// // tnagy trigger payment amount change to initialize payment summary
-			// var $paymentsFormWithListOfAmounts = $('form[data-wpfs-amount-type="list_of_amounts"]');
-			// $paymentsFormWithListOfAmounts.each(function () {
-			//     var $form = $(this);
-			//     handleAmountChange($form);
-			// });
-			// var $paymentFormsWithSpecifiedAmount = $('form[data-wpfs-amount-type="specified_amount"]');
-			// $paymentFormsWithSpecifiedAmount.each(function () {
-			//     var $form = $(this);
-			//     handleAmountChange($form);
-			// });
-			// var $paymentFormsWithCustomAmount = $('form[data-wpfs-amount-type="custom_amount"]');
-			// $paymentFormsWithCustomAmount.each(function () {
-			//     var $form = $(this);
-			//     handleAmountChange($form);
-			// });
-
 			const $spinnerElements = $( 'input[name="wpfs-plan-quantity"]' );
 			$spinnerElements.each( function () {
 				const $form = getParentForm( this );
@@ -6921,10 +7297,27 @@ jQuery.noConflict();
 				);
 			} );
 
-			$('input[name="wpfs-fee-recovery-accepted"]').on( 'change', function() {
-				const $form = getParentForm( this );
-				refreshPaymentDetails($form);
-			} );
+			$( 'input[name="wpfs-fee-recovery-accepted"]' ).on(
+				'change',
+				function () {
+					const $form = getParentForm( this );
+					// Donation forms have no price id, so only forms that preview the fee look for
+					// a custom amount, which a form without tax or a coupon prices on the page.
+					const isPricedOnServer =
+						isRecoveryFeePreviewed( $form ) &&
+						! (
+							PRICE_ID_CUSTOM_AMOUNT ===
+								findPriceIdForSelectedProduct( $form ) &&
+							isNoTaxForm( $form ) &&
+							isNoCouponAppliedForm( $form )
+						);
+					if ( isPricedOnServer ) {
+						refreshPricingFromServer( $form );
+					} else {
+						refreshPaymentDetails( $form );
+					}
+				}
+			);
 		};
 
 		// tnagy initialize components
@@ -6976,26 +7369,15 @@ jQuery.noConflict();
 			clearFieldErrors( $form );
 			clearGlobalMessage( $form );
 
-			let data = createFormSerializer( $form ).serialize();
-			data = JSON.parse(
-				'{"' +
-					data.replace( /&/g, '","' ).replace( /=/g, '":"' ) +
-					'"}',
-				function ( key, value ) {
-					return key === '' ? value : decodeURIComponent( value );
-				}
+			const data = wpfsParseSerializedForm(
+				createFormSerializer( $form ).serialize()
 			);
 			data.action = 'wp_full_stripe_confirm_redirect';
 			data[ 'wpfs-stripe-payment-intent-id' ] = paymentIntent;
 			data.redirect_status = redirectStatus;
 			data.payment_intent_client_secret = paymentIntentClientSecret;
 
-			$.ajax( {
-				type: 'POST',
-				url: wpfsFormSettings.ajaxUrl,
-				data,
-				cache: false,
-				dataType: 'json',
+			postAjax( data, {
 				success( data ) {
 					if ( debugLog ) {
 						logInfo(
@@ -7031,30 +7413,18 @@ jQuery.noConflict();
 							);
 						}
 					} else {
-						if ( data && ( data.messageTitle || data.message ) ) {
-							showErrorGlobalMessage(
-								$form,
-								data.messageTitle,
-								data.message
-							);
-						}
-						processValidationErrors( $form, data );
+						showResponseErrors( $form, data );
 						// finalisation failed; let the customer retry and clear the overlay
 						enableFormButtons( $form );
 						hideLoadingAnimation( $form );
 					}
 				},
 				error( jqXHR, textStatus, errorThrown ) {
-					logError(
+					showAjaxError(
+						$form,
 						'stripeConfirmRedirect',
 						jqXHR,
 						textStatus,
-						errorThrown
-					);
-					showErrorGlobalMessage(
-						$form,
-						wpfsFormSettings.l10n.validation_errors
-							.internal_error_title,
 						errorThrown
 					);
 					enableFormButtons( $form );
@@ -7070,8 +7440,8 @@ jQuery.noConflict();
 			// show error message
 			showErrorGlobalMessage(
 				$form,
-				'Payment failed',
-				'Payment failed, please try again.'
+				l10n.validation_errors.payment_failed_title,
+				l10n.validation_errors.payment_failed
 			);
 
 			// clear the parameters

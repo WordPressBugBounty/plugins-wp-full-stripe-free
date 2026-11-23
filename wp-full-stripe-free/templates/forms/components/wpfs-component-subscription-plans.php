@@ -1,11 +1,17 @@
 <?php
-/** @var MM_WPFS_FormView $view */
+use ThemeIsle\WPFullPay\Forms\Views\CheckoutSubscriptionFormView;
+use ThemeIsle\WPFullPay\Forms\Views\Control;
+use ThemeIsle\WPFullPay\Forms\Views\FormView;
+use ThemeIsle\WPFullPay\Forms\Views\SubscriptionFormView;
+use ThemeIsle\WPFullPay\Main;
+
+/** @var FormView $view */
 /** @var \StdClass $form */
 // handle checkout subscription form
-if ($view instanceof MM_WPFS_CheckoutSubscriptionFormView && 1 == $form->simpleButtonLayout) {
+if ($view instanceof CheckoutSubscriptionFormView && 1 == $form->simpleButtonLayout) {
 	if (is_null($view->firstPlan())) {
 		?>
-		<div class="wpfs-form-message wpfs-form-message--incorrect">
+		<div class="wpfs-form-message wpfs-form-message--incorrect" data-wpfs-configuration-error>
 			<div class="wpfs-form-message-title">
 				<?php /* translators: Banner title of not finding the plan assigned to the form */
 				esc_html_e('Invalid plan', 'wp-full-stripe-free'); ?>
@@ -27,9 +33,9 @@ if ($view instanceof MM_WPFS_CheckoutSubscriptionFormView && 1 == $form->simpleB
 			value="<?php $view->firstPlan()->value(); ?>" <?php $view->firstPlan()->attributes(); ?>>
 	<?php }
 	// handle inline subscription form
-} elseif ($view instanceof MM_WPFS_SubscriptionFormView) {
+} elseif ($view instanceof SubscriptionFormView) {
 	if (count($view->plans()->options()) > 1) {
-		if (MM_WPFS::PLAN_SELECTOR_STYLE_DROPDOWN === $form->planSelectorStyle) { ?>
+		if (Main::PLAN_SELECTOR_STYLE_DROPDOWN === $form->planSelectorStyle) { ?>
 			<div class="wpfs-form-group">
 				<label class="wpfs-form-label" for="<?php $view->plans()->id(); ?>">
 					<?php $view->plans()->label(); ?>
@@ -38,7 +44,7 @@ if ($view instanceof MM_WPFS_CheckoutSubscriptionFormView && 1 == $form->simpleB
 					<select name="<?php $view->plans()->name(); ?>" id="<?php $view->plans()->id(); ?>" data-toggle="selectmenu"
 						data-wpfs-select="wpfs-subscription-plan-select" class="wpfs-subscription-plan-select">
 						<?php foreach ($view->plans()->options() as $plan) { ?>
-							<?php /** @var MM_WPFS_Control $plan */?>
+							<?php /** @var Control $plan */?>
 							<option value="<?php $plan->value(); ?>" <?php $plan->attributes(); ?> 				<?php echo ($plan->value(false) === $selectedPlanId ? "selected='selected'" : ""); ?>>
 								<?php $plan->label(); ?>
 							</option>
@@ -47,14 +53,14 @@ if ($view instanceof MM_WPFS_CheckoutSubscriptionFormView && 1 == $form->simpleB
 				</div>
 			</div>
 			<?php
-		} elseif (MM_WPFS::PLAN_SELECTOR_STYLE_RADIO_BUTTONS === $form->planSelectorStyle) {
+		} elseif (Main::PLAN_SELECTOR_STYLE_RADIO_BUTTONS === $form->planSelectorStyle) {
 			?>
 			<fieldset class="wpfs-form-check-group">
 				<legend class="wpfs-form-check-group-title">
 					<?php $view->plans()->label(); ?>
 				</legend>
 				<?php foreach ($view->plans()->options() as $plan) { ?>
-					<?php /** @var MM_WPFS_Control $plan */?>
+					<?php /** @var Control $plan */?>
 					<div class="wpfs-form-check">
 						<input type="radio" id="<?php $plan->id(); ?>" name="<?php $plan->name(); ?>" value="<?php $plan->value(); ?>"
 							class="wpfs-form-check-input wpfs-subscription-plan-radio" <?php $plan->attributes(); ?> 				<?php echo ($plan->value(false) === $selectedPlanId ? "checked='checked'" : ""); ?>>
@@ -74,7 +80,7 @@ if ($view instanceof MM_WPFS_CheckoutSubscriptionFormView && 1 == $form->simpleB
 		<?php
 	} else {
 		?>
-		<div class="wpfs-form-message wpfs-form-message--incorrect">
+		<div class="wpfs-form-message wpfs-form-message--incorrect" data-wpfs-configuration-error>
 			<div class="wpfs-form-message-title">
 				<?php /* translators: Banner title of internal error */
 				esc_html_e('Form configuration error', 'wp-full-stripe-free'); ?>
@@ -87,7 +93,7 @@ if ($view instanceof MM_WPFS_CheckoutSubscriptionFormView && 1 == $form->simpleB
 
 }
 // (inline_subscription|popup_subscription)(field): plans 
-if ($view instanceof MM_WPFS_SubscriptionFormView && $form->allowMultipleSubscriptions == '1') { ?>
+if ($view instanceof SubscriptionFormView && $form->allowMultipleSubscriptions == '1') { ?>
 	<div class="wpfs-form-group">
 		<label class="wpfs-form-label" for="<?php $view->planQuantity()->id(); ?>">
 			<?php $view->planQuantity()->label(); ?>

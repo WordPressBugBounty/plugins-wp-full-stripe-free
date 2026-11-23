@@ -1,5 +1,10 @@
 <?php
-/** @var $view MM_WPFS_Admin_PaymentFormView|MM_WPFS_Admin_SubscriptionFormView|MM_WPFS_Admin_DonationFormView|MM_WPFS_Admin_SaveCardFormView */
+use ThemeIsle\WPFullPay\Admin\Views\DonationFormView;
+use ThemeIsle\WPFullPay\Admin\Views\PaymentFormView;
+use ThemeIsle\WPFullPay\Admin\Views\SaveCardFormView;
+use ThemeIsle\WPFullPay\Admin\Views\SubscriptionFormView;
+
+/** @var $view PaymentFormView|SubscriptionFormView|DonationFormView|SaveCardFormView */
 /** @var $form */
 
 
@@ -9,7 +14,7 @@ $currentThemeValue = $form->stripeElementsTheme;
     <label class="wpfs-form-label"><?php $view->stripeElementsThemeSelector()->label(); ?></label>
     <div class="wpfs-theme-grid">
     <?php foreach ( $view->stripeElementsThemeSelector()->options() as $option ) {
-        /* @var $option MM_WPFS_Control */
+        /* @var $option Control */
         ?>
         <label class="wpfs-theme-option" for="<?php $option->id(); ?>" title="<?php echo esc_attr( $option->label() ); ?>">
             <input id="<?php $option->id(); ?>" name="<?php $option->name(); ?>" value="<?php $option->value(); ?>" <?php $option->attributes(); ?> <?php echo $option->value(false) == $currentThemeValue ? 'checked' : ''; ?>/>

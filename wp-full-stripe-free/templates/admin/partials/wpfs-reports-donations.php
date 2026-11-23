@@ -1,4 +1,6 @@
 <?php
+use ThemeIsle\WPFullPay\Locale\Currencies;
+
 /** @var $data */
 /** @var $pageUrl */
 /** @var $rangeFilter */
@@ -38,9 +40,9 @@
             <tbody>
             <?php foreach( $data->donations as $donation ) : ?>
                 <tr>
-                    <td><?php echo date( 'M d, Y', strtotime( $donation->created_at ) ); ?></td>
+                    <td><?php echo esc_html( wp_date( 'M d, Y', strtotime( $donation->created_at . ' UTC' ), new DateTimeZone( 'UTC' ) ) ); ?></td>
                     <td><?php echo $stripe->getCustomerName( $donation->stripeCustomerID ); ?></td>
-                    <td><?php echo MM_WPFS_Currencies::format_amount_with_currency( $donation->currency, $donation->amount ); ?></td>
+                    <td><?php echo Currencies::format_amount_with_currency( $donation->currency, $donation->net_amount ); ?></td>
                 </tr>
             <?php endforeach; ?>
 
@@ -67,8 +69,8 @@
             <?php foreach( $data->top_donors as $donors ) : ?>
                 <tr>
                     <td><?php echo $stripe->getCustomerName( $donors->stripeCustomerID ); ?></td>
-                    <td><?php echo MM_WPFS_Currencies::format_amount_with_currency( $donors->currency, $donors->average ); ?></td>
-                    <td><?php echo MM_WPFS_Currencies::format_amount_with_currency( $donors->currency, $donors->total ); ?></td>
+                    <td><?php echo Currencies::format_amount_with_currency( $donors->currency, $donors->total ); ?></td>
+                    <td><?php echo Currencies::format_amount_with_currency( $donors->currency, $donors->average ); ?></td>
                 </tr>
             <?php endforeach; ?>
 

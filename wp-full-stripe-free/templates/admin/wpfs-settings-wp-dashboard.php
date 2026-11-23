@@ -1,6 +1,8 @@
 <?php
+use ThemeIsle\WPFullPay\Admin\Views\WordpressDashboardView;
+
 /** @var $backLinkUrl */
-/** @var $view MM_WPFS_Admin_WordpressDashboardView */
+/** @var $view WordpressDashboardView */
 /** @var $wpDashboardData */
 ?>
 <div class="wrap">

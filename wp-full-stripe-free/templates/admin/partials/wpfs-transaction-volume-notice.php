@@ -1,23 +1,27 @@
 <?php
+use ThemeIsle\WPFullPay\Database;
+use ThemeIsle\WPFullPay\License;
+use ThemeIsle\WPFullPay\Options;
+
 /**
  * Transaction Volume Notice Template
  *
  */
 
 // Don't show if the user is not being charged the transaction fee
-if ( WPFS_License::has_valid_key_for_fees() ) {
+if ( License::has_valid_key_for_fees() ) {
 	return;
 }
 
-$options = new MM_WPFS_Options();
+$options = new Options();
 
 // Check if notice has been dismissed
-if ( $options->get( MM_WPFS_Options::OPTION_TRANSACTION_VOLUME_NOTICE ) ) {
+if ( $options->get( Options::OPTION_TRANSACTION_VOLUME_NOTICE ) ) {
 	return;
 }
 
 // Check if transaction volume threshold is exceeded for USD or EUR (with caching)
-$db = new MM_WPFS_Database();
+$db = new Database();
 if ( ! $db->requiresVolumeWarning() ) {
 	return;
 }

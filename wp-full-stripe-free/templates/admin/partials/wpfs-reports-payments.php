@@ -1,4 +1,6 @@
 <?php
+use ThemeIsle\WPFullPay\Locale\Currencies;
+
 /** @var $data */
 /** @var $pageUrl */
 /** @var $rangeFilter */
@@ -8,7 +10,8 @@
 /** @var $currencies */
 ?>
 <script type="text/javascript">
-    window.wpfsCurrency = '<?php echo MM_WPFS_Currencies::getCurrencySymbolFor( $currencyFilter ); ?>';
+    window.wpfsCurrency = '<?php echo Currencies::getCurrencySymbolFor( $currencyFilter ); ?>';
+    window.wpfsCurrencyDivisor = <?php echo empty( Currencies::getCurrencyFor( $currencyFilter )['zeroDecimalSupport'] ) ? 100 : 1; ?>;
     window.wpfsRevenueData = <?php echo json_encode( $data->revenue_data ); ?>;
     window.wpfsRefundsData = <?php echo json_encode( $data->refunds_data ); ?>;
 </script>
@@ -74,10 +77,10 @@
         <tbody>
             <?php foreach( $data->payments as $payment ) : ?>
                 <tr>
-                    <td><?php echo date( 'M d, Y', strtotime( $payment->created_at ) ); ?></td>
+                    <td><?php echo esc_html( wp_date( 'M d, Y', strtotime( $payment->created_at . ' UTC' ), new DateTimeZone( 'UTC' ) ) ); ?></td>
                     <td><?php echo $stripe->getCustomerName( $payment->stripeCustomerID ); ?></td>
                     <td><?php echo $db->getFormNameByReport( $payment ); ?></td>
-                    <td><?php echo MM_WPFS_Currencies::format_amount_with_currency( $payment->currency, $payment->amount ); ?></td>
+                    <td><?php echo Currencies::format_amount_with_currency( $payment->currency, $payment->net_amount ); ?></td>
                 </tr>
             <?php endforeach; ?>
 
@@ -104,8 +107,8 @@
             <?php foreach( $data->top_customers as $customer ) : ?>
                 <tr>
                     <td><?php echo $stripe->getCustomerName( $customer->stripeCustomerID ); ?></td>
-                    <td><?php echo MM_WPFS_Currencies::format_amount_with_currency( $customer->currency, $customer->total ); ?></td>
-                    <td><?php echo MM_WPFS_Currencies::format_amount_with_currency( $customer->currency, $customer->average ); ?></td>
+                    <td><?php echo Currencies::format_amount_with_currency( $customer->currency, $customer->total ); ?></td>
+                    <td><?php echo Currencies::format_amount_with_currency( $customer->currency, $customer->average ); ?></td>
                 </tr>
             <?php endforeach; ?>
 

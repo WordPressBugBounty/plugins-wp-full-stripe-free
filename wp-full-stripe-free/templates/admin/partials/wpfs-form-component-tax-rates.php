@@ -1,11 +1,14 @@
 <?php
-/** @var $view MM_WPFS_Admin_PaymentFormView */
+use ThemeIsle\WPFullPay\Admin\Views\PaymentFormView;
+use ThemeIsle\WPFullPay\Admin\Views\TaxViewConstants;
+
+/** @var $view PaymentFormView */
 /** @var $form */
 /** @var $data */
 ?>
 <div class="wpfs-form-group js-tax-rates" id="tax-rates" style="<?php echo $view->doesFormUseTaxRates( $form ) ? '' : 'display: none;' ?>">
     <label for="" class="wpfs-form-label"><?php esc_html_e( 'Available tax rates', 'wp-full-stripe-free' ); ?></label>
-    <div id="<?php echo MM_WPFS_Admin_View_TaxConstants::FIELD_FORM_TAX_RATES_ERROR; ?>" class="wpfs-field-list" data-field-name="<?php echo MM_WPFS_Admin_View_TaxConstants::FIELD_FORM_TAX_RATES_ERROR; ?>">
+    <div id="<?php echo TaxViewConstants::FIELD_FORM_TAX_RATES_ERROR; ?>" class="wpfs-field-list" data-field-name="<?php echo TaxViewConstants::FIELD_FORM_TAX_RATES_ERROR; ?>">
         <div id="wpfs-tax-rates" class="wpfs-field-list__list js-sortable ui-sortable"></div>
         <a class="wpfs-field-list__add js-add-tax-rate" href="">
             <div class="wpfs-icon-add-circle wpfs-field-list__icon"></div>
@@ -22,8 +25,8 @@
         <p class="wpfs-dialog-content-text"><%- confirmationMessage %></p>
     </div>
     <div class="wpfs-dialog-content-actions">
-        <button class="wpfs-btn wpfs-btn-danger js-remove-tax-rate-dialog"><?php _e( 'Remove tax rate', 'wp-full-stripe-free'); ?></button>
-        <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php _e( 'Keep tax rate', 'wp-full-stripe-free' ); ?></button>
+        <button class="wpfs-btn wpfs-btn-danger js-remove-tax-rate-dialog"><?php esc_html_e( 'Remove tax rate', 'wp-full-stripe-free'); ?></button>
+        <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php esc_html_e( 'Keep tax rate', 'wp-full-stripe-free' ); ?></button>
     </div>
 </script>
 <script type="text/template" id="wpfs-tax-rate-template">

@@ -1,6 +1,11 @@
 <?php
+use ThemeIsle\WPFullPay\Admin\Menu;
+use ThemeIsle\WPFullPay\Admin\StripeAccessRevocation;
+use ThemeIsle\WPFullPay\Admin\StripeConnect;
+use ThemeIsle\WPFullPay\Admin\Views\ConfigureStripeAccountView;
+
 /** @var $tabId */
-/** @var $this MM_WPFS_Admin_Menu */
+/** @var $this Menu */
 /** @var $data */
 
 ?>
@@ -14,15 +19,18 @@
 
             <div>
                 <?php include('partials/wpfs-header-block-tabs.php'); ?>
+                <?php StripeAccessRevocation::displayResultNotice(); ?>
+                <?php StripeConnect::displayConfirmationPrompt(); ?>
+                <?php StripeConnect::displayResultNotice(); ?>
                 <?php
                     $stripeData = $this->getStripeAccountData();
 
-                    if ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_CONNECTION ) {
-                        $view = new MM_WPFS_Admin_ConfigureStripeAccountView();
+                    if ( $tabId === Menu::PARAM_VALUE_TAB_CONNECTION ) {
+                        $view = new ConfigureStripeAccountView();
 
                         include('partials/wpfs-settings-stripe-connection.php');
-                    } elseif ( $tabId === MM_WPFS_Admin_Menu::PARAM_VALUE_TAB_WEBHOOK ) {
-                        $view = new MM_WPFS_Admin_ConfigureStripeAccountView();
+                    } elseif ( $tabId === Menu::PARAM_VALUE_TAB_WEBHOOK ) {
+                        $view = new ConfigureStripeAccountView();
 
                         include('partials/wpfs-settings-stripe-webhooks.php');
                     }

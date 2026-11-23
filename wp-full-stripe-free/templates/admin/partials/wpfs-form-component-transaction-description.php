@@ -1,5 +1,7 @@
 <?php
-    /** @var $view MM_WPFS_Admin_SaveCardFormView */
+use ThemeIsle\WPFullPay\Admin\Views\SaveCardFormView;
+
+    /** @var $view SaveCardFormView */
     /** @var $form */
     /** @var $data */
 ?>

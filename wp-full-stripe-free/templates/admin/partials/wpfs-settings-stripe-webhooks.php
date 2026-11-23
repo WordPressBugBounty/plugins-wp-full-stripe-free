@@ -1,4 +1,6 @@
 <?php
+use ThemeIsle\WPFullPay\Main;
+
 /** @var $stripeData */
 ?>
 <form <?php $view->formAttributes(); ?>>
@@ -8,7 +10,7 @@
         <div class="wpfs-form__col">
             <!-- connect account -->
             <div class="wpfs-form-block">
-                <?php if ( $stripeData->apiMode === MM_WPFS::STRIPE_API_MODE_LIVE ) : ?>
+                <?php if ( $stripeData->apiMode === Main::STRIPE_API_MODE_LIVE ) : ?>
                     <?php if ( ! ( $stripeData->useWpLivePlatform ) ) : ?>
                         <!-- live webhook -->
                         <?php if ( isset( $stripeData->liveEventTitle ) ): ?>
@@ -20,11 +22,11 @@
                                     <div
                                         class="wpfs-status-bullet <?php echo $stripeData->liveEventStyle; ?> wpfs-webhook__bullet">
                                         <strong>
-                                            <?php echo $stripeData->liveEventTitle; ?>
+                                            <?php echo esc_html( $stripeData->liveEventTitle ); ?>
                                         </strong>
                                     </div>
                                     <div class="wpfs-webhook__last-action">
-                                        <?php echo $stripeData->liveEventDescription; ?>
+                                        <?php echo esc_html( $stripeData->liveEventDescription ); ?>
                                     </div>
                                 </div>
                             </div>
@@ -40,15 +42,15 @@
                                     <?php if ( isset( $stripeData->liveEventStyle ) && isset( $stripeData->liveEventTitle ) && isset( $stripeData->liveEventDescription ) ): ?>
                                         <div class="wpfs-status-bullet <?php echo $stripeData->liveEventStyle; ?> wpfs-webhook__bullet">
                                             <strong>
-                                                <?php echo $stripeData->liveEventTitle; ?>
+                                                <?php echo esc_html( $stripeData->liveEventTitle ); ?>
                                             </strong>
                                         </div>
                                         <div class="wpfs-webhook__last-action">
-                                            <?php echo $stripeData->liveEventDescription; ?>
+                                            <?php echo esc_html( $stripeData->liveEventDescription ); ?>
                                         </div>
                                     <?php else: ?>
                                         <div class="wpfs-webhook__last-action">
-                                            <?php _e( 'No webhooks received yet.', 'wp-full-stripe-free' ); ?>
+                                            <?php esc_html_e( 'No webhooks received yet.', 'wp-full-stripe-free' ); ?>
                                         </div>
                                     <?php endif; ?>
                                     <?php if( ! ( $stripeData->useWpLivePlatform ) ): ?>
@@ -92,11 +94,11 @@
                                     <div
                                         class="wpfs-status-bullet <?php echo $stripeData->testEventStyle; ?> wpfs-webhook__bullet">
                                         <strong>
-                                            <?php echo $stripeData->testEventTitle; ?>
+                                            <?php echo esc_html( $stripeData->testEventTitle ); ?>
                                         </strong>
                                     </div>
                                     <div class="wpfs-webhook__last-action">
-                                        <?php echo $stripeData->testEventDescription; ?>
+                                        <?php echo esc_html( $stripeData->testEventDescription ); ?>
                                     </div>
                                 </div>
                             </div>
@@ -112,15 +114,15 @@
                                     <?php if ( isset( $stripeData->testEventStyle ) && isset( $stripeData->testEventTitle ) && isset( $stripeData->testEventDescription ) ): ?>
                                         <div class="wpfs-status-bullet <?php echo $stripeData->testEventStyle; ?> wpfs-webhook__bullet">
                                             <strong>
-                                                <?php echo $stripeData->testEventTitle; ?>
+                                                <?php echo esc_html( $stripeData->testEventTitle ); ?>
                                             </strong>
                                         </div>
                                         <div class="wpfs-webhook__last-action">
-                                            <?php echo $stripeData->testEventDescription; ?>
+                                            <?php echo esc_html( $stripeData->testEventDescription ); ?>
                                         </div>
                                     <?php else: ?>
                                         <div class="wpfs-webhook__last-action">
-                                            <?php _e( 'No webhooks received yet.', 'wp-full-stripe-free' ); ?>
+                                            <?php esc_html_e( 'No webhooks received yet.', 'wp-full-stripe-free' ); ?>
                                         </div>
                                     <?php endif; ?>
                                     <?php if( ! ( $stripeData->useWpTestPlatform ) ): ?>
@@ -173,15 +175,15 @@
                             <?php
                             echo sprintf(
                             /* translators: %1$s: opening anchor tag, %2$s: closing anchor tag */
-                            __( 'This is so that Stripe is able to send notifications to WP Full Pay when events occur. This is required for the Connect flow to fully work. For more information on setting up webhooks, see our %1$sSetting up webhooks guide%2$s.', 'wp-full-stripe-free' ),
-                            '<a href="https://docs.themeisle.com/article/2096-setting-up-webhooks" target="_blank">',
+                            esc_html__( 'This is so that Stripe is able to send notifications to WP Full Pay when events occur. This is required for the Connect flow to fully work. For more information on setting up webhooks, see our %1$sSetting up webhooks guide%2$s.', 'wp-full-stripe-free' ),
+                            '<a href="' . esc_url( tsdk_utmify( 'https://docs.themeisle.com/wp-full-pay/setting-up-webhooks', 'stripe-webhooks', 'settings' ) ) . '" target="_blank">',
                             '</a>'
                             ) ?>
                         </p>
                     </div>
                     <p>
                         <label for="wpfs-webhookurl" class="wpfs-form-label">
-                            <?php _e( 'Webhook URL', 'wp-full-stripe-free'); ?>
+                            <?php esc_html_e( 'Webhook URL', 'wp-full-stripe-free'); ?>
                         </label>
                         <input id="wpfs-webhookurl" type="text" readonly value="<?php echo $stripeData->webHookUrl; ?>" data-webhook-url="<?php echo esc_html($stripeData->webHookUrl); ?>" class="wpfs-form-control js-copy-webhook-url"">
                     </p>

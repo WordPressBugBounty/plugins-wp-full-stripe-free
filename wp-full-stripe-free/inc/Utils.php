@@ -1,0 +1,1108 @@
+<?php
+
+namespace ThemeIsle\WPFullPay;
+
+use ThemeIsle\WPFullPay\Admin\Menu;
+use ThemeIsle\WPFullPay\Context\StaticContext;
+use ThemeIsle\WPFullPay\Forms\FormTypes;
+use ThemeIsle\WPFullPay\Forms\Models\BindingResult;
+use ThemeIsle\WPFullPay\Forms\Models\DonationFormModel;
+use ThemeIsle\WPFullPay\Forms\Models\FormModel;
+use ThemeIsle\WPFullPay\Forms\Models\PaymentFormModel;
+use ThemeIsle\WPFullPay\Forms\Views\DonationFormViewConstants;
+use ThemeIsle\WPFullPay\Forms\Views\FormView;
+use ThemeIsle\WPFullPay\Locale\Currencies;
+use ThemeIsle\WPFullPay\Locale\Localization;
+use ThemeIsle\WPFullPay\Macros\DonationMacroReplacer;
+use ThemeIsle\WPFullPay\Macros\OneTimePaymentMacroReplacer;
+use ThemeIsle\WPFullPay\Macros\SaveCardMacroReplacer;
+use ThemeIsle\WPFullPay\TransactionData\DonationTransactionData;
+use ThemeIsle\WPFullPay\TransactionData\SaveCardTransactionData;
+
+class Utils {
+
+    const ADDITIONAL_DATA_KEY_ACTION_NAME = 'action_name';
+    const ADDITIONAL_DATA_KEY_CUSTOMER = 'customer';
+    const ADDITIONAL_DATA_KEY_MACROS = 'macros';
+    const ADDITIONAL_DATA_KEY_MACRO_VALUES = 'macroValues';
+    const WPFS_LOG_MESSAGE_PREFIX = "WPFS: ";
+    const STRIPE_METADATA_KEY_MAX_LENGTH = 40;
+    const STRIPE_METADATA_VALUE_MAX_LENGTH = 500;
+    const STRIPE_METADATA_KEY_MAX_COUNT = 20;
+    const ELEMENT_PART_SEPARATOR = '--';
+
+    const ESCAPE_TYPE_NONE = 'none';
+    const ESCAPE_TYPE_HTML = 'esc_html';
+    const ESCAPE_TYPE_ATTR = 'esc_attr';
+    const WPFS_ENCRYPT_METHOD_AES_256_CBC = 'AES-256-CBC';
+
+    /**
+     * @param Stripe $stripe
+     * @param \StripeWPFS\Stripe\PaymentIntent|object|null $paymentIntent
+     * @return bool True when its charge was fully refunded, also by cancelling an authorization, which refunds the
+     *              uncaptured charge.
+     */
+    public static function isPaymentIntentRefunded( $stripe, $paymentIntent ): bool {
+        return ! empty( $paymentIntent->latest_charge ) && ! empty( $stripe->getLatestCharge( $paymentIntent )->refunded );
+    }
+
+    /**
+     * @return string
+     */
+    public static function generateCSSFormID( $form_hash ) {
+        return FormView::ATTR_ID_VALUE_PREFIX . $form_hash;
+    }
+
+    /**
+     * @return bool
+     */
+    public static function isDemoMode() {
+        return defined( 'WP_FULL_STRIPE_DEMO_MODE' );
+    }
+
+    /**
+     * @param $form
+     *
+     * @return null|string
+     */
+    public static function getFormType( $form ) {
+        if ( is_null( $form ) ) {
+            return null;
+        }
+        foreach ( FormTypes::all() as $formType ) {
+            // Save card forms share the payment tables and are told apart by their amount type.
+            if ( isset( $form->{$formType->idColumn} ) &&
+                ( null === $formType->cardCapture || $formType->cardCapture === ( Main::PAYMENT_TYPE_CARD_CAPTURE === $form->customAmount ) ) ) {
+                return $formType->formType;
+            }
+        }
+
+        return null;
+    }
+
+    public static function isCheckoutPaymentFormType( $type ) {
+        return $type === Main::FORM_TYPE_POPUP_PAYMENT || $type === Main::FORM_TYPE_CHECKOUT_PAYMENT;
+    }
+
+    public static function isCheckoutSaveCardFormType( $type ) {
+        return $type === Main::FORM_TYPE_POPUP_SAVE_CARD || $type === Main::FORM_TYPE_CHECKOUT_SAVE_CARD;
+    }
+
+    public static function isCheckoutSubscriptionFormType( $type ) {
+        return $type === Main::FORM_TYPE_POPUP_SUBSCRIPTION || $type === Main::FORM_TYPE_CHECKOUT_SUBSCRIPTION;
+    }
+
+    public static function isCheckoutDonationFormType( $type ) {
+        return $type === Main::FORM_TYPE_POPUP_DONATION || $type === Main::FORM_TYPE_CHECKOUT_DONATION;
+    }
+
+    /**
+     * @param $slug
+     * @param $id
+     * @param $type
+     *
+     * @return string
+     */
+    public static function createFormEditUrl( $slug, $id, $type ) {
+        $editUrl = add_query_arg(
+            [
+                'page' => $slug,
+                'form' => $id,
+                'type' => $type
+            ],
+            admin_url( "admin.php" )
+        );
+
+        return $editUrl;
+    }
+
+    /**
+     * @param $id string
+     * @param $type string
+     * @param $layout string
+     *
+     * @return string
+     */
+    public static function getFormEditUrl( $id, $type, $layout ) {
+        $formType = FormTypes::find( $type, $layout );
+
+        return null === $formType ? '#' : self::createFormEditUrl( Menu::SLUG_EDIT_FORM, $id, $formType );
+    }
+
+    /**
+     * Used by WPFSM, WPFP_Mailchimp
+     */
+    public static function generateFormElementId($element_id, $form_hash, $index = null ) {
+        if ( is_null( $element_id ) ) {
+            return null;
+        }
+
+        $generated_id = $element_id . Utils::ELEMENT_PART_SEPARATOR . $form_hash;
+        if ( ! is_null( $index ) ) {
+            $generated_id .= Utils::ELEMENT_PART_SEPARATOR . $index;
+        }
+
+        return esc_attr( $generated_id );
+    }
+
+    public static function generateFormHash($form_type, $form_id, $form_name ) {
+        $data = $form_type . '|' . $form_id . '|' . $form_name;
+
+        return substr( base64_encode( hash( 'sha256', $data ) ), 0, 7 );
+    }
+
+    /**
+     * @param $line1
+     * @param $line2
+     * @param $city
+     * @param $state
+     * @param $countryName
+     * @param $countryCode
+     * @param $zip
+     *
+     * @return array
+     */
+    public static function prepareAddressData($line1, $line2, $city, $state, $countryName, $countryCode, $zip ) {
+        $addressData = [
+            'line1'        => is_null( $line1 ) ? '' : $line1,
+            'line2'        => is_null( $line2 ) ? '' : $line2,
+            'city'         => is_null( $city ) ? '' : $city,
+            'state'        => is_null( $state ) ? '' : $state,
+            'country'      => is_null( $countryName ) ? '' : $countryName,
+            'country_code' => is_null( $countryCode ) ? '' : $countryCode,
+            'zip'          => is_null( $zip ) ? '' : $zip
+        ];
+
+        return $addressData;
+    }
+
+    /**
+     * This function creates a Stripe shipping address hash
+     *
+     * @param $shipping_name
+     * @param $shipping_phone
+     * @param $address_array array previously created with prepare_address_data()
+     *
+     * @return array
+     */
+    public static function prepareStripeShippingHashFromArray($shipping_name, $shipping_phone, $address_array ) {
+        return self::prepare_stripe_shipping_hash(
+            $shipping_name,
+            $shipping_phone,
+            $address_array['line1'],
+            $address_array['line2'],
+            $address_array['city'],
+            $address_array['state'],
+            $address_array['country_code'],
+            $address_array['zip']
+        );
+    }
+
+    /**
+     * This function creates a Stripe shipping address hash
+     *
+     * @param string $shipping_name Customer name
+     * @param string $shipping_phone Customer phone (including extension)
+     * @param string $line1 Address line 1 (Street address/PO Box/Company name)
+     * @param string $line2 Address line 2 (Apartment/Suite/Unit/Building)
+     * @param string $city City/District/Suburb/Town/Village
+     * @param string $state State/County/Province/Region
+     * @param string $country_code 2-letter country code
+     * @param string $postal_code ZIP or postal code
+     *
+     * @return array
+     */
+    public static function prepare_stripe_shipping_hash( $shipping_name, $shipping_phone, $line1, $line2, $city, $state, $country_code, $postal_code ) {
+        $shipping_hash = [];
+
+        //-- The 'name' property is required. It must contain a non-empty value or be null
+        $shipping_hash['name'] = ! empty( $shipping_name ) ? $shipping_name : null;
+
+        if ( ! empty( $shipping_phone ) ) {
+            $shipping_hash['phone'] = $shipping_phone;
+        }
+        $address_hash             = self::prepare_stripe_address_hash( $line1, $line2, $city, $state, $country_code, $postal_code );
+        $shipping_hash['address'] = $address_hash;
+
+        return $shipping_hash;
+    }
+
+    /**
+     * This function creates a Stripe address hash
+     *
+     * @param string $line1 Address line 1 (Street address/PO Box/Company name)
+     * @param string $line2 Address line 2 (Apartment/Suite/Unit/Building)
+     * @param string $city City/District/Suburb/Town/Village
+     * @param string $state State/County/Province/Region
+     * @param string $country_code 2-letter country code
+     * @param string $postal_code ZIP or postal code
+     *
+     * @return array
+     */
+    public static function prepare_stripe_address_hash( $line1, $line2, $city, $state, $country_code, $postal_code ) {
+        $address_hash = [];
+
+        //-- The 'line1' property is required
+        if ( empty( $line1 ) ) {
+            throw new \InvalidArgumentException( __FUNCTION__ . '(): address line1 is required.' );
+        } else {
+            $address_hash['line1'] = $line1;
+        }
+        if ( ! empty( $line2 ) ) {
+            $address_hash['line2'] = $line2;
+        }
+        if ( ! empty( $city ) ) {
+            $address_hash['city'] = $city;
+        }
+        if ( ! empty( $state ) ) {
+            $address_hash['state'] = $state;
+        }
+        if ( ! empty( $country_code ) ) {
+            $address_hash['country'] = $country_code;
+        }
+        if ( ! empty( $postal_code ) ) {
+            $address_hash['postal_code'] = $postal_code;
+        }
+
+        return $address_hash;
+    }
+
+    /**
+     * This function creates a Stripe address hash from an array created previously created with prepare_address_data()
+     *
+     * @param array $address_array
+     *
+     * @return array
+     */
+    public static function prepareStripeBillingAddressHashFromArray($address_array ) {
+        return self::prepare_stripe_address_hash(
+            $address_array['line1'],
+            $address_array['line2'],
+            $address_array['city'],
+            $address_array['state'],
+            $address_array['country_code'],
+            $address_array['zip']
+        );
+    }
+
+    /**
+     * @param $value
+     * @param $escapeType
+     *
+     * @return string|void
+     */
+    public static function escape( $value, $escapeType ) {
+        if ( is_null( $value ) ) {
+            return $value;
+        }
+        if ( self::ESCAPE_TYPE_HTML === $escapeType ) {
+            return esc_html( $value );
+        } elseif ( self::ESCAPE_TYPE_ATTR === $escapeType ) {
+            return esc_attr( $value );
+        } else {
+            return $value;
+        }
+    }
+
+    /**
+     * todo: remove this function
+     * @param $netValue
+     * @param $taxPercent
+     *
+     * @return mixed
+     */
+    public static function calculateGrossFromNet( $netValue, $taxPercent ) {
+        if ( ! is_numeric( $netValue ) ) {
+            throw new \InvalidArgumentException( sprintf( 'Parameter %s=%s is not numeric.', 'netValue', $netValue ) );
+        }
+        if ( ! is_numeric( $taxPercent ) ) {
+            throw new \InvalidArgumentException( sprintf( 'Parameter %s=%s is not numeric.', 'taxPercent', $taxPercent ) );
+        }
+
+        if ( $taxPercent == 0.0 ) {
+            $grossValue = $netValue;
+            $taxValue   = 0;
+        } else {
+            $grossValue = round( $netValue * ( 1.0 + round( $taxPercent, 4 ) / 100.0 ) );
+            $taxValue   = $grossValue - $netValue;
+        }
+
+        $result = [
+            'net'        => $netValue,
+            'taxPercent' => $taxPercent,
+            'taxValue'   => $taxValue,
+            'gross'      => $grossValue
+        ];
+
+        return $result;
+    }
+
+    /**
+     * @param $stripePlans
+     *
+     * @return array
+     */
+    public static function getStripePlanLookup($stripePlans ) {
+        $planIds = [];
+
+        foreach ( $stripePlans as $stripePlan) {
+            $planIds[ $stripePlan->id ] = $stripePlan;
+        }
+
+        return $planIds;
+    }
+
+    /**
+     * @param $stripePlans
+     * @param $formPlans
+     *
+     * @return array
+     */
+    public static function getSortedFormPlans( $stripePlans, $formPlans ) {
+        $plans = [];
+        $formPlanProperties = !is_null( $formPlans ) ? json_decode( $formPlans ) : [];
+        $stripePlanLookup = self::getStripePlanLookup( $stripePlans );
+
+        foreach ( $formPlanProperties as $formPlanProperty) {
+            if ( array_key_exists( $formPlanProperty->stripePriceId, $stripePlanLookup ) ) {
+                $plan = new \StdClass;
+                $plan->properties = $formPlanProperty;
+                $plan->stripePlan = $stripePlanLookup[ $formPlanProperty->stripePriceId ];
+
+                array_push( $plans, $plan );
+            }
+        }
+
+        return $plans;
+    }
+
+    /**
+     * @param $encodedCustomInputs
+     *
+     * @return array
+     */
+    public static function decodeCustomFieldLabels($encodedCustomInputs ) {
+        $customInputLabels = [];
+        if ( ! is_null( $encodedCustomInputs ) && !empty( $encodedCustomInputs ) ) {
+            $customInputLabels = explode( '{{', $encodedCustomInputs );
+        }
+
+        return $customInputLabels;
+    }
+
+    /**
+     * Used by WPFSM
+     */
+    public static function log( $message ) {
+        error_log( self::WPFS_LOG_MESSAGE_PREFIX . $message );
+    }
+
+    /**
+     * Used by WPFSM
+     */
+    public static function logException( \Exception $e, $object = null ) {
+        if ( isset( $e ) ) {
+            if ( is_null( $object ) ) {
+                $message = sprintf( 'Message=%s, Stack=%s ', $e->getMessage(), \ThemeIsle\WPFullPay\Logging\LoggerService::traceWithoutArguments( $e ) );
+            } else {
+                $message = sprintf( 'Class=%s, Message=%s, Stack=%s ', get_class( $object ), $e->getMessage(), \ThemeIsle\WPFullPay\Logging\LoggerService::traceWithoutArguments( $e ) );
+            }
+            Utils::log( $message );
+        }
+    }
+
+    /**
+     * @param $context StaticContext
+     * @param $paymentFormModel
+     * @param $transactionData
+     * @return array|string|string[]
+     */
+    public static function prepareStripeChargeDescription( $context, $paymentFormModel, $transactionData ) {
+        $stripeChargeDescription = '';
+        if ( isset( $paymentFormModel->getForm()->stripeDescription ) && ! empty( $paymentFormModel->getForm()->stripeDescription ) ) {
+            $formStripeDescription   = Localization::translateLabel( $paymentFormModel->getForm()->stripeDescription );
+
+            $replacer = new OneTimePaymentMacroReplacer( $paymentFormModel->getForm(), $transactionData, $context->getLoggerService() );
+            $stripeChargeDescription = $replacer->replaceMacrosWithHtmlEscape( $formStripeDescription );
+        }
+
+        return $stripeChargeDescription;
+    }
+
+    /**
+     * @param StaticContext $context
+     * @param DonationFormModel $donationFormModel
+     * @param DonationTransactionData $transactionData
+     *
+     * @return mixed
+     */
+    public static function prepareStripeDonationDescription( $context, $donationFormModel, $transactionData ) {
+        $stripeChargeDescription = '';
+        if ( isset( $donationFormModel->getForm()->stripeDescription ) && ! empty( $donationFormModel->getForm()->stripeDescription ) ) {
+            $formStripeDescription   = Localization::translateLabel( $donationFormModel->getForm()->stripeDescription );
+
+            $replacer = new DonationMacroReplacer( $donationFormModel->getForm(), $transactionData, $context->getLoggerService() );
+            $stripeChargeDescription = $replacer->replaceMacrosWithHtmlEscape( $formStripeDescription );
+        }
+
+        return $stripeChargeDescription;
+    }
+
+    /**
+     * @param StaticContext $context
+     * @param PaymentFormModel $saveCardFormModel
+     * @param SaveCardTransactionData $transactionData
+     *
+     * @return mixed
+     */
+    public static function prepareStripeCardSavedDescription( $context, $saveCardFormModel, $transactionData ) {
+        $stripeCustomerDescription = '';
+        if ( isset( $saveCardFormModel->getForm()->stripeDescription ) && ! empty( $saveCardFormModel->getForm()->stripeDescription ) ) {
+            $formStripeDescription     = Localization::translateLabel( $saveCardFormModel->getForm()->stripeDescription );
+
+            $replacer = new SaveCardMacroReplacer( $saveCardFormModel->getForm(), $transactionData, $context->getLoggerService() );
+            $stripeCustomerDescription = $replacer->replaceMacrosWithHtmlEscape( $formStripeDescription );
+        }
+
+        return $stripeCustomerDescription;
+    }
+
+    /**
+     * @param StaticContext $context
+     * @return bool
+     */
+    public static function getCancelSubscriptionsAtPeriodEnd( $context ) {
+        return $context->getOptions()->get( Options::OPTION_CUSTOMER_PORTAL_WHEN_CANCEL_SUBSCRIPTIONS ) === Main::CANCEL_SUBSCRIPTION_AT_PERIOD_END;
+    }
+
+    public static function getDefaultPaymentStripeDescription() {
+        return
+            /* translators: Default transaction description for one-time payments */
+            __( 'Payment on form %FORM_NAME%', 'wp-full-stripe-free' );
+    }
+
+    public static function getDefaultSaveCardDescription() {
+        return
+            /* translators: Default transaction description for saved cards */
+            __( 'Card saved on form %FORM_NAME%', 'wp-full-stripe-free' );
+    }
+
+    public static function getDefaultDonationDescription() {
+        return
+            /* translators: Default transaction description for donations */
+            __( 'Donation on form %FORM_NAME%', 'wp-full-stripe-free' );
+    }
+
+    public static function getDefaultTermsOfUseLabel() {
+        $defaultTermsOfUseURL = home_url( '/terms-of-use' );
+
+        return sprintf(
+        /* translators: Default label for the Terms of Use checkbox */
+            __( "I accept the <a href='%s' target='_blank'>Terms of Use</a>", 'wp-full-stripe-free' ), $defaultTermsOfUseURL );
+    }
+
+    public static function getDefaultTermsOfUseNotCheckedErrorMessage() {
+        return
+            /* translators: Field validation error message when the Terms of use checkbox is not checked */
+            __( 'Please accept the Terms of Use', 'wp-full-stripe-free' );
+    }
+
+    public static function getDefaultCouponInvalidErrorMessage() {
+        return
+            /* translators: Banner message of expired coupon */
+            __( 'This coupon has expired.', 'wp-full-stripe-free' );
+    }
+
+    public static function getDefaultCouponDoesNotApplyToErrorMessage() {
+        return
+            /* translators: Banner message of applied coupon */
+            __( 'The coupon doesn\'t apply to this service or product', 'wp-full-stripe-free' );
+    }
+
+    public static function getDefaultInvalidCouponCurrencyErrorMessage() {
+        return
+            /* translators: Banner message of expired coupon */
+            __( 'This coupon has an invalid currency.', 'wp-full-stripe-free' );
+    }
+
+    public static function getDefaultPaymentButtonTitle() {
+        return
+            /* translators: Default payment button label on inline one-time payment forms */
+            __( 'Make payment', 'wp-full-stripe-free' );
+    }
+
+    public static function getDefaultSaveCardButtonTitle() {
+        return
+            /* translators: Default payment button label on inline save card forms */
+            __( 'Save card', 'wp-full-stripe-free' );
+    }
+
+    public static function getDefaultPaymentOpenButtonTitle() {
+        return
+            /* translators: Default payment button label on checkout one-time payment forms */
+            __( 'Make payment', 'wp-full-stripe-free' );
+    }
+
+    public static function getDefaultSubscriptionButtonTitle() {
+        return
+            /* translators: Default subscription button label on inline subscription forms */
+            __( 'Subscribe', 'wp-full-stripe-free' );
+    }
+
+    public static function getDefaultSubscriptionOpenButtonTitle() {
+        return
+            /* translators: Default subscription button label on checkout subscription forms */
+            __( 'Subscribe', 'wp-full-stripe-free' );
+    }
+
+    public static function getDefaultDonationButtonTitle() {
+        return
+            /* translators: Default donation button label on inline donation forms */
+            __( 'Donate', 'wp-full-stripe-free' );
+    }
+
+    public static function getDefaultDonationOpenButtonTitle() {
+        return
+            /* translators: Default donation button label on inline donation forms */
+            __( 'Donate', 'wp-full-stripe-free' );
+    }
+
+    public static function getDefaultProductDescription() {
+        /* translators: Placeholder product name for newly created one-time payment forms */
+        return __('My Product', 'wp-full-stripe-free');
+    }
+
+    public static function getDefaultDonationProductDescription() {
+        /* translators: Placeholder product name for newly created donation forms */
+        return __('My Donation', 'wp-full-stripe-free');
+    }
+
+    public static function getFeeRecoveryMessagePlaceholder() {
+        return
+            /* translators: Default message for fee recovery */
+            __( 'I\'d like to cover the transaction fees of {{fee_amount}}.', 'wp-full-stripe-free' );
+    }
+
+    public static function getPaymentStatuses() {
+        return [
+            Main::PAYMENT_STATUS_FAILED,
+            Main::PAYMENT_STATUS_RELEASED,
+            Main::PAYMENT_STATUS_REFUNDED,
+            Main::PAYMENT_STATUS_EXPIRED,
+            Main::PAYMENT_STATUS_PAID,
+            Main::PAYMENT_STATUS_AUTHORIZED,
+            Main::PAYMENT_STATUS_PENDING
+        ];
+    }
+
+    public static function getSubscriptionStatuses() {
+        return [
+            Main::SUBSCRIBER_STATUS_INCOMPLETE,
+            Main::SUBSCRIBER_STATUS_RUNNING,
+            Main::SUBSCRIBER_STATUS_ENDED,
+            Main::SUBSCRIBER_STATUS_CANCELLED
+        ];
+    }
+
+    /**
+     * @param $payment
+     *
+     * @return string
+     */
+    public static function getPaymentStatus($payment ) {
+        return self::getChargeStatus( $payment, 'last_charge_status' );
+    }
+
+    /**
+     * @param $donation
+     *
+     * @return string
+     */
+    public static function getDonationPaymentStatus($donation ) {
+        return self::getChargeStatus( $donation, 'lastChargeStatus' );
+    }
+
+    /**
+     * The status shown for a payment or donation row, from the charge state the webhooks keep on it.
+     *
+     * @param object|null $row
+     * @param 'last_charge_status'|'lastChargeStatus' $lastChargeStatusColumn The payments and donations tables name it differently.
+     */
+    private static function getChargeStatus( $row, string $lastChargeStatusColumn ): string {
+        if ( is_null( $row ) ) {
+            $payment_status = Main::PAYMENT_STATUS_UNKNOWN;
+        } elseif ( Main::STRIPE_CHARGE_STATUS_FAILED === $row->{$lastChargeStatusColumn} ) {
+            $payment_status = Main::PAYMENT_STATUS_FAILED;
+        } elseif ( Main::STRIPE_CHARGE_STATUS_PENDING === $row->{$lastChargeStatusColumn} ) {
+            $payment_status = Main::PAYMENT_STATUS_PENDING;
+        } elseif ( 1 == $row->expired ) {
+            $payment_status = Main::PAYMENT_STATUS_EXPIRED;
+        } elseif ( 1 == $row->refunded ) {
+            if ( 1 == $row->captured ) {
+                $payment_status = Main::PAYMENT_STATUS_REFUNDED;
+            } else {
+                $payment_status = Main::PAYMENT_STATUS_RELEASED;
+            }
+        } elseif ( Main::STRIPE_CHARGE_STATUS_SUCCEEDED === $row->{$lastChargeStatusColumn} && 1 == $row->paid && 1 == $row->captured ) {
+            $payment_status = Main::PAYMENT_STATUS_PAID;
+        } elseif ( Main::STRIPE_CHARGE_STATUS_SUCCEEDED === $row->{$lastChargeStatusColumn} && 1 == $row->paid && 0 == $row->captured ) {
+            $payment_status = Main::PAYMENT_STATUS_AUTHORIZED;
+        } else {
+            $payment_status = Main::PAYMENT_STATUS_UNKNOWN;
+        }
+
+        return $payment_status;
+    }
+
+    /**
+     * @param $donation
+     *
+     * @return string
+     */
+    public static function getDonationStatus( $donation ) : string {
+        $status         = Main::DONATION_STATUS_UNKNOWN;
+        $oneTimeStatus  = Utils::getDonationPaymentStatus( $donation );
+
+        if ( DonationFormViewConstants::FIELD_VALUE_DONATION_FREQUENCY_ONE_TIME === $donation->donationFrequency ) {
+            if ( Main::PAYMENT_STATUS_PAID === $oneTimeStatus ) {
+                $status = Main::DONATION_STATUS_PAID;
+            } else if ( Main::PAYMENT_STATUS_REFUNDED === $oneTimeStatus  ) {
+                $status = Main::DONATION_STATUS_REFUNDED;
+            }
+        } else {
+            if ( $donation->subscriptionStatus === \StripeWPFS\Stripe\Subscription::STATUS_ACTIVE ) {
+                $status = Main::DONATION_STATUS_RUNNING;
+            } else if ( $donation->subscriptionStatus === Main::SUBSCRIBER_STATUS_CANCELLED &&
+                Main::PAYMENT_STATUS_PAID === $oneTimeStatus ) {
+                $status = Main::DONATION_STATUS_PAID;
+            } else if ( $donation->subscriptionStatus === Main::SUBSCRIBER_STATUS_CANCELLED &&
+                Main::PAYMENT_STATUS_REFUNDED === $oneTimeStatus ) {
+                $status = Main::DONATION_STATUS_REFUNDED;
+            }
+        }
+
+        return $status;
+    }
+
+    /**
+     * @param $form
+     *
+     * @return null|string
+     */
+    public static function getFormId( $form ) {
+        if ( is_null( $form ) ) {
+            return null;
+        }
+        if ( isset( $form->paymentFormID ) ) {
+            return $form->paymentFormID;
+        }
+        if ( isset( $form->subscriptionFormID ) ) {
+            return $form->subscriptionFormID;
+        }
+        if ( isset( $form->checkoutFormID ) ) {
+            return $form->checkoutFormID;
+        }
+        if ( isset( $form->checkoutSubscriptionFormID ) ) {
+            return $form->checkoutSubscriptionFormID;
+        }
+        if ( isset( $form->donationFormID ) ) {
+            return $form->donationFormID;
+        }
+        if ( isset( $form->checkoutDonationFormID ) ) {
+            return $form->checkoutDonationFormID;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param $payment
+     *
+     * @return string
+     */
+    public static function getPaymentObjectType($payment ) {
+        if ( isset( $payment ) && isset( $payment->eventID ) ) {
+            if ( strlen( $payment->eventID ) > 3 ) {
+                if ( Main::STRIPE_OBJECT_ID_PREFIX_PAYMENT_INTENT === substr( $payment->eventID, 0, 3 ) ) {
+                    return Main::PAYMENT_OBJECT_TYPE_STRIPE_PAYMENT_INTENT;
+                } elseif ( Main::STRIPE_OBJECT_ID_PREFIX_CHARGE === substr( $payment->eventID, 0, 3 ) ) {
+                    return Main::PAYMENT_OBJECT_TYPE_STRIPE_CHARGE;
+                }
+            }
+        }
+
+        return Main::PAYMENT_OBJECT_TYPE_UNKNOWN;
+    }
+
+    /**
+     * @param PaymentFormModel $paymentFormModel
+     *
+     * @return bool
+     */
+    public static function hasToCapturePaymentIntentByFormModel($paymentFormModel ) {
+        if ( Main::CHARGE_TYPE_IMMEDIATE === $paymentFormModel->getForm()->chargeType ) {
+            $capture = true;
+        } elseif ( Main::CHARGE_TYPE_AUTHORIZE_AND_CAPTURE === $paymentFormModel->getForm()->chargeType ) {
+            $capture = false;
+        } else {
+            $capture = true;
+        }
+
+        return $capture;
+    }
+
+    /**
+     * @param FormModel $formModelObject
+     *
+     * @return mixed|string|void
+     */
+    public static function generateFormNonce( $formModelObject ) {
+        $nonceObject            = new \stdClass();
+        $nonceObject->created   = time();
+        $nonceObject->formHash  = $formModelObject->getFormHash();
+        $nonceObject->fieldHash = md5( json_encode( $formModelObject ) );
+        $nonceObject->salt      = wp_generate_password( 16, false );
+
+        return json_encode( $nonceObject );
+    }
+
+    public static function decodeFormNonce( $text ) {
+        $decodedObject = json_decode( $text );
+
+        if ( null === $decodedObject || false === $decodedObject || JSON_ERROR_NONE !== json_last_error() ) {
+            return false;
+        }
+
+        return $decodedObject;
+    }
+
+    public static function encrypt( $message ) {
+        $nonce = \Sodium\randombytes_buf( \Sodium\CRYPTO_SECRETBOX_NONCEBYTES );
+
+        $encodedMessage = base64_encode(
+            $nonce . \Sodium\crypto_secretbox(
+                $message,
+                $nonce,
+                self::getEncryptionKey()
+            )
+        );
+
+        return $encodedMessage;
+    }
+
+    /**
+     * @return string
+     * @throws \Exception
+     */
+    private static function getEncryptionKey() {
+        $desiredKeyLength = 32;
+        if ( strlen( NONCE_KEY ) == $desiredKeyLength ) {
+            return NONCE_KEY;
+        } elseif ( strlen( NONCE_KEY ) > $desiredKeyLength ) {
+            return substr( NONCE_KEY, 0, 32 );
+        } else {
+            throw new \Exception( 'WordPress Constant NONCE_KEY is too short' );
+        }
+    }
+
+    public static function decrypt( $secretMessage ) {
+        $decodedMessage   = base64_decode( $secretMessage );
+        $nonce            = mb_substr( $decodedMessage, 0, \Sodium\CRYPTO_SECRETBOX_NONCEBYTES, '8bit' );
+        $encryptedMessage = mb_substr( $decodedMessage, \Sodium\CRYPTO_SECRETBOX_NONCEBYTES, null, '8bit' );
+        $decryptedMessage = \Sodium\crypto_secretbox_open( $encryptedMessage, $nonce, self::getEncryptionKey() );
+
+        return $decryptedMessage;
+    }
+
+    public static function calculateTrialEndFromNow($trialDays ) {
+        $currentTimestamp     = time();
+        $oneDayInSeconds      = 24 * 60 * 60;
+
+        return $currentTimestamp + $trialDays * $oneDayInSeconds;
+    }
+
+    public static function calculateBillingCycleAnchorFromNow( $billingCycleAnchorDay ) {
+        return self::calculateBillingCycleAnchorFromTimestamp( $billingCycleAnchorDay, time() );
+    }
+
+    public static function calculateBillingCycleAnchorFromTimestamp( $billingCycleAnchorDay, $startingTimestamp ) {
+        $oneDayInSeconds      = 24 * 60 * 60;
+
+        $datetime = new \DateTime();
+        $datetime->setTimestamp($startingTimestamp);
+        $datetime->setTimezone(new \DateTimeZone( wp_timezone_string() ));
+
+        $currentDayOfMonth    = $datetime->format("d" );
+        $numDaysInMonth       = $datetime->format("t" );
+
+        $billingAnchorTimestamp = null;
+        if ( $billingCycleAnchorDay >= $currentDayOfMonth ) {
+            $billingAnchorTimestamp = $startingTimestamp + ( $billingCycleAnchorDay - $currentDayOfMonth ) * $oneDayInSeconds;
+        } else {
+            $billingAnchorTimestamp = $startingTimestamp + ( $numDaysInMonth - $currentDayOfMonth + $billingCycleAnchorDay ) * $oneDayInSeconds;
+        }
+
+        return $billingAnchorTimestamp;
+    }
+
+    public static function decodeJsonArray( $arr ) {
+        $res = [];
+
+        if (!is_null($arr)) {
+            $res = json_decode( $arr );
+        }
+
+        if ( json_last_error() != JSON_ERROR_NONE ) {
+            // todo: Log the json decode error
+            $res = [];
+        }
+
+        return $res;
+    }
+
+    /**
+     * @param BindingResult $bindingResult
+     *
+     * @return array
+     */
+    public static function generateReturnValueFromBindings( $bindingResult ) {
+        return [
+            'success' => false,
+            'bindingResult' => [
+                'fieldErrors' => [
+                    'title' =>
+                    /* translators: Banner title of a hidden field's validation error */
+                        __('Field validation error', 'wp-full-stripe-free'),
+                    'errors' => $bindingResult->getFieldErrors()
+                ],
+                'globalErrors' => [
+                    'title' =>
+                    /* translators: Banner title of a validation error which is not field specific */
+                        __('Form error', 'wp-full-stripe-free'),
+                    'errors' => $bindingResult->getGlobalErrors()
+                ]
+            ]
+        ];
+    }
+
+    public static function determineCustomerName($cardHolderName, $businessName, $billingName) {
+        $result = null;
+
+        if (is_null($result)) {
+            $result = $cardHolderName;
+        }
+
+        if (is_null($result)) {
+            $result = $billingName;
+        }
+
+        if (is_null($result) && !empty($businessName)) {
+            $result = $businessName;
+        }
+
+        return $result;
+    }
+
+    public static function formatTimeStamp( $timestamp, $format ) {
+        $datetime = new \DateTime();
+        $datetime->setTimestamp($timestamp);
+        $datetime->setTimezone(new \DateTimeZone( wp_timezone_string() ));
+
+        return $datetime->format($format);
+    }
+
+    /**
+     * @param $timestamp
+     * @return false|string
+     */
+    public static function formatTimestampWithWordpressDateFormat($timestamp ) {
+        return self::formatTimeStamp(
+            $timestamp,
+            get_option( 'date_format' )
+        );
+    }
+
+    /**
+     * @param $timestamp
+     * @return false|string
+     */
+    public static function formatTimestampWithWordpressDateTimeFormat($timestamp ) {
+        return self::formatTimeStamp(
+            $timestamp,
+            get_option( 'date_format' ) . ' ' . get_option( 'time_format' )
+        );
+    }
+
+    public static function getMinimumPlanQuantityOfSubscription( $subscription ) {
+        $minimumPlanQuantity = 0;
+        if (isset($subscription->metadata) && isset($subscription->metadata->minimum_quantity_of_subscriptions)) {
+            $minimumPlanQuantity = intval($subscription->metadata->minimum_quantity_of_subscriptions);
+        }
+
+        return $minimumPlanQuantity;
+    }
+
+    public static function getMaximumPlanQuantityOfSubscription( $subscription ) {
+        $maximumPlanQuantity = 0;
+        if (isset($subscription->metadata) && isset($subscription->metadata->maximum_quantity_of_subscriptions)) {
+            $maximumPlanQuantity = intval($subscription->metadata->maximum_quantity_of_subscriptions);
+        }
+
+        return $maximumPlanQuantity;
+    }
+
+    public static function truncateString($description, int $length) {
+        return substr( $description,0, $length );
+    }
+
+    public static function boolToString($boolVal): string {
+        return $boolVal ? 'true' : 'false';
+    }
+
+    public static function isTestMode(): bool {
+		    $options = new Options();
+        $apiMode = $options->get( Options::OPTION_API_MODE );
+		    return $apiMode === Main::STRIPE_API_MODE_TEST;
+    }
+
+    public static function isLiveMode(): bool {
+        $options = new Options();
+        $apiMode = $options->get( Options::OPTION_API_MODE );
+        return $apiMode === Main::STRIPE_API_MODE_LIVE;
+    }
+
+    public static function isConnected(): bool {
+        return self::isConnectedToLive() || self::isConnectedToTest() || self::isConnectedToApiTest();
+    }
+
+    public static function isConnectedToLive(): bool {
+        $options = new Options();
+        $liveAccountId = $options->get( Options::OPTION_LIVE_ACCOUNT_ID );
+        $apiMode = $options->get( Options::OPTION_API_MODE );
+        
+        return ! empty( $liveAccountId ) && 'live' === $apiMode;
+    }
+
+    public static function isConnectedToTest(): bool {
+        $options = new Options();
+        $testAccountId = $options->get( Options::OPTION_TEST_ACCOUNT_ID );
+        $apiMode = $options->get( Options::OPTION_API_MODE );
+
+        return ! empty( $testAccountId ) && 'test' === $apiMode;
+    }
+
+    public static function isConnectedToApiTest(): bool {
+        $options = new Options();
+        $apiTestSecretKey = $options->get( Options::OPTION_API_TEST_SECRET_KEY );
+        $apiTestPublishableKey = $options->get( Options::OPTION_API_TEST_PUBLISHABLE_KEY );
+        return ! empty( $apiTestSecretKey ) && ! empty( $apiTestPublishableKey ) && $apiTestSecretKey !== 'YOUR_TEST_SECRET_KEY' && $apiTestPublishableKey !== 'YOUR_TEST_PUBLISHABLE_KEY';
+    }
+
+    public static function getMode(): string {
+        return self::isLiveMode() ? Main::STRIPE_API_MODE_LIVE : Main::STRIPE_API_MODE_TEST;
+    }
+
+    /**
+     * Check if the form has fee recovery enabled.
+     *
+     * @param $form
+     *
+     * @return bool
+     */
+    /**
+     * Whether a price or its product is archived in Stripe, which then refuses new payments and subscriptions with
+     * it. The product is checked when the price was retrieved with it expanded, as Stripe::retrievePlan() does.
+     *
+     * @param object $price
+     *
+     * @return bool
+     */
+    public static function isArchivedPrice( $price ): bool {
+        if ( isset( $price->active ) && ! $price->active ) {
+            return true;
+        }
+
+        return isset( $price->product ) && is_object( $price->product ) && isset( $price->product->active ) && ! $price->product->active;
+    }
+
+    public static function hasFeeRecovery( $form ): bool {
+        if ( ! isset( $form->feeRecovery ) ) {
+            return false;
+        }
+
+        return Main::FEE_RECOVERY_ENABLE === $form->feeRecovery;
+    }
+
+    /**
+     * Check if the form charges the recovery fee without letting the customer decline it. Forms
+     * without an opt-in setting render the opt-in checkbox, so the customer may decline it there.
+     *
+     * @param object $form
+     *
+     * @return bool
+     */
+    public static function isFeeRecoveryAlwaysApplied( $form ): bool {
+        $recoveryFeeData = self::getFeeRecoveryData( $form );
+
+        return isset( $recoveryFeeData[ Options::OPTION_FEE_RECOVERY_OPT_IN ] ) && ! $recoveryFeeData[ Options::OPTION_FEE_RECOVERY_OPT_IN ];
+    }
+
+    /**
+     * Get the fee recovery data for a form.
+     *
+     * @param $form
+     *
+     * @return array
+     */
+    public static function getFeeRecoveryData( $form ): array {
+        if ( ! self::hasFeeRecovery( $form ) ) {
+            return [];
+        }
+
+        return [
+            Options::OPTION_FEE_RECOVERY_OPT_IN => $form->feeRecoveryOptIn,
+            Options::OPTION_FEE_RECOVERY_OPT_IN_MESSAGE => $form->feeRecoveryOptInMessage,
+            Options::OPTION_FEE_RECOVERY_CURRENCY => isset( $form->currency ) ? $form->currency : 'usd',
+            Options::OPTION_FEE_RECOVERY_FEE_PERCENTAGE => $form->feeRecoveryFeePercentage,
+            Options::OPTION_FEE_RECOVERY_FEE_ADDITIONAL_AMOUNT => $form->feeRecoveryFeeAdditionalAmount
+        ];
+    }
+
+    /**
+     * Calculate the fee recovery amount based on the original amount, the percentage fee and the fixed fee.
+     *
+     * The fixed fee will be processed to be in minor units (cents) based on the provided currency.
+     *
+     * @param int $amountInCents The amount in cents (minor units)
+     * @param float|string $percentageFee The percentage fee (e.g., 1.5 for 1.5%)
+     * @param float|string $fixedFeeDecimal The fixed fee as a decimal amount (e.g., 0.25 for €0.25)
+     * @param string $currency The currency code (e.g., 'USD', 'EUR')
+     *
+     * @return int The fee recovery amount in cents (minor units)
+     *
+     * @see https://docs.stripe.com/currencies#minor-units
+     */
+    public static function calculateRecoveryFee( $amountInCents, $percentageFee, $fixedFeeDecimal, $currency ) {
+        if ( is_string( $fixedFeeDecimal ) ) {
+            $fixedFeeDecimal = floatval( $fixedFeeDecimal );
+            $fixedFeeDecimal = is_nan( $fixedFeeDecimal ) ? 0.0 : $fixedFeeDecimal;
+        }
+
+        // Convert the decimal fixed fee to cents (minor units)
+        // E.g., 0.25 USD → 25 cents
+        $fixedFeeInCents = Currencies::convertAmountToMinorUnits( $fixedFeeDecimal, $currency );
+
+        if ( is_string( $percentageFee ) ) {
+            $percentageFee = floatval( $percentageFee );
+            $percentageFee = is_nan( $percentageFee ) ? 0.0 : $percentageFee;
+        }
+
+        $percentageFee = min( 99.99, $percentageFee ); // Prevent division by zero or negative scenarios.
+
+        // Calculate the original amount needed to cover both the charge and the fees
+        $originalAmountInCents = ( $amountInCents + $fixedFeeInCents ) / ( 1 - $percentageFee / 100 );
+
+        // Return how much should we charge extra to cover the fees.
+        return intval( round( $originalAmountInCents - $amountInCents ) );
+    }
+}

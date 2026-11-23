@@ -1,5 +1,7 @@
 <?php
-/** @var $view MM_WPFS_Admin_FormView */
+use ThemeIsle\WPFullPay\Admin\Views\FormView;
+
+/** @var $view FormView */
 /** @var $data */
 /** @var $form */
 ?>
@@ -8,7 +10,7 @@
         <label class="wpfs-form-label">
             <?php $view->stripeElementsCustomCss()->label(); ?>
         </label>
-        <a class="wpfs-btn wpfs-btn-link wpfs-btn-link--small" href="https://docs.themeisle.com/article/2114-customizing-forms-with-css" target="_blank">
+        <a class="wpfs-btn wpfs-btn-link wpfs-btn-link--small" href="<?php echo esc_url( tsdk_utmify( 'https://docs.themeisle.com/wp-full-pay/customizing-forms-with-css', 'custom-css', 'form-editor' ) ); ?>" target="_blank">
             <?php esc_html_e( 'Learn more', 'wp-full-stripe-free'); ?>
         </a>
     </div>

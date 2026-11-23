@@ -1,8 +1,11 @@
 <?php
+use ThemeIsle\WPFullPay\Admin\Views\LogEmptyView;
+use ThemeIsle\WPFullPay\Admin\Views\LogLevelView;
+
 /** @var $backLinkUrl */
 /** @var $logDownloadUrl */
-/** @var $levelView MM_WPFS_Admin_LogLevel_View */
-/** @var $emptyView MM_WPFS_Admin_LogEmpty_View */
+/** @var $levelView LogLevelView */
+/** @var $emptyView LogEmptyView */
 /** @var $logData */
 ?>
 <div class="wrap">
@@ -21,11 +24,14 @@
                             <div class="wpfs-form-block__title"><?php esc_html_e( 'Log entries', 'wp-full-stripe-free' ); ?></div>
                             <div class="wpfs-form-group">
                                 <?php
-                                    /* translators: %d is the formatted number of log entries. */
-                                    $thereAreEntriesLabel = sprintf( __( 'There are %d entries in the log', 'wp-full-stripe-free' ), number_format_i18n( $logData->logEntryCount ));
+                                    $thereAreEntriesLabel = sprintf(
+                                        /* translators: %s: the formatted number of log entries. */
+                                        _n( 'There is %s entry in the log', 'There are %s entries in the log', (int) $logData->logEntryCount, 'wp-full-stripe-free' ),
+                                        number_format_i18n( $logData->logEntryCount )
+                                    );
                                     $logIsEmptyLabel = __( 'The log is empty', 'wp-full-stripe-free' );
                                 ?>
-                                <label class="wpfs-form-label"><?php esc_html( $logData->logEntryCount > 0 ? $thereAreEntriesLabel : $logIsEmptyLabel ) ; ?></label>
+                                <label class="wpfs-form-label"><?php echo esc_html( $logData->logEntryCount > 0 ? $thereAreEntriesLabel : $logIsEmptyLabel ); ?></label>
                             </div>
                             <div class="wpfs-form-group">
                                 <a class="wpfs-btn wpfs-btn-primary js-download-log" href="<?php echo $logDownloadUrl ?>"><?php esc_html_e( 'Download log', 'wp-full-stripe-free' ); ?></a>
@@ -108,7 +114,7 @@
         </div>
     </div>
     <div class="wpfs-dialog-content-actions">
-        <a class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php _e( 'Close', 'wp-full-stripe-free' ); ?></a>
+        <a class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php esc_html_e( 'Close', 'wp-full-stripe-free' ); ?></a>
     </div>
 </script>
 <script type="text/template" id="wpfs-modal-empty-log">
@@ -116,15 +122,15 @@
         <p class="wpfs-dialog-content-text"><%- confirmationMessage %></p>
     </div>
     <div class="wpfs-dialog-content-actions">
-        <button class="wpfs-btn wpfs-btn-danger js-empty-log-dialog"><?php _e( 'Empty log', 'wp-full-stripe-free'); ?></button>
-        <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php _e( 'Keep log entries', 'wp-full-stripe-free' ); ?></button>
+        <button class="wpfs-btn wpfs-btn-danger js-empty-log-dialog"><?php esc_html_e( 'Empty log', 'wp-full-stripe-free'); ?></button>
+        <button class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php esc_html_e( 'Keep log entries', 'wp-full-stripe-free' ); ?></button>
     </div>
 </script>
 <script type="text/template" id="wpfs-modal-empty-log-in-progress">
     <div class="wpfs-dialog-scrollable">
-        <p class="wpfs-dialog-content-text"><?php _e('Deleting entries from the log...', 'wp-full-stripe-free'); ?></p>
+        <p class="wpfs-dialog-content-text"><?php esc_html_e('Deleting entries from the log...', 'wp-full-stripe-free'); ?></p>
     </div>
     <div class="wpfs-dialog-content-actions">
-        <button class="wpfs-btn wpfs-btn-danger wpfs-btn-danger--loader" disabled><?php _e('Empty log', 'wp-full-stripe-free'); ?></button>
+        <button class="wpfs-btn wpfs-btn-danger wpfs-btn-danger--loader" disabled><?php esc_html_e('Empty log', 'wp-full-stripe-free'); ?></button>
     </div>
 </script>

@@ -1,5 +1,8 @@
 <?php
-/** @var $view MM_WPFS_Admin_CheckoutDonationFormView|MM_WPFS_Admin_CheckoutPaymentFormView */
+use ThemeIsle\WPFullPay\Admin\Views\CheckoutDonationFormView;
+use ThemeIsle\WPFullPay\Admin\Views\CheckoutPaymentFormView;
+
+/** @var $view CheckoutDonationFormView|CheckoutPaymentFormView */
 /** @var $form */
 ?>
 <div class="wpfs-form-group">

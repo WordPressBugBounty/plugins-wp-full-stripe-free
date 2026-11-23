@@ -1,5 +1,7 @@
 <?php
-    /** @var $view MM_WPFS_Admin_CreateFormView */
+use ThemeIsle\WPFullPay\Admin\Views\CreateFormView;
+
+    /** @var $view CreateFormView */
 ?>
 <div class="wrap">
     <div class="wpfs-page wpfs-page-payment-forms">
@@ -12,7 +14,7 @@
                 <div class="wpfs-form__col">
                     <div class="wpfs-form-block">
                         <div class="wpfs-form-block__title"><?php
-                            /* translators: Section title on the Create form page */ _e('Basic info', 'wp-full-stripe-free'); ?></div>
+                            /* translators: Section title on the Create form page */ esc_html_e('Basic info', 'wp-full-stripe-free'); ?></div>
                     </div>
                 </div>
             </div>
@@ -35,12 +37,12 @@
                         <div class="wpfs-inline-message__inner">
                             <p><?php
                                 /* translators: Description of what the form display name is */
-                                _e( "<strong>Display name</strong> shows up in the form list, and helps you identify the form.", 'wp-full-stripe-free' ); ?></p>
+                                echo wp_kses_post( __( "<strong>Display name</strong> shows up in the form list, and helps you identify the form.", 'wp-full-stripe-free' ) ); ?></p>
                             <p><?php
                                 /* translators: Description of what the form identifier is */
-                                _e( "<strong>Identifier</strong> is used to insert the form into pages via a shortcode. Use alphanumerical characters, underscores and dashes, without spaces.", 'wp-full-stripe-free' );?></p>
+                                echo wp_kses_post( __( "<strong>Identifier</strong> is used to insert the form into pages via a shortcode. Use alphanumerical characters, underscores and dashes, without spaces.", 'wp-full-stripe-free' ) );?></p>
                             <p>
-                                <a class="wpfs-btn wpfs-btn-link" target="_blank" href="https://docs.themeisle.com/article/2106-how-to-use-form-shortcodes"><?php _e( "Learn more about form shortcodes", 'wp-full-stripe-free' ); ?></a>
+                                <a class="wpfs-btn wpfs-btn-link" target="_blank" href="<?php echo esc_url( tsdk_utmify( 'https://docs.themeisle.com/wp-full-pay/how-to-use-form-shortcodes', 'form-shortcodes', 'new-form' ) ); ?>"><?php esc_html_e( "Learn more about form shortcodes", 'wp-full-stripe-free' ); ?></a>
                             </p>
                         </div>
                     </div>
@@ -52,13 +54,13 @@
                     <div class="wpfs-form-block">
                         <div class="wpfs-form-block__title"><?php $view->type()->label(); ?></div>
                         <?php foreach ( $view->type()->options() as $option ) {
-                            /* @var $option MM_WPFS_Control */
+                            /* @var $option Control */
                             ?>
                         <div class="wpfs-form-check wpfs-form-check--block">
                             <input id="<?php $option->id(); ?>" name="<?php $option->name(); ?>" <?php $option->attributes(); ?>/>
                             <label class="wpfs-form-check-label" for="<?php $option->id(); ?>">
                                 <span class="wpfs-form-check-label__title"><?php $option->label(); ?></span>
-                                <span class="wpfs-form-check-label__desc"><?php echo $option->metadata()['description']; ?></span>
+                                <span class="wpfs-form-check-label__desc"><?php echo esc_html( $option->metadata()['description'] ); ?></span>
                                 <span class="<?php echo $option->metadata()['iconClass']; ?> wpfs-form-check-label__illu"></span>
                             </label>
                         </div>
@@ -67,21 +69,21 @@
                     <div class="wpfs-form-block">
                         <div class="wpfs-form-block__title"><?php $view->layout()->label(); ?></div>
                         <?php foreach ( $view->layout()->options() as $option ) {
-                            /* @var $option MM_WPFS_Control */
+                            /* @var $option Control */
                             ?>
                             <div class="wpfs-form-check wpfs-form-check--block">
                                 <input id="<?php $option->id(); ?>" name="<?php $option->name(); ?>" <?php $option->attributes(); ?>/>
                                 <label class="wpfs-form-check-label" for="<?php $option->id(); ?>">
                                     <span class="wpfs-form-check-label__title"><?php $option->label(); ?></span>
-                                    <span class="wpfs-form-check-label__desc"><?php echo $option->metadata()['description']; ?></span>
+                                    <span class="wpfs-form-check-label__desc"><?php echo esc_html( $option->metadata()['description'] ); ?></span>
                                     <span class="<?php echo $option->metadata()['iconClass']; ?> wpfs-form-check-label__illu"></span>
                                 </label>
                             </div>
                         <?php } ?>
                     </div>
                     <div class="wpfs-form-actions">
-                        <button type="submit" class="wpfs-btn wpfs-btn-primary wpfs-button-loader"><?php _e( 'Create & edit form', 'wp-full-stripe-free' ); ?></button>
-                        <a href="<?php /** @noinspection PhpUndefinedVariableInspection */ echo $backLinkUrl; ?>" class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php _e( 'Discard', 'wp-full-stripe-free' ); ?></a>
+                        <button type="submit" class="wpfs-btn wpfs-btn-primary wpfs-button-loader"><?php esc_html_e( 'Create & edit form', 'wp-full-stripe-free' ); ?></button>
+                        <a href="<?php /** @noinspection PhpUndefinedVariableInspection */ echo $backLinkUrl; ?>" class="wpfs-btn wpfs-btn-text js-close-this-dialog"><?php esc_html_e( 'Discard', 'wp-full-stripe-free' ); ?></a>
                     </div>
                 </div>
             </div>

@@ -1,5 +1,7 @@
 <?php
-    /** @var $view MM_WPFS_Admin_FormView */
+use ThemeIsle\WPFullPay\Admin\Views\FormView;
+
+    /** @var $view FormView */
     /** @var $form */
     /** @var $data */
 ?>
@@ -26,7 +28,7 @@
                 </div>
                 <div class="wpfs-form-help">
                     <?php esc_html_e( 'Customize the Thank you page with placeholder tokens.', 'wp-full-stripe-free' ); ?>
-                    <a class="wpfs-btn wpfs-btn-link" href="https://docs.themeisle.com/article/2111-how-to-create-a-thank-you-page#customize-your-page-with-dynamic-content" target="_blank"><?php esc_html_e( 'Learn more', 'wp-full-stripe-free' ); ?></a>
+                    <a class="wpfs-btn wpfs-btn-link" href="<?php echo esc_url( tsdk_utmify( 'https://docs.themeisle.com/wp-full-pay/how-to-create-a-thank-you-page#customize-your-page-with-dynamic-content', 'thank-you-page', 'form-editor' ) ); ?>" target="_blank"><?php esc_html_e( 'Learn more', 'wp-full-stripe-free' ); ?></a>
                 </div>
             </div>
         </div>

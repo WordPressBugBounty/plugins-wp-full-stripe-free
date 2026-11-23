@@ -1,5 +1,9 @@
 <?php
-/** @var MM_WPFS_FormView $view */
+use ThemeIsle\WPFullPay\Forms\Views\Control;
+use ThemeIsle\WPFullPay\Forms\Views\FormView;
+use ThemeIsle\WPFullPay\Main;
+
+/** @var FormView $view */
 /** @var \StdClass $form */
 
 if ( isset( $form->showAddress ) && 1 == $form->showAddress ): ?>
@@ -36,7 +40,7 @@ if ( isset( $form->showAddress ) && 1 == $form->showAddress ): ?>
                 <div class="wpfs-ui wpfs-form-select">
                     <select id="<?php $view->billingAddressCountry()->id(); ?>" name="<?php $view->billingAddressCountry()->name(); ?>" data-toggle="selectmenu" data-wpfs-select="wpfs-billing-address-country-select" class="wpfs-billing-address-country-select" <?php $view->billingAddressCountry()->attributes(); ?>>
                         <?php foreach ( $view->billingAddressCountry()->options() as $country ) : ?>
-                            <?php /** @var MM_WPFS_Control $country */ ?>
+                            <?php /** @var Control $country */ ?>
                             <option value="<?php $country->value(); ?>" <?php $country->attributes(); ?>><?php $country->caption(); ?></option>
                         <?php endforeach; ?>
                     </select>
@@ -64,11 +68,11 @@ if ( isset( $form->showAddress ) && 1 == $form->showAddress ): ?>
 				<div class="wpfs-form-col">
 					<div class="wpfs-form-group">
 						<label class="wpfs-form-label" for="<?php $view->billingAddressState()->id(); ?>"><?php $view->billingAddressState()->label(); ?></label>
-						<input id="<?php $view->billingAddressState()->id(); ?>" name="<?php $view->billingAddressState()->name(); ?>" type="text" class="wpfs-form-control" style="<?php echo $view->getDefaultBillingCountry() === MM_WPFS::COUNTRY_CODE_UNITED_STATES ? 'display: none;' : ''; ?>" value="<?php $view->billingAddressState()->value(); ?>" <?php $view->billingAddressState()->attributes(); ?>>
-                        <div class="wpfs-ui wpfs-form-select wpfs-billing-address-state-select" style="<?php echo $view->getDefaultBillingCountry() !== MM_WPFS::COUNTRY_CODE_UNITED_STATES ? 'display: none;' : ''; ?>">
+						<input id="<?php $view->billingAddressState()->id(); ?>" name="<?php $view->billingAddressState()->name(); ?>" type="text" class="wpfs-form-control" style="<?php echo $view->getDefaultBillingCountry() === Main::COUNTRY_CODE_UNITED_STATES ? 'display: none;' : ''; ?>" value="<?php $view->billingAddressState()->value(); ?>" <?php $view->billingAddressState()->attributes(); ?>>
+                        <div class="wpfs-ui wpfs-form-select wpfs-billing-address-state-select" style="<?php echo $view->getDefaultBillingCountry() !== Main::COUNTRY_CODE_UNITED_STATES ? 'display: none;' : ''; ?>">
                             <select id="<?php $view->billingAddressStateSelect()->id(); ?>" name="<?php $view->billingAddressStateSelect()->name(); ?>" data-toggle="selectmenu" data-wpfs-select="wpfs-billing-address-state-select" class="wpfs-billing-address-state-select" <?php $view->billingAddressStateSelect()->attributes(); ?>>
                                 <?php foreach ( $view->billingAddressStateSelect()->options() as $state ) : ?>
-                                    <?php /** @var MM_WPFS_Control $country */ ?>
+                                    <?php /** @var Control $country */ ?>
                                     <option value="<?php $state->value(); ?>" <?php $state->attributes(); ?>><?php $state->caption(); ?></option>
                                 <?php endforeach; ?>
                             </select>
@@ -95,7 +99,7 @@ if ( isset( $form->showAddress ) && 1 == $form->showAddress ): ?>
                 <div class="wpfs-ui wpfs-form-select">
                     <select id="<?php $view->shippingAddressCountry()->id(); ?>" name="<?php $view->shippingAddressCountry()->name(); ?>" data-toggle="selectmenu" data-wpfs-select="wpfs-shipping-address-country-select" class="wpfs-shipping-address-country-select" <?php $view->shippingAddressCountry()->attributes(); ?>>
                         <?php foreach ( $view->shippingAddressCountry()->options() as $country ) : ?>
-                            <?php /** @var MM_WPFS_Control $country */ ?>
+                            <?php /** @var Control $country */ ?>
                             <option value="<?php $country->value(); ?>" <?php $country->attributes(); ?>><?php $country->caption(); ?></option>
                         <?php endforeach; ?>
                     </select>
@@ -123,11 +127,11 @@ if ( isset( $form->showAddress ) && 1 == $form->showAddress ): ?>
 				<div class="wpfs-form-col">
 					<div class="wpfs-form-group">
 						<label class="wpfs-form-label" for="<?php $view->shippingAddressState()->id(); ?>"><?php $view->shippingAddressState()->label(); ?></label>
-						<input id="<?php $view->shippingAddressState()->id(); ?>" name="<?php $view->shippingAddressState()->name(); ?>" type="text" class="wpfs-form-control" style="<?php echo $view->getDefaultShippingCountry() === MM_WPFS::COUNTRY_CODE_UNITED_STATES ? 'display: none;' : ''; ?>"  value="<?php $view->shippingAddressState()->value(); ?>" <?php $view->shippingAddressState()->attributes(); ?>>
-                        <div class="wpfs-ui wpfs-form-select wpfs-shipping-address-state-select" style="<?php echo $view->getDefaultShippingCountry() !== MM_WPFS::COUNTRY_CODE_UNITED_STATES ? 'display: none;' : ''; ?>">
+						<input id="<?php $view->shippingAddressState()->id(); ?>" name="<?php $view->shippingAddressState()->name(); ?>" type="text" class="wpfs-form-control" style="<?php echo $view->getDefaultShippingCountry() === Main::COUNTRY_CODE_UNITED_STATES ? 'display: none;' : ''; ?>"  value="<?php $view->shippingAddressState()->value(); ?>" <?php $view->shippingAddressState()->attributes(); ?>>
+                        <div class="wpfs-ui wpfs-form-select wpfs-shipping-address-state-select" style="<?php echo $view->getDefaultShippingCountry() !== Main::COUNTRY_CODE_UNITED_STATES ? 'display: none;' : ''; ?>">
                             <select id="<?php $view->shippingAddressStateSelect()->id(); ?>" name="<?php $view->shippingAddressStateSelect()->name(); ?>" data-toggle="selectmenu" data-wpfs-select="wpfs-shipping-address-state-select" class="wpfs-shipping-address-state-select" <?php $view->shippingAddressStateSelect()->attributes(); ?>>
                                 <?php foreach ( $view->shippingAddressStateSelect()->options() as $state ) : ?>
-                                    <?php /** @var MM_WPFS_Control $country */ ?>
+                                    <?php /** @var Control $country */ ?>
                                     <option value="<?php $state->value(); ?>" <?php $state->attributes(); ?>><?php $state->caption(); ?></option>
                                 <?php endforeach; ?>
                             </select>
