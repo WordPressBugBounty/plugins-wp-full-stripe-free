@@ -64,7 +64,7 @@ class Ai_Connect extends Abstract_Module {
 	 * After a dismissal nothing is shown for this long; then the next product
 	 * the user has not dismissed gets its turn.
 	 */
-	const REMIND_AFTER = 30 * DAY_IN_SECONDS;
+	const REMIND_AFTER = 2592000; // 30 days.
 
 	/**
 	 * A user is asked this many times at most, however many products opted in.
@@ -80,7 +80,7 @@ class Ai_Connect extends Abstract_Module {
 	 * And this long after the module first ran on the site, so an update does
 	 * not greet a long-time user with it.
 	 */
-	const MINIMUM_SINCE = 2 * DAY_IN_SECONDS;
+	const MINIMUM_SINCE = 172800; // 2 days.
 
 	/**
 	 * When the module first ran on this site.

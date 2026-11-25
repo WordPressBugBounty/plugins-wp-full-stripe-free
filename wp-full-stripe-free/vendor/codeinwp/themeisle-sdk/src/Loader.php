@@ -29,12 +29,6 @@ final class Loader {
 	 */
 	private static $instance;
 	/**
-	 * Current loader version.
-	 *
-	 * @var string $version The class version.
-	 */
-	private static $version = '2.0.0';
-	/**
 	 * Holds registered products.
 	 *
 	 * @var array<Product> The products which use the SDK.
@@ -207,12 +201,33 @@ final class Loader {
 			'button_submit'  => 'Submit &amp; Deactivate',
 			'button_cancel'  => 'Skip &amp; Deactivate',
 			'disclosure'     => [
-				'title'       => 'Below is a detailed view of all data that Themeisle will receive if you fill in this survey. No email address or IP addresses are transmitted after you submit the survey.',
-				'version'     => '%s %s version %s %s %s %s',
-				'website'     => '%sCurrent website:%s %s %s %s',
-				'usage'       => '%sUsage time:%s %s %s%s',
-				'reason'      => '%s Uninstall reason %s %s Selected reason from the above survey %s ',
-				'diagnostics' => '%sCrash diagnostics:%s Anonymized technical details of errors recorded for this product, if any.',
+				'title'         => 'Below is a detailed view of all data that Themeisle will receive if you fill in this survey. No email address or IP addresses are transmitted after you submit the survey.',
+				'version'       => '%s %s version %s %s %s %s',
+				'website'       => '%sCurrent website:%s %s %s %s',
+				'usage'         => '%sUsage time:%s %s %s%s',
+				'reason'        => '%s Uninstall reason %s %s Selected reason from the above survey %s ',
+				'diagnostics'   => '%sCrash diagnostics:%s Anonymized technical details of errors recorded for this product, if any.',
+				// Products with the Support Hub: what goes along when the user asks support for help under a reason.
+				'title_support' => 'Below is a detailed view of all data that Themeisle will receive if you fill in this survey. No IP addresses are transmitted after you submit the survey.',
+				'email'         => '%s Email address %s %s Reply to address, if you contact support %s',
+				'plan'          => '%s Plan %s %s Free or Pro, if you contact support %s',
+				'site_info'     => '%sSite info:%s WordPress and PHP versions, language, active theme and plugins, license status and error details for this product, if you contact support.',
+			],
+			// Products with the Support Hub: fields under the reasons support can help with.
+			'support'        => [
+				'help'          => 'Want us to look into it?',
+				'contact'       => 'Contact support',
+				// translators: %s is the email address support will reply to.
+				'reply'         => 'We\'ll reply to %s',
+				'change'        => 'Change',
+				'email'         => 'Reply to',
+				'email_invalid' => 'Enter a full email address, like name@example.com.',
+				'cancel'        => 'Cancel',
+				'keep_active'   => 'Send and keep the plugin active',
+				'button_send'   => 'Send &amp; Deactivate',
+				'sent_title'    => 'Message sent',
+				'sent_text'     => 'The plugin stays active. We usually reply within 1 business day.',
+				'error'         => 'We could not send your message. Please try again.',
 			],
 
 			'options'        => [
@@ -235,7 +250,9 @@ final class Loader {
 					'placeholder' => 'What problem are you experiencing?',
 				],
 				'id7'   => [
-					'title' => 'I don\'t know how to make it look like demo',
+					'title'       => 'I don\'t know how to make it look like demo',
+					// Shown only for products with the Support Hub, where this reason gets a comment box.
+					'placeholder' => 'Which demo, and what is different?',
 				],
 				'id8'   => [
 
@@ -416,103 +433,40 @@ final class Loader {
 			],
 		],
 		'support_hub'      => [
-			'launcher'                     => 'Help',
-			'launcher_aria'                => 'Open help',
-			'close'                        => 'Close',
-			'title'                        => 'Got a question, idea or problem?',
+			'launcher'              => 'Help',
+			'launcher_aria'         => 'Open help',
+			'close'                 => 'Close',
+			'title'                 => 'Got a question, idea or problem?',
 			// translators: %s is the product name.
-			'subtitle'                     => 'Ask us anything about %s. We usually reply within 1 business day.',
-			'message_label'                => 'Your message',
-			'message_placeholder'          => 'What can we help you with?',
-			'email_label'                  => 'Reply to',
-			'site_info_label'              => 'Include my site info so we can help faster',
-			'site_info_toggle'             => 'What\'s included',
-			'site_info_description'        => 'Product name, version and plan, WordPress and PHP versions, your active theme, the list of active plugins, and pending crash reports (messages, file locations and product trace frames). Never license keys, tokens or payment data.',
-			'send'                         => 'Send message',
-			'sending'                      => 'Sending…',
-			'sent_title'                   => 'Message sent',
-			'sent_text'                    => 'Thanks! We usually reply within 1 business day.',
-			'nudge_help'                   => 'Get help',
-			'nudge_dismiss'                => 'Dismiss',
-			'error_attached'               => 'Error attached',
-			'error_link'                   => 'Get help with this',
-			'error_form_title'             => 'Something not working?',
-			'error_form_text'              => 'Tell us what you were doing. The error details are attached. We usually reply within 1 business day.',
-			'error_placeholder'            => 'e.g. I clicked Save on my settings and got this error',
+			'subtitle'              => 'Ask us anything about %s. We usually reply within 1 business day.',
+			'message_label'         => 'Your message',
+			'message_placeholder'   => 'What can we help you with?',
+			'email_label'           => 'Reply to',
+			'site_info_label'       => 'Include my site info to get help faster',
+			'site_info_toggle'      => 'What\'s included',
+			'site_info_description' => 'Product name, version and plan, WordPress and PHP versions, your active theme, the list of active plugins, and pending crash reports (messages, file locations and product trace frames). Never license keys, tokens or payment data.',
+			'send'                  => 'Send message',
+			'sending'               => 'Sending…',
+			'sent_title'            => 'Message sent',
+			'sent_text'             => 'Thanks! We usually reply within 1 business day.',
+			'nudge_help'            => 'Get help',
+			'nudge_dismiss'         => 'Dismiss',
+			'error_attached'        => 'Error attached',
+			'error_link'            => 'Get help with this',
+			'error_form_title'      => 'Something not working?',
+			'error_form_text'       => 'Tell us what you were doing. The error details are attached. We usually reply within 1 business day.',
+			'error_placeholder'     => 'e.g. I clicked Save on my settings and got this error',
 			// translators: %s is the product name.
-			'setup_title'                  => 'Need a hand setting up %s?',
-			'setup_text'                   => 'Tell us where you got stuck and we\'ll help you finish.',
-			'setup_prefill'                => 'I need help finishing the setup: ',
-			'error_permission'             => 'You are not allowed to do this.',
-			'error_product'                => 'Unknown product.',
-			'error_empty'                  => 'Please write a message first.',
-			'error_email'                  => 'Please enter a valid email address.',
-			'error_throttled'              => 'Please wait a moment before sending another message.',
-			'error_send'                   => 'We could not send your message. Opening your email app instead.',
-			'mailto_subject'               => '[%s] Support request',
-			'deactivation_title'           => 'Quick question before you go',
-			// translators: %s is the product name.
-			'deactivation_subtitle'        => 'Why are you deactivating %s?',
-			'deactivation_email'           => 'Reply to',
-			'deactivation_site_info'       => 'Include site info',
-			'deactivation_keep_active'     => 'Keep the plugin active until you reply',
-			'deactivation_cancel'          => 'Cancel',
-			'deactivation_deactivate'      => 'Deactivate',
-			'deactivation_send_deactivate' => 'Send & deactivate',
-			'deactivation_send'            => 'Send & keep active',
-			// Themes (Add Themes screen): same window, other wording. Keys with `_theme` win over the plugin ones.
-			'deactivation_title_theme'     => 'Looking for a different theme?',
-			// translators: %s is the theme name.
-			'deactivation_subtitle_theme'  => 'What does not work for you in %s?',
-			'deactivation_send_theme'      => 'Send',
-			'reasons'                      => [
-				'not_working'    => [
-					'label'       => 'Couldn\'t get it working',
-					'placeholder' => 'What were you trying to do? Tell us and we\'ll help you get it working, free.',
-				],
-				'missing'        => [
-					'label'       => 'Missing something I need',
-					'placeholder' => 'What do you need? It may already exist, or we can build it.',
-				],
-				'no_longer_need' => [
-					'label'       => 'I no longer need it',
-					'placeholder' => '',
-				],
-				'switching'      => [
-					'label'       => 'Switching to another plugin',
-					'placeholder' => '',
-				],
-				'temporary'      => [
-					'label'       => 'Just temporary',
-					'placeholder' => '',
-				],
-				'other'          => [
-					'label'       => 'Something else',
-					'placeholder' => 'Tell us what happened and we\'ll get back to you.',
-				],
-			],
-			'reasons_theme'                => [
-				'not_like_demo'   => [
-					'label'       => 'Couldn\'t make it look like the demo',
-					'placeholder' => 'Which demo, and what is different? We\'ll help you get there, free.',
-				],
-				'missing'         => [
-					'label'       => 'Missing something I need',
-					'placeholder' => 'What do you need? It may already exist, or we can build it.',
-				],
-				'plugin_conflict' => [
-					'label'       => 'Not working with a plugin I need',
-					'placeholder' => 'Which plugin? We\'ll look into it.',
-				],
-				'new_design'      => [
-					'label'       => 'Trying a different design',
-					'placeholder' => '',
-				],
-				'other'           => [
-					'label'       => 'Something else',
-					'placeholder' => 'Tell us what happened and we\'ll get back to you.',
-				],
-			],
+			'setup_title'           => 'Need a hand setting up %s?',
+			'setup_text'            => 'Tell us where you got stuck and we\'ll help you finish.',
+			'setup_prefill'         => 'I need help finishing the setup: ',
+			'error_permission'      => 'You are not allowed to do this.',
+			'error_product'         => 'Unknown product.',
+			'error_empty'           => 'Please write a message first.',
+			'error_email'           => 'Please enter a valid email address.',
+			'error_throttled'       => 'Please wait a moment before sending another message.',
+			'error_send'            => 'We could not send your message. Opening your email app instead.',
+			'mailto_subject'        => '[%s] Support request',
 		],
 	];
 
@@ -626,7 +580,7 @@ final class Loader {
 		$cache_token = get_transient( 'themeisle_sdk_cache_token' );
 		if ( false === $cache_token ) {
 			$cache_token = wp_generate_password( 6, false );
-			set_transient( $cache_token, WEEK_IN_SECONDS );
+			set_transient( 'themeisle_sdk_cache_token', $cache_token, WEEK_IN_SECONDS );
 		}
 
 		return $cache_token;
@@ -701,11 +655,14 @@ final class Loader {
 	}
 
 	/**
-	 * Get the version of the SDK.
+	 * Get the version of the SDK that load.php picked: the highest one any
+	 * active product ships.
 	 *
 	 * @return string The version.
 	 */
 	public static function get_version() {
-		return self::$version;
+		global $themeisle_sdk_max_version;
+
+		return (string) $themeisle_sdk_max_version;
 	}
 }

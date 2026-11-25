@@ -50,9 +50,9 @@ class About_Us extends Abstract_Module {
 	/**
 	 * Hand-picked display order for featured products, keyed by WP.org slug.
 	 *
-	 * @var array
+	 * @var array<string, int>
 	 */
-	const COMMON_PRODUCTS_PRIORITY = [
+	private static $common_products_priority = [
 		'neve'                     => 0,
 		'otter-blocks'             => 1,
 		'wp-cloudflare-page-cache' => 2,
@@ -66,9 +66,9 @@ class About_Us extends Abstract_Module {
 	/**
 	 * Sort weight per install status, lowest shows first.
 	 *
-	 * @var array
+	 * @var array<string, int>
 	 */
-	const STATUS_PRIORITY = [
+	private static $status_priority = [
 		'not-installed' => 0,
 		'installed'     => 1,
 		'active'        => 2,
@@ -357,15 +357,16 @@ class About_Us extends Abstract_Module {
 			],
 		];
 
-		return array_filter(
-			$pages,
-			function ( $page_data, $page_key ) use ( $product_pages ) {
-				return in_array( $page_key, $product_pages, true ) &&
-					   isset( $page_data['plugin']['status'] ) &&
-					   $page_data['plugin']['status'] === 'not-installed';
-			},
-			ARRAY_FILTER_USE_BOTH
-		);
+		$filtered = [];
+		foreach ( $pages as $page_key => $page_data ) {
+			if ( in_array( $page_key, $product_pages, true ) &&
+				isset( $page_data['plugin']['status'] ) &&
+				$page_data['plugin']['status'] === 'not-installed' ) {
+				$filtered[ $page_key ] = $page_data;
+			}
+		}
+
+		return $filtered;
 	}
 
 	/**
@@ -503,8 +504,10 @@ class About_Us extends Abstract_Module {
 		uksort(
 			$products,
 			function ( $left_slug, $right_slug ) use ( $products ) {
-				return $this->get_product_sort_key( $left_slug, $products )
-					<=> $this->get_product_sort_key( $right_slug, $products );
+				$left  = $this->get_product_sort_key( $left_slug, $products );
+				$right = $this->get_product_sort_key( $right_slug, $products );
+
+				return $left < $right ? -1 : ( $left > $right ? 1 : 0 );
 			}
 		);
 
@@ -522,11 +525,11 @@ class About_Us extends Abstract_Module {
 	private function get_product_sort_key( $slug, $products ) {
 		$status        = isset( $products[ $slug ]['status'] ) ? $products[ $slug ]['status'] : 'not-installed';
 		$is_active     = 'active' === $status ? 1 : 0;
-		$common_weight = isset( self::COMMON_PRODUCTS_PRIORITY[ $slug ] ) ? self::COMMON_PRODUCTS_PRIORITY[ $slug ] : self::SORT_WEIGHT_UNRANKED;
+		$common_weight = isset( self::$common_products_priority[ $slug ] ) ? self::$common_products_priority[ $slug ] : self::SORT_WEIGHT_UNRANKED;
 
 		// Install status only breaks ties between unranked products.
 		$status_weight = self::SORT_WEIGHT_UNRANKED === $common_weight
-			? ( isset( self::STATUS_PRIORITY[ $status ] ) ? self::STATUS_PRIORITY[ $status ] : self::SORT_WEIGHT_UNRANKED )
+			? ( isset( self::$status_priority[ $status ] ) ? self::$status_priority[ $status ] : self::SORT_WEIGHT_UNRANKED )
 			: 0;
 
 		// Tuple order = sort precedence: active last, featured rank, status, then slug.

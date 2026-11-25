@@ -195,17 +195,19 @@ class Compatibilities extends Abstract_Module {
 					$should_block = true;
 				}
 				if ( $should_block ) {
-					echo( sprintf(
-						esc_html( Loader::$labels['compatibilities']['notice2'] ),
-						esc_attr( $product->get_friendly_name() ),
-						esc_attr( $requirement->get_friendly_name() ),
-						'<a href="' . esc_url( admin_url( $requirement->is_theme() ? 'themes.php' : 'plugins.php' ) ) . '">',
-						'</a>',
-						esc_attr( $requirement->get_friendly_name() ),
-						esc_attr( $requirement->is_theme() ? Loader::$labels['compatibilities']['theme'] : Loader::$labels['compatibilities']['plugin'] )
-					) );
-					$upgrader->maintenance_mode( false );
-					die();
+					// Returning a WP_Error aborts only this item; a die() here would kill bulk, cron and WP-CLI runs.
+					return new \WP_Error(
+						'themeisle_sdk_requirement_not_met',
+						sprintf(
+							esc_html( Loader::$labels['compatibilities']['notice2'] ),
+							esc_attr( $product->get_friendly_name() ),
+							esc_attr( $requirement->get_friendly_name() ),
+							'<a href="' . esc_url( admin_url( $requirement->is_theme() ? 'themes.php' : 'plugins.php' ) ) . '">',
+							'</a>',
+							esc_attr( $requirement->get_friendly_name() ),
+							esc_attr( $requirement->is_theme() ? Loader::$labels['compatibilities']['theme'] : Loader::$labels['compatibilities']['plugin'] )
+						)
+					);
 				}
 
 				return $return;

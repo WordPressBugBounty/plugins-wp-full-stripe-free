@@ -4,7 +4,7 @@ Tags: stripe, payment forms, donations, subscriptions, credit card
 Requires at least: 5.3
 Requires PHP: 7.4
 Tested up to: 7.1
-Stable tag: 8.6.1
+Stable tag: 8.6.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -281,9 +281,9 @@ WP Full Pay fully supports Strong Customer Authentication (SCA) requirements for
 
 == Changelog ==
 
-#####   Version 8.6.1 (2026-11-25)
+#####   Version 8.6.2 (2026-11-25)
 
-fix: show a way forward when the Stripe confirmation comes back with another account
+- Updated dependencies
 
 
 

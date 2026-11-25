@@ -287,7 +287,8 @@ class Logger extends Abstract_Module {
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
 				error_log( $e->getMessage() ); // phpcs:ignore
 			}
-		} finally {
+		} catch ( \Throwable $e ) {
+			// Telemetry must never break the page.
 			return;
 		}
 	}

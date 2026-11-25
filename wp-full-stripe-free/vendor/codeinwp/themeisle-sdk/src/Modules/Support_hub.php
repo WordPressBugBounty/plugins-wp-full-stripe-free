@@ -4,7 +4,7 @@
  *
  * One floating Help button on the product's admin screens that opens straight
  * into a short contact form, nudges at the moments users need help most
- * (unfinished setup) and a simpler deactivation window.
+ * (unfinished setup).
  *
  * Here's how to hook it in your product:
  *
@@ -72,7 +72,7 @@ class Support_Hub extends Abstract_Module {
 	/**
 	 * The setup nudge waits this long after the product was installed.
 	 */
-	const SETUP_MIN_AGE = 3 * DAY_IN_SECONDS;
+	const SETUP_MIN_AGE = 259200; // 3 days.
 
 	/**
 	 * And repeats at most this often.
@@ -102,71 +102,37 @@ class Support_Hub extends Abstract_Module {
 
 	/**
 	 * Sources a message can carry.
+	 *
+	 * @var list<string>
 	 */
-	const SOURCES = [ 'widget', 'error', 'setup', 'deactivation', 'custom' ];
+	private static $sources = [ 'widget', 'error', 'setup', 'deactivation', 'custom' ];
 
 	/**
-	 * Plugin deactivation reasons, in display order. `feedback_id` is the id
-	 * sent to the existing uninstall feedback endpoint so Metabase keeps its
-	 * data; 11 is new ("Missing something I need"), the others reuse the old
-	 * survey ids.
+	 * Uninstall feedback reason ids, as the deactivation reasons the support
+	 * endpoint labels: 3-6 are the plugin reasons, 7-10 the theme ones.
 	 *
-	 * @var array<string, array{feedback_id: int, message: bool}>
+	 * @var array<int, string>
 	 */
-	const REASONS = [
-		'not_working'    => [
-			'feedback_id' => 4,
-			'message'     => true,
-		],
-		'missing'        => [
-			'feedback_id' => 11,
-			'message'     => true,
-		],
-		'no_longer_need' => [
-			'feedback_id' => 5,
-			'message'     => false,
-		],
-		'switching'      => [
-			'feedback_id' => 3,
-			'message'     => false,
-		],
-		'temporary'      => [
-			'feedback_id' => 6,
-			'message'     => false,
-		],
-		'other'          => [
-			'feedback_id' => 999,
-			'message'     => true,
-		],
+	private static $feedback_reasons = [
+		3   => 'switching',
+		4   => 'not_working',
+		5   => 'no_longer_need',
+		6   => 'temporary',
+		7   => 'not_like_demo',
+		8   => 'missing',
+		9   => 'plugin_conflict',
+		10  => 'new_design',
+		999 => 'other',
 	];
 
 	/**
-	 * Theme switch reasons, in display order, on the old theme survey ids.
+	 * The uninstall feedback reasons support can help with. Selecting one in
+	 * the form offers a "Contact support" link: a comment sent after it is
+	 * clicked opens a support conversation.
 	 *
-	 * @var array<string, array{feedback_id: int, message: bool}>
+	 * @var list<int>
 	 */
-	const REASONS_THEME = [
-		'not_like_demo'   => [
-			'feedback_id' => 7,
-			'message'     => true,
-		],
-		'missing'         => [
-			'feedback_id' => 8,
-			'message'     => true,
-		],
-		'plugin_conflict' => [
-			'feedback_id' => 9,
-			'message'     => true,
-		],
-		'new_design'      => [
-			'feedback_id' => 10,
-			'message'     => false,
-		],
-		'other'           => [
-			'feedback_id' => 999,
-			'message'     => true,
-		],
-	];
+	private static $support_reasons = [ 4, 6, 7, 8, 9, 999 ];
 
 	/**
 	 * Every product that opted in, keyed by product key. Shared by all the
@@ -375,15 +341,43 @@ class Support_Hub extends Abstract_Module {
 	}
 
 	/**
-	 * Does the hub own the deactivation flow of this product? Plugins get the
-	 * window on the Plugins screen, themes get feedback on Add Themes.
+	 * The uninstall feedback reasons that offer to contact support for this
+	 * product: none without the Support Hub, or for a user who cannot use it.
 	 *
 	 * @param Product $product Product.
 	 *
-	 * @return bool
+	 * @return list<int>
 	 */
-	public static function handles_deactivation( $product ) {
-		return ( $product->is_plugin() || $product->is_theme() ) && self::handles( $product ) && self::user_can_use() && ! apply_filters( $product->get_key() . '_hide_uninstall_feedback', false );
+	public static function uninstall_support_reasons( $product ) {
+		return self::handles( $product ) && self::user_can_use() ? self::$support_reasons : array();
+	}
+
+	/**
+	 * Open a support conversation for a comment written in the uninstall
+	 * feedback form under a reason support can help with, when the user asked
+	 * to contact support. Sent with the site info, which the form's data
+	 * notice lists.
+	 *
+	 * @param Product $product     Product.
+	 * @param int     $feedback_id Uninstall feedback reason id.
+	 * @param string  $comment     Comment the user wrote.
+	 * @param string  $email       Reply-to address from the form; the current user's when empty.
+	 * @param bool    $keep_active Whether the user asked to keep the plugin active.
+	 *
+	 * @return DeliveryResult|\WP_Error|null Null when support has nothing to answer: no Support Hub, another reason, or no comment.
+	 */
+	public static function send_uninstall_comment( $product, $feedback_id, $comment, $email = '', $keep_active = false ) {
+		$key = $product->get_key();
+		if ( ! in_array( (int) $feedback_id, self::uninstall_support_reasons( $product ), true ) || '' === trim( $comment ) ) {
+			return null;
+		}
+		$context = array( 'reason' => self::$feedback_reasons[ (int) $feedback_id ] );
+		if ( $product->is_plugin() ) {
+			$context['keep_active'] = $keep_active ? 1 : 0;
+		}
+		$entry = self::$registered[ $key ];
+
+		return self::send( $entry['product'], $entry['data'], 'deactivation', $comment, $email, true, $context );
 	}
 
 	/**
@@ -441,37 +435,7 @@ class Support_Hub extends Abstract_Module {
 	}
 
 	/**
-	 * The products whose deactivation window is rendered on this screen: every
-	 * hub plugin on the Plugins screen, the active hub theme on the Add Themes
-	 * screen (the same trigger as the legacy theme drawer, which the window
-	 * replaces), unless its feedback was sent in the last 100 days.
-	 *
-	 * @return array<string, RegisteredProduct>
-	 */
-	private static function deactivation_products() {
-		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-		$id     = $screen && ! empty( $screen->id ) ? $screen->id : '';
-		if ( ! in_array( $id, array( 'plugins', 'theme-install' ), true ) ) {
-			return array();
-		}
-		$list = array();
-		foreach ( self::$registered as $key => $entry ) {
-			$product = $entry['product'];
-			if ( ! self::handles_deactivation( $product ) ) {
-				continue;
-			}
-			if ( $product->is_plugin() && 'plugins' === $id ) {
-				$list[ $key ] = $entry;
-			} elseif ( $product->is_theme() && 'theme-install' === $id && in_array( $product->get_slug(), array( get_stylesheet(), get_template() ), true ) && false === get_transient( 'ti_sdk_pause_' . $key ) ) {
-				$list[ $key ] = $entry;
-			}
-		}
-
-		return $list;
-	}
-
-	/**
-	 * Assets, only where the launcher or the deactivation window can be.
+	 * Assets, only where the launcher can be.
 	 *
 	 * @return void
 	 */
@@ -479,9 +443,8 @@ class Support_Hub extends Abstract_Module {
 		if ( self::$enqueued || ! self::user_can_use() ) {
 			return;
 		}
-		$current      = self::current();
-		$deactivation = self::deactivation_products();
-		if ( null === $current && empty( $deactivation ) ) {
+		$current = self::current();
+		if ( null === $current ) {
 			return;
 		}
 		self::$enqueued = true;
@@ -500,7 +463,7 @@ class Support_Hub extends Abstract_Module {
 		// so a `<!--<script>` in any string would swallow the rest of the page.
 		wp_add_inline_script(
 			$handle,
-			'var themeisleSDKSupportHub = ' . wp_json_encode( $this->localize( $current, $deactivation ), JSON_HEX_TAG | JSON_UNESCAPED_SLASHES ) . ';',
+			'var themeisleSDKSupportHub = ' . wp_json_encode( $this->localize( $current ), JSON_HEX_TAG | JSON_UNESCAPED_SLASHES ) . ';',
 			'before'
 		);
 	}
@@ -508,37 +471,29 @@ class Support_Hub extends Abstract_Module {
 	/**
 	 * Everything the script needs.
 	 *
-	 * @param RegisteredProduct|null           $current The product owning the launcher.
-	 * @param array<string, RegisteredProduct> $deactivation Products with a deactivation window on this screen.
+	 * @param RegisteredProduct $current The product owning the launcher.
 	 *
 	 * @return array
 	 */
-	private function localize( $current, $deactivation ) {
+	private function localize( $current ) {
 		$user   = wp_get_current_user();
 		$labels = Loader::$labels['support_hub'];
 
-		$config = array(
-			'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
-			'nonce'        => wp_create_nonce( self::NONCE ),
-			'actions'      => array(
+		$product = $current['product'];
+		$data    = $current['data'];
+
+		return array(
+			'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
+			'nonce'     => wp_create_nonce( self::NONCE ),
+			'actions'   => array(
 				'send' => self::AJAX_SEND,
 				'mark' => self::AJAX_MARK,
 			),
-			'user'         => array(
+			'user'      => array(
 				'email' => $user ? $user->user_email : '',
 			),
-			'labels'       => $labels,
-			'product'      => null,
-			'nudges'       => array(),
-			'deactivation' => array(),
-			'maxLength'    => self::MAX_MESSAGE_LENGTH,
-		);
-
-		if ( null !== $current ) {
-			$product = $current['product'];
-			$data    = $current['data'];
-
-			$config['product'] = array(
+			'labels'    => self::fill_labels( $labels, $product->get_friendly_name() ),
+			'product'   => array(
 				'key'            => $product->get_key(),
 				'slug'           => $product->get_slug(),
 				'name'           => $product->get_friendly_name(),
@@ -547,40 +502,10 @@ class Support_Hub extends Abstract_Module {
 				'errorSelectors' => $data['error_selectors'],
 				'supportEmail'   => $data['support_email'],
 				'primaryColor'   => $data['primary_color'],
-			);
-			$config['nudges']  = $this->nudges( $product, $data );
-			$config['labels']  = self::fill_labels( $labels, $product->get_friendly_name() );
-		}
-
-		foreach ( $deactivation as $key => $entry ) {
-			$product = $entry['product'];
-			$theme   = $product->is_theme();
-			$texts   = $labels[ $theme ? 'reasons_theme' : 'reasons' ];
-			$reasons = array();
-			foreach ( $theme ? self::REASONS_THEME : self::REASONS as $id => $reason ) {
-				$reasons[] = array(
-					'id'          => $id,
-					'label'       => $texts[ $id ]['label'],
-					'placeholder' => $reason['message'] ? $texts[ $id ]['placeholder'] : '',
-					'message'     => $reason['message'],
-					'feedbackId'  => $reason['feedback_id'],
-				);
-			}
-			$config['deactivation'][ $product->get_slug() ] = array(
-				'key'            => $key,
-				'type'           => $product->get_type(),
-				'name'           => $product->get_friendly_name(),
-				'supportEmail'   => $entry['data']['support_email'],
-				'primaryColor'   => $entry['data']['primary_color'],
-				'feedbackAction' => $key . '_uninstall_feedback',
-				'feedbackNonce'  => wp_create_nonce( 'ThemeisleSDK\Modules\Uninstall_Feedback' ),
-				'reasons'        => $reasons,
-				// Themes: the window opens by itself, like the drawer it replaces.
-				'autoOpen'       => $theme ? Uninstall_Feedback::AUTO_TRIGGER_DEACTIVATE_WINDOW_SECONDS : 0,
-			);
-		}
-
-		return $config;
+			),
+			'nudges'    => $this->nudges( $product, $data ),
+			'maxLength' => self::MAX_MESSAGE_LENGTH,
+		);
 	}
 
 	/**
@@ -703,7 +628,7 @@ class Support_Hub extends Abstract_Module {
 	}
 
 	/**
-	 * The launcher root, and the deactivation windows on the Plugins and Add Themes screens.
+	 * The launcher root.
 	 *
 	 * @return void
 	 */
@@ -716,19 +641,12 @@ class Support_Hub extends Abstract_Module {
 		// were decided. Both are footer-safe, so enqueue them now.
 		$this->enqueue();
 
-		$current      = self::current();
-		$deactivation = self::deactivation_products();
-		if ( null === $current && empty( $deactivation ) ) {
+		if ( null === self::current() ) {
 			return;
 		}
 		self::$rendered = true;
 
-		if ( null !== $current ) {
-			echo '<div id="ti-support-hub" class="ti-support-hub"></div>';
-		}
-		foreach ( $deactivation as $entry ) {
-			echo '<div class="ti-support-deactivate-root" data-ti-support-deactivate="' . esc_attr( $entry['product']->get_slug() ) . '" data-ti-support-type="' . esc_attr( $entry['product']->get_type() ) . '"></div>';
-		}
+		echo '<div id="ti-support-hub" class="ti-support-hub"></div>';
 	}
 
 	/**
@@ -847,7 +765,7 @@ class Support_Hub extends Abstract_Module {
 	 *
 	 * @param Product                  $product          Product.
 	 * @param Metadata                 $data Product metadata.
-	 * @param string                   $source           One of SOURCES.
+	 * @param string                   $source           One of self::$sources.
 	 * @param string                   $message          The user's message.
 	 * @param string                   $email            Reply-to address.
 	 * @param bool                     $include_site_info Whether to attach the site info.
@@ -861,7 +779,7 @@ class Support_Hub extends Abstract_Module {
 			'product_name' => $product->get_friendly_name(),
 			'version'      => $product->get_version(),
 			'plan'         => self::plan( $product, $data ),
-			'source'       => in_array( $source, self::SOURCES, true ) ? $source : 'custom',
+			'source'       => in_array( $source, self::$sources, true ) ? $source : 'custom',
 			'message'      => $message,
 			'email'        => $email,
 			'site'         => get_site_url(),
@@ -1022,7 +940,7 @@ class Support_Hub extends Abstract_Module {
 	}
 
 	/**
-	 * Send a message from the widget or the deactivation window.
+	 * Send a message from the widget.
 	 *
 	 * @return void
 	 */

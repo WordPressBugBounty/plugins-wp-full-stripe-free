@@ -24,7 +24,7 @@ use ThemeisleSDK\Product;
 class Announcements extends Abstract_Module {
 
 	const SALE_DURATION_BLACK_FRIDAY = '+7 days'; // DateTime modifier. (Include Cyber Monday)
-	const MINIMUM_INSTALL_AGE        = 3 * DAY_IN_SECONDS;
+	const MINIMUM_INSTALL_AGE        = 259200; // 3 days.
 
 	/**
 	 * Mark if the notice was already loaded.

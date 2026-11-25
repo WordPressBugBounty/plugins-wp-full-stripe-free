@@ -1,6 +1,6 @@
 /* Self-contained, like the AI Connect module: products that ship a CSS reset
    with their dashboard must not change how the hub looks. */
-.ti-support-hub, .ti-support-modal {
+.ti-support-hub {
 	/* One accent drives every shade; a product overrides it with `primary_color`. */
 	--ti-support-accent: #4b56d2;
 	--ti-support-accent-dark: color-mix(in srgb, var(--ti-support-accent) 85%, #000);
@@ -15,13 +15,13 @@
 	--ti-support-radius: 14px;
 	--ti-support-shadow: 0 18px 50px -12px rgba(15, 23, 42, .28), 0 2px 8px rgba(15, 23, 42, .06);
 }
-.ti-support-hub, .ti-support-hub *, .ti-support-modal, .ti-support-modal * { box-sizing: border-box !important; }
-.ti-support-hub, .ti-support-dialog { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif !important; font-size: 14px !important; line-height: 1.5 !important; color: var(--ti-support-text) !important; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-.ti-support-hub .dashicons, .ti-support-dialog .dashicons { font-family: dashicons !important; font-size: 18px !important; width: 18px !important; height: 18px !important; line-height: 1 !important; }
+.ti-support-hub, .ti-support-hub * { box-sizing: border-box !important; }
+.ti-support-hub { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif !important; font-size: 14px !important; line-height: 1.5 !important; color: var(--ti-support-text) !important; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+.ti-support-hub .dashicons { font-family: dashicons !important; font-size: 18px !important; width: 18px !important; height: 18px !important; line-height: 1 !important; }
 .ti-support-chat-icon { display: inline-flex !important; align-items: center !important; justify-content: center !important; flex: none !important; }
 .ti-support-chat-icon svg { display: block !important; width: 22px !important; height: 22px !important; }
 .ti-support-chat-front { stroke: var(--ti-support-accent); stroke-width: 1.6px; paint-order: stroke; }
-.ti-support-hub [hidden], .ti-support-modal [hidden], .ti-support-modal[hidden] { display: none !important; }
+.ti-support-hub [hidden] { display: none !important; }
 
 @keyframes ti-support-rise { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
 @keyframes ti-support-fade { from { opacity: 0; } to { opacity: 1; } }
@@ -59,11 +59,10 @@
 .ti-support-message:focus, .ti-support-email:focus { border-color: var(--ti-support-accent) !important; box-shadow: 0 0 0 3px var(--ti-support-ring) !important; background: #fff !important; outline: none !important; }
 /* WordPress restyles checkboxes and radios with appearance:none and a ::before glyph
    sized for 16px boxes. Go back to the native controls so they scale and center. */
-.ti-support-hub input[type="checkbox"], .ti-support-dialog input[type="checkbox"], .ti-support-dialog input[type="radio"] { -webkit-appearance: auto !important; -moz-appearance: auto !important; appearance: auto !important; border: 0 !important; background: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; vertical-align: middle !important; accent-color: var(--ti-support-accent); cursor: pointer !important; }
-.ti-support-hub input[type="checkbox"]::before, .ti-support-dialog input[type="checkbox"]::before, .ti-support-dialog input[type="radio"]::before { content: none !important; display: none !important; }
-.ti-support-hub input[type="checkbox"], .ti-support-dialog input[type="checkbox"] { border-radius: 4px !important; }
-.ti-support-dialog input[type="radio"] { border-radius: 50% !important; }
-.ti-support-hub input[type="checkbox"]:focus-visible, .ti-support-dialog input[type="checkbox"]:focus-visible, .ti-support-dialog input[type="radio"]:focus-visible { outline: 2px solid var(--ti-support-accent) !important; outline-offset: 2px !important; }
+.ti-support-hub input[type="checkbox"] { -webkit-appearance: auto !important; -moz-appearance: auto !important; appearance: auto !important; border: 0 !important; background: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; vertical-align: middle !important; accent-color: var(--ti-support-accent); cursor: pointer !important; }
+.ti-support-hub input[type="checkbox"]::before { content: none !important; display: none !important; }
+.ti-support-hub input[type="checkbox"] { border-radius: 4px !important; }
+.ti-support-hub input[type="checkbox"]:focus-visible { outline: 2px solid var(--ti-support-accent) !important; outline-offset: 2px !important; }
 .ti-support-check { display: flex !important; align-items: center !important; gap: 10px !important; margin: 0 !important; min-width: 0; font-weight: 400 !important; font-size: 13.5px !important; line-height: 1.4 !important; cursor: pointer !important; -webkit-user-select: none; -moz-user-select: none; user-select: none; }
 .ti-support-check input { flex: none !important; width: 17px !important; height: 17px !important; }
 .ti-support-check-row { display: flex; align-items: center; gap: 6px; margin-top: 12px; }
@@ -76,12 +75,12 @@
 .ti-support-attached-label .dashicons { font-size: 14px !important; width: 14px !important; height: 14px !important; color: var(--ti-support-accent) !important; }
 .ti-support-attached-text { display: block; max-height: 4.5em; overflow: auto; }
 .ti-support-error { margin: 8px 0 0 !important; padding: 8px 12px !important; border-radius: 8px !important; background: #fdecec !important; color: #b32d2e !important; font-size: 13px !important; }
-.ti-support-hub .button, .ti-support-dialog .button { display: inline-flex !important; align-items: center !important; justify-content: center !important; margin: 0 !important; padding: 0 20px !important; min-height: 44px !important; font-family: inherit !important; font-size: 15px !important; font-weight: 600 !important; line-height: 1 !important; letter-spacing: .01em !important; text-decoration: none !important; white-space: nowrap !important; border-radius: 9px !important; cursor: pointer !important; box-shadow: none !important; -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; transition: background .15s ease, box-shadow .15s ease, transform .1s ease !important; }
-.ti-support-hub .button-primary, .ti-support-dialog .button-primary { color: #fff !important; background: var(--ti-support-accent) !important; border: 0 !important; box-shadow: 0 1px 2px rgba(15, 23, 42, .12), 0 6px 14px -6px var(--ti-support-glow) !important; }
-.ti-support-hub .button-primary:hover, .ti-support-dialog .button-primary:hover { color: #fff !important; background: var(--ti-support-accent-dark) !important; }
-.ti-support-hub .button-primary:active, .ti-support-dialog .button-primary:active { transform: translateY(1px); }
-.ti-support-hub .button-primary:focus-visible, .ti-support-dialog .button-primary:focus-visible { outline: none !important; box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--ti-support-accent) !important; }
-.ti-support-hub .button-primary:disabled, .ti-support-dialog .button-primary:disabled { background: var(--ti-support-accent-soft) !important; box-shadow: none !important; cursor: default !important; transform: none !important; }
+.ti-support-hub .button { display: inline-flex !important; align-items: center !important; justify-content: center !important; margin: 0 !important; padding: 0 20px !important; min-height: 44px !important; font-family: inherit !important; font-size: 15px !important; font-weight: 600 !important; line-height: 1 !important; letter-spacing: .01em !important; text-decoration: none !important; white-space: nowrap !important; border-radius: 9px !important; cursor: pointer !important; box-shadow: none !important; -webkit-appearance: none !important; -moz-appearance: none !important; appearance: none !important; transition: background .15s ease, box-shadow .15s ease, transform .1s ease !important; }
+.ti-support-hub .button-primary { color: #fff !important; background: var(--ti-support-accent) !important; border: 0 !important; box-shadow: 0 1px 2px rgba(15, 23, 42, .12), 0 6px 14px -6px var(--ti-support-glow) !important; }
+.ti-support-hub .button-primary:hover { color: #fff !important; background: var(--ti-support-accent-dark) !important; }
+.ti-support-hub .button-primary:active { transform: translateY(1px); }
+.ti-support-hub .button-primary:focus-visible { outline: none !important; box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--ti-support-accent) !important; }
+.ti-support-hub .button-primary:disabled { background: var(--ti-support-accent-soft) !important; box-shadow: none !important; cursor: default !important; transform: none !important; }
 .ti-support-hub .button-small { min-height: 38px !important; padding: 0 16px !important; font-size: 14px !important; }
 .ti-support-send { width: 100% !important; margin-top: 14px !important; }
 
@@ -110,36 +109,11 @@
 
 /* "Get help with this" inside red notices */
 .ti-support-notice-link { white-space: nowrap; }
-
-/* Deactivation window */
-.ti-support-modal { position: fixed; inset: 0; z-index: 100100; display: flex; align-items: flex-start; justify-content: center; padding: 56px 16px; overflow-y: auto; animation: ti-support-fade .15s ease; }
-.ti-support-backdrop { position: fixed; inset: 0; background: rgba(17, 20, 35, .55); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
-.ti-support-dialog { position: relative !important; width: 100% !important; max-width: 560px !important; background: #fff !important; border-radius: 16px !important; box-shadow: 0 30px 70px -20px rgba(15, 23, 42, .45), 0 4px 14px rgba(15, 23, 42, .08) !important; padding: 28px 32px 26px !important; animation: ti-support-rise .22s cubic-bezier(.2, .8, .3, 1); }
-.ti-support-dialog h2 { margin: 0 0 4px !important; padding: 0 !important; font-size: 21px !important; font-weight: 700 !important; line-height: 1.3 !important; letter-spacing: -.01em !important; color: var(--ti-support-text) !important; }
-.ti-support-deactivate-subtitle { margin: 0 0 18px !important; color: var(--ti-support-muted) !important; font-size: 15px !important; }
-.ti-support-reasons { margin: 0 0 16px !important; padding: 0 !important; list-style: none !important; }
-.ti-support-reasons li { margin: 0 !important; padding: 0 !important; border-bottom: 1px solid var(--ti-support-border); }
-.ti-support-reasons li:last-child { border-bottom: 0; }
-.ti-support-reasons label { display: flex !important; align-items: center !important; gap: 14px !important; margin: 0 -10px !important; padding: 13px 10px !important; border-radius: 8px !important; font-size: 15.5px !important; cursor: pointer !important; transition: background .12s ease !important; -webkit-user-select: none; -moz-user-select: none; user-select: none; }
-.ti-support-reasons label:hover { background: var(--ti-support-field) !important; }
-.ti-support-reasons input { flex: none !important; width: 19px !important; height: 19px !important; }
-.ti-support-reasons input:checked + span { color: var(--ti-support-accent) !important; font-weight: 600 !important; }
-.ti-support-dialog .ti-support-message { margin: 0 0 16px !important; min-height: 104px !important; font-size: 15px !important; }
-.ti-support-deactivate-details { display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
-.ti-support-inline { display: flex !important; align-items: center !important; gap: 12px !important; color: var(--ti-support-muted) !important; font-size: 14.5px !important; }
-.ti-support-inline span { flex: none; }
-.ti-support-inline .ti-support-email { background: #fff !important; min-height: 46px !important; font-size: 15px !important; }
-.ti-support-deactivate-details .ti-support-check { margin: 2px 0 0 !important; color: #3f4453 !important; font-size: 14.5px !important; }
-.ti-support-deactivate-details .ti-support-check input { width: 18px !important; height: 18px !important; }
-.ti-support-deactivate-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 22px; }
-.ti-support-cancel { display: inline-flex !important; align-items: center !important; min-height: 44px !important; padding: 0 6px !important; border: 0 !important; border-radius: 8px !important; background: none !important; color: var(--ti-support-muted) !important; cursor: pointer !important; text-decoration: none !important; font-family: inherit !important; font-size: 15px !important; font-weight: 500 !important; transition: color .15s ease, background .15s ease !important; }
-.ti-support-cancel:hover, .ti-support-cancel:focus-visible { color: var(--ti-support-text) !important; background: var(--ti-support-field) !important; outline: none !important; }
 @media (max-width: 600px) {
 	.ti-support-hub { right: 16px; bottom: 16px; }
-	.ti-support-dialog { padding: 22px 20px !important; }
 }
 @media (prefers-reduced-motion: reduce) {
-	.ti-support-panel, .ti-support-nudge, .ti-support-modal, .ti-support-dialog, .ti-support-sent { animation: none !important; }
+	.ti-support-panel, .ti-support-nudge, .ti-support-sent { animation: none !important; }
 	.ti-support-launcher, .ti-support-launcher:hover { transform: none !important; }
 }
 

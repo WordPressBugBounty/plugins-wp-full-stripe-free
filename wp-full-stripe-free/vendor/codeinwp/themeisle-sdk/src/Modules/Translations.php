@@ -108,7 +108,8 @@ class Translations extends Abstract_Module {
 			self::API_URL . 'translations',
 			array(
 				'timeout'   => 15, //phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout, Inherited by wp_remote_get only, for vip environment we use defaults.
-				'sslverify' => false,
+				// Kill switch for hosts with broken trust stores: return false to skip certificate checks on the update feed.
+				'sslverify' => apply_filters( 'themeisle_sdk_update_sslverify', true ),
 			)
 		);
 		if ( is_wp_error( $response ) || 200 != wp_remote_retrieve_response_code( $response ) ) {

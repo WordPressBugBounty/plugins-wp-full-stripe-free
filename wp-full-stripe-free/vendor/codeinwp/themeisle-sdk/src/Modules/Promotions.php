@@ -496,8 +496,8 @@ class Promotions extends Abstract_Module {
 			update_option( 'easy_mcp_reference_key', sanitize_key( $_GET['easy_mcp_reference_key'] ) );
 		}
 
-		if ( isset( $_GET['feedzy_reference_key'] ) || ( isset( $_GET['from'], $_GET['plugin'] ) && $_GET['from'] === 'import' && str_starts_with( sanitize_key( $_GET['plugin'] ), 'feedzy' ) ) ) {
-			update_option( 'feedzy_reference_key', sanitize_key( $_GET['feedzy_reference_key'] ?? 'i-' . $this->product->get_key() ) );
+		if ( isset( $_GET['feedzy_reference_key'] ) || ( isset( $_GET['from'], $_GET['plugin'] ) && $_GET['from'] === 'import' && 0 === strpos( sanitize_key( $_GET['plugin'] ), 'feedzy' ) ) ) {
+			update_option( 'feedzy_reference_key', sanitize_key( isset( $_GET['feedzy_reference_key'] ) ? $_GET['feedzy_reference_key'] : 'i-' . $this->product->get_key() ) );
 			update_option( $this->option_feedzy, 1 );
 		}
 	}
@@ -980,15 +980,14 @@ class Promotions extends Abstract_Module {
 			$return = array_merge( $return, $this->promotions[ $slug ] );
 		}
 
-		$return = array_filter(
-			$return,
-			function ( $value, $key ) {
-				return ! in_array( $key, $this->dissallowed_promotions, true );
-			},
-			ARRAY_FILTER_USE_BOTH
-		);
+		$allowed = [];
+		foreach ( array_keys( $return ) as $key ) {
+			if ( ! in_array( $key, $this->dissallowed_promotions, true ) ) {
+				$allowed[] = $key;
+			}
+		}
 
-		return array_keys( $return );
+		return $allowed;
 	}
 
 	/**
@@ -1271,7 +1270,7 @@ class Promotions extends Abstract_Module {
 	 */
 	public function render_easy_mcp_notice() {
 		// A product on this site already offers the connector in its own words.
-		if ( class_exists( Ai_Connect::class ) && Ai_Connect::has_products() ) {
+		if ( class_exists( 'ThemeisleSDK\Modules\Ai_Connect' ) && Ai_Connect::has_products() ) {
 			return;
 		}
 		// Cards are injected only when a paid product loaded Featured_plugins; only then can this request already show one.
@@ -1469,13 +1468,12 @@ class Promotions extends Abstract_Module {
 	 */
 	public function woocommerce_tab_content() {
 		// Filter content based on if the key exists in $this->promotions array.
-		$content = array_filter(
-			$this->woo_promos,
-			function ( $key ) {
-				return in_array( $key, $this->promotions, true );
-			},
-			ARRAY_FILTER_USE_KEY
-		);
+		$content = [];
+		foreach ( $this->woo_promos as $key => $promo ) {
+			if ( in_array( $key, $this->promotions, true ) ) {
+				$content[ $key ] = $promo;
+			}
+		}
 
 		// Display CSS
 		self::render_woo_tabs_css();
@@ -1941,7 +1939,7 @@ class Promotions extends Abstract_Module {
 
 		$page_title_matches = get_transient( 'tisdk_page_title_signals_v1' );
 
-		if ( is_array( $page_title_matches ) && empty( array_diff_key( $default_matches, $page_title_matches ) ) ) {
+		if ( is_array( $page_title_matches ) && ! array_diff_key( $default_matches, $page_title_matches ) ) {
 			return array_merge( $default_matches, $page_title_matches );
 		}
 

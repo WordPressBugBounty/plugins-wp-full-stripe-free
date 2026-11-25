@@ -112,12 +112,6 @@ class Uninstall_Feedback extends Abstract_Module {
 			return;
 		}
 
-		// The Support Hub owns the plugin deactivation / Add Themes feedback window; only the
-		// AJAX handler below stays, so the reason still reaches the feedback endpoint.
-		if ( class_exists( 'ThemeisleSDK\Modules\Support_Hub' ) && Support_Hub::handles_deactivation( $this->product ) ) {
-			return;
-		}
-
 		$this->add_feedback_popup_style();
 
 		if ( $this->product->get_type() === 'theme' ) {
@@ -245,6 +239,130 @@ class Uninstall_Feedback extends Abstract_Module {
 				margin-bottom: 0;
 			}
 
+			/* Support Hub: asking support for help, under the reasons it can help with. */
+			.ti-feedback .ti-feedback-support {
+				display: none;
+				width: 100%;
+				margin-top: 6px;
+				font-size: 12px;
+				color: #646970;
+			}
+
+			.ti-feedback .popup--form input[type="radio"]:checked ~ .ti-feedback-support {
+				display: block;
+			}
+
+			.ti-feedback .ti-feedback-support p {
+				margin: 0;
+				font-size: 12px;
+			}
+
+			/* Where to reply, once support is asked: one line in a quiet box. */
+			.ti-feedback .ti-feedback-contact-fields {
+				display: none;
+				position: relative;
+				padding: 6px 10px 10px;
+				padding-inline-end: 28px;
+				background: #f6f7f7;
+				border-radius: 3px;
+			}
+
+			.ti-feedback .ti-feedback-support.is-contacting .ti-feedback-help {
+				display: none;
+			}
+
+			.ti-feedback .ti-feedback-support.is-contacting .ti-feedback-contact-fields {
+				display: block;
+			}
+
+			.ti-feedback .ti-feedback-contact-close {
+				position: absolute;
+				top: 6px;
+				inset-inline-end: 6px;
+				padding: 2px 4px;
+				border: 0;
+				background: none;
+				color: #787c82;
+				font-size: 16px;
+				line-height: 1;
+				cursor: pointer;
+			}
+
+			.ti-feedback .ti-feedback-contact-close:hover {
+				color: #1d2327;
+			}
+
+			.ti-feedback .ti-feedback-reply {
+				display: flex;
+				align-items: center;
+				min-height: 24px;
+			}
+
+			.ti-feedback .ti-feedback-reply-address {
+				font-weight: 600;
+				word-break: break-all;
+			}
+
+			.ti-feedback .ti-feedback-reply-edit {
+				display: none;
+				flex: 1;
+				align-items: center;
+				max-width: 100%;
+			}
+
+			.ti-feedback .ti-feedback-support.is-editing .ti-feedback-reply-text {
+				display: none;
+			}
+
+			.ti-feedback .ti-feedback-support.is-editing .ti-feedback-reply-edit {
+				display: flex;
+			}
+
+			.ti-feedback .ti-feedback-reply-edit input[type="email"] {
+				flex: 1;
+				min-width: 0;
+				min-height: 24px;
+				height: 24px;
+				margin: 0;
+				margin-inline-start: 6px;
+				padding: 0 6px;
+				font-size: 12px;
+				line-height: 1;
+			}
+
+			.ti-feedback .ti-feedback-keep {
+				display: block;
+				margin-top: 6px;
+			}
+
+			.ti-feedback .ti-feedback-error {
+				margin: 6px 0 0;
+				color: #d63638;
+			}
+
+			.ti-feedback .ti-feedback-error:empty {
+				display: none;
+			}
+
+			.ti-feedback .ti-feedback-sent-message {
+				display: none;
+				padding: 20px 15px;
+				text-align: center;
+			}
+
+			.ti-feedback .ti-feedback-sent-message p {
+				margin: 5px 0 0;
+			}
+
+			.ti-feedback.ti-feedback-sent .ti-feedback-sent-message {
+				display: block;
+			}
+
+			.ti-feedback.ti-feedback-sent .popup--body,
+			.ti-feedback.ti-feedback-sent .popup--footer {
+				display: none;
+			}
+
 			.ti-feedback .popup--footer {
 				padding: 0 15px 15px;
 			}
@@ -267,7 +385,7 @@ class Uninstall_Feedback extends Abstract_Module {
 			}
 
 			.ti-feedback .info-disclosure-content.active {
-				max-height: 300px;
+				max-height: 500px;
 			}
 
 			.ti-feedback .info-disclosure-content p {
@@ -450,9 +568,11 @@ class Uninstall_Feedback extends Abstract_Module {
 						$('.info-disclosure-content').toggleClass('active');
 					});
 
+					<?php $this->print_support_fields_js( '.ti-theme-uninstall-feedback-drawer' ); ?>
+
 					$('.ti-theme-uninstall-feedback-drawer input[type="radio"]').on('change', function () {
 						var radio = $(this);
-						if (radio.parent().find('textarea').length > 0 &&
+						if (radio.parent().find('textarea').not('[data-optional]').length > 0 &&
 							radio.parent().find('textarea').val().length === 0) {
 							$('#<?php echo esc_attr( $key ); ?>ti-deactivate-yes').attr('disabled', 'disabled');
 							radio.parent().find('textarea').on('keyup', function (e) {
@@ -473,14 +593,32 @@ class Uninstall_Feedback extends Abstract_Module {
 
 						var selectedOption = $(
 							'.ti-theme-uninstall-feedback-drawer input[name="ti-deactivate-option"]:checked');
-						$.post(ajaxurl, {
+						var data = {
 							'action': '<?php echo esc_attr( $key ) . '_uninstall_feedback'; ?>',
 							'nonce': '<?php echo esc_attr( wp_create_nonce( (string) __CLASS__ ) ); ?>',
 							'id': selectedOption.parent().attr('ti-option-id'),
 							'msg': selectedOption.parent().find('textarea').val(),
 							'type': 'theme',
 							'key': '<?php echo esc_attr( $key ); ?>'
-						});
+						};
+						// Support Hub: with support asked, the comment goes to them too, with where to reply.
+						var support = selectedOption.parent().find('.ti-feedback-support');
+						if (support.hasClass('is-contacting')) {
+							// Support needs something to answer.
+							if ($.trim(data.msg) === '') {
+								selectedOption.parent().find('textarea').trigger('focus');
+								return;
+							}
+							var email = support.find('input[type="email"]')[0];
+							if (!email.checkValidity()) {
+								support.addClass('is-editing');
+								email.reportValidity();
+								return;
+							}
+							data.support = 1;
+							data.email = email.value;
+						}
+						$.post(ajaxurl, data);
 						$('.ti-theme-uninstall-feedback-drawer').fadeOut();
 					});
 				});
@@ -510,17 +648,19 @@ class Uninstall_Feedback extends Abstract_Module {
 	 * @param array $options the options for the feedback form.
 	 */
 	private function render_options_list( $options ) {
-		$key            = $this->product->get_key();
-		$inputs_row_map = [
+		$key             = $this->product->get_key();
+		$inputs_row_map  = [
 			'text'     => 1,
 			'textarea' => 2,
 		];
+		$support_reasons = $this->support_reasons();
 		?>
 		<ul class="popup--form">
 			<?php
 			foreach ( $options as $idx => $attributes ) {
 				$title       = Loader::$labels['uninstall']['options'][ $idx ]['title'];
 				$placeholder = array_key_exists( 'placeholder', Loader::$labels['uninstall']['options'][ $idx ] ) ? Loader::$labels['uninstall']['options'][ $idx ]['placeholder'] : '';
+				$has_support = in_array( (int) $attributes['id'], $support_reasons, true );
 				?>
 				<li ti-option-id="<?php echo esc_attr( $attributes['id'] ); ?>">
 					<input type="radio" name="ti-deactivate-option"
@@ -532,11 +672,110 @@ class Uninstall_Feedback extends Abstract_Module {
 					if ( array_key_exists( 'type', $attributes ) ) {
 
 						echo '<textarea width="100%" rows="' . esc_attr( $inputs_row_map[ $attributes['type'] ] ) . '" name="comments" placeholder="' . esc_attr( $placeholder ) . '"></textarea>';
+					} elseif ( $has_support ) {
+						// Support needs something to answer; the comment stays optional, as the reason had no box before.
+						echo '<textarea width="100%" rows="2" name="comments" data-optional="1" placeholder="' . esc_attr( $placeholder ) . '"></textarea>';
+					}
+					if ( $has_support ) {
+						$this->render_support_fields();
 					}
 					?>
 				</li>
 			<?php } ?>
 		</ul>
+		<?php
+	}
+
+	/**
+	 * The reasons support can help with: empty unless the product has the Support Hub.
+	 *
+	 * @return list<int>
+	 */
+	private function support_reasons() {
+		return class_exists( 'ThemeisleSDK\Modules\Support_Hub' ) ? Support_Hub::uninstall_support_reasons( $this->product ) : array();
+	}
+
+	/**
+	 * Render the Support Hub part of a reason support can help with: a line
+	 * offering to contact support which, once clicked, becomes where they
+	 * will reply and, for plugins, the way to keep the plugin active.
+	 */
+	private function render_support_fields() {
+		$labels = Loader::$labels['uninstall']['support'];
+		$user   = wp_get_current_user();
+		$email  = $user ? $user->user_email : '';
+		?>
+		<div class="ti-feedback-support">
+			<p class="ti-feedback-help">
+				<?php echo esc_html( $labels['help'] ); ?>
+				<a href="#" class="ti-feedback-contact"><?php echo esc_html( $labels['contact'] ); ?></a>
+			</p>
+			<div class="ti-feedback-contact-fields">
+				<button type="button" class="ti-feedback-contact-close" aria-label="<?php echo esc_attr( $labels['cancel'] ); ?>">&times;</button>
+				<p class="ti-feedback-reply">
+					<span class="ti-feedback-reply-text">
+						<?php echo wp_kses( sprintf( $labels['reply'], '<span class="ti-feedback-reply-address">' . esc_html( $email ) . '</span>' ), array( 'span' => array( 'class' => true ) ) ); ?>
+						&middot;
+						<a href="#" class="ti-feedback-reply-change"><?php echo esc_html( $labels['change'] ); ?></a>
+					</span>
+					<label class="ti-feedback-reply-edit">
+						<span><?php echo esc_html( $labels['email'] ); ?></span>
+						<?php // A dotted domain and 6 characters at least, as is_email() requires: the browser refuses what the server would. ?>
+						<input type="email" required minlength="6" pattern="[^@\s]+@[^@\s]+\.[^@\s]+" title="<?php echo esc_attr( $labels['email_invalid'] ); ?>" value="<?php echo esc_attr( $email ); ?>">
+					</label>
+				</p>
+				<?php if ( $this->product->is_plugin() ) { ?>
+					<button type="button" class="button button-small ti-feedback-keep"><?php echo esc_html( $labels['keep_active'] ); ?></button>
+				<?php } ?>
+			</div>
+			<p class="ti-feedback-error" role="alert"></p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Print the JS the popup and the drawer share: opening and closing the
+	 * support block, and changing where to reply.
+	 *
+	 * @param string $root Selector of the popup or the drawer.
+	 */
+	private function print_support_fields_js( $root ) {
+		?>
+		$('<?php echo esc_attr( $root ); ?>').on('click', '.ti-feedback-contact', function (e) {
+						e.preventDefault();
+						var support = $(this).closest('.ti-feedback-support').addClass('is-contacting');
+						// No address on the account: ask for one right away.
+						support.toggleClass('is-editing', support.find('input[type="email"]').val() === '').trigger('ti-support-change');
+					}).on('click', '.ti-feedback-contact-close', function (e) {
+						e.preventDefault();
+						$(this).closest('.ti-feedback-support').removeClass('is-contacting is-editing').trigger('ti-support-change');
+					}).on('click', '.ti-feedback-reply-change', function (e) {
+						e.preventDefault();
+						$(this).closest('.ti-feedback-support').addClass('is-editing').find('input[type="email"]').trigger('focus');
+					}).on('change', '.ti-feedback-support input[type="email"]', function () {
+						// A valid address goes back to one line of text.
+						if (this.checkValidity()) {
+							$(this).closest('.ti-feedback-support').removeClass('is-editing').find('.ti-feedback-reply-address').text(this.value);
+						}
+					});
+		<?php
+	}
+
+	/**
+	 * Render the confirmation shown when a message was sent and the plugin stays active.
+	 */
+	private function render_support_sent() {
+		// A variable, not the call: PHP 5.4 cannot parse empty() on a function result.
+		$support_reasons = $this->support_reasons();
+		if ( empty( $support_reasons ) ) {
+			return;
+		}
+		$labels = Loader::$labels['uninstall']['support'];
+		?>
+		<div class="ti-feedback-sent-message" role="status">
+			<strong><?php echo esc_html( $labels['sent_title'] ); ?></strong>
+			<p><?php echo esc_html( $labels['sent_text'] ); ?></p>
+		</div>
 		<?php
 	}
 
@@ -560,6 +799,7 @@ class Uninstall_Feedback extends Abstract_Module {
 			<div class="popup--body">
 				<?php $this->render_options_list( $options ); ?>
 			</div><!--/.popup--body-->
+			<?php $this->render_support_sent(); ?>
 			<div class="popup--footer">
 				<div class="actions">
 					<?php
@@ -644,6 +884,10 @@ class Uninstall_Feedback extends Abstract_Module {
 					$('<?php echo esc_attr( $popup_id ); ?> #<?php echo esc_attr( $key ); ?>ti-deactivate-no').on('click', function (e) {
 						e.preventDefault();
 						e.stopPropagation();
+						// Disabled while a message to support is on its way.
+						if ($(this).is(':disabled')) {
+							return;
+						}
 						$deactivateLink.unbind('click');
 						$('body').removeClass('ti-feedback-open');
 						$('<?php echo esc_attr( $popup_id ); ?>').remove();
@@ -652,12 +896,28 @@ class Uninstall_Feedback extends Abstract_Module {
 						}
 					});
 
-					$('<?php echo esc_attr( $popup_id ); ?> #<?php echo esc_attr( $key ); ?>ti-deactivate-yes').on('click', function (e) {
-						e.preventDefault();
-						e.stopPropagation();
-						$deactivateLink.unbind('click');
-						var selectedOption = $(
-							'<?php echo esc_attr( $popup_id ); ?> input[name="ti-deactivate-option"]:checked');
+					// Support Hub: asking support for help under the reasons it can help with.
+					var $popup = $('<?php echo esc_attr( $popup_id ); ?>');
+					var $submit = $popup.find('#<?php echo esc_attr( $key ); ?>ti-deactivate-yes');
+					var $skip = $popup.find('#<?php echo esc_attr( $key ); ?>ti-deactivate-no');
+					var submitText = $submit.val();
+					var sendText = $('<textarea/>').html('<?php echo esc_js( Loader::$labels['uninstall']['support']['button_send'] ); ?>').text();
+					var sendError = '<?php echo esc_js( Loader::$labels['uninstall']['support']['error'] ); ?>';
+					var sending = false;
+					<?php $this->print_support_fields_js( $popup_id ); ?>
+
+					var supportFields = function () {
+						return $popup.find('input[name="ti-deactivate-option"]:checked').parent().find('.ti-feedback-support');
+					};
+					// The button says what it will do: with support asked, the comment is sent to them too.
+					var refreshSubmit = function () {
+						$submit.val(supportFields().hasClass('is-contacting') ? sendText : submitText);
+					};
+					$popup.find('input[type="radio"]').on('change', refreshSubmit);
+					$popup.on('ti-support-change', refreshSubmit);
+					// What the form sends. Null when support is asked and the reply address is not valid.
+					var feedbackData = function () {
+						var selectedOption = $popup.find('input[name="ti-deactivate-option"]:checked');
 						var data = {
 							'action': '<?php echo esc_attr( $key ) . '_uninstall_feedback'; ?>',
 							'nonce': '<?php echo esc_attr( wp_create_nonce( (string) __CLASS__ ) ); ?>',
@@ -666,6 +926,75 @@ class Uninstall_Feedback extends Abstract_Module {
 							'type': 'plugin',
 							'key': '<?php echo esc_attr( $key ); ?>'
 						};
+						var support = supportFields();
+						if (support.hasClass('is-contacting')) {
+							var email = support.find('input[type="email"]')[0];
+							if (!email.checkValidity()) {
+								support.addClass('is-editing');
+								email.reportValidity();
+								return null;
+							}
+							data.support = 1;
+							data.email = email.value;
+						}
+						return data;
+					};
+					var closeSent = function () {
+						if (!$popup.hasClass('ti-feedback-sent')) {
+							return;
+						}
+						$popup.removeClass('ti-feedback-sent active');
+						$('body').removeClass('ti-feedback-open');
+						$popup.find('input[type="radio"]').prop('checked', false);
+						$popup.find('.ti-feedback-support').removeClass('is-contacting is-editing');
+						$popup.find('textarea').val('');
+						$submit.attr('disabled', 'disabled');
+						refreshSubmit();
+					};
+					$('.ti-feedback-overlay').on('click', closeSent);
+
+					// "Send and keep the plugin active": send the message, confirm, close. Nothing is deactivated.
+					$popup.on('click', '.ti-feedback-keep', function (e) {
+						e.preventDefault();
+						var support = $(this).closest('.ti-feedback-support');
+						var comment = support.parent().find('textarea');
+						// Support needs something to answer.
+						if ($.trim(comment.val()) === '') {
+							comment.trigger('focus');
+							return;
+						}
+						var data = sending ? null : feedbackData();
+						if (data === null) {
+							return;
+						}
+						data.keep_active = 1;
+						sending = true;
+						// Nothing else leaves the popup while the message is on its way: no deactivation behind it.
+						var $buttons = $(this).add($submit).add($skip).add(support.find('.ti-feedback-contact-close')).attr('disabled', 'disabled');
+						var $error = support.find('.ti-feedback-error').text('');
+						$.post(ajaxurl, data).done(function (response) {
+							if (response && response.success) {
+								$popup.addClass('ti-feedback-sent');
+								setTimeout(closeSent, 4000);
+								return;
+							}
+							$error.text(response && response.data && response.data.message ? response.data.message : sendError);
+						}).fail(function () {
+							$error.text(sendError);
+						}).always(function () {
+							sending = false;
+							$buttons.removeAttr('disabled');
+						});
+					});
+
+					$('<?php echo esc_attr( $popup_id ); ?> #<?php echo esc_attr( $key ); ?>ti-deactivate-yes').on('click', function (e) {
+						e.preventDefault();
+						e.stopPropagation();
+						var data = sending ? null : feedbackData();
+						if (data === null) {
+							return;
+						}
+						$deactivateLink.unbind('click');
 						$.ajax({
 							type: 'POST',
 							url: ajaxurl,
@@ -712,6 +1041,14 @@ class Uninstall_Feedback extends Abstract_Module {
 			],
 			$disclosure_new_labels
 		);
+		// With the Support Hub, a message to support carries where to reply, the plan and the site info.
+		$support_reasons = $this->support_reasons();
+		if ( ! empty( $support_reasons ) ) {
+			$disclosure_labels['title']   = Loader::$labels['uninstall']['disclosure']['title_support'];
+			$disclosure_labels['items'][] = sprintf( Loader::$labels['uninstall']['disclosure']['email'], '<strong>', '</strong>', '<i>', '</i>' );
+			$disclosure_labels['items'][] = sprintf( Loader::$labels['uninstall']['disclosure']['plan'], '<strong>', '</strong>', '<i>', '</i>' );
+			$disclosure_labels['items'][] = sprintf( Loader::$labels['uninstall']['disclosure']['site_info'], '<strong>', '</strong>' );
+		}
 
 		$info_disclosure_content = '<div class="info-disclosure-content"><p>' . wp_kses_post( $disclosure_labels['title'] ) . '</p><ul>';
 		foreach ( $disclosure_labels['items'] as $disclosure_item ) {
@@ -752,14 +1089,44 @@ class Uninstall_Feedback extends Abstract_Module {
 
 			return;
 		}
+		$id      = sanitize_key( $_POST['id'] );
+		$comment = isset( $_POST['msg'] ) ? sanitize_textarea_field( wp_unslash( $_POST['msg'] ) ) : '';
+		$has_hub = class_exists( 'ThemeisleSDK\Modules\Support_Hub' );
+		// "Contact support" clicked, under a reason that offers it.
+		$contact = $has_hub
+			&& isset( $_POST['support'] ) && '1' === sanitize_text_field( wp_unslash( $_POST['support'] ) )
+			&& in_array( (int) $id, Support_Hub::uninstall_support_reasons( $this->product ), true );
+		// Kept as typed: a sanitizer would turn a mistyped address into another valid one. Support_Hub::send() validates it.
+		$email = isset( $_POST['email'] ) ? trim( (string) wp_unslash( $_POST['email'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		$keep_active = $contact
+			&& $this->product->is_plugin()
+			&& isset( $_POST['keep_active'] ) && '1' === sanitize_text_field( wp_unslash( $_POST['keep_active'] ) );
+		if ( $keep_active ) {
+			// Nothing is uninstalled, so nothing is recorded as an uninstall: only the message goes out.
+			$support = Support_Hub::send_uninstall_comment( $this->product, (int) $id, $comment, $email, true );
+			if ( null === $support ) {
+				wp_send_json_error( array( 'message' => Loader::$labels['support_hub']['error_empty'] ) );
+			}
+			if ( is_wp_error( $support ) ) {
+				wp_send_json_error( array( 'message' => $support->get_error_message() ) );
+			}
+			wp_send_json_success();
+		}
+
 		$sent = $this->call_api(
 			array(
 				'type'    => 'deactivate',
-				'id'      => sanitize_key( $_POST['id'] ),
-				'comment' => isset( $_POST['msg'] ) ? sanitize_textarea_field( $_POST['msg'] ) : '',
+				'id'      => $id,
+				'comment' => $comment,
 			)
 		);
-		// The Support Hub window retries a refused post; the legacy drawers ignore the answer.
+		// After "Contact support", the comment also opens a support conversation.
+		// Best effort: the deactivation goes ahead whatever support answers.
+		if ( $contact ) {
+			Support_Hub::send_uninstall_comment( $this->product, (int) $id, $comment, $email );
+		}
+		// Tells the caller whether the feedback endpoint took the reason.
 		if ( ! $sent ) {
 			wp_send_json_error();
 		}

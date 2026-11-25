@@ -861,7 +861,8 @@ class Licenser extends Abstract_Module {
 			),
 			array(
 				'timeout'   => 15, //phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout, Inherited by wp_remote_get only, for vip environment we use defaults.
-				'sslverify' => false,
+				// Kill switch for hosts with broken trust stores: return false to skip certificate checks on the update feed.
+				'sslverify' => apply_filters( 'themeisle_sdk_update_sslverify', true ),
 			)
 		);
 		if ( is_wp_error( $response ) || 200 != wp_remote_retrieve_response_code( $response ) ) {
@@ -965,23 +966,6 @@ class Licenser extends Abstract_Module {
 	}
 
 	/**
-	 * Disable SSL verification in order to prevent download update failures.
-	 *
-	 * @param array  $args Http args.
-	 * @param string $url Url to check.
-	 *
-	 * @return array $array
-	 */
-	public function http_request_args( $args, $url ) {
-		// If it is an https request and we are performing a package download, disable ssl verification.
-		if ( strpos( $url, 'https://' ) !== false && strpos( $url, 'edd_action=package_download' ) ) {
-			$args['sslverify'] = false;
-		}
-
-		return $args;
-	}
-
-	/**
 	 * Check if we should load the module for this product.
 	 *
 	 * @param Product $product Product data.
@@ -1020,7 +1004,7 @@ class Licenser extends Abstract_Module {
 			add_filter( 'themeisle_sdk_license/is-valid', [ __CLASS__, 'is_valid' ], 999, 1 );
 			add_filter( 'themeisle_sdk_license/plan', [ __CLASS__, 'plan' ], 999, 1 );
 			add_filter( 'themeisle_sdk_license/key', [ __CLASS__, 'key' ], 999, 1 );
-			$globals_loaded = true;
+			self::$globals_loaded = true;
 		}
 		$namespace = apply_filters( 'themesle_sdk_namespace_' . md5( $product->get_basefile() ), false );
 
@@ -1048,15 +1032,6 @@ class Licenser extends Abstract_Module {
 					]
 				);
 				add_filter( 'plugins_api', array( $this, 'plugins_api_filter' ), 10, 3 );
-				add_filter( //phpcs:ignore WordPressVIPMinimum.Hooks.RestrictedHooks.http_request_args
-					'http_request_args',
-					array(
-						$this,
-						'http_request_args',
-					),
-					10,
-					2
-				);
 				if ( ! self::is_valid( $product->get_basefile() ) ) {
 					add_filter(
 						'plugin_action_links_' . plugin_basename( $product->get_basefile() ),
