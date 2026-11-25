@@ -45,7 +45,7 @@ https://themeisle.com
 */
 
 class Main {
-	const VERSION = '8.6.0';
+	const VERSION = '8.6.1';
 	const REQUEST_PARAM_NAME_WPFS_RENDERED_FORMS = 'wpfs_rendered_forms';
 
 	const HANDLE_WP_FULL_STRIPE_JS = 'wp-full-stripe-js';

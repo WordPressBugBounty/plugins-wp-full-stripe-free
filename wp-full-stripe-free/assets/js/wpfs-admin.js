@@ -1563,6 +1563,16 @@ jQuery.noConflict();
         WPFS.makeConfirmStripeConnectionAjaxCall($(this).data("mode"));
       });
 
+      // The confirm prompt can disconnect a mode the page does not show.
+      $(".js-wpfs-disconnect-stripe-mode").on("click", function (e) {
+        e.preventDefault();
+
+        openDisconnectStripeDialog(
+          $(this).data("mode"),
+          $(this).data("can-revoke") === 1
+        );
+      });
+
       $("#wpfs-clear-test-stripe-connect-account").on("click", function (e) {
         e.preventDefault();
 

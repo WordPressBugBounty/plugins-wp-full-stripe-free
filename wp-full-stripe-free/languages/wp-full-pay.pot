@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the WP Full Pay plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: WP Full Pay 8.6.0\n"
+"Project-Id-Version: WP Full Pay 8.6.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-full-pay\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-23T12:04:18+00:00\n"
+"POT-Creation-Date: 2026-11-25T14:10:36+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: wp-full-stripe-free\n"
@@ -301,10 +301,10 @@ msgid "Connect with Stripe"
 msgstr ""
 
 #: inc/Admin/Admin.php:212
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:24
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:67
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:140
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:182
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:23
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:66
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:139
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:181
 #: templates/admin/wpfs-forms-connect.php:24
 #: templates/admin/wpfs-wizard.php:58
 msgid "Connect with"
@@ -440,7 +440,7 @@ msgstr ""
 #: inc/Admin/Admin.php:508
 #: inc/Admin/Admin.php:892
 #: inc/Admin/Menu.php:2462
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:266
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:265
 #: templates/admin/partials/wpfs-transactions-donations.php:20
 #: templates/admin/partials/wpfs-transactions-payments.php:33
 #: templates/admin/partials/wpfs-transactions-saved-cards.php:20
@@ -454,7 +454,7 @@ msgstr ""
 #: inc/Admin/Admin.php:510
 #: inc/Admin/Admin.php:894
 #: inc/Admin/Menu.php:2462
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:260
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:259
 #: templates/admin/partials/wpfs-transactions-donations.php:21
 #: templates/admin/partials/wpfs-transactions-payments.php:34
 #: templates/admin/partials/wpfs-transactions-saved-cards.php:21
@@ -735,7 +735,7 @@ msgid "There was an error saving Stripe settings: %s"
 msgstr ""
 
 #: inc/Admin/Admin.php:1723
-#: inc/Admin/StripeConnect.php:686
+#: inc/Admin/StripeConnect.php:737
 #: inc/Platform/SiteCredential.php:140
 msgid "Another change to this Stripe connection is in progress. Nothing was changed. Please try again in a moment."
 msgstr ""
@@ -1015,14 +1015,14 @@ msgid "Settings"
 msgstr ""
 
 #: inc/Admin/Admin.php:2572
-#: inc/Admin/StripeAccessRevocation.php:158
-#: inc/Admin/StripeConnect.php:621
+#: inc/Admin/StripeAccessRevocation.php:161
+#: inc/Admin/StripeConnect.php:648
 msgid "You do not have sufficient permissions."
 msgstr ""
 
 #: inc/Admin/Admin.php:2576
-#: inc/Admin/StripeAccessRevocation.php:162
-#: inc/Admin/StripeConnect.php:625
+#: inc/Admin/StripeAccessRevocation.php:165
+#: inc/Admin/StripeConnect.php:652
 msgid "Invalid nonce."
 msgstr ""
 
@@ -1592,125 +1592,167 @@ msgstr ""
 msgid "Pay"
 msgstr ""
 
-#: inc/Admin/StripeAccessRevocation.php:170
+#: inc/Admin/StripeAccessRevocation.php:173
 msgid "This site is not connected with Stripe Connect in this mode."
 msgstr ""
 
-#: inc/Admin/StripeAccessRevocation.php:201
+#: inc/Admin/StripeAccessRevocation.php:204
 msgid "WP Full Pay's access to this Stripe account cannot be removed from here. Contact WP Full Pay support to remove it."
 msgstr ""
 
-#: inc/Admin/StripeAccessRevocation.php:220
+#: inc/Admin/StripeAccessRevocation.php:223
 msgid "Redirecting to Stripe..."
 msgstr ""
 
-#: inc/Admin/StripeAccessRevocation.php:389
+#: inc/Admin/StripeAccessRevocation.php:400
 msgid "WP Full Pay no longer has access to your Stripe account, and this site is disconnected from it."
 msgstr ""
 
 #. translators: %1$s: opening anchor tag, %2$s: closing anchor tag
-#: inc/Admin/StripeAccessRevocation.php:399
+#: inc/Admin/StripeAccessRevocation.php:410
 #, php-format
 msgid "WP Full Pay's access to your Stripe account could not be removed, and this site is still connected. Try again, or disconnect without removing access and %1$sremove it in Stripe%2$s."
 msgstr ""
 
 #. translators: %1$s: opening anchor tag, %2$s: closing anchor tag
-#: inc/Admin/StripeAccessRevocation.php:405
+#: inc/Admin/StripeAccessRevocation.php:416
 #, php-format
 msgid "WP Full Pay's access to your Stripe account could not be removed, and this site is still connected. %3$sTry again%4$s, or disconnect without removing access and %1$sremove it in Stripe%2$s."
 msgstr ""
 
-#: inc/Admin/StripeAccessRevocation.php:419
+#: inc/Admin/StripeAccessRevocation.php:430
+msgid "WP Full Pay's access to your Stripe account could not be removed. Nothing was changed."
+msgstr ""
+
+#. translators: %1$s: Stripe account ID, e.g. acct_123
+#: inc/Admin/StripeAccessRevocation.php:433
+#, php-format
+msgid "WP Full Pay's access could not be removed, and this site is still connected. Stripe did not confirm the removal for this site's account, %1$s: the request may have expired, or you signed in to a different account. Click Disconnect to try again and sign in to %1$s, or disconnect without removing access."
+msgstr ""
+
+#: inc/Admin/StripeAccessRevocation.php:444
 msgid "Removal was cancelled on Stripe. This site is still connected to your Stripe account."
 msgstr ""
 
-#: inc/Admin/StripeAccessRevocation.php:424
+#: inc/Admin/StripeAccessRevocation.php:449
 msgid "The request to remove WP Full Pay's access has expired or was already used. Nothing was changed. Click Disconnect to try again."
 msgstr ""
 
-#: inc/Admin/StripeConnect.php:124
-#: inc/Admin/StripeConnect.php:149
+#: inc/Admin/StripeConnect.php:125
+#: inc/Admin/StripeConnect.php:150
 msgid "Unknown Stripe mode."
 msgstr ""
 
 #. translators: Error banner label for not being able to create a Stripe connect account. %s: error message
-#: inc/Admin/StripeConnect.php:213
+#: inc/Admin/StripeConnect.php:216
 #, php-format
 msgid "There was an error creating the Stripe connect account: %s"
 msgstr ""
 
-#: inc/Admin/StripeConnect.php:221
+#: inc/Admin/StripeConnect.php:224
 msgid "Connect account created successfully, redirecting to Stripe..."
 msgstr ""
 
-#: inc/Admin/StripeConnect.php:561
+#: inc/Admin/StripeConnect.php:569
 msgid "WP Full Pay: please confirm your Stripe connection."
 msgstr ""
 
-#: inc/Admin/StripeConnect.php:562
+#: inc/Admin/StripeConnect.php:570
 msgid "WP Full Pay: please confirm your test Stripe connection."
 msgstr ""
 
 #. translators: %s: date from which unconfirmed connections stop taking payments
-#: inc/Admin/StripeConnect.php:566
+#: inc/Admin/StripeConnect.php:574
 #, php-format
 msgid "It takes one quick sign-in to Stripe. From %s, payments stop on sites that haven't confirmed."
 msgstr ""
 
 #. translators: %s: date from which unconfirmed connections stop taking test payments
-#: inc/Admin/StripeConnect.php:571
+#: inc/Admin/StripeConnect.php:579
 #, php-format
 msgid "From %s, test-mode payments stop on sites that haven't confirmed."
 msgstr ""
 
-#: inc/Admin/StripeConnect.php:575
+#: inc/Admin/StripeConnect.php:583
 msgid "Confirm now"
 msgstr ""
 
-#: inc/Admin/StripeConnect.php:597
+#: inc/Admin/StripeConnect.php:608
 msgid "Please confirm your Stripe connection."
 msgstr ""
 
-#: inc/Admin/StripeConnect.php:598
+#: inc/Admin/StripeConnect.php:609
 msgid "Please confirm your test Stripe connection."
 msgstr ""
 
 #. translators: %s: date from which unconfirmed connections stop taking payments
-#: inc/Admin/StripeConnect.php:601
+#: inc/Admin/StripeConnect.php:612
 #, php-format
 msgid "Sign in to Stripe once; nothing about your account or payments changes. From %s, payments stop on sites that haven't confirmed."
 msgstr ""
 
-#: inc/Admin/StripeConnect.php:604
+#: inc/Admin/StripeConnect.php:615
 msgid "Using this Stripe account on another site too? Update WP Full Pay there as well. Once you confirm here, older versions of WP Full Pay stop working with this account."
 msgstr ""
 
-#: inc/Admin/StripeConnect.php:606
+#: inc/Admin/StripeConnect.php:617
 msgid "Confirm with Stripe"
 msgstr ""
 
-#: inc/Admin/StripeConnect.php:661
+#. translators: %s: Stripe account ID, e.g. acct_123
+#: inc/Admin/StripeConnect.php:621
+#, php-format
+msgid "This site uses Stripe account %s. Sign in to that account on Stripe. Can't sign in to it, or don't use it any more? Disconnect live mode, then connect the account you use."
+msgstr ""
+
+#. translators: %s: Stripe account ID, e.g. acct_123
+#: inc/Admin/StripeConnect.php:623
+#, php-format
+msgid "This site uses Stripe account %s in test mode. Sign in to that account on Stripe. Can't sign in to it, or don't use it any more? Disconnect test mode, then connect the account you use."
+msgstr ""
+
+#: inc/Admin/StripeConnect.php:635
+msgid "Disconnect live mode"
+msgstr ""
+
+#: inc/Admin/StripeConnect.php:635
+msgid "Disconnect test mode"
+msgstr ""
+
+#. translators: %1$s: Stripe account ID, e.g. acct_123. %2$s: the Disconnect button's label
+#: inc/Admin/StripeConnect.php:702
+#, php-format
+msgid "You signed in to a different Stripe account than the one this site uses (%1$s), so your connection was not confirmed. Nothing was changed. Click Confirm with Stripe and sign in to %1$s. If you can't, or you no longer use it, click %2$s, then connect the account you use."
+msgstr ""
+
+#. translators: %1$s: Stripe account ID, e.g. acct_123. %2$s: the Disconnect button's label
+#: inc/Admin/StripeConnect.php:704
+#, php-format
+msgid "You signed in to a different Stripe account than the one this site uses in test mode (%1$s), so your test connection was not confirmed. Nothing was changed. Click Confirm with Stripe and sign in to %1$s. If you can't, or you no longer use it, click %2$s, then connect the account you use."
+msgstr ""
+
+#: inc/Admin/StripeConnect.php:712
 msgid "This site is already connected to a Stripe account in this mode. Disconnect it before you connect another account."
 msgstr ""
 
-#: inc/Admin/StripeConnect.php:666
+#: inc/Admin/StripeConnect.php:717
 msgid "This Stripe connection was not started from this site, or it has expired. Nothing was changed. Click Connect with Stripe to try again."
 msgstr ""
 
-#: inc/Admin/StripeConnect.php:671
+#: inc/Admin/StripeConnect.php:722
 msgid "This site isn't connected to Stripe through WP Full Pay in this mode, so there's nothing to confirm."
 msgstr ""
 
-#: inc/Admin/StripeConnect.php:676
+#: inc/Admin/StripeConnect.php:727
 msgid "We couldn't confirm your Stripe connection. Your site is still connected. Please try again."
 msgstr ""
 
-#: inc/Admin/StripeConnect.php:681
+#: inc/Admin/StripeConnect.php:732
 msgid "You cancelled on Stripe. Nothing was changed."
 msgstr ""
 
 #. translators: %1$s: opening anchor tag, %2$s: closing anchor tag
-#: inc/Admin/StripeConnect.php:693
+#: inc/Admin/StripeConnect.php:744
 #, php-format
 msgid "This site was connected to another Stripe account while you were on Stripe, so the account you just connected was not saved. WP Full Pay may still have access to that account: %1$sremove it in Stripe%2$s."
 msgstr ""
@@ -1762,9 +1804,9 @@ msgstr ""
 #: templates/admin/partials/wpfs-form-component-custom-fields.php:18
 #: templates/admin/partials/wpfs-reports-donations.php:35
 #: templates/admin/partials/wpfs-reports-payments.php:71
-#: assets/js/wpfs-admin.js:6603
-#: assets/js/wpfs-admin.js:6670
-#: assets/js/wpfs-admin.js:6730
+#: assets/js/wpfs-admin.js:6613
+#: assets/js/wpfs-admin.js:6680
+#: assets/js/wpfs-admin.js:6740
 msgid "Date"
 msgstr ""
 
@@ -6070,7 +6112,7 @@ msgstr ""
 #. translators: Daily recurring price label. %1$s: Price.
 #. translators: Daily recurring price label. %1$s: formatted price amount.
 #: inc/Locale/Localization.php:31
-#: assets/js/wpfs-admin.js:4172
+#: assets/js/wpfs-admin.js:4182
 #: assets/js/wpfs.js:6823
 #, php-format,js-format
 msgid "%1$s / day"
@@ -6080,7 +6122,7 @@ msgstr ""
 #. translators: Recurring price label for prices charged every x days. %1$s: Price, %2$d: Frequency in days.
 #. translators: Recurring price label for prices charged every x days. %1$s: formatted price amount, %2$d: number of days between charges.
 #: inc/Locale/Localization.php:37
-#: assets/js/wpfs-admin.js:4177
+#: assets/js/wpfs-admin.js:4187
 #: assets/js/wpfs.js:6828
 #, php-format,js-format
 msgid "%1$s / %2$d day"
@@ -6092,7 +6134,7 @@ msgstr[1] ""
 #. translators: Weekly recurring price label. %1$s: Price.
 #. translators: Weekly recurring price label. %1$s: formatted price amount.
 #: inc/Locale/Localization.php:48
-#: assets/js/wpfs-admin.js:4190
+#: assets/js/wpfs-admin.js:4200
 #: assets/js/wpfs.js:6839
 #, php-format,js-format
 msgid "%1$s / week"
@@ -6102,7 +6144,7 @@ msgstr ""
 #. translators: Recurring price label for prices charged every x weeks. %1$s: Price, %2$d: Frequency in weeks.
 #. translators: Recurring price label for prices charged every x weeks. %1$s: formatted price amount, %2$d: number of weeks between charges.
 #: inc/Locale/Localization.php:54
-#: assets/js/wpfs-admin.js:4195
+#: assets/js/wpfs-admin.js:4205
 #: assets/js/wpfs.js:6844
 #, php-format,js-format
 msgid "%1$s / %2$d week"
@@ -6114,7 +6156,7 @@ msgstr[1] ""
 #. translators: Monthly recurring price label. %1$s: Price.
 #. translators: Monthly recurring price label. %1$s: formatted price amount.
 #: inc/Locale/Localization.php:65
-#: assets/js/wpfs-admin.js:4208
+#: assets/js/wpfs-admin.js:4218
 #: assets/js/wpfs.js:6855
 #, php-format,js-format
 msgid "%1$s / month"
@@ -6124,7 +6166,7 @@ msgstr ""
 #. translators: Recurring price label for prices charged every x months. %1$s: Price, %2$d: Frequency in months.
 #. translators: Recurring price label for prices charged every x months. %1$s: formatted price amount, %2$d: number of months between charges.
 #: inc/Locale/Localization.php:72
-#: assets/js/wpfs-admin.js:4213
+#: assets/js/wpfs-admin.js:4223
 #: assets/js/wpfs.js:6860
 #, php-format,js-format
 msgid "%1$s / %2$d month"
@@ -6136,7 +6178,7 @@ msgstr[1] ""
 #. translators: Annual recurring price label. %1$s: Price.
 #. translators: Annual recurring price label. %1$s: formatted price amount.
 #: inc/Locale/Localization.php:84
-#: assets/js/wpfs-admin.js:4226
+#: assets/js/wpfs-admin.js:4236
 #: assets/js/wpfs.js:6871
 #, php-format,js-format
 msgid "%1$s / year"
@@ -6146,7 +6188,7 @@ msgstr ""
 #. translators: Recurring price label for prices charged every x years. %1$s: Price, %2$d: Frequency in years.
 #. translators: Recurring price label for prices charged every x years. %1$s: formatted price amount, %2$d: number of years between charges.
 #: inc/Locale/Localization.php:90
-#: assets/js/wpfs-admin.js:4231
+#: assets/js/wpfs-admin.js:4241
 #: assets/js/wpfs.js:6876
 #, php-format,js-format
 msgid "%1$s / %2$d year"
@@ -7200,7 +7242,7 @@ msgstr ""
 
 #: templates/admin/partials/wpfs-form-component-custom-fields.php:91
 #: templates/admin/partials/wpfs-form-component-webhook.php:42
-#: assets/js/wpfs-admin.js:6392
+#: assets/js/wpfs-admin.js:6402
 msgid "Value"
 msgstr ""
 
@@ -7655,7 +7697,7 @@ msgid "Headers"
 msgstr ""
 
 #: templates/admin/partials/wpfs-form-component-webhook.php:41
-#: assets/js/wpfs-admin.js:6387
+#: assets/js/wpfs-admin.js:6397
 msgid "Key"
 msgstr ""
 
@@ -7793,7 +7835,7 @@ msgstr ""
 #: templates/admin/partials/wpfs-settings-email-templates.php:29
 #: templates/admin/partials/wpfs-settings-forms-appearance.php:22
 #: templates/admin/partials/wpfs-settings-forms-options.php:74
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:279
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:278
 #: templates/admin/partials/wpfs-settings-stripe-webhooks.php:164
 #: templates/admin/wpfs-settings-logs.php:87
 #: templates/admin/wpfs-settings-my-account.php:104
@@ -7854,7 +7896,7 @@ msgid "Sending email to the specified addresses"
 msgstr ""
 
 #: templates/admin/partials/wpfs-settings-email-templates.php:117
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:334
+#: templates/admin/partials/wpfs-settings-stripe-dialogs.php:58
 #: templates/admin/wpfs-forms.php:167
 #: templates/admin/wpfs-settings-logs.php:117
 #: templates/admin/wpfs-transactions.php:88
@@ -7900,12 +7942,12 @@ msgid "Unsaved changes"
 msgstr ""
 
 #: templates/admin/partials/wpfs-settings-stripe-account-unavailable.php:12
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:22
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:65
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:92
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:138
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:180
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:207
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:21
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:64
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:91
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:137
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:179
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:206
 msgid "Connection Status"
 msgstr ""
 
@@ -7914,88 +7956,88 @@ msgid "WP Full Pay can't check this Stripe account right now, so this site stays
 msgstr ""
 
 #: templates/admin/partials/wpfs-settings-stripe-account-unavailable.php:16
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:96
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:211
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:313
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:322
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:95
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:210
+#: templates/admin/partials/wpfs-settings-stripe-dialogs.php:37
+#: templates/admin/partials/wpfs-settings-stripe-dialogs.php:46
 #: templates/admin/wpfs-settings-license.php:25
 msgid "Disconnect"
 msgstr ""
 
 #. translators: %1$s: opening anchor tag, %2$s: closing anchor tag
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:32
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:75
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:148
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:190
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:31
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:74
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:147
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:189
 #, php-format
 msgid "For more information, see our %1$sStripe Connect Setup Guide%2$s."
 msgstr ""
 
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:94
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:209
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:93
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:208
 msgid "Account Status:"
 msgstr ""
 
 #. translators: 1: commission percentage, 2: opening anchor tag, 3: closing anchor tag
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:105
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:220
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:104
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:219
 #, php-format
 msgid "Please note that you will be charged %1$s per transaction in addition to Stripe fees. %2$sUpgrade to Pro%3$s for no added fee and priority support."
 msgstr ""
 
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:118
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:233
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:117
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:232
 msgid "Note:"
 msgstr ""
 
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:118
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:233
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:117
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:232
 msgid "Your account is not yet ready"
 msgstr ""
 
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:119
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:234
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:118
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:233
 msgid "Click the Update Account Information below to complete your setup."
 msgstr ""
 
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:123
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:238
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:122
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:237
 msgid "Update Account Information"
 msgstr ""
 
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:126
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:241
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:125
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:240
 msgid "Clear Stripe test setup"
 msgstr ""
 
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:256
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:255
 msgid "Account Mode"
 msgstr ""
 
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:270
+#: templates/admin/partials/wpfs-settings-stripe-connection.php:269
 msgid "While in Test Mode, real payments will not be processed. Before adding forms to your website, switch to Live Mode and create duplicate forms with Live products and pricing."
 msgstr ""
 
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:288
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:319
+#: templates/admin/partials/wpfs-settings-stripe-dialogs.php:12
+#: templates/admin/partials/wpfs-settings-stripe-dialogs.php:43
 msgid "This site will stop using this Stripe account. Your forms will not take payments until you connect again."
 msgstr ""
 
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:292
+#: templates/admin/partials/wpfs-settings-stripe-dialogs.php:16
 msgid "Also remove WP Full Pay's access in Stripe"
 msgstr ""
 
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:296
+#: templates/admin/partials/wpfs-settings-stripe-dialogs.php:20
 msgid "You will sign in on Stripe to confirm. Removing access stops payments on every site that uses this Stripe account with WP Full Pay, not just this one."
 msgstr ""
 
 #. translators: %1$s: opening anchor tag, %2$s: closing anchor tag
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:304
+#: templates/admin/partials/wpfs-settings-stripe-dialogs.php:28
 #, php-format
 msgid "Disconnecting does not remove WP Full Pay from your Stripe account. %1$sSee how to remove it%2$s."
 msgstr ""
 
-#: templates/admin/partials/wpfs-settings-stripe-connection.php:314
+#: templates/admin/partials/wpfs-settings-stripe-dialogs.php:38
 msgid "Keep connected"
 msgstr ""
 
@@ -9242,54 +9284,54 @@ msgid "Webhook URL copied to clipboard."
 msgstr ""
 
 #. translators: Error message when a custom field already has the most options allowed. %d: maximum number of options.
-#: assets/js/wpfs-admin.js:2655
+#: assets/js/wpfs-admin.js:2665
 #, js-format
 msgid "You can add at most %d option"
 msgid_plural "You can add at most %d options"
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/wpfs-admin.js:2746
+#: assets/js/wpfs-admin.js:2756
 msgid "Please enter a title"
 msgstr ""
 
-#: assets/js/wpfs-admin.js:2754
+#: assets/js/wpfs-admin.js:2764
 msgid "Please enter HTML content"
 msgstr ""
 
-#: assets/js/wpfs-admin.js:2766
+#: assets/js/wpfs-admin.js:2776
 msgid "Please enter field label"
 msgstr ""
 
 #. translators: Validation error when a custom field label is too long. %d: maximum number of characters.
-#: assets/js/wpfs-admin.js:2775
+#: assets/js/wpfs-admin.js:2785
 #, js-format
 msgid "Maximum custom field length is %d character"
 msgid_plural "Maximum custom field length is %d characters"
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/wpfs-admin.js:2807
+#: assets/js/wpfs-admin.js:2817
 msgid "Please add at least one option"
 msgstr ""
 
 #. translators: Title of the 'Edit custom field' dialog
-#: assets/js/wpfs-admin.js:2882
+#: assets/js/wpfs-admin.js:2892
 msgid "Edit custom field"
 msgstr ""
 
 #. translators: Title of the 'Add custom field' dialog
-#: assets/js/wpfs-admin.js:2884
+#: assets/js/wpfs-admin.js:2894
 msgid "Add custom field"
 msgstr ""
 
 #. translators: Title of the 'Delete custom field' dialog
-#: assets/js/wpfs-admin.js:2957
+#: assets/js/wpfs-admin.js:2967
 msgid "Delete custom field"
 msgstr ""
 
 #. translators: Error message when a form already has the most custom fields allowed. %d: maximum number of custom fields.
-#: assets/js/wpfs-admin.js:3024
+#: assets/js/wpfs-admin.js:3034
 #, js-format
 msgid "You can add at most %d custom field"
 msgid_plural "You can add at most %d custom fields"
@@ -9297,20 +9339,20 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: Unit after the trial period input of a subscription plan, as in "7 days".
-#: assets/js/wpfs-admin.js:4127
+#: assets/js/wpfs-admin.js:4137
 msgid "day"
 msgid_plural "days"
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: Title of the 'Add subscription plan properties' dialog box. %s: Name of the subscription plan.
-#: assets/js/wpfs-admin.js:4147
+#: assets/js/wpfs-admin.js:4157
 #, js-format
 msgid "Set additional properties for <b>%s</b>"
 msgstr ""
 
 #. translators: Trial days label of a subscription plan. %s: Number of trial days.
-#: assets/js/wpfs-admin.js:5022
+#: assets/js/wpfs-admin.js:5032
 #, js-format
 msgid "%s-day trial"
 msgid_plural "%s-day trial"
@@ -9318,52 +9360,52 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: Label describing subscriptions which are canceled after x charges. %s: Number of recurring charges after which the subscription is canceled.
-#: assets/js/wpfs-admin.js:5041
+#: assets/js/wpfs-admin.js:5051
 #, js-format
 msgid "Canceled after %s occurrence"
 msgid_plural "Canceled after %s occurrences"
 msgstr[0] ""
 msgstr[1] ""
 
-#: assets/js/wpfs-admin.js:6446
+#: assets/js/wpfs-admin.js:6456
 msgid "Webhook URL is missing"
 msgstr ""
 
-#: assets/js/wpfs-admin.js:6461
+#: assets/js/wpfs-admin.js:6471
 msgid "Webhook test successful"
 msgstr ""
 
-#: assets/js/wpfs-admin.js:6463
-#: assets/js/wpfs-admin.js:6466
-#: assets/js/wpfs-admin.js:6467
+#: assets/js/wpfs-admin.js:6473
+#: assets/js/wpfs-admin.js:6476
+#: assets/js/wpfs-admin.js:6477
 msgid "Webhook test failed"
 msgstr ""
 
-#: assets/js/wpfs-admin.js:6612
+#: assets/js/wpfs-admin.js:6622
 msgid "Primary axis"
 msgstr ""
 
-#: assets/js/wpfs-admin.js:6630
+#: assets/js/wpfs-admin.js:6640
 msgid "Secondary axis"
 msgstr ""
 
-#: assets/js/wpfs-admin.js:6654
-#: assets/js/wpfs-admin.js:6679
+#: assets/js/wpfs-admin.js:6664
+#: assets/js/wpfs-admin.js:6689
 msgid "Revenue"
 msgstr ""
 
-#: assets/js/wpfs-admin.js:6661
-#: assets/js/wpfs-admin.js:6693
+#: assets/js/wpfs-admin.js:6671
+#: assets/js/wpfs-admin.js:6703
 msgid "Sales"
 msgstr ""
 
-#: assets/js/wpfs-admin.js:6714
-#: assets/js/wpfs-admin.js:6739
+#: assets/js/wpfs-admin.js:6724
+#: assets/js/wpfs-admin.js:6749
 msgid "Refunded Amount"
 msgstr ""
 
-#: assets/js/wpfs-admin.js:6721
-#: assets/js/wpfs-admin.js:6753
+#: assets/js/wpfs-admin.js:6731
+#: assets/js/wpfs-admin.js:6763
 msgid "Refunds"
 msgstr ""
 

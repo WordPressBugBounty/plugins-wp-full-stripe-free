@@ -52,6 +52,7 @@ class StripeConnect {
 	const RESULT_ALREADY_CONNECTED = 'connected';
 	const RESULT_EXPIRED = 'expired';
 	const RESULT_REPLACED = 'replaced';
+	const RESULT_OTHER_ACCOUNT = 'other_account';
 	const RESULT_NOT_CONNECTED = 'not_connected';
 	const RESULT_NOT_CONFIRMED = 'not_confirmed';
 	const RESULT_UNAVAILABLE = 'unavailable';
@@ -187,6 +188,8 @@ class StripeConnect {
 				'expires' => time() + self::PENDING_TTL,
 				'generation' => $pending['id'],
 				'onboarding' => $this->isOnboarding( $currentUrl ),
+				// The account a confirmation is for; empty for a new connection.
+				'account' => (string) self::getConnectedAccountId( $this->options, $mode ),
 			],
 			false
 		);
@@ -239,13 +242,18 @@ class StripeConnect {
 			$this->sendRefusal( self::RESULT_EXPIRED, $mode );
 		}
 
-		// The mode was connected again, for example in another tab, while the merchant was on Stripe. For
-		// a confirmation, the merchant signed in to another account than the one this site uses.
+		// Another account is never saved over the one this site uses: switching takes Disconnect first.
 		$connectedAccountId = self::getConnectedAccountId( $this->options, $mode );
 		if ( null !== $connectedAccountId && $connectedAccountId !== $accountId ) {
 			// The platform bound this connection's secret to the other account, so the next try needs a new one.
 			$this->retire( $mode, (string) ( $redeemed['generation'] ?? '' ) );
-			$this->sendRefusal( self::RESULT_REPLACED, $mode );
+
+			// A confirmation of the account the site still uses means the merchant signed in to another one on
+			// Stripe. Otherwise the mode was connected again, for example in another tab, while they were there.
+			// A token from before the update has no account; its message names the account the site uses, which
+			// holds either way.
+			$signedInToAnother = ! array_key_exists( 'account', $redeemed ) || $redeemed['account'] === $connectedAccountId;
+			$this->sendRefusal( $signedInToAnother ? self::RESULT_OTHER_ACCOUNT : self::RESULT_REPLACED, $mode );
 		}
 
 		$result = $this->finishConnection( $mode, $accountId, $code, (string) ( $redeemed['generation'] ?? '' ), null !== $connectedAccountId );
@@ -587,12 +595,15 @@ class StripeConnect {
 
 		$options = new Options();
 		foreach ( [ 'live', 'test' ] as $mode ) {
-			if ( ! SiteCredential::needsConfirmation( $mode, null !== self::getConnectedAccountId( $options, $mode ) ) ) {
+			$accountId = self::getConnectedAccountId( $options, $mode );
+			if ( null === $accountId || ! SiteCredential::needsConfirmation( $mode, true ) ) {
 				continue;
 			}
 
+			// The page shows only the mode the site is in, so the prompt carries its own Disconnect for the other.
+			// Removing access is not offered: it needs a sign-in to the account the merchant may not have any more.
 			printf(
-				'<div class="wpfs-inline-message wpfs-inline-message--warning wpfs-inline-message--mb wpfs-confirm-connection"><div class="wpfs-inline-message__inner"><p><strong>%1$s</strong> %2$s</p><p>%3$s</p><p><button type="button" class="wpfs-btn wpfs-btn-primary wpfs-button-loader js-wpfs-confirm-stripe-connection" data-mode="%4$s">%5$s</button></p></div></div>',
+				'<div class="wpfs-inline-message wpfs-inline-message--warning wpfs-inline-message--mb wpfs-confirm-connection"><div class="wpfs-inline-message__inner"><p><strong>%1$s</strong> %2$s</p><p>%6$s</p><p>%3$s</p><p><button type="button" class="wpfs-btn wpfs-btn-primary wpfs-button-loader js-wpfs-confirm-stripe-connection" data-mode="%4$s">%5$s</button> <button type="button" class="wpfs-btn wpfs-btn-text js-wpfs-disconnect-stripe-mode" data-mode="%4$s" data-can-revoke="0">%7$s</button></p></div></div>',
 				esc_html( 'live' === $mode
 					? __( 'Please confirm your Stripe connection.', 'wp-full-stripe-free' )
 					: __( 'Please confirm your test Stripe connection.', 'wp-full-stripe-free' ) ),
@@ -603,9 +614,25 @@ class StripeConnect {
 				) ),
 				esc_html__( 'Using this Stripe account on another site too? Update WP Full Pay there as well. Once you confirm here, older versions of WP Full Pay stop working with this account.', 'wp-full-stripe-free' ),
 				esc_attr( $mode ),
-				esc_html__( 'Confirm with Stripe', 'wp-full-stripe-free' )
+				esc_html__( 'Confirm with Stripe', 'wp-full-stripe-free' ),
+				esc_html( sprintf(
+					'live' === $mode
+						/* translators: %s: Stripe account ID, e.g. acct_123 */
+						? __( 'This site uses Stripe account %s. Sign in to that account on Stripe. Can\'t sign in to it, or don\'t use it any more? Disconnect live mode, then connect the account you use.', 'wp-full-stripe-free' )
+						/* translators: %s: Stripe account ID, e.g. acct_123 */
+						: __( 'This site uses Stripe account %s in test mode. Sign in to that account on Stripe. Can\'t sign in to it, or don\'t use it any more? Disconnect test mode, then connect the account you use.', 'wp-full-stripe-free' ),
+					$accountId
+				) ),
+				esc_html( self::getDisconnectLabel( $mode ) )
 			);
 		}
+	}
+
+	/**
+	 * @return string The label of the prompt's button that disconnects this mode.
+	 */
+	private static function getDisconnectLabel( string $mode ): string {
+		return 'live' === $mode ? __( 'Disconnect live mode', 'wp-full-stripe-free' ) : __( 'Disconnect test mode', 'wp-full-stripe-free' );
 	}
 
 	/**
@@ -637,7 +664,9 @@ class StripeConnect {
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only selects a message.
-		$notice = self::getResultNotice( sanitize_text_field( wp_unslash( $_GET[ self::PARAM_RESULT ] ) ) );
+		$mode = isset( $_GET['mode'] ) ? sanitize_text_field( wp_unslash( $_GET['mode'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only selects a message.
+		$notice = self::getResultNotice( sanitize_text_field( wp_unslash( $_GET[ self::PARAM_RESULT ] ) ), $mode );
 		if ( null === $notice ) {
 			return;
 		}
@@ -651,10 +680,32 @@ class StripeConnect {
 
 	/**
 	 * @param string $result
+	 * @param string $mode The mode the result is for, from the URL.
 	 * @return array{type:string,message:string}|null
 	 */
-	private static function getResultNotice( string $result ) {
+	private static function getResultNotice( string $result, string $mode ) {
 		switch ( $result ) {
+			case self::RESULT_OTHER_ACCOUNT:
+				// The account comes from this site's settings, never from the URL, which anyone can write.
+				$accountId = SiteCredential::isValidMode( $mode ) ? self::getConnectedAccountId( new Options(), $mode ) : null;
+				if ( null === $accountId ) {
+					return null;
+				}
+
+				// The account the merchant signed in to may be the one this site uses in the other mode, so removing
+				// WP Full Pay's access to it in Stripe is not suggested.
+				return [
+					'type' => 'error',
+					'message' => esc_html( sprintf(
+						'live' === $mode
+							/* translators: %1$s: Stripe account ID, e.g. acct_123. %2$s: the Disconnect button's label */
+							? __( 'You signed in to a different Stripe account than the one this site uses (%1$s), so your connection was not confirmed. Nothing was changed. Click Confirm with Stripe and sign in to %1$s. If you can\'t, or you no longer use it, click %2$s, then connect the account you use.', 'wp-full-stripe-free' )
+							/* translators: %1$s: Stripe account ID, e.g. acct_123. %2$s: the Disconnect button's label */
+							: __( 'You signed in to a different Stripe account than the one this site uses in test mode (%1$s), so your test connection was not confirmed. Nothing was changed. Click Confirm with Stripe and sign in to %1$s. If you can\'t, or you no longer use it, click %2$s, then connect the account you use.', 'wp-full-stripe-free' ),
+						$accountId,
+						self::getDisconnectLabel( $mode )
+					) ),
+				];
 			case self::RESULT_ALREADY_CONNECTED:
 				return [
 					'type' => 'warning',

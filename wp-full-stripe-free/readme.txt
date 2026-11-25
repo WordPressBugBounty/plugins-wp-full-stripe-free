@@ -4,7 +4,7 @@ Tags: stripe, payment forms, donations, subscriptions, credit card
 Requires at least: 5.3
 Requires PHP: 7.4
 Tested up to: 7.1
-Stable tag: 8.6.0
+Stable tag: 8.6.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -281,61 +281,9 @@ WP Full Pay fully supports Strong Customer Authentication (SCA) requirements for
 
 == Changelog ==
 
-####   Version 8.6.0 (2026-11-23)
+#####   Version 8.6.1 (2026-11-25)
 
-- Added a Help panel to make it easier to contact support and find answers
-- Fixed Stripe settings saves clearing hidden API keys and mode.
-- Fixed Basil invoice webhooks failing to match subscription renewals.
-- Fixed Checkout form saves writing a public settings file.
-- Fixed custom CSS fields to use the built-in code editor
-- Fixed one-time donations saving cards on Stripe customers.
-- Fixed a deprecated notice on payment forms without products.
-- Fixed inline forms missing browser prompt for empty email address.
-- Fixed untranslatable and unescaped messages across payment forms and admin screens.
-- Fixed empty subscription and payment forms crashing and re-enabling buttons.
-- Fixed empty subscription and payment forms failing to render.
-- Fixed inline donations rejecting filled required custom fields.
-- Fixed custom amounts accepted with the wrong decimal separator
-- Added a filter to change custom field values before payment.
-- Fixed subscription and donation forms offering unusable bank redirect methods.
-- Added form preview to the Form by WP Full Pay block.
-- Fixed terms-of-use acceptance now recorded on transactions.
-- Fixed Stripe Link controls on save card and payment forms
-- Added an option to remove WP Full Pay access when disconnecting.
-- Added platform support for removing Stripe account access.
-- Fixed duplicate subscriptions when a slow network repeats the request.
-- Fixed mandatory recovery fees skipped when the request omitted them.
-- Fixed Checkout subscription fees failing for plans not in USD.
-- Fixed fatal error on unused subscription payment request.
-- Fixed the Reports page showing an empty cell for deleted payment forms.
-- Fixed the portal to list latest paid invoices first and show subscription tax.
-- Fixed portal subscription prices showing without tax notes.
-- Fixed platform access so only confirmed sites use connected accounts.
-- Fixed forms charging custom amounts below the form minimum.
-- Fixed payment and subscription forms accepting unlisted amounts and prices.
-- Fixed recurring donations creating a second subscription after 3D Secure.
-- Fixed recurring donations missing the recovery fee and duplicating subscriptions after authentication.
-- Fixed losing the Stripe Connect account on settings load and connect.
-- Fixed inline payments recording the wrong product after redirect authentication.
-- Fixed inline forms failing when a prefilled coupon name differs from its ID
-- Fixed Apple Pay and Google Pay showing the wrong charged total.
-- Fixed Apple Pay and Google Pay showing a different total from the charge.
-- Fixed the subscription-ended email showing the current setup fee instead of the charged fee.
-- Fixed duplicate checkout receipts sent when the return and background task ran together.
-- Fixed forms with more than 10 products showing /bin/sh.00 prices.
-- Fixed subscriptions billing the setup fee twice after a failed attempt.
-- Fixed one-time invoices and setup fees to bill exactly what was charged.
-- Fixed receipts and customer portal showing wrong amounts for recovery-fee subscriptions
-- Fixed partially refunded payments missing from report revenue and refunds chart
-- Fixed existing subscriptions keeping the platform fee after license activation.
-- Fixed renewals keeping the platform fee after license activation.
-- Fixed payments charging the wrong customer after an email change.
-- Fixed inline payments charged but never recorded or refunded.
-- Fixed Stripe Tax forms failing when no default tax behavior is set
-- Fixed inline payments recording wrong amounts and missing invoices.
-- Fixed Checkout payments missing when customers closed the tab before returning.
-- Fixed blank error page on late Checkout returns.
-- Fixed Checkout payments missing when customers did not return to the site.
+fix: show a way forward when the Stripe confirmation comes back with another account
 
 
 

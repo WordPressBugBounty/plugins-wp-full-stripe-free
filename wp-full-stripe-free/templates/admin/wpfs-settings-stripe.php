@@ -35,6 +35,7 @@ use ThemeIsle\WPFullPay\Admin\Views\ConfigureStripeAccountView;
                         include('partials/wpfs-settings-stripe-webhooks.php');
                     }
                 ?>
+                <?php include('partials/wpfs-settings-stripe-dialogs.php'); ?>
             <div id="wpfs-success-message-container"></div>
             </div>
         </div>

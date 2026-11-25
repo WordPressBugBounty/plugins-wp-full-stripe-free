@@ -34,6 +34,9 @@ class StripeAccessRevocation {
 	const RESULT_CANCELLED = 'cancelled';
 	const RESULT_EXPIRED = 'expired';
 
+	/** The platform refused the ticket, for example one for another account than this site's. */
+	const RESULT_REFUSED = 'refused';
+
 	const STATUS_CANCELLED = 'cancelled';
 
 	/** Tries the removal again with the ticket kept from a failed attempt. */
@@ -331,6 +334,14 @@ class StripeAccessRevocation {
 		} catch ( \Exception $ex ) {
 			$this->logger->error( __FUNCTION__, 'Cannot remove access to the Stripe account', $ex );
 
+			// The platform refused the ticket itself, for example because the merchant signed in to another
+			// account on Stripe. Sending it again can never work, so it is not kept.
+			if ( $ex instanceof PlatformRequestException && ! $ex->isAmbiguous() ) {
+				delete_transient( self::getRetryKey( $mode ) );
+
+				return self::RESULT_REFUSED;
+			}
+
 			// Stripe may have removed the access while the platform failed to record it, so the ticket is kept
 			// for "Try again" until it expires.
 			$this->keepForRetry( $mode, $pending, $ticket );
@@ -413,6 +424,20 @@ class StripeAccessRevocation {
 					'type' => 'error',
 					'message' => $message,
 				];
+			case self::RESULT_REFUSED:
+				$accountId = SiteCredential::isValidMode( $mode ) ? StripeConnect::getConnectedAccountId( new Options(), $mode ) : null;
+				$message = null === $accountId
+					? esc_html__( 'WP Full Pay\'s access to your Stripe account could not be removed. Nothing was changed.', 'wp-full-stripe-free' )
+					: esc_html( sprintf(
+						/* translators: %1$s: Stripe account ID, e.g. acct_123 */
+						__( 'WP Full Pay\'s access could not be removed, and this site is still connected. Stripe did not confirm the removal for this site\'s account, %1$s: the request may have expired, or you signed in to a different account. Click Disconnect to try again and sign in to %1$s, or disconnect without removing access.', 'wp-full-stripe-free' ),
+						$accountId
+					) );
+
+				return [
+					'type' => 'error',
+					'message' => $message,
+				];
 			case self::RESULT_CANCELLED:
 				return [
 					'type' => 'warning',
@@ -459,11 +484,11 @@ class StripeAccessRevocation {
 	/**
 	 * Keeps the removal's ticket for "Try again" in a record apart from the pending removal, so it never replaces
 	 * a removal started meanwhile in another tab. Called before the platform call and after a failure; forgets
-	 * the record once the site is no longer connected to that account.
+	 * the record once the site is no longer connected to that account, or once the ticket has expired.
 	 *
-	 * @param string                              $mode
-	 * @param array{nonce:string,accountId:string} $pending
-	 * @param string                              $ticket
+	 * @param string                                                            $mode
+	 * @param array{nonce:string,accountId:string,ticket?:string,received?:int} $pending
+	 * @param string                                                            $ticket
 	 */
 	private function keepForRetry( string $mode, array $pending, string $ticket ): void {
 		// Another "Try again" may have finished the removal meanwhile; a finished removal keeps no ticket.
@@ -473,7 +498,19 @@ class StripeAccessRevocation {
 			return;
 		}
 
-		set_transient( self::getRetryKey( $mode ), array_merge( $pending, [ 'ticket' => $ticket ] ), self::PENDING_TTL );
+		// The platform's ticket expires PENDING_TTL after it sent the merchant back, however often a retry fails.
+		// A retry passes the kept record itself, which may already be gone when it fails.
+		$kept = get_transient( self::getRetryKey( $mode ) );
+		$source = is_array( $kept ) && ( $kept['ticket'] ?? '' ) === $ticket ? $kept : $pending;
+		$received = isset( $source['received'] ) && ( $source['ticket'] ?? '' ) === $ticket ? (int) $source['received'] : time();
+		$ttl = $received + self::PENDING_TTL - time();
+		if ( $ttl <= 0 ) {
+			delete_transient( self::getRetryKey( $mode ) );
+
+			return;
+		}
+
+		set_transient( self::getRetryKey( $mode ), array_merge( $pending, [ 'ticket' => $ticket, 'received' => $received ] ), $ttl );
 	}
 
 	/**
